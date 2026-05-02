@@ -46,6 +46,7 @@ class SyntheticRecipe:
 @dataclass(frozen=True)
 class SyntheticDocument:
     sample_id: str
+    sample_index: int
     title: str
     body: str
     footer: str
@@ -103,6 +104,9 @@ def _wrap_hebrew_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.Free
 
 
 def _rtl_display_text(text: str) -> str:
+    # Pillow's direction="rtl" parameter handles BiDi reordering; this
+    # pass-through exists as an explicit extension point for any future
+    # pre-processing (e.g. Unicode Bidirectional Algorithm overrides).
     return text
 
 
@@ -420,6 +424,7 @@ def generate_documents(
         documents.append(
             SyntheticDocument(
                 sample_id=sample_id,
+                sample_index=index,
                 title=title,
                 body="\n".join(body_lines),
                 footer=footer,
@@ -470,7 +475,7 @@ def generate_manifest(
             recipe_id=document.recipe_id,
             provenance=SampleProvenance(
                 seed=seed,
-                sample_index=int(document.sample_id.rsplit("-", 1)[1]),
+                sample_index=document.sample_index,
                 template_id=document.template_id,
                 recipe_id=document.recipe_id,
                 degradation_preset=document.degradation_preset,

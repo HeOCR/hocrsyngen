@@ -124,7 +124,7 @@ def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) 
 
     with Image.open(by_template["printed_letter"].path).convert("RGB") as printed:
         form_region = printed.crop((140, 330, 1060, 820))
-        printed_pixels = list(form_region.getdata())
+        printed_pixels = list(form_region.get_flattened_data())
         red_stamp_pixels = sum(1 for r, g, b in printed_pixels if r > 90 and r > g * 1.45 and r > b * 1.45)
         dark_ink_pixels = sum(1 for r, g, b in printed_pixels if r < 115 and g < 105 and b < 95)
         assert red_stamp_pixels > 500
@@ -132,7 +132,7 @@ def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) 
 
     with Image.open(by_template["handwritten_note"].path).convert("RGB") as handwritten:
         marginalia_region = handwritten.crop((120, 430, 280, 760))
-        marginalia_pixels = list(marginalia_region.getdata())
+        marginalia_pixels = list(marginalia_region.get_flattened_data())
         marginalia_ink_pixels = sum(1 for r, g, b in marginalia_pixels if r < 115 and g < 105 and b < 95)
         assert marginalia_ink_pixels > 150
 
