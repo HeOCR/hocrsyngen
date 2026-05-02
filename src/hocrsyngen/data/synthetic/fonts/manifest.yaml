@@ -1,0 +1,9 @@
+fonts:
+  - id: alef-regular
+    file: Alef-Regular.ttf
+    style: printed
+    notes: Open Hebrew sans-serif used for printed synthetic documents.
+  - id: gveret-levin-regular
+    file: GveretLevin-Regular.ttf
+    style: handwritten_like
+    notes: Open Hebrew handwriting-style font used for note-like synthetic documents.
