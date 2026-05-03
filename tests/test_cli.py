@@ -6,7 +6,7 @@ import subprocess
 import sys
 import tomllib
 from importlib import resources
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import pytest
 
@@ -173,6 +173,16 @@ REQUIRED_CONTRACT_FIXTURE_RESOURCE_PATHS = [
         "hocrsyngen-s00000017-000001/page_0001.jpg"
     ),
 ]
+INSTALLED_CLI_SMOKE_CASES = [
+    "templates-text",
+    "templates-json",
+    "contracts-text",
+    "contracts-json",
+    "contracts-export",
+    "validate-exported-fixture",
+    "generate-json",
+    "validate-generated-batch",
+]
 
 
 def _packaged_contract_fixture() -> Path:
@@ -183,6 +193,234 @@ def _packaged_contract_fixture() -> Path:
         / "generation_manifest_v1"
         / "fixture-batch"
     )
+
+
+def _run_installed_cli(
+    command: list[str],
+    *,
+    cwd: Path,
+    env: dict[str, str],
+    check: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        check=check,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+
+def _json_from_successful_cli(
+    completed: subprocess.CompletedProcess[str],
+) -> dict[str, object]:
+    assert completed.stderr == ""
+    return json.loads(completed.stdout)
+
+
+def _assert_batch_assets_are_portable(batch_dir: Path) -> None:
+    manifest = json.loads(
+        (batch_dir / "generation_manifest.json").read_text(encoding="utf-8")
+    )
+    for sample in manifest["samples"]:
+        for page in sample["pages"]:
+            asset_path_text = page["asset_path"]
+            asset_path = PurePosixPath(asset_path_text)
+            assert not asset_path.is_absolute()
+            assert ".." not in asset_path.parts
+            assert "\\" not in asset_path_text
+            assert (batch_dir / Path(*asset_path.parts)).is_file()
+
+
+def _export_fixture_through_installed_cli(
+    *,
+    command: list[str],
+    cwd: Path,
+    env: dict[str, str],
+    output_dir: Path,
+) -> None:
+    fixture_export = _json_from_successful_cli(
+        _run_installed_cli(
+            command
+            + [
+                "contracts",
+                "export",
+                "--fixture-id",
+                "generation_manifest_v1_fixture_batch",
+                "--output",
+                str(output_dir),
+                "--format",
+                "json",
+            ],
+            cwd=cwd,
+            env=env,
+        )
+    )
+    assert fixture_export == {
+        "schema_version": CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION,
+        "fixture_id": "generation_manifest_v1_fixture_batch",
+        "contract": "generation_manifest.v1",
+        "sample_count": 2,
+        "page_count": 2,
+        "output_path": str(output_dir),
+        "manifest_path": str(output_dir / "generation_manifest.json"),
+    }
+    _assert_batch_assets_are_portable(output_dir)
+
+
+def _generate_batch_through_installed_cli(
+    *,
+    command: list[str],
+    cwd: Path,
+    env: dict[str, str],
+    output_dir: Path,
+) -> None:
+    generation = _json_from_successful_cli(
+        _run_installed_cli(
+            command
+            + [
+                "generate",
+                "--count",
+                "2",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--format",
+                "json",
+            ],
+            cwd=cwd,
+            env=env,
+        )
+    )
+    assert generation == {
+        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+        "sample_count": 2,
+        "page_count": 2,
+        "output_path": str(output_dir),
+        "manifest_path": str(output_dir / "generation_manifest.json"),
+    }
+    generated_manifest = json.loads(
+        (output_dir / "generation_manifest.json").read_text(encoding="utf-8")
+    )
+    assert "schema_version" not in generated_manifest
+    assert len(generated_manifest["samples"]) == 2
+    _assert_batch_assets_are_portable(output_dir)
+
+
+def _assert_installed_cli_smoke_case(
+    *,
+    command: list[str],
+    cwd: Path,
+    env: dict[str, str],
+    output_root: Path,
+    cli_case: str,
+) -> None:
+    output_root.mkdir()
+
+    if cli_case == "templates-text":
+        templates = _run_installed_cli(command + ["templates"], cwd=cwd, env=env)
+        assert templates.stderr == ""
+        assert templates.stdout.splitlines() == EXPECTED_TEMPLATE_LINES
+        return
+
+    if cli_case == "templates-json":
+        templates_json = _json_from_successful_cli(
+            _run_installed_cli(
+                command + ["templates", "--format", "json"],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert templates_json == EXPECTED_TEMPLATE_CATALOG_JSON
+        return
+
+    if cli_case == "contracts-text":
+        contracts = _run_installed_cli(command + ["contracts"], cwd=cwd, env=env)
+        assert contracts.stderr == ""
+        assert contracts.stdout.splitlines() == [EXPECTED_CONTRACT_FIXTURE_LINE]
+        return
+
+    if cli_case == "contracts-json":
+        contracts_json = _json_from_successful_cli(
+            _run_installed_cli(
+                command + ["contracts", "--format", "json"],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert contracts_json == EXPECTED_CONTRACT_FIXTURE_CATALOG_JSON
+        return
+
+    if cli_case == "contracts-export":
+        _export_fixture_through_installed_cli(
+            command=command,
+            cwd=cwd,
+            env=env,
+            output_dir=output_root / "exported-fixture",
+        )
+        return
+
+    if cli_case == "validate-exported-fixture":
+        exported_fixture_dir = output_root / "exported-fixture"
+        _export_fixture_through_installed_cli(
+            command=command,
+            cwd=cwd,
+            env=env,
+            output_dir=exported_fixture_dir,
+        )
+        exported_validation = _json_from_successful_cli(
+            _run_installed_cli(
+                command + ["validate", str(exported_fixture_dir), "--format", "json"],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert exported_validation == {
+            "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+            "valid": True,
+            "sample_count": 2,
+            "page_count": 2,
+            "path": str(exported_fixture_dir),
+        }
+        return
+
+    if cli_case == "generate-json":
+        _generate_batch_through_installed_cli(
+            command=command,
+            cwd=cwd,
+            env=env,
+            output_dir=output_root / "generated-batch",
+        )
+        return
+
+    if cli_case == "validate-generated-batch":
+        generated_dir = output_root / "generated-batch"
+        _generate_batch_through_installed_cli(
+            command=command,
+            cwd=cwd,
+            env=env,
+            output_dir=generated_dir,
+        )
+        generated_validation = _json_from_successful_cli(
+            _run_installed_cli(
+                command + ["validate", str(generated_dir), "--format", "json"],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert generated_validation == {
+            "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+            "valid": True,
+            "sample_count": 2,
+            "page_count": 2,
+            "path": str(generated_dir),
+        }
+        return
+
+    raise AssertionError(f"unknown installed CLI smoke case: {cli_case}")
 
 
 def test_contracts_cli_smoke_outputs_stable_catalog_lines(
@@ -712,10 +950,36 @@ def test_validate_cli_json_reports_packaged_contract_fixture(
         }
 
 
+@pytest.mark.parametrize(
+    "entry_point",
+    ["console-script", "python-module"],
+)
+@pytest.mark.parametrize("cli_case", INSTALLED_CLI_SMOKE_CASES)
+def test_installed_package_public_cli_smoke_matrix(
+    installed_package: tuple[Path, Path, dict[str, str]],
+    entry_point: str,
+    cli_case: str,
+) -> None:
+    target_dir, isolated_cwd, env = installed_package
+    command = (
+        [str(target_dir / "bin" / "hocrsyngen")]
+        if entry_point == "console-script"
+        else [sys.executable, "-m", "hocrsyngen.cli"]
+    )
+
+    _assert_installed_cli_smoke_case(
+        command=command,
+        cwd=isolated_cwd,
+        env=env,
+        output_root=isolated_cwd / f"installed-{entry_point}-{cli_case}",
+        cli_case=cli_case,
+    )
+
+
 def test_installed_package_console_entry_point_and_packaged_resources(
     installed_package: tuple[Path, Path, dict[str, str]],
 ) -> None:
-    target_dir, isolated_cwd, env = installed_package
+    _target_dir, isolated_cwd, env = installed_package
     resource_check = (
         "from importlib import resources\n"
         "required = [\n"
@@ -776,188 +1040,6 @@ def test_installed_package_console_entry_point_and_packaged_resources(
         text=True,
     )
 
-    console_templates = subprocess.run(
-        [str(target_dir / "bin" / "hocrsyngen"), "templates"],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert console_templates.stdout.splitlines() == EXPECTED_TEMPLATE_LINES
-
-    console_templates_json = subprocess.run(
-        [str(target_dir / "bin" / "hocrsyngen"), "templates", "--format", "json"],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert json.loads(console_templates_json.stdout) == EXPECTED_TEMPLATE_CATALOG_JSON
-
-    console_contracts_json = subprocess.run(
-        [str(target_dir / "bin" / "hocrsyngen"), "contracts", "--format", "json"],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert console_contracts_json.stderr == ""
-    assert json.loads(console_contracts_json.stdout) == (
-        EXPECTED_CONTRACT_FIXTURE_CATALOG_JSON
-    )
-
-    console_contract_export_output = isolated_cwd / "console-contract-export"
-    console_contract_export = subprocess.run(
-        [
-            str(target_dir / "bin" / "hocrsyngen"),
-            "contracts",
-            "export",
-            "--fixture-id",
-            "generation_manifest_v1_fixture_batch",
-            "--output",
-            str(console_contract_export_output),
-            "--format",
-            "json",
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert console_contract_export.stderr == ""
-    assert json.loads(console_contract_export.stdout) == {
-        "schema_version": CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION,
-        "fixture_id": "generation_manifest_v1_fixture_batch",
-        "contract": "generation_manifest.v1",
-        "sample_count": 2,
-        "page_count": 2,
-        "output_path": str(console_contract_export_output),
-        "manifest_path": str(
-            console_contract_export_output / "generation_manifest.json"
-        ),
-    }
-    console_contract_validate_json = subprocess.run(
-        [
-            str(target_dir / "bin" / "hocrsyngen"),
-            "validate",
-            str(console_contract_export_output),
-            "--format",
-            "json",
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert console_contract_validate_json.stderr == ""
-    assert json.loads(console_contract_validate_json.stdout) == {
-        "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
-        "valid": True,
-        "sample_count": 2,
-        "page_count": 2,
-        "path": str(console_contract_export_output),
-    }
-
-    module_templates = subprocess.run(
-        [sys.executable, "-m", "hocrsyngen.cli", "templates"],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert module_templates.stdout.splitlines() == EXPECTED_TEMPLATE_LINES
-
-    console_output = isolated_cwd / "console-out"
-    subprocess.run(
-        [
-            str(target_dir / "bin" / "hocrsyngen"),
-            "generate",
-            "--count",
-            "1",
-            "--seed",
-            "17",
-            "--output",
-            str(console_output),
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-
-    module_output = isolated_cwd / "module-out"
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "hocrsyngen.cli",
-            "generate",
-            "--count",
-            "0",
-            "--seed",
-            "17",
-            "--output",
-            str(module_output),
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-
-    console_manifest = json.loads(
-        (console_output / "generation_manifest.json").read_text(encoding="utf-8")
-    )
-    console_asset = Path(console_manifest["samples"][0]["pages"][0]["asset_path"])
-    assert not console_asset.is_absolute()
-    assert (console_output / console_asset).is_file()
-    assert (
-        json.loads(
-            (module_output / "generation_manifest.json").read_text(encoding="utf-8")
-        )["samples"]
-        == []
-    )
-
-    console_validate_json = subprocess.run(
-        [
-            str(target_dir / "bin" / "hocrsyngen"),
-            "validate",
-            str(console_output),
-            "--format",
-            "json",
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert console_validate_json.stderr == ""
-    assert json.loads(console_validate_json.stdout) == {
-        "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
-        "valid": True,
-        "sample_count": 1,
-        "page_count": 1,
-        "path": str(console_output),
-    }
-
     invalid_batch = isolated_cwd / "missing-manifest"
     invalid_batch.mkdir()
     module_validate_json = subprocess.run(
@@ -987,7 +1069,7 @@ def test_installed_package_console_entry_point_and_packaged_resources(
     }
 
 
-def test_wheel_distribution_contracts_cli_and_packaged_resources(
+def test_wheel_distribution_metadata_and_packaged_resources(
     wheel_installed_package: tuple[Path, Path, Path, dict[str, str]],
 ) -> None:
     wheel_path, target_dir, isolated_cwd, env = wheel_installed_package
@@ -1053,116 +1135,28 @@ def test_wheel_distribution_contracts_cli_and_packaged_resources(
         _project_version(),
     ]
 
-    console_contracts_json = subprocess.run(
-        [str(target_dir / "bin" / "hocrsyngen"), "contracts", "--format", "json"],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert console_contracts_json.stderr == ""
-    assert json.loads(console_contracts_json.stdout) == (
-        EXPECTED_CONTRACT_FIXTURE_CATALOG_JSON
-    )
 
-    export_output = isolated_cwd / "wheel-contract-export"
-    console_contract_export = subprocess.run(
-        [
-            str(target_dir / "bin" / "hocrsyngen"),
-            "contracts",
-            "export",
-            "--fixture-id",
-            "generation_manifest_v1_fixture_batch",
-            "--output",
-            str(export_output),
-            "--format",
-            "json",
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert console_contract_export.stderr == ""
-    assert json.loads(console_contract_export.stdout) == {
-        "schema_version": CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION,
-        "fixture_id": "generation_manifest_v1_fixture_batch",
-        "contract": "generation_manifest.v1",
-        "sample_count": 2,
-        "page_count": 2,
-        "output_path": str(export_output),
-        "manifest_path": str(export_output / "generation_manifest.json"),
-    }
-
-    module_validate_json = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "hocrsyngen.cli",
-            "validate",
-            str(export_output),
-            "--format",
-            "json",
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert module_validate_json.stderr == ""
-    assert json.loads(module_validate_json.stdout) == {
-        "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
-        "valid": True,
-        "sample_count": 2,
-        "page_count": 2,
-        "path": str(export_output),
-    }
-
-
-def test_installed_package_generate_json_entry_point(
-    installed_package: tuple[Path, Path, dict[str, str]],
+@pytest.mark.parametrize(
+    "entry_point",
+    ["console-script", "python-module"],
+)
+@pytest.mark.parametrize("cli_case", INSTALLED_CLI_SMOKE_CASES)
+def test_wheel_distribution_public_cli_smoke_matrix(
+    wheel_installed_package: tuple[Path, Path, Path, dict[str, str]],
+    entry_point: str,
+    cli_case: str,
 ) -> None:
-    _target_dir, isolated_cwd, env = installed_package
-    module_generate_json_output = isolated_cwd / "module-json-out"
-    module_generate_json = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "hocrsyngen.cli",
-            "generate",
-            "--count",
-            "1",
-            "--seed",
-            "17",
-            "--output",
-            str(module_generate_json_output),
-            "--format",
-            "json",
-        ],
-        check=True,
+    _wheel_path, target_dir, isolated_cwd, env = wheel_installed_package
+    command = (
+        [str(target_dir / "bin" / "hocrsyngen")]
+        if entry_point == "console-script"
+        else [sys.executable, "-m", "hocrsyngen.cli"]
+    )
+
+    _assert_installed_cli_smoke_case(
+        command=command,
         cwd=isolated_cwd,
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
+        output_root=isolated_cwd / f"wheel-{entry_point}-{cli_case}",
+        cli_case=cli_case,
     )
-    assert module_generate_json.stderr == ""
-    assert json.loads(module_generate_json.stdout) == {
-        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
-        "sample_count": 1,
-        "page_count": 1,
-        "output_path": str(module_generate_json_output),
-        "manifest_path": str(module_generate_json_output / "generation_manifest.json"),
-    }
-    module_generate_json_manifest = json.loads(
-        (module_generate_json_output / "generation_manifest.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    assert "schema_version" not in module_generate_json_manifest

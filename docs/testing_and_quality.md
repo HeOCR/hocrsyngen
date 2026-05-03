@@ -45,6 +45,9 @@ it.
 - Visual smoke checks.
 - Validation errors.
 - Installed package and wheel resource checks.
+- Installed package and wheel public CLI smoke matrix for console-script and
+  `python -m hocrsyngen.cli` entry points across `templates`, `contracts`,
+  `contracts export`, `generate`, and `validate`.
 - No baseline `hocrgen`, network, GPU, or deep-learning dependency.
 
 ## Environmental Requirement
