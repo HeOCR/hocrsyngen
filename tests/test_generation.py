@@ -267,6 +267,7 @@ def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) 
 
 
 def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
+    invalid_template_output = tmp_path / "invalid-template"
     with pytest.raises(ValueError, match="Unsupported synthetic template_id: typo_template"):
         generate_documents(
             count=1,
@@ -274,8 +275,9 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
             template_ids=["typo_template"],
             font_manifest_path=default_font_manifest_path(),
             text_corpus_path=default_text_corpus_path(),
-            output_dir=tmp_path / "synthetic",
+            output_dir=invalid_template_output,
         )
+    assert not invalid_template_output.exists()
 
     font_manifest_path = tmp_path / "fonts.yaml"
     text_corpus_path = tmp_path / "corpus.txt"
@@ -291,11 +293,36 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
             output_dir=tmp_path / "out",
         )
 
+    missing_font_manifest_path = tmp_path / "missing_font_manifest.yaml"
+    missing_font_output = tmp_path / "missing-font-output"
+    missing_font_manifest_path.write_text(
+        'fonts:\n  - id: missing-font\n    file: missing.ttf\n    style: handwritten_like\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Synthetic font file is missing"):
+        generate_documents(
+            count=1,
+            seed=7,
+            template_ids=["printed_letter"],
+            font_manifest_path=missing_font_manifest_path,
+            text_corpus_path=text_corpus_path,
+            output_dir=missing_font_output,
+        )
+    assert not missing_font_output.exists()
+
     with pytest.raises(ValueError, match="seed must be non-negative"):
         generate_batch(count=1, seed=-1, output_dir=tmp_path / "negative-seed")
+    assert not (tmp_path / "negative-seed").exists()
 
     with pytest.raises(ValueError, match="requires at least one template_id"):
         generate_batch(count=1, seed=7, output_dir=tmp_path / "empty-templates", template_ids=[])
+    assert not (tmp_path / "empty-templates").exists()
+
+    file_output = tmp_path / "file-output"
+    file_output.write_text("existing file\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="output path exists and is not a directory"):
+        generate_batch(count=1, seed=7, output_dir=file_output)
+    assert file_output.read_text(encoding="utf-8") == "existing file\n"
 
 
 def test_schema_rejects_backslash_asset_paths(tmp_path: Path) -> None:
