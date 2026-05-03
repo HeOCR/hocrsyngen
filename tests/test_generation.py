@@ -334,7 +334,7 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
     missing_font_manifest_path = tmp_path / "missing_font_manifest.yaml"
     missing_font_output = tmp_path / "missing-font-output"
     missing_font_manifest_path.write_text(
-        "fonts:\n  - id: missing-font\n    file: missing.ttf\n    style: printed\n",
+        "fonts:\n  - id: alef-regular\n    file: missing.ttf\n    style: printed\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="Synthetic font file is missing"):
@@ -352,7 +352,7 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
     invalid_font_output = tmp_path / "invalid-font-output"
     (tmp_path / "invalid.ttf").write_bytes(b"not a font")
     invalid_font_manifest_path.write_text(
-        "fonts:\n  - id: invalid-font\n    file: invalid.ttf\n    style: printed\n",
+        "fonts:\n  - id: alef-regular\n    file: invalid.ttf\n    style: printed\n",
         encoding="utf-8",
     )
     with pytest.raises(
@@ -422,6 +422,11 @@ def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:
         "id": "alef-regular",
         "style": "printed",
     }
+    with pytest.raises(ValueError, match="has style 'handwritten_like'"):
+        _select_font(
+            [{"id": "alef-regular", "style": "handwritten_like"}],
+            "printed_letter",
+        )
     with pytest.raises(ValueError, match="No synthetic font registered"):
         _select_font([{"id": "alef-regular", "style": "printed"}], "handwritten_note")
 

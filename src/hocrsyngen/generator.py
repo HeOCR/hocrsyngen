@@ -44,6 +44,7 @@ class SyntheticRecipe:
     template_id: str
     recipe_id: str
     layout_style: str
+    font_id: str
     font_style: str
     degradation_preset: str
     paper_tone: str
@@ -242,6 +243,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             template_id=template_id,
             recipe_id="printed_letter_form_v1",
             layout_style="printed_form",
+            font_id="alef-regular",
             font_style="printed",
             degradation_preset="office_scan_soft",
             paper_tone="printed",
@@ -253,6 +255,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             template_id=template_id,
             recipe_id="handwritten_note_marginalia_v1",
             layout_style="handwritten_note",
+            font_id="gveret-levin-regular",
             font_style="handwritten_like",
             degradation_preset="notebook_scan_worn",
             paper_tone="handwritten",
@@ -517,11 +520,21 @@ def _draw_document(
 
 
 def _select_font(fonts: list[dict[str, str]], template_id: str) -> dict[str, str]:
-    target_style = _recipe_for_template(template_id).font_style
+    recipe = _recipe_for_template(template_id)
     for font in fonts:
-        if font.get("style") == target_style:
+        if font.get("id") == recipe.font_id and font.get("style") == recipe.font_style:
             return font
-    raise ValueError(f"No synthetic font registered for style: {target_style}")
+    for font in fonts:
+        if font.get("id") == recipe.font_id:
+            raise ValueError(
+                "Synthetic font manifest entry "
+                f"{recipe.font_id!r} has style {font.get('style')!r}; "
+                f"expected {recipe.font_style!r} for template {template_id!r}."
+            )
+    raise ValueError(
+        "No synthetic font registered for "
+        f"template {template_id!r}: id {recipe.font_id!r}, style {recipe.font_style!r}."
+    )
 
 
 def _select_title(template_id: str, index: int) -> str:
