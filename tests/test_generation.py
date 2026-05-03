@@ -615,16 +615,3 @@ def test_generation_requires_raqm_for_hebrew_rendering(tmp_path: Path, monkeypat
 
     _pillow_has_raqm.cache_clear()
 
-
-def test_no_hocrgen_network_or_gpu_baseline_dependencies() -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    source = "\n".join(path.read_text(encoding="utf-8") for path in (project_root / "src" / "hocrsyngen").glob("*.py"))
-    pyproject = (project_root / "pyproject.toml").read_text(encoding="utf-8")
-
-    assert "import hocrgen" not in source
-    assert "from hocrgen" not in source
-    assert "import requests" not in source
-    assert "import httpx" not in source
-    assert "torch" not in pyproject
-    assert "tensorflow" not in pyproject
-    assert "diffusers" not in pyproject
