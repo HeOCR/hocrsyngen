@@ -61,6 +61,16 @@ class SyntheticDocument:
     logical_text: str
 
 
+@dataclass(frozen=True)
+class TemplateCatalogEntry:
+    template_id: str
+    recipe_id: str
+    layout_style: str
+    font_style: str
+    font_id: str
+    degradation_preset: str
+
+
 def load_font_manifest(path: Path) -> dict[str, list[dict[str, str]]]:
     return load_simple_font_manifest(path)
 
@@ -213,6 +223,44 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
 
 def recipe_catalog(template_ids: list[str]) -> dict[str, SyntheticRecipe]:
     return {template_id: _recipe_for_template(template_id) for template_id in template_ids}
+
+
+def _load_font_entries(font_manifest_path: Path) -> list[dict[str, str]]:
+    font_manifest = load_font_manifest(font_manifest_path)
+    fonts = font_manifest.get("fonts")
+    if not isinstance(fonts, list):
+        raise ValueError(f"Synthetic font manifest is missing a valid 'fonts' list: {font_manifest_path}")
+    if not fonts:
+        raise ValueError(f"Synthetic font manifest has no registered fonts: {font_manifest_path}")
+    return fonts
+
+
+def template_catalog(
+    template_ids: list[str] | None = None,
+    *,
+    font_manifest_path: Path | None = None,
+) -> list[TemplateCatalogEntry]:
+    template_ids = DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids
+    recipes = recipe_catalog(template_ids)
+    fonts = _load_font_entries(font_manifest_path or default_font_manifest_path())
+    catalog: list[TemplateCatalogEntry] = []
+    for template_id in template_ids:
+        recipe = recipes[template_id]
+        font_entry = _select_font(fonts, template_id)
+        font_id = str(font_entry.get("id", "")).strip()
+        if not font_id:
+            raise ValueError(f"Synthetic font entry is missing an id for style: {recipe.font_style}")
+        catalog.append(
+            TemplateCatalogEntry(
+                template_id=recipe.template_id,
+                recipe_id=recipe.recipe_id,
+                layout_style=recipe.layout_style,
+                font_style=recipe.font_style,
+                font_id=font_id,
+                degradation_preset=recipe.degradation_preset,
+            )
+        )
+    return catalog
 
 
 def _draw_paper_frame(draw: ImageDraw.ImageDraw, randomizer: random.Random, handwritten: bool) -> None:
@@ -423,13 +471,8 @@ def generate_documents(
 
     _require_raqm()
     randomizer = random.Random(seed)
-    font_manifest = load_font_manifest(font_manifest_path)
-    fonts = font_manifest.get("fonts")
-    if not isinstance(fonts, list):
-        raise ValueError(f"Synthetic font manifest is missing a valid 'fonts' list: {font_manifest_path}")
+    fonts = _load_font_entries(font_manifest_path)
     corpus = load_text_corpus(text_corpus_path)
-    if not fonts:
-        raise ValueError(f"Synthetic font manifest has no registered fonts: {font_manifest_path}")
     if not corpus:
         raise ValueError(f"Synthetic text corpus is empty: {text_corpus_path}")
     font_entries_by_template: dict[str, dict[str, str]] = {}

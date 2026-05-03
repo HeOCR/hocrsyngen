@@ -11,7 +11,12 @@ from typing import Any
 import jsonschema
 from PIL import Image, UnidentifiedImageError
 
-from hocrsyngen.generator import GENERATOR_VERSION
+from hocrsyngen.generator import (
+    DEFAULT_TEMPLATE_IDS,
+    GENERATOR_VERSION,
+    TemplateCatalogEntry,
+    template_catalog,
+)
 from hocrsyngen.io import sha256_file
 from hocrsyngen.manifest import (
     GENERATION_MANIFEST_VERSION,
@@ -48,11 +53,12 @@ def validate_batch(batch_dir: Path) -> ValidationResult:
     payload = _load_manifest_payload(manifest_path)
     _validate_manifest_schema(payload)
     _validate_manifest_constants(payload)
+    governed_templates = _load_governed_template_catalog()
 
     page_count = 0
     for sample_index, sample in enumerate(payload["samples"]):
         _validate_text(sample["text"], sample_index)
-        _validate_sample_constants(sample, sample_index)
+        _validate_sample_constants(sample, sample_index, governed_templates)
         for page_index, page in enumerate(sample["pages"]):
             _validate_page(root, page, sample_index, page_index)
             page_count += 1
@@ -106,7 +112,11 @@ def _validate_manifest_constants(payload: dict[str, Any]) -> None:
         )
 
 
-def _validate_sample_constants(sample: dict[str, Any], sample_index: int) -> None:
+def _validate_sample_constants(
+    sample: dict[str, Any],
+    sample_index: int,
+    governed_templates: dict[str, TemplateCatalogEntry],
+) -> None:
     location = f"samples[{sample_index}]"
     if sample["license"] != PROJECT_SYNTHETIC_LICENSE:
         raise BatchValidationError(f"{location}.license must be PROJECT-SYNTHETIC.")
@@ -121,6 +131,46 @@ def _validate_sample_constants(sample: dict[str, Any], sample_index: int) -> Non
     if sample["recipe_id"] != sample["provenance"]["recipe_id"]:
         raise BatchValidationError(
             f"{location}.recipe_id must match provenance.recipe_id."
+        )
+    _validate_provenance_contract(
+        sample["provenance"], sample_index, governed_templates
+    )
+
+
+def _load_governed_template_catalog() -> dict[str, TemplateCatalogEntry]:
+    try:
+        entries = template_catalog(DEFAULT_TEMPLATE_IDS)
+    except ValueError as exc:
+        raise BatchValidationError(
+            f"Could not load governed template catalog: {exc}"
+        ) from exc
+    return {entry.template_id: entry for entry in entries}
+
+
+def _validate_provenance_contract(
+    provenance: dict[str, Any],
+    sample_index: int,
+    governed_templates: dict[str, TemplateCatalogEntry],
+) -> None:
+    location = f"samples[{sample_index}].provenance"
+    template_id = provenance["template_id"]
+    expected = governed_templates.get(template_id)
+    if expected is None:
+        raise BatchValidationError(
+            f"{location}.template_id is not a governed template: {template_id}"
+        )
+    if provenance["recipe_id"] != expected.recipe_id:
+        raise BatchValidationError(
+            f"{location}.recipe_id must be {expected.recipe_id} for template_id {template_id}."
+        )
+    if provenance["degradation_preset"] != expected.degradation_preset:
+        raise BatchValidationError(
+            f"{location}.degradation_preset must be {expected.degradation_preset} "
+            f"for template_id {template_id}."
+        )
+    if provenance["font_id"] != expected.font_id:
+        raise BatchValidationError(
+            f"{location}.font_id must be {expected.font_id} for template_id {template_id}."
         )
 
 

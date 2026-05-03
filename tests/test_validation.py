@@ -113,6 +113,76 @@ def test_validate_generator_version_mismatch_fails_cleanly(tmp_path: Path) -> No
         validate_batch(batch_dir)
 
 
+def test_validate_rejects_unknown_provenance_template_id(tmp_path: Path) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["template_id"] = "typo_template"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.template_id is not a governed template: typo_template",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_mismatched_sample_and_provenance_recipe_id(
+    tmp_path: Path,
+) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["recipe_id"] = "handwritten_note_marginalia_v1"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.recipe_id must match provenance\.recipe_id",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_known_template_with_wrong_recipe_id(tmp_path: Path) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["recipe_id"] = "handwritten_note_marginalia_v1"
+    payload["samples"][0]["provenance"]["recipe_id"] = "handwritten_note_marginalia_v1"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.recipe_id must be printed_letter_form_v1",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_known_template_with_wrong_degradation_preset(
+    tmp_path: Path,
+) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["degradation_preset"] = "notebook_scan_worn"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.degradation_preset must be office_scan_soft",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_known_template_with_wrong_font_id(tmp_path: Path) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["font_id"] = "gveret-levin-regular"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.font_id must be alef-regular",
+    ):
+        validate_batch(batch_dir)
+
+
 @pytest.mark.parametrize(
     "asset_path", ["/tmp/page.jpg", "../page.jpg", "assets\\page.jpg"]
 )
