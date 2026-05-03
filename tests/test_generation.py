@@ -8,11 +8,13 @@ import jsonschema
 import pytest
 from PIL import Image, ImageDraw
 
+import hocrsyngen.generator as generator_module
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.generator import (
     CANVAS_SIZE,
     _font_path,
     _load_font,
+    _pillow_has_raqm,
     _rtl_display_text,
     _select_font,
     _wrap_hebrew_text,
@@ -75,6 +77,14 @@ def test_generation_is_deterministic_for_fixed_seed(tmp_path: Path) -> None:
         sample["pages"][0]["sha256"] for sample in second["samples"]
     ]
     assert first["samples"][0]["recipe_id"] != first["samples"][1]["recipe_id"]
+
+
+def test_count_zero_emits_empty_manifest(tmp_path: Path) -> None:
+    output_dir = tmp_path / "empty"
+    payload = generate_batch(count=0, seed=17, output_dir=output_dir).to_dict()
+
+    assert payload["samples"] == []
+    assert _load_manifest(output_dir)["samples"] == []
 
 
 def test_manifest_text_preserves_hebrew_logical_order_rtl_metadata(tmp_path: Path) -> None:
@@ -196,6 +206,12 @@ def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:
         _font_path(manifest_path, {"id": "broken-font"})
     with pytest.raises(ValueError, match="Synthetic font file is missing"):
         _font_path(manifest_path, {"id": "broken-font", "file": "missing.ttf"})
+    with pytest.raises(ValueError, match="flat relative filename"):
+        _font_path(manifest_path, {"id": "broken-font", "file": "../escape.ttf"})
+    with pytest.raises(ValueError, match="flat relative filename"):
+        _font_path(manifest_path, {"id": "broken-font", "file": "nested/font.ttf"})
+    with pytest.raises(ValueError, match="flat relative filename"):
+        _font_path(manifest_path, {"id": "broken-font", "file": "nested\\font.ttf"})
     with pytest.raises(ValueError, match="No synthetic font registered"):
         _select_font([{"id": "alef-regular", "style": "printed"}], "printed_letter")
 
@@ -204,6 +220,16 @@ def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:
     font = _load_font(_font_path(default_font_manifest_path(), {"id": "alef-regular", "file": "Alef-Regular.ttf"}), 42)
     assert _wrap_hebrew_text(draw, "", font, max_width=200) == [""]
     assert len(_wrap_hebrew_text(draw, "מכתב מנהלי רישום ארכיוני הודעה פנימית", font, max_width=100)) > 1
+
+
+def test_generation_requires_raqm_for_hebrew_rendering(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _pillow_has_raqm.cache_clear()
+    monkeypatch.setattr(generator_module.features, "check", lambda feature: False if feature == "raqm" else True)
+
+    with pytest.raises(RuntimeError, match="requires Pillow with libraqm support"):
+        generate_batch(count=1, seed=17, output_dir=tmp_path)
+
+    _pillow_has_raqm.cache_clear()
 
 
 def test_no_hocrgen_network_or_gpu_baseline_dependencies() -> None:

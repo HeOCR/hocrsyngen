@@ -5,9 +5,9 @@ import random
 import unicodedata
 from dataclasses import dataclass
 from functools import lru_cache
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
-from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageFont, features
 
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.io import load_simple_font_manifest, sha256_file
@@ -73,10 +73,23 @@ def _font_path(manifest_path: Path, font_entry: dict[str, str]) -> Path:
     file_name = str(font_entry.get("file", "")).strip()
     if not file_name:
         raise ValueError(f"Synthetic font entry is missing a file reference: {font_entry.get('id', '<unknown>')}")
+    file_path = PurePosixPath(file_name)
+    if file_path.is_absolute() or file_path.name != file_name or "\\" in file_name or ".." in file_path.parts:
+        raise ValueError(f"Synthetic font file reference must be a flat relative filename: {file_name}")
     path = (manifest_path.parent / file_name).resolve()
     if not path.exists():
         raise ValueError(f"Synthetic font file is missing: {path}")
     return path
+
+
+@lru_cache(maxsize=1)
+def _pillow_has_raqm() -> bool:
+    return bool(features.check("raqm"))
+
+
+def _require_raqm() -> None:
+    if not _pillow_has_raqm():
+        raise RuntimeError("hocrsyngen requires Pillow with libraqm support for Hebrew RTL rendering.")
 
 
 @lru_cache(maxsize=32)
@@ -85,6 +98,7 @@ def _load_font(font_path: Path, size: int) -> ImageFont.FreeTypeFont:
 
 
 def _wrap_hebrew_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
+    _require_raqm()
     words = text.split()
     if not words:
         return [""]
@@ -119,6 +133,7 @@ def _draw_rtl_text(
     fill: tuple[int, int, int] | tuple[int, int, int, int],
     anchor: str = "ra",
 ) -> None:
+    _require_raqm()
     draw.text(xy, _rtl_display_text(text), font=font, fill=fill, anchor=anchor, direction="rtl")
 
 
@@ -389,6 +404,7 @@ def generate_documents(
     text_corpus_path: Path,
     output_dir: Path,
 ) -> list[SyntheticDocument]:
+    _require_raqm()
     if seed < 0:
         raise ValueError("Synthetic generation seed must be non-negative.")
     randomizer = random.Random(seed)
