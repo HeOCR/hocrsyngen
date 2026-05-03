@@ -12,11 +12,6 @@ import jsonschema
 import pytest
 
 from hocrsyngen.generator import template_catalog
-from hocrsyngen.manifest import (
-    GENERATION_MANIFEST_VERSION,
-    PROJECT_SYNTHETIC_LICENSE,
-    SYNTHETIC_DISCLOSURE,
-)
 from hocrsyngen.validation import BatchValidationError, validate_batch
 
 
@@ -28,6 +23,13 @@ SCHEMA_PATH = (
     / "hocrsyngen"
     / "schemas"
     / "generation_manifest.schema.json"
+)
+EXPECTED_MANIFEST_VERSION = "1.0"
+EXPECTED_GENERATOR_NAME = "hocrsyngen"
+EXPECTED_PROJECT_SYNTHETIC_LICENSE = "PROJECT-SYNTHETIC"
+EXPECTED_SYNTHETIC_DISCLOSURE = (
+    "Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for "
+    "hocrgen governance and is not real-source provenance."
 )
 
 EXPECTED_TOP_LEVEL_FIELDS = {
@@ -130,6 +132,12 @@ def _fixture_payload() -> dict[str, Any]:
         return _load_packaged_fixture_manifest(batch_dir)
 
 
+def _copy_packaged_contract_fixture(target: Path) -> Path:
+    with resources.as_file(_packaged_contract_fixture()) as batch_dir:
+        shutil.copytree(batch_dir, target)
+    return target
+
+
 def _with_field_deleted(payload: dict[str, Any], path: tuple[Any, ...]) -> dict[str, Any]:
     changed = copy.deepcopy(payload)
     target: Any = changed
@@ -219,10 +227,7 @@ def test_manifest_contract_schema_rejects_unknown_fields_at_every_object_level()
 def test_manifest_contract_validation_reports_required_field_drift(
     path: tuple[Any, ...], location: str, tmp_path: Path
 ) -> None:
-    with resources.as_file(_packaged_contract_fixture()) as batch_dir:
-        target = tmp_path / "fixture-batch"
-
-        shutil.copytree(batch_dir, target)
+    target = _copy_packaged_contract_fixture(tmp_path / "fixture-batch")
 
     manifest_path = target / "generation_manifest.json"
     payload = _with_field_deleted(
@@ -244,20 +249,31 @@ def test_manifest_contract_documented_constants_match_schema_and_validation() ->
     doc = _load_contract_doc()
     schema = _load_schema()
 
-    assert f'must be `"{GENERATION_MANIFEST_VERSION}"`' in doc
-    assert f'must be `"{PROJECT_SYNTHETIC_LICENSE}"`' in doc
-    assert SYNTHETIC_DISCLOSURE in doc
-    assert "`generator_name`: must be `\"hocrsyngen\"`." in doc
+    assert f'must be `"{EXPECTED_MANIFEST_VERSION}"`' in doc
+    assert f'must be `"{EXPECTED_PROJECT_SYNTHETIC_LICENSE}"`' in doc
+    assert EXPECTED_SYNTHETIC_DISCLOSURE in doc
+    assert f"`generator_name`: must be `\"{EXPECTED_GENERATOR_NAME}\"`." in doc
     assert "`media_type`: must be `image/jpeg`." in doc
     assert "`script`: must be `Hebr`." in doc
     assert "`language`: must be `he`." in doc
     assert "`direction`: must be `rtl`." in doc
     assert "`unicode_normalization`: must be `NFC`." in doc
 
-    assert schema["properties"]["manifest_version"]["const"] == GENERATION_MANIFEST_VERSION
-    assert schema["properties"]["generator_name"]["const"] == "hocrsyngen"
-    assert schema["properties"]["license"]["const"] == PROJECT_SYNTHETIC_LICENSE
-    assert schema["$defs"]["sample"]["properties"]["license"]["const"] == PROJECT_SYNTHETIC_LICENSE
+    assert schema["properties"]["manifest_version"]["const"] == EXPECTED_MANIFEST_VERSION
+    assert schema["properties"]["generator_name"]["const"] == EXPECTED_GENERATOR_NAME
+    assert schema["properties"]["license"]["const"] == EXPECTED_PROJECT_SYNTHETIC_LICENSE
+    assert (
+        schema["properties"]["synthetic_disclosure"]["const"]
+        == EXPECTED_SYNTHETIC_DISCLOSURE
+    )
+    assert (
+        schema["$defs"]["sample"]["properties"]["license"]["const"]
+        == EXPECTED_PROJECT_SYNTHETIC_LICENSE
+    )
+    assert (
+        schema["$defs"]["sample"]["properties"]["synthetic_disclosure"]["const"]
+        == EXPECTED_SYNTHETIC_DISCLOSURE
+    )
     assert schema["$defs"]["pageAsset"]["properties"]["media_type"]["const"] == "image/jpeg"
     assert schema["$defs"]["textMetadata"]["properties"]["script"]["const"] == "Hebr"
     assert schema["$defs"]["textMetadata"]["properties"]["language"]["const"] == "he"
@@ -265,11 +281,46 @@ def test_manifest_contract_documented_constants_match_schema_and_validation() ->
     assert schema["$defs"]["textMetadata"]["properties"]["unicode_normalization"]["const"] == "NFC"
 
     payload = _fixture_payload()
-    assert payload["synthetic_disclosure"] == SYNTHETIC_DISCLOSURE
+    assert payload["synthetic_disclosure"] == EXPECTED_SYNTHETIC_DISCLOSURE
     assert all(
-        sample["synthetic_disclosure"] == SYNTHETIC_DISCLOSURE
+        sample["synthetic_disclosure"] == EXPECTED_SYNTHETIC_DISCLOSURE
         for sample in payload["samples"]
     )
+
+
+@pytest.mark.parametrize(
+    ("path", "location"),
+    [
+        (("synthetic_disclosure",), "$"),
+        (("samples", 0, "synthetic_disclosure"), "$.samples[0]"),
+    ],
+)
+def test_manifest_contract_schema_rejects_synthetic_disclosure_drift(
+    path: tuple[Any, ...], location: str, tmp_path: Path
+) -> None:
+    schema = _load_schema()
+    payload = _fixture_payload()
+    target: Any = payload
+    for part in path[:-1]:
+        target = target[part]
+    target[path[-1]] = "Generated synthetic sample with stale disclosure text."
+
+    errors = list(jsonschema.Draft202012Validator(schema).iter_errors(payload))
+    assert len(errors) == 1
+    assert errors[0].validator == "const"
+
+    batch_dir = _copy_packaged_contract_fixture(tmp_path / "fixture-batch")
+    manifest_path = batch_dir / "generation_manifest.json"
+    manifest_path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        BatchValidationError,
+        match=rf"Manifest schema validation failed at {re.escape(location)}",
+    ):
+        validate_batch(batch_dir)
 
 
 def test_manifest_contract_documented_governed_templates_match_catalog() -> None:
@@ -296,11 +347,11 @@ def test_packaged_generation_manifest_fixture_matches_v1_contract_expectations()
 
         assert set(payload) == EXPECTED_TOP_LEVEL_FIELDS
         assert payload == {
-            "generator_name": "hocrsyngen",
-            "license": PROJECT_SYNTHETIC_LICENSE,
-            "manifest_version": GENERATION_MANIFEST_VERSION,
+            "generator_name": EXPECTED_GENERATOR_NAME,
+            "license": EXPECTED_PROJECT_SYNTHETIC_LICENSE,
+            "manifest_version": EXPECTED_MANIFEST_VERSION,
             "samples": payload["samples"],
-            "synthetic_disclosure": SYNTHETIC_DISCLOSURE,
+            "synthetic_disclosure": EXPECTED_SYNTHETIC_DISCLOSURE,
         }
         assert "schema_version" not in payload
         assert "generation_report" not in payload
