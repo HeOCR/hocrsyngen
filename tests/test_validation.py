@@ -6,8 +6,9 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
+import hocrsyngen.validation as validation_module
 from hocrsyngen.cli import main
-from hocrsyngen.generator import generate_batch
+from hocrsyngen.generator import generate_batch, template_catalog
 from hocrsyngen.io import sha256_file
 from hocrsyngen.validation import BatchValidationError, validate_batch
 
@@ -110,6 +111,132 @@ def test_validate_generator_version_mismatch_fails_cleanly(tmp_path: Path) -> No
     _write_manifest(batch_dir, payload)
 
     with pytest.raises(BatchValidationError, match="generator_version"):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_unknown_provenance_template_id(tmp_path: Path) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["template_id"] = "typo_template"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.template_id is not a governed template: typo_template",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_mismatched_sample_and_provenance_recipe_id(
+    tmp_path: Path,
+) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["recipe_id"] = "handwritten_note_marginalia_v1"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.recipe_id must match provenance\.recipe_id",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_known_template_with_wrong_recipe_id(tmp_path: Path) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["recipe_id"] = "handwritten_note_marginalia_v1"
+    payload["samples"][0]["provenance"]["recipe_id"] = "handwritten_note_marginalia_v1"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.recipe_id must be printed_letter_form_v1",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_known_template_with_wrong_degradation_preset(
+    tmp_path: Path,
+) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["degradation_preset"] = "notebook_scan_worn"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.degradation_preset must be office_scan_soft",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_known_template_with_wrong_font_id(tmp_path: Path) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["font_id"] = "gveret-levin-regular"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.font_id must be alef-regular",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_font_id_uses_governed_font_manifest_resolution(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    batch_dir = _generated_batch(tmp_path)
+    font_manifest_path = tmp_path / "fonts.yaml"
+    (tmp_path / "AltPrinted.ttf").write_bytes(
+        (
+            Path(__file__).resolve().parents[1]
+            / "src"
+            / "hocrsyngen"
+            / "data"
+            / "synthetic"
+            / "fonts"
+            / "Alef-Regular.ttf"
+        ).read_bytes()
+    )
+    font_manifest_path.write_text(
+        "fonts:\n"
+        "  - id: alt-printed\n"
+        "    file: AltPrinted.ttf\n"
+        "    style: printed\n"
+        "  - id: gveret-levin-regular\n"
+        "    file: AltPrinted.ttf\n"
+        "    style: handwritten_like\n",
+        encoding="utf-8",
+    )
+
+    def changed_catalog(template_ids: list[str]):
+        return template_catalog(template_ids, font_manifest_path=font_manifest_path)
+
+    monkeypatch.setattr(validation_module, "template_catalog", changed_catalog)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.font_id must be alt-printed",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_wraps_governed_catalog_resource_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    batch_dir = _generated_batch(tmp_path)
+
+    def fail_catalog(_template_ids: list[str]):
+        raise FileNotFoundError("missing packaged font manifest")
+
+    monkeypatch.setattr(validation_module, "template_catalog", fail_catalog)
+
+    with pytest.raises(
+        BatchValidationError,
+        match="Could not load governed template catalog: missing packaged font manifest",
+    ):
         validate_batch(batch_dir)
 
 

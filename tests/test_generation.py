@@ -21,6 +21,7 @@ from hocrsyngen.generator import (
     _wrap_hebrew_text,
     generate_batch,
     generate_documents,
+    template_catalog,
     write_manifest,
 )
 from hocrsyngen.manifest import TextMetadata
@@ -248,6 +249,19 @@ def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Pat
     for document in documents:
         assert document.path.is_file()
         assert not PurePosixPath(document.asset_path).is_absolute()
+
+
+def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
+    catalog = {entry.template_id: entry for entry in template_catalog()}
+
+    assert catalog["printed_letter"].recipe_id == "printed_letter_form_v1"
+    assert catalog["printed_letter"].degradation_preset == "office_scan_soft"
+    assert catalog["printed_letter"].font_style == "printed"
+    assert catalog["printed_letter"].font_id == "alef-regular"
+    assert catalog["handwritten_note"].recipe_id == "handwritten_note_marginalia_v1"
+    assert catalog["handwritten_note"].degradation_preset == "notebook_scan_worn"
+    assert catalog["handwritten_note"].font_style == "handwritten_like"
+    assert catalog["handwritten_note"].font_id == "gveret-levin-regular"
 
 
 def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) -> None:
