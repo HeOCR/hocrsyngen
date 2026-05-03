@@ -7,15 +7,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path, PurePosixPath
 
-from PIL import (
-    Image,
-    ImageChops,
-    ImageDraw,
-    ImageEnhance,
-    ImageFilter,
-    ImageFont,
-    features,
-)
+from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageFont, features
 
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.io import load_simple_font_manifest, sha256_file
@@ -34,7 +26,7 @@ CANVAS_SIZE = (1200, 1600)
 PAPER_MARGIN = 96
 DEFAULT_TEMPLATE_IDS = ["printed_letter", "handwritten_note"]
 
-PRINTED_TITLES = ["מכתב מנהלי", 'דו"ח קבלה', "רישום ארכיוני"]
+PRINTED_TITLES = ["מכתב מנהלי", "דו\"ח קבלה", "רישום ארכיוני"]
 HANDWRITTEN_TITLES = ["פנקס הערות", "רישום קצר", "הודעה פנימית"]
 FOOTER_LABELS = ["סימן", "רישום", "עמוד"]
 
@@ -44,7 +36,6 @@ class SyntheticRecipe:
     template_id: str
     recipe_id: str
     layout_style: str
-    font_id: str
     font_style: str
     degradation_preset: str
     paper_tone: str
@@ -75,29 +66,16 @@ def load_font_manifest(path: Path) -> dict[str, list[dict[str, str]]]:
 
 
 def load_text_corpus(path: Path) -> list[str]:
-    return [
-        line.strip()
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    return [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 def _font_path(manifest_path: Path, font_entry: dict[str, str]) -> Path:
     file_name = str(font_entry.get("file", "")).strip()
     if not file_name:
-        raise ValueError(
-            f"Synthetic font entry is missing a file reference: {font_entry.get('id', '<unknown>')}"
-        )
+        raise ValueError(f"Synthetic font entry is missing a file reference: {font_entry.get('id', '<unknown>')}")
     file_path = PurePosixPath(file_name)
-    if (
-        file_path.is_absolute()
-        or file_path.name != file_name
-        or "\\" in file_name
-        or ".." in file_path.parts
-    ):
-        raise ValueError(
-            f"Synthetic font file reference must be a flat relative filename: {file_name}"
-        )
+    if file_path.is_absolute() or file_path.name != file_name or "\\" in file_name or ".." in file_path.parts:
+        raise ValueError(f"Synthetic font file reference must be a flat relative filename: {file_name}")
     path = (manifest_path.parent / file_name).resolve()
     if not path.exists():
         raise ValueError(f"Synthetic font file is missing: {path}")
@@ -111,9 +89,7 @@ def _pillow_has_raqm() -> bool:
 
 def _require_raqm() -> None:
     if not _pillow_has_raqm():
-        raise RuntimeError(
-            "hocrsyngen requires Pillow with libraqm support for Hebrew RTL rendering."
-        )
+        raise RuntimeError("hocrsyngen requires Pillow with libraqm support for Hebrew RTL rendering.")
 
 
 @lru_cache(maxsize=32)
@@ -125,14 +101,10 @@ def _validate_font(font_path: Path) -> None:
     try:
         _load_font(font_path, 16)
     except OSError as exc:
-        raise ValueError(
-            f"Synthetic font file is invalid or unreadable: {font_path}"
-        ) from exc
+        raise ValueError(f"Synthetic font file is invalid or unreadable: {font_path}") from exc
 
 
-def _wrap_hebrew_text(
-    draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, max_width: int
-) -> list[str]:
+def _wrap_hebrew_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
     _require_raqm()
     words = text.split()
     if not words:
@@ -141,9 +113,7 @@ def _wrap_hebrew_text(
     current = words[0]
     for word in words[1:]:
         candidate = f"{current} {word}"
-        left, _top, right, _bottom = draw.textbbox(
-            (0, 0), candidate, font=font, direction="rtl"
-        )
+        left, _top, right, _bottom = draw.textbbox((0, 0), candidate, font=font, direction="rtl")
         width = right - left
         if width <= max_width:
             current = candidate
@@ -171,19 +141,10 @@ def _draw_rtl_text(
     anchor: str = "ra",
 ) -> None:
     _require_raqm()
-    draw.text(
-        xy,
-        _rtl_display_text(text),
-        font=font,
-        fill=fill,
-        anchor=anchor,
-        direction="rtl",
-    )
+    draw.text(xy, _rtl_display_text(text), font=font, fill=fill, anchor=anchor, direction="rtl")
 
 
-def _paper_background(
-    randomizer: random.Random, size: tuple[int, int], tone: str
-) -> Image.Image:
+def _paper_background(randomizer: random.Random, size: tuple[int, int], tone: str) -> Image.Image:
     base = (246, 241, 230) if tone == "printed" else (243, 235, 220)
     image = Image.new("RGB", size, base)
     noise = Image.frombytes("L", size, randomizer.randbytes(size[0] * size[1]))
@@ -194,22 +155,13 @@ def _paper_background(
 
 
 def _apply_grain(image: Image.Image, randomizer: random.Random) -> Image.Image:
-    noise = Image.frombytes(
-        "L", image.size, randomizer.randbytes(image.size[0] * image.size[1])
-    )
+    noise = Image.frombytes("L", image.size, randomizer.randbytes(image.size[0] * image.size[1]))
     noise = noise.point(lambda value: int(96 + ((value - 128) * 0.22)))
-    textured = ImageChops.add_modulo(
-        image.convert("RGB"), Image.merge("RGB", (noise, noise, noise))
-    )
+    textured = ImageChops.add_modulo(image.convert("RGB"), Image.merge("RGB", (noise, noise, noise)))
     return Image.blend(image, textured, alpha=0.08)
 
 
-def _degrade(
-    image: Image.Image,
-    randomizer: random.Random,
-    background: tuple[int, int, int],
-    preset: str,
-) -> Image.Image:
+def _degrade(image: Image.Image, randomizer: random.Random, background: tuple[int, int, int], preset: str) -> Image.Image:
     if preset == "notebook_scan_worn":
         angle_range = 1.5
         blur_range = (0.25, 0.75)
@@ -224,12 +176,8 @@ def _degrade(
         grain_passes = 1
 
     angle = randomizer.uniform(-angle_range, angle_range)
-    degraded = image.rotate(
-        angle, resample=Image.Resampling.BICUBIC, expand=False, fillcolor=background
-    )
-    degraded = degraded.filter(
-        ImageFilter.GaussianBlur(radius=randomizer.uniform(*blur_range))
-    )
+    degraded = image.rotate(angle, resample=Image.Resampling.BICUBIC, expand=False, fillcolor=background)
+    degraded = degraded.filter(ImageFilter.GaussianBlur(radius=randomizer.uniform(*blur_range)))
     for _ in range(grain_passes):
         degraded = _apply_grain(degraded, randomizer)
     degraded = ImageEnhance.Contrast(degraded).enhance(contrast)
@@ -243,7 +191,6 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             template_id=template_id,
             recipe_id="printed_letter_form_v1",
             layout_style="printed_form",
-            font_id="alef-regular",
             font_style="printed",
             degradation_preset="office_scan_soft",
             paper_tone="printed",
@@ -255,7 +202,6 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             template_id=template_id,
             recipe_id="handwritten_note_marginalia_v1",
             layout_style="handwritten_note",
-            font_id="gveret-levin-regular",
             font_style="handwritten_like",
             degradation_preset="notebook_scan_worn",
             paper_tone="handwritten",
@@ -266,57 +212,34 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
 
 
 def recipe_catalog(template_ids: list[str]) -> dict[str, SyntheticRecipe]:
-    return {
-        template_id: _recipe_for_template(template_id) for template_id in template_ids
-    }
+    return {template_id: _recipe_for_template(template_id) for template_id in template_ids}
 
 
-def _draw_paper_frame(
-    draw: ImageDraw.ImageDraw, randomizer: random.Random, handwritten: bool
-) -> None:
+def _draw_paper_frame(draw: ImageDraw.ImageDraw, randomizer: random.Random, handwritten: bool) -> None:
     edge = (193, 181, 158) if handwritten else (203, 195, 176)
     shadow = (220, 211, 191) if handwritten else (226, 219, 202)
     left = PAPER_MARGIN - randomizer.randint(8, 18)
     top = PAPER_MARGIN - randomizer.randint(4, 16)
     right = CANVAS_SIZE[0] - PAPER_MARGIN + randomizer.randint(8, 16)
     bottom = CANVAS_SIZE[1] - PAPER_MARGIN + randomizer.randint(6, 18)
-    draw.rectangle(
-        (left + 10, top + 12, right + 10, bottom + 12), outline=shadow, width=3
-    )
+    draw.rectangle((left + 10, top + 12, right + 10, bottom + 12), outline=shadow, width=3)
     draw.rectangle((left, top, right, bottom), outline=edge, width=2)
     if not handwritten:
         draw.line((left + 36, top, left + 36, bottom), fill=(224, 214, 195), width=2)
 
 
-def _draw_creased_paper(
-    draw: ImageDraw.ImageDraw, randomizer: random.Random, handwritten: bool
-) -> None:
+def _draw_creased_paper(draw: ImageDraw.ImageDraw, randomizer: random.Random, handwritten: bool) -> None:
     crease_color = (225, 216, 196) if handwritten else (231, 224, 207)
     for _ in range(3 if handwritten else 2):
         x = randomizer.randint(PAPER_MARGIN + 40, CANVAS_SIZE[0] - PAPER_MARGIN - 40)
         wobble = randomizer.randint(-12, 12)
-        draw.line(
-            (x, PAPER_MARGIN, x + wobble, CANVAS_SIZE[1] - PAPER_MARGIN),
-            fill=crease_color,
-            width=1,
-        )
+        draw.line((x, PAPER_MARGIN, x + wobble, CANVAS_SIZE[1] - PAPER_MARGIN), fill=crease_color, width=1)
     for _ in range(2):
         y = randomizer.randint(PAPER_MARGIN + 80, CANVAS_SIZE[1] - PAPER_MARGIN - 80)
-        draw.line(
-            (
-                PAPER_MARGIN,
-                y,
-                CANVAS_SIZE[0] - PAPER_MARGIN,
-                y + randomizer.randint(-8, 8),
-            ),
-            fill=crease_color,
-            width=1,
-        )
+        draw.line((PAPER_MARGIN, y, CANVAS_SIZE[0] - PAPER_MARGIN, y + randomizer.randint(-8, 8)), fill=crease_color, width=1)
 
 
-def _draw_stains(
-    image: Image.Image, randomizer: random.Random, handwritten: bool
-) -> None:
+def _draw_stains(image: Image.Image, randomizer: random.Random, handwritten: bool) -> None:
     overlay = Image.new("RGBA", image.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
     count = 5 if handwritten else 3
@@ -330,9 +253,7 @@ def _draw_stains(
     image.alpha_composite(overlay)
 
 
-def _draw_printed_form_guides(
-    draw: ImageDraw.ImageDraw, randomizer: random.Random
-) -> None:
+def _draw_printed_form_guides(draw: ImageDraw.ImageDraw, randomizer: random.Random) -> None:
     guide = (184, 174, 154)
     faint = (215, 207, 188)
     left = PAPER_MARGIN + 56
@@ -348,50 +269,27 @@ def _draw_printed_form_guides(
     box_top = top + 5 * row_height + 54
     draw.rectangle((left, box_top, right, box_top + 220), outline=faint, width=2)
     for offset in (180, 390, 620):
-        draw.line(
-            (right - offset, box_top, right - offset, box_top + 220),
-            fill=faint,
-            width=1,
-        )
+        draw.line((right - offset, box_top, right - offset, box_top + 220), fill=faint, width=1)
 
 
-def _draw_stamp(
-    draw: ImageDraw.ImageDraw, randomizer: random.Random, font: ImageFont.FreeTypeFont
-) -> None:
+def _draw_stamp(draw: ImageDraw.ImageDraw, randomizer: random.Random, font: ImageFont.FreeTypeFont) -> None:
     center_x = PAPER_MARGIN + randomizer.randint(150, 260)
     center_y = PAPER_MARGIN + randomizer.randint(135, 245)
     radius_x = randomizer.randint(92, 118)
     radius_y = randomizer.randint(44, 58)
     color = (129, 47, 41)
-    draw.ellipse(
-        (
-            center_x - radius_x,
-            center_y - radius_y,
-            center_x + radius_x,
-            center_y + radius_y,
-        ),
-        outline=color,
-        width=4,
-    )
+    draw.ellipse((center_x - radius_x, center_y - radius_y, center_x + radius_x, center_y + radius_y), outline=color, width=4)
     _draw_rtl_text(draw, (center_x + 62, center_y - 13), "נבדק", font=font, fill=color)
 
 
-def _draw_handwritten_guides(
-    draw: ImageDraw.ImageDraw, randomizer: random.Random
-) -> None:
+def _draw_handwritten_guides(draw: ImageDraw.ImageDraw, randomizer: random.Random) -> None:
     guide = (209, 198, 177)
     for row in range(10):
         y = PAPER_MARGIN + 210 + row * 92 + randomizer.randint(-5, 5)
-        draw.line(
-            (PAPER_MARGIN + 65, y, CANVAS_SIZE[0] - PAPER_MARGIN - 70, y),
-            fill=guide,
-            width=1,
-        )
+        draw.line((PAPER_MARGIN + 65, y, CANVAS_SIZE[0] - PAPER_MARGIN - 70, y), fill=guide, width=1)
 
 
-def _draw_marginalia(
-    draw: ImageDraw.ImageDraw, randomizer: random.Random, font: ImageFont.FreeTypeFont
-) -> None:
+def _draw_marginalia(draw: ImageDraw.ImageDraw, randomizer: random.Random, font: ImageFont.FreeTypeFont) -> None:
     notes = ["נבדק", "להמשך", "עותק"]
     x = PAPER_MARGIN + randomizer.randint(60, 150)
     y = PAPER_MARGIN + randomizer.randint(430, 680)
@@ -401,14 +299,10 @@ def _draw_marginalia(
     for _ in range(2):
         sx = x + randomizer.randint(5, 95)
         sy = y + randomizer.randint(60, 140)
-        draw.arc(
-            (sx, sy, sx + 70, sy + 32), start=190, end=345, fill=(94, 72, 50), width=2
-        )
+        draw.arc((sx, sy, sx + 70, sy + 32), start=190, end=345, fill=(94, 72, 50), width=2)
 
 
-def _draw_handwritten_underline(
-    draw: ImageDraw.ImageDraw, randomizer: random.Random, x: int, y: int, width: int
-) -> None:
+def _draw_handwritten_underline(draw: ImageDraw.ImageDraw, randomizer: random.Random, x: int, y: int, width: int) -> None:
     points = []
     for step in range(0, width, 24):
         points.append((x - step, y + randomizer.randint(-2, 3)))
@@ -428,9 +322,7 @@ def _draw_document(
     form_layout = recipe.layout_style == "printed_form"
     handwritten_text = recipe.font_style == "handwritten_like"
     background = (246, 241, 230) if form_layout else (243, 235, 220)
-    image = _paper_background(randomizer, CANVAS_SIZE, recipe.paper_tone).convert(
-        "RGBA"
-    )
+    image = _paper_background(randomizer, CANVAS_SIZE, recipe.paper_tone).convert("RGBA")
     draw = ImageDraw.Draw(image)
 
     title_font = _load_font(font_path, 62 if not handwritten_text else 66)
@@ -450,9 +342,7 @@ def _draw_document(
 
     title_x = CANVAS_SIZE[0] - PAPER_MARGIN - randomizer.randint(0, 24)
     title_y = PAPER_MARGIN + randomizer.randint(4, 24)
-    _draw_rtl_text(
-        draw, (title_x, title_y), title, font=title_font, fill=(34, 29, 24, 255)
-    )
+    _draw_rtl_text(draw, (title_x, title_y), title, font=title_font, fill=(34, 29, 24, 255))
 
     body_top = title_y + (132 if form_layout else 118)
     max_width = CANVAS_SIZE[0] - (2 * PAPER_MARGIN) - 40
@@ -464,77 +354,39 @@ def _draw_document(
     start_x = CANVAS_SIZE[0] - PAPER_MARGIN - randomizer.randint(0, 20)
     for index, line in enumerate(wrapped_lines):
         x = start_x - randomizer.randint(0, 28 if handwritten_text else 6)
-        y = (
-            body_top
-            + index * line_height
-            + randomizer.randint(
-                -10 if handwritten_text else -2, 8 if handwritten_text else 2
-            )
-        )
+        y = body_top + index * line_height + randomizer.randint(-10 if handwritten_text else -2, 8 if handwritten_text else 2)
         ink = randomizer.randint(-8, 7)
         fill = (max(18, 33 + ink), max(16, 28 + ink), max(12, 23 + ink), 255)
         _draw_rtl_text(draw, (x, y), line, font=body_font, fill=fill)
         if not form_layout and index in {0, len(wrapped_lines) - 1}:
-            _draw_handwritten_underline(
-                draw, randomizer, x - 5, y + 52, min(360, max_width // 2)
-            )
+            _draw_handwritten_underline(draw, randomizer, x - 5, y + 52, min(360, max_width // 2))
 
     footer_x = CANVAS_SIZE[0] - PAPER_MARGIN - randomizer.randint(12, 48)
     footer_y = CANVAS_SIZE[1] - PAPER_MARGIN - randomizer.randint(8, 24)
-    _draw_rtl_text(
-        draw, (footer_x, footer_y), footer, font=footer_font, fill=(93, 82, 70, 255)
-    )
+    _draw_rtl_text(draw, (footer_x, footer_y), footer, font=footer_font, fill=(93, 82, 70, 255))
 
     if not form_layout:
         for _ in range(3):
-            x = randomizer.randint(
-                PAPER_MARGIN + 120, CANVAS_SIZE[0] - PAPER_MARGIN - 180
-            )
-            y = randomizer.randint(
-                CANVAS_SIZE[1] - PAPER_MARGIN - 220, CANVAS_SIZE[1] - PAPER_MARGIN - 120
-            )
+            x = randomizer.randint(PAPER_MARGIN + 120, CANVAS_SIZE[0] - PAPER_MARGIN - 180)
+            y = randomizer.randint(CANVAS_SIZE[1] - PAPER_MARGIN - 220, CANVAS_SIZE[1] - PAPER_MARGIN - 120)
             radius = randomizer.randint(18, 34)
-            draw.arc(
-                (x, y, x + radius * 3, y + radius),
-                start=180,
-                end=360,
-                fill=(63, 50, 38, 255),
-                width=2,
-            )
+            draw.arc((x, y, x + radius * 3, y + radius), start=180, end=360, fill=(63, 50, 38, 255), width=2)
     else:
         for column in range(3):
             x = CANVAS_SIZE[0] - PAPER_MARGIN - 180 - (column * 220)
             y = CANVAS_SIZE[1] - PAPER_MARGIN - 160
             draw.line((x - 120, y, x, y), fill=(132, 121, 102, 255), width=2)
-            _draw_rtl_text(
-                draw,
-                (x, y + 12),
-                "אישור",
-                font=annotation_font,
-                fill=(104, 92, 76, 255),
-            )
+            _draw_rtl_text(draw, (x, y + 12), "אישור", font=annotation_font, fill=(104, 92, 76, 255))
 
-    return _degrade(
-        image.convert("RGB"), randomizer, background, recipe.degradation_preset
-    )
+    return _degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset)
 
 
 def _select_font(fonts: list[dict[str, str]], template_id: str) -> dict[str, str]:
-    recipe = _recipe_for_template(template_id)
+    target_style = _recipe_for_template(template_id).font_style
     for font in fonts:
-        if font.get("id") == recipe.font_id and font.get("style") == recipe.font_style:
+        if font.get("style") == target_style:
             return font
-    for font in fonts:
-        if font.get("id") == recipe.font_id:
-            raise ValueError(
-                "Synthetic font manifest entry "
-                f"{recipe.font_id!r} has style {font.get('style')!r}; "
-                f"expected {recipe.font_style!r} for template {template_id!r}."
-            )
-    raise ValueError(
-        "No synthetic font registered for "
-        f"template {template_id!r}: id {recipe.font_id!r}, style {recipe.font_style!r}."
-    )
+    raise ValueError(f"No synthetic font registered for style: {target_style}")
 
 
 def _select_title(template_id: str, index: int) -> str:
@@ -542,9 +394,7 @@ def _select_title(template_id: str, index: int) -> str:
     return titles[index % len(titles)]
 
 
-def _select_body_lines(
-    randomizer: random.Random, corpus: list[str], template_id: str
-) -> list[str]:
+def _select_body_lines(randomizer: random.Random, corpus: list[str], template_id: str) -> list[str]:
     line_count = _recipe_for_template(template_id).line_count
     return randomizer.sample(corpus, k=min(line_count, len(corpus)))
 
@@ -569,23 +419,17 @@ def generate_documents(
         raise ValueError("Synthetic generation requires at least one template_id.")
     recipe_catalog(template_ids)
     if output_dir.exists() and not output_dir.is_dir():
-        raise ValueError(
-            f"Synthetic generation output path exists and is not a directory: {output_dir}"
-        )
+        raise ValueError(f"Synthetic generation output path exists and is not a directory: {output_dir}")
 
     _require_raqm()
     randomizer = random.Random(seed)
     font_manifest = load_font_manifest(font_manifest_path)
     fonts = font_manifest.get("fonts")
     if not isinstance(fonts, list):
-        raise ValueError(
-            f"Synthetic font manifest is missing a valid 'fonts' list: {font_manifest_path}"
-        )
+        raise ValueError(f"Synthetic font manifest is missing a valid 'fonts' list: {font_manifest_path}")
     corpus = load_text_corpus(text_corpus_path)
     if not fonts:
-        raise ValueError(
-            f"Synthetic font manifest has no registered fonts: {font_manifest_path}"
-        )
+        raise ValueError(f"Synthetic font manifest has no registered fonts: {font_manifest_path}")
     if not corpus:
         raise ValueError(f"Synthetic text corpus is empty: {text_corpus_path}")
     font_entries_by_template: dict[str, dict[str, str]] = {}
@@ -611,13 +455,9 @@ def generate_documents(
         asset_path = f"assets/{sample_id}/page_0001.jpg"
         path = output_dir / asset_path
         path.parent.mkdir(parents=True, exist_ok=True)
-        image = _draw_document(
-            randomizer, title, body_lines, footer, font_path, template_id
-        )
+        image = _draw_document(randomizer, title, body_lines, footer, font_path, template_id)
         image.save(path, format="JPEG", quality=recipe.jpeg_quality, optimize=True)
-        logical_text = unicodedata.normalize(
-            "NFC", "\n".join([title, *body_lines, footer])
-        )
+        logical_text = unicodedata.normalize("NFC", "\n".join([title, *body_lines, footer]))
         documents.append(
             SyntheticDocument(
                 sample_id=sample_id,
@@ -653,9 +493,7 @@ def generate_manifest(
     template_ids = DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids
     font_manifest_path = font_manifest_path or default_font_manifest_path()
     text_corpus_path = text_corpus_path or default_text_corpus_path()
-    documents = generate_documents(
-        count, seed, template_ids, font_manifest_path, text_corpus_path, output_dir
-    )
+    documents = generate_documents(count, seed, template_ids, font_manifest_path, text_corpus_path, output_dir)
     samples = [
         GeneratedSample(
             sample_id=document.sample_id,
@@ -691,11 +529,7 @@ def generate_manifest(
 def write_manifest(manifest: GenerationManifest, output_dir: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / "generation_manifest.json"
-    path.write_text(
-        json.dumps(manifest.to_dict(), ensure_ascii=False, indent=2, sort_keys=True)
-        + "\n",
-        encoding="utf-8",
-    )
+    path.write_text(json.dumps(manifest.to_dict(), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path
 
 
@@ -708,8 +542,6 @@ def generate_batch(
     persona: str | None = None,
     condition: str | None = None,
 ) -> GenerationManifest:
-    manifest = generate_manifest(
-        count, seed, output_dir, template_ids, persona=persona, condition=condition
-    )
+    manifest = generate_manifest(count, seed, output_dir, template_ids, persona=persona, condition=condition)
     write_manifest(manifest, output_dir)
     return manifest
