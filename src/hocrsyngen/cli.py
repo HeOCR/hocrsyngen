@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from hocrsyngen.generator import (
@@ -10,6 +11,9 @@ from hocrsyngen.generator import (
     template_catalog,
 )
 from hocrsyngen.validation import BatchValidationError, validate_batch
+
+
+TEMPLATE_CATALOG_SCHEMA_VERSION = "template_catalog.v1"
 
 
 def _non_negative_int(value: str) -> int:
@@ -33,11 +37,35 @@ def _format_template_catalog_entry(entry: TemplateCatalogEntry) -> str:
     )
 
 
+def _format_template_catalog_json(catalog: list[TemplateCatalogEntry]) -> str:
+    payload = {
+        "schema_version": TEMPLATE_CATALOG_SCHEMA_VERSION,
+        "templates": [
+            {
+                "template_id": entry.template_id,
+                "recipe_id": entry.recipe_id,
+                "layout_style": entry.layout_style,
+                "font_style": entry.font_style,
+                "font_id": entry.font_id,
+                "degradation_preset": entry.degradation_preset,
+            }
+            for entry in catalog
+        ],
+    }
+    return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="hocrsyngen")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser(
+    templates = subparsers.add_parser(
         "templates", help="List packaged synthetic template catalog entries."
+    )
+    templates.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the packaged template catalog.",
     )
     generate = subparsers.add_parser(
         "generate", help="Generate a deterministic synthetic fixture batch."
@@ -93,8 +121,11 @@ def main(argv: list[str] | None = None) -> int:
             )
         except ValueError as exc:
             parser.error(f"templates: {exc}")
-        for entry in catalog:
-            print(_format_template_catalog_entry(entry))
+        if args.format == "json":
+            print(_format_template_catalog_json(catalog))
+        else:
+            for entry in catalog:
+                print(_format_template_catalog_entry(entry))
         return 0
     if args.command == "generate":
         if args.output.exists() and not args.output.is_dir():

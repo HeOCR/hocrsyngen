@@ -21,6 +21,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 
 ```bash
 hocrsyngen templates
+hocrsyngen templates --format json
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch
 hocrsyngen validate out/fixture-batch
 ```
@@ -28,6 +29,39 @@ hocrsyngen validate out/fixture-batch
 `hocrsyngen templates` prints one deterministic catalog line per packaged
 synthetic template, including the template id, recipe id, layout style, font
 style, resolved packaged font id, and degradation preset.
+
+Text output remains the default for human-facing CLI use. `hocrsyngen templates
+--format json` emits the same governed template catalog as deterministic
+machine-readable metadata for orchestration code that should not import
+`hocrsyngen` internals:
+
+```json
+{
+  "schema_version": "template_catalog.v1",
+  "templates": [
+    {
+      "template_id": "printed_letter",
+      "recipe_id": "printed_letter_form_v1",
+      "layout_style": "printed_form",
+      "font_style": "printed",
+      "font_id": "alef-regular",
+      "degradation_preset": "office_scan_soft"
+    },
+    {
+      "template_id": "handwritten_note",
+      "recipe_id": "handwritten_note_marginalia_v1",
+      "layout_style": "handwritten_note",
+      "font_style": "handwritten_like",
+      "font_id": "gveret-levin-regular",
+      "degradation_preset": "notebook_scan_worn"
+    }
+  ]
+}
+```
+
+The JSON catalog is package metadata only. It does not change manifest v1 and
+does not assemble, validate, export, or publish release payloads; those remain
+`hocrgen` responsibilities.
 
 The command writes:
 
