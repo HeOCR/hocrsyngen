@@ -47,7 +47,8 @@ def _image_pixels(image: Image.Image) -> list[tuple[int, int, int]]:
 
 
 def _write_contract_corpus(path: Path, lines: list[str] | None = None) -> Path:
-    path.write_text("\n".join(lines or HEBREW_CONTRACT_LINES) + "\n", encoding="utf-8")
+    contract_lines = HEBREW_CONTRACT_LINES if lines is None else lines
+    path.write_text("\n".join(contract_lines) + "\n", encoding="utf-8")
     return path
 
 
@@ -200,7 +201,8 @@ def test_renderer_smoke_outputs_asset_for_hebrew_contract_cases_without_mutating
     document = documents[0]
     assert document.logical_text.splitlines()[1:3] == HEBREW_CONTRACT_LINES
     _assert_logical_hebrew_contract(document.logical_text)
-    with Image.open(document.path).convert("RGB") as image:
+    with Image.open(document.path) as opened:
+        image = opened.convert("RGB")
         assert image.size == CANVAS_SIZE
         rendered_region = image.crop((140, 250, 1060, 760))
         dark_ink_pixels = sum(1 for r, g, b in _image_pixels(rendered_region) if r < 115 and g < 105 and b < 95)
