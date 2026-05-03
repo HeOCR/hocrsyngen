@@ -20,9 +20,14 @@ Generated directories are deterministic candidate synthetic inputs for later
 ## CLI
 
 ```bash
+hocrsyngen templates
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch
 hocrsyngen validate out/fixture-batch
 ```
+
+`hocrsyngen templates` prints one deterministic catalog line per packaged
+synthetic template, including the template id, recipe id, layout style, font
+style, resolved packaged font id, and degradation preset.
 
 The command writes:
 

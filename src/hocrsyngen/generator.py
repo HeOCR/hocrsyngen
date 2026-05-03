@@ -248,7 +248,8 @@ def template_catalog(
     for template_id in template_ids:
         recipe = recipes[template_id]
         font_entry = _select_font(fonts, template_id)
-        _font_path(font_manifest_path, font_entry)
+        font_path = _font_path(font_manifest_path, font_entry)
+        _validate_font(font_path)
         font_id = str(font_entry.get("id", "")).strip()
         if not font_id:
             raise ValueError(f"Synthetic font entry is missing an id for style: {recipe.font_style}")
