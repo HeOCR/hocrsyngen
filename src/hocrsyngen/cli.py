@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
+import tempfile
 from dataclasses import dataclass
 from importlib import resources
 from importlib.resources.abc import Traversable
@@ -23,8 +25,6 @@ TEMPLATE_CATALOG_SCHEMA_VERSION = "template_catalog.v1"
 VALIDATION_REPORT_SCHEMA_VERSION = "validation_report.v1"
 CONTRACT_FIXTURE_ID = "generation_manifest_v1_fixture_batch"
 CONTRACT_FIXTURE_CONTRACT = "generation_manifest.v1"
-CONTRACT_FIXTURE_SAMPLE_COUNT = 2
-CONTRACT_FIXTURE_PAGE_COUNT = 2
 CONTRACT_FIXTURE_RESOURCE_PATH = "data/contracts/generation_manifest_v1/fixture-batch"
 CONTRACT_FIXTURE_MANIFEST_RESOURCE_PATH = (
     "data/contracts/generation_manifest_v1/fixture-batch/generation_manifest.json"
@@ -81,12 +81,17 @@ def _format_template_catalog_json(catalog: list[TemplateCatalogEntry]) -> str:
 
 
 def _contract_fixture_catalog() -> list[ContractFixtureCatalogEntry]:
+    source = resources.files("hocrsyngen") / CONTRACT_FIXTURE_RESOURCE_PATH
+    if not source.is_dir():
+        raise FileNotFoundError(CONTRACT_FIXTURE_RESOURCE_PATH)
+    with resources.as_file(source) as fixture_path:
+        result = validate_batch(fixture_path)
     return [
         ContractFixtureCatalogEntry(
             fixture_id=CONTRACT_FIXTURE_ID,
             contract=CONTRACT_FIXTURE_CONTRACT,
-            sample_count=CONTRACT_FIXTURE_SAMPLE_COUNT,
-            page_count=CONTRACT_FIXTURE_PAGE_COUNT,
+            sample_count=result.sample_count,
+            page_count=result.page_count,
             resource_path=CONTRACT_FIXTURE_RESOURCE_PATH,
             manifest_resource_path=CONTRACT_FIXTURE_MANIFEST_RESOURCE_PATH,
         )
@@ -208,17 +213,25 @@ def _export_contract_fixture(entry: ContractFixtureCatalogEntry, output: Path) -
     source = resources.files("hocrsyngen") / entry.resource_path
     if not source.is_dir():
         raise FileNotFoundError(entry.resource_path)
-    _copy_traversable_tree(source, output)
-    result = validate_batch(output)
-    if (
-        result.sample_count != entry.sample_count
-        or result.page_count != entry.page_count
-    ):
-        raise ValueError(
-            "exported fixture counts do not match the packaged fixture catalog: "
-            f"expected {entry.sample_count} samples and {entry.page_count} pages, "
-            f"got {result.sample_count} samples and {result.page_count} pages"
-        )
+    output_parent = output.parent
+    output_parent.mkdir(parents=True, exist_ok=True)
+    temp_root = Path(tempfile.mkdtemp(prefix=f".{output.name}.", dir=output_parent))
+    temp_output = temp_root / output.name
+    try:
+        _copy_traversable_tree(source, temp_output)
+        result = validate_batch(temp_output)
+        if (
+            result.sample_count != entry.sample_count
+            or result.page_count != entry.page_count
+        ):
+            raise ValueError(
+                "exported fixture counts do not match the packaged fixture catalog: "
+                f"expected {entry.sample_count} samples and {entry.page_count} pages, "
+                f"got {result.sample_count} samples and {result.page_count} pages"
+            )
+        temp_output.rename(output)
+    finally:
+        shutil.rmtree(temp_root, ignore_errors=True)
 
 
 def _contract_fixture_by_id(fixture_id: str) -> ContractFixtureCatalogEntry:
@@ -328,7 +341,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "contracts":
         if args.contract_command is None:
-            catalog = _contract_fixture_catalog()
+            try:
+                catalog = _contract_fixture_catalog()
+            except FileNotFoundError as exc:
+                parser.error(
+                    f"contracts: required packaged resource is missing: {exc.filename or exc}"
+                )
+            except (BatchValidationError, ValueError) as exc:
+                parser.error(f"contracts: {exc}")
             if args.format == "json":
                 print(_format_contract_fixture_catalog_json(catalog))
             else:
@@ -343,6 +363,8 @@ def main(argv: list[str] | None = None) -> int:
                 parser.error(
                     f"contracts export: required packaged resource is missing: {exc.filename or exc}"
                 )
+            except OSError as exc:
+                parser.error(f"contracts export: {exc}")
             except (BatchValidationError, ValueError) as exc:
                 parser.error(f"contracts export: {exc}")
             if args.format == "json":

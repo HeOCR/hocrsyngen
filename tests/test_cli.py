@@ -23,6 +23,7 @@ from hocrsyngen.cli import (
 )
 from hocrsyngen.generator import TemplateCatalogEntry
 from hocrsyngen.validation import validate_batch
+from hocrsyngen.validation import BatchValidationError, ValidationResult
 
 
 @pytest.fixture(scope="module")
@@ -157,6 +158,20 @@ def test_contracts_cli_json_outputs_deterministic_catalog(
     assert json.loads(stdout) == EXPECTED_CONTRACT_FIXTURE_CATALOG_JSON
 
 
+def test_contracts_cli_json_counts_match_packaged_fixture(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with resources.as_file(_packaged_contract_fixture()) as batch_dir:
+        result = validate_batch(batch_dir)
+
+    assert main(["contracts", "--format", "json"]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    [fixture] = payload["fixtures"]
+    assert fixture["sample_count"] == result.sample_count
+    assert fixture["page_count"] == result.page_count
+
+
 def test_format_contract_fixture_catalog_json_uses_public_schema_only() -> None:
     output = _format_contract_fixture_catalog_json([])
 
@@ -226,6 +241,80 @@ def test_contracts_export_cli_refuses_existing_output_path(
     assert exc_info.value.code == 2
     assert "output path already exists" in capsys.readouterr().err
     assert marker.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_contracts_export_cli_cleans_staging_directory_after_validation_failure(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output_dir = tmp_path / "exported-fixture"
+
+    def fail_exported_batch_validation(path: Path) -> ValidationResult:
+        if path.name == "fixture-batch":
+            return ValidationResult(sample_count=2, page_count=2)
+        raise BatchValidationError("forced exported fixture validation failure")
+
+    monkeypatch.setattr("hocrsyngen.cli.validate_batch", fail_exported_batch_validation)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main(
+            [
+                "contracts",
+                "export",
+                "--fixture-id",
+                "generation_manifest_v1_fixture_batch",
+                "--output",
+                str(output_dir),
+            ]
+        )
+
+    assert exc_info.value.code == 2
+    captured = capsys.readouterr()
+    assert "forced exported fixture validation failure" in captured.err
+    assert not output_dir.exists()
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_contracts_export_module_entry_point_smoke(tmp_path: Path) -> None:
+    project_root = Path(__file__).resolve().parents[1]
+    output_dir = tmp_path / "module-contract-export"
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(project_root / "src")
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "hocrsyngen.cli",
+            "contracts",
+            "export",
+            "--fixture-id",
+            "generation_manifest_v1_fixture_batch",
+            "--output",
+            str(output_dir),
+            "--format",
+            "json",
+        ],
+        check=True,
+        cwd=project_root,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    assert completed.stderr == ""
+    assert json.loads(completed.stdout) == {
+        "schema_version": CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION,
+        "fixture_id": "generation_manifest_v1_fixture_batch",
+        "contract": "generation_manifest.v1",
+        "sample_count": 2,
+        "page_count": 2,
+        "output_path": str(output_dir),
+        "manifest_path": str(output_dir / "generation_manifest.json"),
+    }
+    result = validate_batch(output_dir)
+    assert result.sample_count == 2
+    assert result.page_count == 2
 
 
 def test_format_template_catalog_entry() -> None:
