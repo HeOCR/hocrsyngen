@@ -8,7 +8,12 @@ from pathlib import Path
 
 import pytest
 
-from hocrsyngen.cli import _format_template_catalog_entry, _format_template_catalog_json, main
+from hocrsyngen.cli import (
+    TEMPLATE_CATALOG_SCHEMA_VERSION,
+    _format_template_catalog_entry,
+    _format_template_catalog_json,
+    main,
+)
 from hocrsyngen.generator import TemplateCatalogEntry
 
 
@@ -31,7 +36,7 @@ EXPECTED_TEMPLATE_LINES = [
     ),
 ]
 EXPECTED_TEMPLATE_CATALOG_JSON = {
-    "schema_version": "template_catalog.v1",
+    "schema_version": TEMPLATE_CATALOG_SCHEMA_VERSION,
     "templates": [
         {
             "template_id": "printed_letter",
@@ -51,6 +56,9 @@ EXPECTED_TEMPLATE_CATALOG_JSON = {
         },
     ],
 }
+EXPECTED_TEMPLATE_CATALOG_JSON_TEXT = json.dumps(
+    EXPECTED_TEMPLATE_CATALOG_JSON, ensure_ascii=False, indent=2
+)
 
 
 def test_format_template_catalog_entry() -> None:
@@ -81,7 +89,7 @@ def test_format_template_catalog_json_uses_public_schema_only() -> None:
     )
 
     assert json.loads(output) == {
-        "schema_version": "template_catalog.v1",
+        "schema_version": TEMPLATE_CATALOG_SCHEMA_VERSION,
         "templates": [
             {
                 "template_id": "printed_letter",
@@ -110,7 +118,9 @@ def test_templates_cli_text_format_matches_default(capsys: pytest.CaptureFixture
 def test_templates_cli_json_outputs_deterministic_catalog(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["templates", "--format", "json"]) == 0
 
-    assert json.loads(capsys.readouterr().out) == EXPECTED_TEMPLATE_CATALOG_JSON
+    stdout = capsys.readouterr().out
+    assert stdout == f"{EXPECTED_TEMPLATE_CATALOG_JSON_TEXT}\n"
+    assert json.loads(stdout) == EXPECTED_TEMPLATE_CATALOG_JSON
 
 
 def test_templates_cli_reports_invalid_packaged_resource_cleanly(

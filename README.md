@@ -46,6 +46,14 @@ machine-readable metadata for orchestration code that should not import
       "font_style": "printed",
       "font_id": "alef-regular",
       "degradation_preset": "office_scan_soft"
+    },
+    {
+      "template_id": "handwritten_note",
+      "recipe_id": "handwritten_note_marginalia_v1",
+      "layout_style": "handwritten_note",
+      "font_style": "handwritten_like",
+      "font_id": "gveret-levin-regular",
+      "degradation_preset": "notebook_scan_worn"
     }
   ]
 }

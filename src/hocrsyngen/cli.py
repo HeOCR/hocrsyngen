@@ -13,6 +13,9 @@ from hocrsyngen.generator import (
 from hocrsyngen.validation import BatchValidationError, validate_batch
 
 
+TEMPLATE_CATALOG_SCHEMA_VERSION = "template_catalog.v1"
+
+
 def _non_negative_int(value: str) -> int:
     try:
         parsed = int(value)
@@ -36,7 +39,7 @@ def _format_template_catalog_entry(entry: TemplateCatalogEntry) -> str:
 
 def _format_template_catalog_json(catalog: list[TemplateCatalogEntry]) -> str:
     payload = {
-        "schema_version": "template_catalog.v1",
+        "schema_version": TEMPLATE_CATALOG_SCHEMA_VERSION,
         "templates": [
             {
                 "template_id": entry.template_id,
