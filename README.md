@@ -160,6 +160,27 @@ packaged governed templates, when the sample-level `recipe_id` differs from
 `provenance.recipe_id`, or when the provenance recipe, degradation preset, or
 font id does not match the packaged contract for that template.
 
+## Contract Fixture for hocrgen Integration
+
+`hocrsyngen` packages a canonical generated batch fixture at:
+
+```text
+src/hocrsyngen/data/contracts/generation_manifest_v1/fixture-batch/
+```
+
+The fixture was generated with:
+
+```bash
+hocrsyngen generate --count 2 --seed 17 --output src/hocrsyngen/data/contracts/generation_manifest_v1/fixture-batch
+```
+
+It contains `generation_manifest.json` v1 plus relative JPEG page assets for
+the two governed packaged templates. The fixture is contract evidence for
+downstream `hocrgen` adapter tests and is candidate synthetic input only; it is
+not release-ready dataset data. `hocrgen` should ingest or validate the fixture
+manifest, preserve the relative asset contract, and then apply its own
+governance, privacy, review, dedupe, split, cap, benchmark, and export gates.
+
 ## Development
 
 ```bash

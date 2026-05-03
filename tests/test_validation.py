@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+from importlib import resources
 from pathlib import Path
+from pathlib import PurePosixPath
 
 import pytest
 from PIL import Image
@@ -34,6 +36,16 @@ def _generated_batch(tmp_path: Path) -> Path:
     return batch_dir
 
 
+def _packaged_contract_fixture() -> Path:
+    return (
+        resources.files("hocrsyngen")
+        / "data"
+        / "contracts"
+        / "generation_manifest_v1"
+        / "fixture-batch"
+    )
+
+
 def test_validate_generated_batch_passes(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -44,6 +56,48 @@ def test_validate_generated_batch_passes(
     captured = capsys.readouterr()
     assert captured.out == f"Validated 1 samples and 1 pages in {batch_dir}\n"
     assert captured.err == ""
+
+
+def test_packaged_generation_manifest_contract_fixture_validates() -> None:
+    with resources.as_file(_packaged_contract_fixture()) as batch_dir:
+        result = validate_batch(batch_dir)
+        payload = _load_manifest(batch_dir)
+
+        assert result.sample_count == 2
+        assert result.page_count == 2
+        assert set(payload) == {
+            "generator_name",
+            "license",
+            "manifest_version",
+            "samples",
+            "synthetic_disclosure",
+        }
+        assert "schema_version" not in payload
+        assert "generation_report" not in payload
+        assert {
+            sample["provenance"]["template_id"] for sample in payload["samples"]
+        } == {
+            "printed_letter",
+            "handwritten_note",
+        }
+        for sample in payload["samples"]:
+            assert set(sample) == {
+                "controls",
+                "generator_version",
+                "license",
+                "pages",
+                "provenance",
+                "recipe_id",
+                "sample_id",
+                "synthetic_disclosure",
+                "text",
+            }
+            for page in sample["pages"]:
+                asset_path = PurePosixPath(page["asset_path"])
+                assert not asset_path.is_absolute()
+                assert ".." not in asset_path.parts
+                assert "\\" not in page["asset_path"]
+                assert (batch_dir / Path(*asset_path.parts)).is_file()
 
 
 def test_validate_json_reports_generated_batch(

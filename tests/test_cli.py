@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+from importlib import resources
 from pathlib import Path
 
 import pytest
@@ -96,6 +97,16 @@ EXPECTED_TEMPLATE_CATALOG_JSON = {
 EXPECTED_TEMPLATE_CATALOG_JSON_TEXT = json.dumps(
     EXPECTED_TEMPLATE_CATALOG_JSON, ensure_ascii=False, indent=2
 )
+
+
+def _packaged_contract_fixture() -> Path:
+    return (
+        resources.files("hocrsyngen")
+        / "data"
+        / "contracts"
+        / "generation_manifest_v1"
+        / "fixture-batch"
+    )
 
 
 def test_format_template_catalog_entry() -> None:
@@ -431,6 +442,23 @@ def test_generate_cli_reports_invalid_packaged_resource_cleanly(
     assert "Traceback" not in stderr
 
 
+def test_validate_cli_json_reports_packaged_contract_fixture(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with resources.as_file(_packaged_contract_fixture()) as batch_dir:
+        assert main(["validate", str(batch_dir), "--format", "json"]) == 0
+
+        captured = capsys.readouterr()
+        assert captured.err == ""
+        assert json.loads(captured.out) == {
+            "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+            "valid": True,
+            "sample_count": 2,
+            "page_count": 2,
+            "path": str(batch_dir),
+        }
+
+
 def test_installed_package_console_entry_point_and_packaged_resources(
     installed_package: tuple[Path, Path, dict[str, str]],
 ) -> None:
@@ -443,6 +471,9 @@ def test_installed_package_console_entry_point_and_packaged_resources(
         "    'data/synthetic/fonts/Alef-Regular.ttf',\n"
         "    'data/synthetic/fonts/GveretLevin-Regular.ttf',\n"
         "    'data/synthetic/texts/hebrew_lines.txt',\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/generation_manifest.json',\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/assets/hocrsyngen-s00000017-000000/page_0001.jpg',\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/assets/hocrsyngen-s00000017-000001/page_0001.jpg',\n"
         "]\n"
         "root = resources.files('hocrsyngen')\n"
         "missing = [path for path in required if not (root / path).is_file()]\n"
