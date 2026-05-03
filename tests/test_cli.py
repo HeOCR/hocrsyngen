@@ -14,7 +14,10 @@ from hocrsyngen.cli import main
 def test_generate_cli_smoke(tmp_path: Path) -> None:
     output_dir = tmp_path / "fixture-batch"
 
-    assert main(["generate", "--count", "2", "--seed", "17", "--output", str(output_dir)]) == 0
+    assert (
+        main(["generate", "--count", "2", "--seed", "17", "--output", str(output_dir)])
+        == 0
+    )
 
     manifest_path = output_dir / "generation_manifest.json"
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -52,7 +55,9 @@ def test_generate_cli_rejects_negative_numeric_inputs(
     assert not output_dir.exists()
 
 
-def test_generate_cli_rejects_existing_file_output_path(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_generate_cli_rejects_existing_file_output_path(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     output_path = tmp_path / "not-a-directory"
     output_path.write_text("existing file\n", encoding="utf-8")
 
@@ -100,7 +105,17 @@ def test_generate_cli_reports_missing_packaged_resource_cleanly(
     monkeypatch.setattr("hocrsyngen.cli.generate_batch", fail_generation)
 
     with pytest.raises(SystemExit) as exc_info:
-        main(["generate", "--count", "1", "--seed", "17", "--output", str(tmp_path / "out")])
+        main(
+            [
+                "generate",
+                "--count",
+                "1",
+                "--seed",
+                "17",
+                "--output",
+                str(tmp_path / "out"),
+            ]
+        )
 
     assert exc_info.value.code == 2
     stderr = capsys.readouterr().err
@@ -113,12 +128,24 @@ def test_generate_cli_reports_invalid_packaged_resource_cleanly(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     def fail_generation(**_kwargs) -> None:
-        raise ValueError("Synthetic font file is invalid or unreadable: /tmp/invalid.ttf")
+        raise ValueError(
+            "Synthetic font file is invalid or unreadable: /tmp/invalid.ttf"
+        )
 
     monkeypatch.setattr("hocrsyngen.cli.generate_batch", fail_generation)
 
     with pytest.raises(SystemExit) as exc_info:
-        main(["generate", "--count", "1", "--seed", "17", "--output", str(tmp_path / "out")])
+        main(
+            [
+                "generate",
+                "--count",
+                "1",
+                "--seed",
+                "17",
+                "--output",
+                str(tmp_path / "out"),
+            ]
+        )
 
     assert exc_info.value.code == 2
     stderr = capsys.readouterr().err
@@ -126,7 +153,9 @@ def test_generate_cli_reports_invalid_packaged_resource_cleanly(
     assert "Traceback" not in stderr
 
 
-def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: Path) -> None:
+def test_installed_package_console_entry_point_and_packaged_resources(
+    tmp_path: Path,
+) -> None:
     project_root = Path(__file__).resolve().parents[1]
     target_dir = tmp_path / "site"
     isolated_cwd = tmp_path / "isolated"
@@ -218,8 +247,15 @@ def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: 
         text=True,
     )
 
-    console_manifest = json.loads((console_output / "generation_manifest.json").read_text(encoding="utf-8"))
+    console_manifest = json.loads(
+        (console_output / "generation_manifest.json").read_text(encoding="utf-8")
+    )
     console_asset = Path(console_manifest["samples"][0]["pages"][0]["asset_path"])
     assert not console_asset.is_absolute()
     assert (console_output / console_asset).is_file()
-    assert json.loads((module_output / "generation_manifest.json").read_text(encoding="utf-8"))["samples"] == []
+    assert (
+        json.loads(
+            (module_output / "generation_manifest.json").read_text(encoding="utf-8")
+        )["samples"]
+        == []
+    )
