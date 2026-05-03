@@ -2,38 +2,48 @@
 
 `generation_manifest.json` v1 is the stable serialized batch contract emitted by `hocrsyngen generate` and validated by `hocrsyngen validate`.
 
+The normative machine-readable schema is `src/hocrsyngen/schemas/generation_manifest.schema.json`. This document explains the contract and records validation semantics; if this document and the schema disagree, fix both before changing generator behavior.
+
+All v1 objects currently set `additionalProperties: false` in the schema. Consumers should reject unknown fields unless a future additive schema update explicitly permits them.
+
+The exact v1 synthetic disclosure string is:
+
+```text
+Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for hocrgen governance and is not real-source provenance.
+```
+
 ## Top-Level Fields
 
 - `manifest_version`: must be `"1.0"`.
 - `generator_name`: must be `"hocrsyngen"`.
 - `license`: must be `"PROJECT-SYNTHETIC"`.
-- `synthetic_disclosure`: describes the batch as generated synthetic Hebrew OCR/HTR candidate input.
-- `samples`: list of generated samples.
+- `synthetic_disclosure`: must be the exact v1 synthetic disclosure string.
+- `samples`: list of generated samples. The current schema allows an empty array; generator output is expected to contain the requested generated samples.
 
 ## Sample Fields
 
-- `sample_id`: stable deterministic id, currently shaped like `hocrsyngen-s00000017-000000`.
-- `pages`: list of page assets.
+- `sample_id`: stable deterministic id matching `^hocrsyngen-s[0-9]{8}-[0-9]{6}$`.
+- `pages`: list of page assets with at least one page.
 - `text`: Hebrew logical-order text metadata.
-- `generator_version`: generator implementation version string.
-- `recipe_id`: governed recipe id and must match `provenance.recipe_id`.
+- `generator_version`: non-empty generator implementation version string. Current validation requires the package's current generator version.
+- `recipe_id`: non-empty governed recipe id and must match `provenance.recipe_id`.
 - `provenance`: deterministic generation provenance.
 - `license`: must be `"PROJECT-SYNTHETIC"`.
-- `synthetic_disclosure`: sample-level synthetic disclosure.
+- `synthetic_disclosure`: must be the exact v1 synthetic disclosure string.
 - `controls`: synthetic controls object.
 
 ## Page Fields
 
-- `page_id`: page id within the sample, currently `page_0001`.
-- `asset_path`: relative portable POSIX path under the batch directory.
+- `page_id`: non-empty page id within the sample, currently `page_0001`.
+- `asset_path`: relative portable POSIX path under the batch directory. The schema pattern is `^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._/-]+$`; validation also rejects paths that resolve outside the batch directory.
 - `media_type`: must be `image/jpeg`.
-- `sha256`: SHA-256 hash of the asset bytes.
-- `width`: JPEG width in pixels.
-- `height`: JPEG height in pixels.
+- `sha256`: lowercase hex SHA-256 hash of the asset bytes matching `^[0-9a-f]{64}$`.
+- `width`: JPEG width in pixels, integer `>= 1`.
+- `height`: JPEG height in pixels, integer `>= 1`.
 
 ## Text Metadata
 
-- `logical_order`: logical-order UTF-8 Hebrew text.
+- `logical_order`: non-empty logical-order UTF-8 Hebrew text and must be NFC-normalized.
 - `script`: must be `Hebr`.
 - `language`: must be `he`.
 - `direction`: must be `rtl`.
@@ -41,13 +51,13 @@
 
 ## Provenance Fields
 
-- `seed`: generation seed.
-- `sample_index`: zero-based sample index.
-- `template_id`: governed template id.
-- `recipe_id`: governed recipe id.
-- `degradation_preset`: governed degradation preset id.
-- `font_id`: governed packaged font id.
-- `source_corpus`: source corpus identifier.
+- `seed`: integer generation seed.
+- `sample_index`: zero-based integer sample index.
+- `template_id`: non-empty governed template id.
+- `recipe_id`: non-empty governed recipe id.
+- `degradation_preset`: non-empty governed degradation preset id.
+- `font_id`: non-empty governed packaged font id.
+- `source_corpus`: non-empty source corpus identifier.
 
 ## Controls
 
@@ -68,6 +78,13 @@ Validation checks:
 - SHA-256 validation.
 - JPEG format and dimension validation.
 
+The governed template contract currently requires:
+
+| Template id | Recipe id | Degradation preset | Packaged font id |
+| --- | --- | --- | --- |
+| `printed_letter` | `printed_letter_form_v1` | `office_scan_soft` | `alef-regular` |
+| `handwritten_note` | `handwritten_note_marginalia_v1` | `notebook_scan_worn` | `gveret-levin-regular` |
+
 ## Compatibility Rules
 
 - v1 changes should be additive only unless a new version is introduced.
@@ -82,7 +99,7 @@ Validation checks:
   "manifest_version": "1.0",
   "generator_name": "hocrsyngen",
   "license": "PROJECT-SYNTHETIC",
-  "synthetic_disclosure": "Generated synthetic Hebrew OCR/HTR sample...",
+  "synthetic_disclosure": "Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for hocrgen governance and is not real-source provenance.",
   "samples": [
     {
       "sample_id": "hocrsyngen-s00000017-000000",
@@ -91,7 +108,7 @@ Validation checks:
           "page_id": "page_0001",
           "asset_path": "assets/hocrsyngen-s00000017-000000/page_0001.jpg",
           "media_type": "image/jpeg",
-          "sha256": "<sha256>",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
           "width": 1200,
           "height": 1600
         }
@@ -115,7 +132,7 @@ Validation checks:
         "source_corpus": "packaged_hebrew_lines_v1"
       },
       "license": "PROJECT-SYNTHETIC",
-      "synthetic_disclosure": "Generated synthetic Hebrew OCR/HTR sample...",
+      "synthetic_disclosure": "Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for hocrgen governance and is not real-source provenance.",
       "controls": {
         "persona": null,
         "condition": null
@@ -124,3 +141,5 @@ Validation checks:
   ]
 }
 ```
+
+This example is schema-shaped and copyable JSON. It is not a complete valid batch by itself because the placeholder SHA-256 must match an actual JPEG asset on disk.

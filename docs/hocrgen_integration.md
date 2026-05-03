@@ -12,6 +12,57 @@ hocrsyngen generate --count N --seed S --output PATH --format json
 hocrsyngen validate PATH --format json
 ```
 
+## Minimal Adapter Assertions
+
+`hocrgen` adapter tests should assert the command contract at the JSON boundary, not Python internals.
+
+For `hocrsyngen templates --format json`, assert:
+
+- `schema_version == "template_catalog.v1"`.
+- `templates` is a list.
+- Each template has `template_id`, `recipe_id`, `layout_style`, `font_style`, `font_id`, and `degradation_preset`.
+- The current packaged catalog includes `printed_letter` and `handwritten_note`.
+
+For `hocrsyngen contracts --format json`, assert:
+
+- `schema_version == "contract_fixture_catalog.v1"`.
+- The catalog contains fixture id `generation_manifest_v1_fixture_batch`.
+- That fixture has `contract == "generation_manifest.v1"`.
+- That fixture currently reports `sample_count == 2` and `page_count == 2`.
+- `manifest_resource_path` ends with `generation_manifest.json`.
+
+For `hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch --output PATH --format json`, assert:
+
+- `schema_version == "contract_fixture_export.v1"`.
+- `fixture_id == "generation_manifest_v1_fixture_batch"`.
+- `contract == "generation_manifest.v1"`.
+- `sample_count == 2` and `page_count == 2`.
+- `manifest_path == "PATH/generation_manifest.json"` using the CLI argument string for `PATH`.
+- The exported `PATH/generation_manifest.json` exists and validates.
+
+For `hocrsyngen generate --count N --seed S --output PATH --format json`, assert:
+
+- `schema_version == "generation_report.v1"`.
+- `sample_count == N`.
+- `page_count >= sample_count`.
+- `output_path` echoes `PATH`.
+- `manifest_path == "PATH/generation_manifest.json"` using the CLI argument string for `PATH`.
+
+For `hocrsyngen validate PATH --format json`, assert on success:
+
+- `schema_version == "validation_report.v1"`.
+- `valid == true`.
+- `sample_count` and `page_count` match the manifest.
+- `path` echoes the original CLI argument string.
+
+For invalid validation with `--format json`, assert:
+
+- The process exits non-zero.
+- `schema_version == "validation_report.v1"`.
+- `valid == false`.
+- `path` echoes the original CLI argument string.
+- `error` is a non-empty deterministic string.
+
 ## hocrgen Responsibilities After Import
 
 After receiving a valid `hocrsyngen` batch, `hocrgen` remains responsible for:
