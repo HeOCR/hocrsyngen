@@ -23,6 +23,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 hocrsyngen templates
 hocrsyngen templates --format json
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch
+hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --format json
 hocrsyngen validate out/fixture-batch
 hocrsyngen validate out/fixture-batch --format json
 ```
@@ -63,6 +64,25 @@ machine-readable metadata for orchestration code that should not import
 The JSON catalog is package metadata only. It does not change manifest v1 and
 does not assemble, validate, export, or publish release payloads; those remain
 `hocrgen` responsibilities.
+
+Text output remains the default generation behavior for human-facing CLI use;
+successful generation does not print a report unless requested.
+`hocrsyngen generate --count N --seed S --output PATH --format json` writes the
+same deterministic batch and emits a deterministic machine-readable generation
+report to stdout:
+
+```json
+{
+  "schema_version": "generation_report.v1",
+  "sample_count": 2,
+  "page_count": 2,
+  "output_path": "out/fixture-batch",
+  "manifest_path": "out/fixture-batch/generation_manifest.json"
+}
+```
+
+The generation report is CLI output only. It does not add manifest fields or
+change manifest v1 compatibility.
 
 The command writes:
 

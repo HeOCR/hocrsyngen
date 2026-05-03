@@ -9,13 +9,49 @@ from pathlib import Path
 import pytest
 
 from hocrsyngen.cli import (
+    GENERATION_REPORT_SCHEMA_VERSION,
     TEMPLATE_CATALOG_SCHEMA_VERSION,
     VALIDATION_REPORT_SCHEMA_VERSION,
+    _format_generation_report_json,
     _format_template_catalog_entry,
     _format_template_catalog_json,
     main,
 )
 from hocrsyngen.generator import TemplateCatalogEntry
+
+
+@pytest.fixture(scope="module")
+def installed_package(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> tuple[Path, Path, dict[str, str]]:
+    project_root = Path(__file__).resolve().parents[1]
+    tmp_path = tmp_path_factory.mktemp("installed-package")
+    target_dir = tmp_path / "site"
+    isolated_cwd = tmp_path / "isolated"
+    isolated_cwd.mkdir()
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--target",
+            str(target_dir),
+            "--no-deps",
+            "--no-build-isolation",
+            str(project_root),
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(target_dir)
+    return target_dir, isolated_cwd, env
 
 
 EXPECTED_TEMPLATE_LINES = [
@@ -63,16 +99,19 @@ EXPECTED_TEMPLATE_CATALOG_JSON_TEXT = json.dumps(
 
 
 def test_format_template_catalog_entry() -> None:
-    assert _format_template_catalog_entry(
-        TemplateCatalogEntry(
-            template_id="printed_letter",
-            recipe_id="printed_letter_form_v1",
-            layout_style="printed_form",
-            font_style="printed",
-            font_id="alef-regular",
-            degradation_preset="office_scan_soft",
+    assert (
+        _format_template_catalog_entry(
+            TemplateCatalogEntry(
+                template_id="printed_letter",
+                recipe_id="printed_letter_form_v1",
+                layout_style="printed_form",
+                font_style="printed",
+                font_id="alef-regular",
+                degradation_preset="office_scan_soft",
+            )
         )
-    ) == EXPECTED_TEMPLATE_LINES[0]
+        == EXPECTED_TEMPLATE_LINES[0]
+    )
 
 
 def test_format_template_catalog_json_uses_public_schema_only() -> None:
@@ -104,19 +143,25 @@ def test_format_template_catalog_json_uses_public_schema_only() -> None:
     }
 
 
-def test_templates_cli_smoke_outputs_stable_catalog_lines(capsys: pytest.CaptureFixture[str]) -> None:
+def test_templates_cli_smoke_outputs_stable_catalog_lines(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     assert main(["templates"]) == 0
 
     assert capsys.readouterr().out.splitlines() == EXPECTED_TEMPLATE_LINES
 
 
-def test_templates_cli_text_format_matches_default(capsys: pytest.CaptureFixture[str]) -> None:
+def test_templates_cli_text_format_matches_default(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     assert main(["templates", "--format", "text"]) == 0
 
     assert capsys.readouterr().out.splitlines() == EXPECTED_TEMPLATE_LINES
 
 
-def test_templates_cli_json_outputs_deterministic_catalog(capsys: pytest.CaptureFixture[str]) -> None:
+def test_templates_cli_json_outputs_deterministic_catalog(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     assert main(["templates", "--format", "json"]) == 0
 
     stdout = capsys.readouterr().out
@@ -128,7 +173,9 @@ def test_templates_cli_reports_invalid_packaged_resource_cleanly(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     def fail_catalog() -> None:
-        raise ValueError("Synthetic font manifest is missing a valid 'fonts' list: /tmp/manifest.yaml")
+        raise ValueError(
+            "Synthetic font manifest is missing a valid 'fonts' list: /tmp/manifest.yaml"
+        )
 
     monkeypatch.setattr("hocrsyngen.cli.template_catalog", fail_catalog)
 
@@ -137,14 +184,36 @@ def test_templates_cli_reports_invalid_packaged_resource_cleanly(
 
     assert exc_info.value.code == 2
     stderr = capsys.readouterr().err
-    assert "templates: Synthetic font manifest is missing a valid 'fonts' list" in stderr
+    assert (
+        "templates: Synthetic font manifest is missing a valid 'fonts' list" in stderr
+    )
     assert "Traceback" not in stderr
 
 
-def test_generate_cli_smoke(tmp_path: Path) -> None:
+def test_format_generation_report_json_uses_public_schema_only(tmp_path: Path) -> None:
     output_dir = tmp_path / "fixture-batch"
 
-    assert main(["generate", "--count", "2", "--seed", "17", "--output", str(output_dir)]) == 0
+    output = _format_generation_report_json(output_dir, sample_count=2, page_count=2)
+
+    assert json.loads(output) == {
+        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+        "sample_count": 2,
+        "page_count": 2,
+        "output_path": str(output_dir),
+        "manifest_path": str(output_dir / "generation_manifest.json"),
+    }
+
+
+def test_generate_cli_smoke(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    output_dir = tmp_path / "fixture-batch"
+
+    assert (
+        main(["generate", "--count", "2", "--seed", "17", "--output", str(output_dir)])
+        == 0
+    )
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
 
     manifest_path = output_dir / "generation_manifest.json"
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -158,6 +227,88 @@ def test_generate_cli_smoke(tmp_path: Path) -> None:
     }
     for sample in payload["samples"]:
         assert (output_dir / sample["pages"][0]["asset_path"]).is_file()
+
+
+def test_generate_cli_json_outputs_deterministic_report(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "fixture-batch"
+
+    assert (
+        main(
+            [
+                "generate",
+                "--count",
+                "2",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == (
+        json.dumps(
+            {
+                "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+                "sample_count": 2,
+                "page_count": 2,
+                "output_path": str(output_dir),
+                "manifest_path": str(output_dir / "generation_manifest.json"),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    )
+    manifest = json.loads(
+        (output_dir / "generation_manifest.json").read_text(encoding="utf-8")
+    )
+    assert "schema_version" not in manifest
+    assert len(manifest["samples"]) == 2
+
+
+def test_generate_cli_json_reports_zero_count(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "empty-batch"
+
+    assert (
+        main(
+            [
+                "generate",
+                "--count",
+                "0",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    assert json.loads(capsys.readouterr().out) == {
+        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+        "sample_count": 0,
+        "page_count": 0,
+        "output_path": str(output_dir),
+        "manifest_path": str(output_dir / "generation_manifest.json"),
+    }
+    assert (
+        json.loads(
+            (output_dir / "generation_manifest.json").read_text(encoding="utf-8")
+        )["samples"]
+        == []
+    )
 
 
 @pytest.mark.parametrize(
@@ -182,7 +333,9 @@ def test_generate_cli_rejects_negative_numeric_inputs(
     assert not output_dir.exists()
 
 
-def test_generate_cli_rejects_existing_file_output_path(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_generate_cli_rejects_existing_file_output_path(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     output_path = tmp_path / "not-a-directory"
     output_path.write_text("existing file\n", encoding="utf-8")
 
@@ -230,7 +383,17 @@ def test_generate_cli_reports_missing_packaged_resource_cleanly(
     monkeypatch.setattr("hocrsyngen.cli.generate_batch", fail_generation)
 
     with pytest.raises(SystemExit) as exc_info:
-        main(["generate", "--count", "1", "--seed", "17", "--output", str(tmp_path / "out")])
+        main(
+            [
+                "generate",
+                "--count",
+                "1",
+                "--seed",
+                "17",
+                "--output",
+                str(tmp_path / "out"),
+            ]
+        )
 
     assert exc_info.value.code == 2
     stderr = capsys.readouterr().err
@@ -243,12 +406,24 @@ def test_generate_cli_reports_invalid_packaged_resource_cleanly(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     def fail_generation(**_kwargs) -> None:
-        raise ValueError("Synthetic font file is invalid or unreadable: /tmp/invalid.ttf")
+        raise ValueError(
+            "Synthetic font file is invalid or unreadable: /tmp/invalid.ttf"
+        )
 
     monkeypatch.setattr("hocrsyngen.cli.generate_batch", fail_generation)
 
     with pytest.raises(SystemExit) as exc_info:
-        main(["generate", "--count", "1", "--seed", "17", "--output", str(tmp_path / "out")])
+        main(
+            [
+                "generate",
+                "--count",
+                "1",
+                "--seed",
+                "17",
+                "--output",
+                str(tmp_path / "out"),
+            ]
+        )
 
     assert exc_info.value.code == 2
     stderr = capsys.readouterr().err
@@ -256,33 +431,10 @@ def test_generate_cli_reports_invalid_packaged_resource_cleanly(
     assert "Traceback" not in stderr
 
 
-def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: Path) -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    target_dir = tmp_path / "site"
-    isolated_cwd = tmp_path / "isolated"
-    isolated_cwd.mkdir()
-
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "--target",
-            str(target_dir),
-            "--no-deps",
-            "--no-build-isolation",
-            str(project_root),
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(target_dir)
+def test_installed_package_console_entry_point_and_packaged_resources(
+    installed_package: tuple[Path, Path, dict[str, str]],
+) -> None:
+    target_dir, isolated_cwd, env = installed_package
     resource_check = (
         "from importlib import resources\n"
         "required = [\n"
@@ -381,11 +533,18 @@ def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: 
         text=True,
     )
 
-    console_manifest = json.loads((console_output / "generation_manifest.json").read_text(encoding="utf-8"))
+    console_manifest = json.loads(
+        (console_output / "generation_manifest.json").read_text(encoding="utf-8")
+    )
     console_asset = Path(console_manifest["samples"][0]["pages"][0]["asset_path"])
     assert not console_asset.is_absolute()
     assert (console_output / console_asset).is_file()
-    assert json.loads((module_output / "generation_manifest.json").read_text(encoding="utf-8"))["samples"] == []
+    assert (
+        json.loads(
+            (module_output / "generation_manifest.json").read_text(encoding="utf-8")
+        )["samples"]
+        == []
+    )
 
     console_validate_json = subprocess.run(
         [
@@ -438,3 +597,46 @@ def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: 
         "path": str(invalid_batch),
         "error": f"Missing manifest: {invalid_batch / 'generation_manifest.json'}",
     }
+
+
+def test_installed_package_generate_json_entry_point(
+    installed_package: tuple[Path, Path, dict[str, str]],
+) -> None:
+    _target_dir, isolated_cwd, env = installed_package
+    module_generate_json_output = isolated_cwd / "module-json-out"
+    module_generate_json = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "hocrsyngen.cli",
+            "generate",
+            "--count",
+            "1",
+            "--seed",
+            "17",
+            "--output",
+            str(module_generate_json_output),
+            "--format",
+            "json",
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert module_generate_json.stderr == ""
+    assert json.loads(module_generate_json.stdout) == {
+        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+        "sample_count": 1,
+        "page_count": 1,
+        "output_path": str(module_generate_json_output),
+        "manifest_path": str(module_generate_json_output / "generation_manifest.json"),
+    }
+    module_generate_json_manifest = json.loads(
+        (module_generate_json_output / "generation_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert "schema_version" not in module_generate_json_manifest
