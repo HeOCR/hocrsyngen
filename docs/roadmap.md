@@ -5,7 +5,7 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 ## Current Critical Path
 
 1. Merge this planning/agent-context PR.
-2. Confirm `hocrgen` integration contract with fixture export and validation.
+2. Guard the manifest/schema/docs contract against drift.
 3. Add Hebrew rendering/spec coverage docs/tests before deeper generator changes.
 4. Add style/persona controls only after manifest/metadata semantics are explicit.
 5. Keep optional ML-backed synthesis separate from baseline dependencies.
@@ -26,14 +26,14 @@ Scope:
 
 - S0a: agent-context architecture and planning docs.
 - S0b: clarify public contracts and integration boundaries.
-- S0c: document manifest v1 and validation behavior.
+- S0c: guard manifest v1 docs, schema, validation behavior, and fixture expectations against drift.
 
 Planned PR breakdown:
 
 - `S0a` — Planning foundation and agent context. Status: done in PR #17.
-- `S0b` — Executable `hocrgen` integration contract tests for installed CLI, fixture export, generation reports, validation reports, and invalid validation JSON. Status: next.
-- `S0c` — Manifest/schema drift guard: verify `generation_manifest_v1.md`, schema constraints, validation errors, and fixture expectations stay aligned. Status: planned.
-- `S0d` — Roadmap PR notation breakdown and handoff hygiene. Status: current.
+- `S0b` — Executable `hocrgen` integration contract tests for installed CLI, fixture export, generation reports, validation reports, and invalid validation JSON. Status: done in PR #19.
+- `S0c` — Manifest/schema drift guard: verify `generation_manifest_v1.md`, schema constraints, validation errors, and fixture expectations stay aligned. Status: current.
+- `S0d` — Roadmap PR notation breakdown and handoff hygiene. Status: done.
 
 Deliverables:
 
