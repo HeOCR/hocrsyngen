@@ -191,7 +191,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             template_id=template_id,
             recipe_id="printed_letter_form_v1",
             layout_style="printed_form",
-            font_style="handwritten_like",
+            font_style="printed",
             degradation_preset="office_scan_soft",
             paper_tone="printed",
             line_count=4,

@@ -19,6 +19,13 @@ def test_generate_cli_smoke(tmp_path: Path) -> None:
     manifest_path = output_dir / "generation_manifest.json"
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert len(payload["samples"]) == 2
+    assert {
+        sample["provenance"]["template_id"]: sample["provenance"]["font_id"]
+        for sample in payload["samples"]
+    } == {
+        "printed_letter": "alef-regular",
+        "handwritten_note": "gveret-levin-regular",
+    }
     for sample in payload["samples"]:
         assert (output_dir / sample["pages"][0]["asset_path"]).is_file()
 

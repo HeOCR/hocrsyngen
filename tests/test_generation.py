@@ -101,6 +101,13 @@ def test_generation_is_deterministic_for_fixed_seed(tmp_path: Path) -> None:
         sample["pages"][0]["sha256"] for sample in second["samples"]
     ]
     assert first["samples"][0]["recipe_id"] != first["samples"][1]["recipe_id"]
+    assert {
+        sample["provenance"]["template_id"]: sample["provenance"]["font_id"]
+        for sample in first["samples"]
+    } == {
+        "printed_letter": "alef-regular",
+        "handwritten_note": "gveret-levin-regular",
+    }
 
 
 def test_count_zero_emits_empty_manifest(tmp_path: Path) -> None:
@@ -230,7 +237,10 @@ def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Pat
 
     assert {document.path.suffix for document in documents} == {".jpg"}
     assert {document.generator_version for document in documents} == {"d4a-realism-v2"}
-    assert {document.font_id for document in documents} == {"gveret-levin-regular"}
+    assert {document.template_id: document.font_id for document in documents} == {
+        "printed_letter": "alef-regular",
+        "handwritten_note": "gveret-levin-regular",
+    }
     assert {document.recipe_id for document in documents} == {
         "printed_letter_form_v1",
         "handwritten_note_marginalia_v1",
@@ -296,7 +306,7 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
     missing_font_manifest_path = tmp_path / "missing_font_manifest.yaml"
     missing_font_output = tmp_path / "missing-font-output"
     missing_font_manifest_path.write_text(
-        'fonts:\n  - id: missing-font\n    file: missing.ttf\n    style: handwritten_like\n',
+        "fonts:\n  - id: missing-font\n    file: missing.ttf\n    style: printed\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="Synthetic font file is missing"):
@@ -314,7 +324,7 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
     invalid_font_output = tmp_path / "invalid-font-output"
     (tmp_path / "invalid.ttf").write_bytes(b"not a font")
     invalid_font_manifest_path.write_text(
-        'fonts:\n  - id: invalid-font\n    file: invalid.ttf\n    style: handwritten_like\n',
+        "fonts:\n  - id: invalid-font\n    file: invalid.ttf\n    style: printed\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="Synthetic font file is invalid or unreadable"):
@@ -374,8 +384,20 @@ def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:
         _font_path(manifest_path, {"id": "broken-font", "file": "nested/font.ttf"})
     with pytest.raises(ValueError, match="flat relative filename"):
         _font_path(manifest_path, {"id": "broken-font", "file": "nested\\font.ttf"})
+    assert _select_font(
+        [{"id": "alef-regular", "style": "printed"}], "printed_letter"
+    ) == {
+        "id": "alef-regular",
+        "style": "printed",
+    }
+    assert _select_font(
+        [{"id": "gveret-levin-regular", "style": "handwritten_like"}], "handwritten_note"
+    ) == {
+        "id": "gveret-levin-regular",
+        "style": "handwritten_like",
+    }
     with pytest.raises(ValueError, match="No synthetic font registered"):
-        _select_font([{"id": "alef-regular", "style": "printed"}], "printed_letter")
+        _select_font([{"id": "alef-regular", "style": "printed"}], "handwritten_note")
 
     image = Image.new("RGB", (600, 400), (255, 255, 255))
     draw = ImageDraw.Draw(image)
