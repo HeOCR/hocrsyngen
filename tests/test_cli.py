@@ -17,7 +17,41 @@ from hocrsyngen.cli import (
     _format_template_catalog_json,
     main,
 )
-from hocrsyngen.generator import TemplateCatalogEntry, generate_batch
+from hocrsyngen.generator import TemplateCatalogEntry
+
+
+@pytest.fixture(scope="module")
+def installed_package(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> tuple[Path, Path, dict[str, str]]:
+    project_root = Path(__file__).resolve().parents[1]
+    tmp_path = tmp_path_factory.mktemp("installed-package")
+    target_dir = tmp_path / "site"
+    isolated_cwd = tmp_path / "isolated"
+    isolated_cwd.mkdir()
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--target",
+            str(target_dir),
+            "--no-deps",
+            "--no-build-isolation",
+            str(project_root),
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(target_dir)
+    return target_dir, isolated_cwd, env
 
 
 EXPECTED_TEMPLATE_LINES = [
@@ -158,9 +192,8 @@ def test_templates_cli_reports_invalid_packaged_resource_cleanly(
 
 def test_format_generation_report_json_uses_public_schema_only(tmp_path: Path) -> None:
     output_dir = tmp_path / "fixture-batch"
-    manifest = generate_batch(count=2, seed=17, output_dir=output_dir)
 
-    output = _format_generation_report_json(output_dir, manifest)
+    output = _format_generation_report_json(output_dir, sample_count=2, page_count=2)
 
     assert json.loads(output) == {
         "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
@@ -399,34 +432,9 @@ def test_generate_cli_reports_invalid_packaged_resource_cleanly(
 
 
 def test_installed_package_console_entry_point_and_packaged_resources(
-    tmp_path: Path,
+    installed_package: tuple[Path, Path, dict[str, str]],
 ) -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    target_dir = tmp_path / "site"
-    isolated_cwd = tmp_path / "isolated"
-    isolated_cwd.mkdir()
-
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "--target",
-            str(target_dir),
-            "--no-deps",
-            "--no-build-isolation",
-            str(project_root),
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(target_dir)
+    target_dir, isolated_cwd, env = installed_package
     resource_check = (
         "from importlib import resources\n"
         "required = [\n"
@@ -538,44 +546,6 @@ def test_installed_package_console_entry_point_and_packaged_resources(
         == []
     )
 
-    module_generate_json_output = isolated_cwd / "module-json-out"
-    module_generate_json = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "hocrsyngen.cli",
-            "generate",
-            "--count",
-            "1",
-            "--seed",
-            "17",
-            "--output",
-            str(module_generate_json_output),
-            "--format",
-            "json",
-        ],
-        check=True,
-        cwd=isolated_cwd,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    assert module_generate_json.stderr == ""
-    assert json.loads(module_generate_json.stdout) == {
-        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
-        "sample_count": 1,
-        "page_count": 1,
-        "output_path": str(module_generate_json_output),
-        "manifest_path": str(module_generate_json_output / "generation_manifest.json"),
-    }
-    module_generate_json_manifest = json.loads(
-        (module_generate_json_output / "generation_manifest.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    assert "schema_version" not in module_generate_json_manifest
-
     console_validate_json = subprocess.run(
         [
             str(target_dir / "bin" / "hocrsyngen"),
@@ -627,3 +597,46 @@ def test_installed_package_console_entry_point_and_packaged_resources(
         "path": str(invalid_batch),
         "error": f"Missing manifest: {invalid_batch / 'generation_manifest.json'}",
     }
+
+
+def test_installed_package_generate_json_entry_point(
+    installed_package: tuple[Path, Path, dict[str, str]],
+) -> None:
+    _target_dir, isolated_cwd, env = installed_package
+    module_generate_json_output = isolated_cwd / "module-json-out"
+    module_generate_json = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "hocrsyngen.cli",
+            "generate",
+            "--count",
+            "1",
+            "--seed",
+            "17",
+            "--output",
+            str(module_generate_json_output),
+            "--format",
+            "json",
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert module_generate_json.stderr == ""
+    assert json.loads(module_generate_json.stdout) == {
+        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+        "sample_count": 1,
+        "page_count": 1,
+        "output_path": str(module_generate_json_output),
+        "manifest_path": str(module_generate_json_output / "generation_manifest.json"),
+    }
+    module_generate_json_manifest = json.loads(
+        (module_generate_json_output / "generation_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert "schema_version" not in module_generate_json_manifest

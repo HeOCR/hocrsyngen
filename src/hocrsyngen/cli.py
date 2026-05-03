@@ -10,7 +10,6 @@ from hocrsyngen.generator import (
     generate_batch,
     template_catalog,
 )
-from hocrsyngen.manifest import GenerationManifest
 from hocrsyngen.validation import BatchValidationError, validate_batch
 
 
@@ -59,12 +58,12 @@ def _format_template_catalog_json(catalog: list[TemplateCatalogEntry]) -> str:
 
 
 def _format_generation_report_json(
-    output_path: Path, manifest: GenerationManifest
+    output_path: Path, *, sample_count: int, page_count: int
 ) -> str:
     payload: dict[str, object] = {
         "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
-        "sample_count": len(manifest.samples),
-        "page_count": sum(len(sample.pages) for sample in manifest.samples),
+        "sample_count": sample_count,
+        "page_count": page_count,
         "output_path": str(output_path),
         "manifest_path": str(output_path / "generation_manifest.json"),
     }
@@ -199,7 +198,13 @@ def main(argv: list[str] | None = None) -> int:
         except (RuntimeError, ValueError) as exc:
             parser.error(f"generate: {exc}")
         if args.format == "json":
-            print(_format_generation_report_json(args.output, manifest))
+            print(
+                _format_generation_report_json(
+                    args.output,
+                    sample_count=len(manifest.samples),
+                    page_count=sum(len(sample.pages) for sample in manifest.samples),
+                )
+            )
         return 0
     if args.command == "validate":
         try:
