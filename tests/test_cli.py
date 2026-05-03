@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import tomllib
 from importlib import resources
 from pathlib import Path
 
@@ -26,11 +27,20 @@ from hocrsyngen.validation import validate_batch
 from hocrsyngen.validation import BatchValidationError, ValidationResult
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _project_version() -> str:
+    pyproject = tomllib.loads(
+        (PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    )
+    return pyproject["project"]["version"]
+
+
 @pytest.fixture(scope="module")
 def installed_package(
     tmp_path_factory: pytest.TempPathFactory,
 ) -> tuple[Path, Path, dict[str, str]]:
-    project_root = Path(__file__).resolve().parents[1]
     tmp_path = tmp_path_factory.mktemp("installed-package")
     target_dir = tmp_path / "site"
     isolated_cwd = tmp_path / "isolated"
@@ -46,7 +56,7 @@ def installed_package(
             str(target_dir),
             "--no-deps",
             "--no-build-isolation",
-            str(project_root),
+            str(PROJECT_ROOT),
         ],
         check=True,
         cwd=isolated_cwd,
@@ -64,7 +74,6 @@ def installed_package(
 def wheel_installed_package(
     tmp_path_factory: pytest.TempPathFactory,
 ) -> tuple[Path, Path, Path, dict[str, str]]:
-    project_root = Path(__file__).resolve().parents[1]
     tmp_path = tmp_path_factory.mktemp("wheel-installed-package")
     wheel_dir = tmp_path / "wheels"
     target_dir = tmp_path / "site"
@@ -82,7 +91,7 @@ def wheel_installed_package(
             "--no-build-isolation",
             "--wheel-dir",
             str(wheel_dir),
-            str(project_root),
+            str(PROJECT_ROOT),
         ],
         check=True,
         cwd=isolated_cwd,
@@ -93,6 +102,7 @@ def wheel_installed_package(
     wheels = sorted(wheel_dir.glob("hocrsyngen-*.whl"))
     assert len(wheels) == 1
     wheel_path = wheels[0]
+    assert wheel_path.name == f"hocrsyngen-{_project_version()}-py3-none-any.whl"
 
     subprocess.run(
         [
@@ -185,6 +195,17 @@ EXPECTED_CONTRACT_FIXTURE_CATALOG_JSON = {
 EXPECTED_CONTRACT_FIXTURE_CATALOG_JSON_TEXT = json.dumps(
     EXPECTED_CONTRACT_FIXTURE_CATALOG_JSON, ensure_ascii=False, indent=2
 )
+REQUIRED_CONTRACT_FIXTURE_RESOURCE_PATHS = [
+    "data/contracts/generation_manifest_v1/fixture-batch/generation_manifest.json",
+    (
+        "data/contracts/generation_manifest_v1/fixture-batch/assets/"
+        "hocrsyngen-s00000017-000000/page_0001.jpg"
+    ),
+    (
+        "data/contracts/generation_manifest_v1/fixture-batch/assets/"
+        "hocrsyngen-s00000017-000001/page_0001.jpg"
+    ),
+]
 
 
 def _packaged_contract_fixture() -> Path:
@@ -1005,19 +1026,31 @@ def test_wheel_distribution_contracts_cli_and_packaged_resources(
     wheel_path, target_dir, isolated_cwd, env = wheel_installed_package
     assert wheel_path.is_file()
 
-    resource_check = (
+    wheel_install_check = (
+        "import json\n"
+        "import sys\n"
         "from importlib import resources\n"
-        "required = [\n"
-        "    'data/contracts/generation_manifest_v1/fixture-batch/generation_manifest.json',\n"
-        "    'data/contracts/generation_manifest_v1/fixture-batch/assets/hocrsyngen-s00000017-000000/page_0001.jpg',\n"
-        "    'data/contracts/generation_manifest_v1/fixture-batch/assets/hocrsyngen-s00000017-000001/page_0001.jpg',\n"
-        "]\n"
+        "from pathlib import Path\n"
+        "import hocrsyngen\n"
+        "target_dir = Path(sys.argv[1]).resolve()\n"
+        "required = json.loads(sys.argv[2])\n"
         "root = resources.files('hocrsyngen')\n"
+        "module_path = Path(hocrsyngen.__file__).resolve()\n"
         "missing = [path for path in required if not (root / path).is_file()]\n"
-        "assert not missing, missing\n"
+        "print(json.dumps({\n"
+        "    'module_path': str(module_path),\n"
+        "    'module_in_target': module_path.is_relative_to(target_dir),\n"
+        "    'missing_resources': missing,\n"
+        "}, sort_keys=True))\n"
     )
-    subprocess.run(
-        [sys.executable, "-c", resource_check],
+    wheel_install_result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            wheel_install_check,
+            str(target_dir),
+            json.dumps(REQUIRED_CONTRACT_FIXTURE_RESOURCE_PATHS),
+        ],
         check=True,
         cwd=isolated_cwd,
         env=env,
@@ -1025,6 +1058,33 @@ def test_wheel_distribution_contracts_cli_and_packaged_resources(
         stderr=subprocess.PIPE,
         text=True,
     )
+    assert wheel_install_result.stderr == ""
+    assert json.loads(wheel_install_result.stdout) == {
+        "module_path": str((target_dir / "hocrsyngen" / "__init__.py").resolve()),
+        "module_in_target": True,
+        "missing_resources": [],
+    }
+
+    dist_metadata_check = (
+        "from importlib.metadata import distribution\n"
+        "dist = distribution('hocrsyngen')\n"
+        "print(dist.metadata['Name'])\n"
+        "print(dist.version)\n"
+    )
+    dist_metadata_result = subprocess.run(
+        [sys.executable, "-c", dist_metadata_check],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert dist_metadata_result.stderr == ""
+    assert dist_metadata_result.stdout.splitlines() == [
+        "hocrsyngen",
+        _project_version(),
+    ]
 
     console_contracts_json = subprocess.run(
         [str(target_dir / "bin" / "hocrsyngen"), "contracts", "--format", "json"],
