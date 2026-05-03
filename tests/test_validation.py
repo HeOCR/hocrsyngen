@@ -1,16 +1,28 @@
 from __future__ import annotations
 
 import json
+from importlib import resources
 from pathlib import Path
+from pathlib import PurePosixPath
+from typing import Any
 
+import jsonschema
 import pytest
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 import hocrsyngen.validation as validation_module
 from hocrsyngen.cli import VALIDATION_REPORT_SCHEMA_VERSION, main
 from hocrsyngen.generator import generate_batch, template_catalog
 from hocrsyngen.io import sha256_file
 from hocrsyngen.validation import BatchValidationError, validate_batch
+
+SCHEMA_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "src"
+    / "hocrsyngen"
+    / "schemas"
+    / "generation_manifest.schema.json"
+)
 
 
 def _manifest_path(batch_dir: Path) -> Path:
@@ -34,6 +46,16 @@ def _generated_batch(tmp_path: Path) -> Path:
     return batch_dir
 
 
+def _packaged_contract_fixture() -> Path:
+    return (
+        resources.files("hocrsyngen")
+        / "data"
+        / "contracts"
+        / "generation_manifest_v1"
+        / "fixture-batch"
+    )
+
+
 def test_validate_generated_batch_passes(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -44,6 +66,68 @@ def test_validate_generated_batch_passes(
     captured = capsys.readouterr()
     assert captured.out == f"Validated 1 samples and 1 pages in {batch_dir}\n"
     assert captured.err == ""
+
+
+def test_packaged_generation_manifest_contract_fixture_validates() -> None:
+    with resources.as_file(_packaged_contract_fixture()) as batch_dir:
+        result = validate_batch(batch_dir)
+
+        assert result.sample_count == 2
+        assert result.page_count == 2
+
+
+def test_packaged_generation_manifest_contract_fixture_shape_and_assets() -> None:
+    with resources.as_file(_packaged_contract_fixture()) as batch_dir:
+        payload = _load_manifest(batch_dir)
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+
+        jsonschema.validate(payload, schema)
+        assert set(payload) == {
+            "generator_name",
+            "license",
+            "manifest_version",
+            "samples",
+            "synthetic_disclosure",
+        }
+        assert "schema_version" not in payload
+        assert "generation_report" not in payload
+        assert {
+            sample["provenance"]["template_id"] for sample in payload["samples"]
+        } == {
+            "printed_letter",
+            "handwritten_note",
+        }
+        for sample in payload["samples"]:
+            assert set(sample) == {
+                "controls",
+                "generator_version",
+                "license",
+                "pages",
+                "provenance",
+                "recipe_id",
+                "sample_id",
+                "synthetic_disclosure",
+                "text",
+            }
+            for page in sample["pages"]:
+                asset_path = PurePosixPath(page["asset_path"])
+                assert not asset_path.is_absolute()
+                assert ".." not in asset_path.parts
+                assert "\\" not in page["asset_path"]
+                path = batch_dir / Path(*asset_path.parts)
+                assert path.is_file()
+                assert sha256_file(path) == page["sha256"]
+                _assert_readable_jpeg(path, page)
+
+
+def _assert_readable_jpeg(path: Path, page: dict[str, Any]) -> None:
+    try:
+        with Image.open(path) as image:
+            image.load()
+            assert image.format == "JPEG"
+            assert image.size == (page["width"], page["height"])
+    except (OSError, UnidentifiedImageError) as exc:
+        raise AssertionError(f"Fixture asset is not a readable JPEG: {path}") from exc
 
 
 def test_validate_json_reports_generated_batch(

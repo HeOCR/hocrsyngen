@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+from importlib import resources
 from pathlib import Path
 
 import pytest
@@ -96,6 +97,16 @@ EXPECTED_TEMPLATE_CATALOG_JSON = {
 EXPECTED_TEMPLATE_CATALOG_JSON_TEXT = json.dumps(
     EXPECTED_TEMPLATE_CATALOG_JSON, ensure_ascii=False, indent=2
 )
+
+
+def _packaged_contract_fixture() -> Path:
+    return (
+        resources.files("hocrsyngen")
+        / "data"
+        / "contracts"
+        / "generation_manifest_v1"
+        / "fixture-batch"
+    )
 
 
 def test_format_template_catalog_entry() -> None:
@@ -431,6 +442,23 @@ def test_generate_cli_reports_invalid_packaged_resource_cleanly(
     assert "Traceback" not in stderr
 
 
+def test_validate_cli_json_reports_packaged_contract_fixture(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with resources.as_file(_packaged_contract_fixture()) as batch_dir:
+        assert main(["validate", str(batch_dir), "--format", "json"]) == 0
+
+        captured = capsys.readouterr()
+        assert captured.err == ""
+        assert json.loads(captured.out) == {
+            "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+            "valid": True,
+            "sample_count": 2,
+            "page_count": 2,
+            "path": str(batch_dir),
+        }
+
+
 def test_installed_package_console_entry_point_and_packaged_resources(
     installed_package: tuple[Path, Path, dict[str, str]],
 ) -> None:
@@ -443,6 +471,9 @@ def test_installed_package_console_entry_point_and_packaged_resources(
         "    'data/synthetic/fonts/Alef-Regular.ttf',\n"
         "    'data/synthetic/fonts/GveretLevin-Regular.ttf',\n"
         "    'data/synthetic/texts/hebrew_lines.txt',\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/generation_manifest.json',\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/assets/hocrsyngen-s00000017-000000/page_0001.jpg',\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/assets/hocrsyngen-s00000017-000001/page_0001.jpg',\n"
         "]\n"
         "root = resources.files('hocrsyngen')\n"
         "missing = [path for path in required if not (root / path).is_file()]\n"
@@ -450,6 +481,40 @@ def test_installed_package_console_entry_point_and_packaged_resources(
     )
     subprocess.run(
         [sys.executable, "-c", resource_check],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    installed_contract_fixture_check = (
+        "import json\n"
+        "import subprocess\n"
+        "import sys\n"
+        "from importlib import resources\n"
+        "fixture = resources.files('hocrsyngen') / 'data' / 'contracts' / 'generation_manifest_v1' / 'fixture-batch'\n"
+        "with resources.as_file(fixture) as fixture_path:\n"
+        "    completed = subprocess.run(\n"
+        "        [sys.executable, '-m', 'hocrsyngen.cli', 'validate', str(fixture_path), '--format', 'json'],\n"
+        "        check=True,\n"
+        "        stdout=subprocess.PIPE,\n"
+        "        stderr=subprocess.PIPE,\n"
+        "        text=True,\n"
+        "    )\n"
+        "    assert completed.stderr == ''\n"
+        "    payload = json.loads(completed.stdout)\n"
+        "    assert payload == {\n"
+        "        'schema_version': 'validation_report.v1',\n"
+        "        'valid': True,\n"
+        "        'sample_count': 2,\n"
+        "        'page_count': 2,\n"
+        "        'path': str(fixture_path),\n"
+        "    }\n"
+    )
+    subprocess.run(
+        [sys.executable, "-c", installed_contract_fixture_check],
         check=True,
         cwd=isolated_cwd,
         env=env,

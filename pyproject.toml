@@ -30,6 +30,8 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 hocrsyngen = [
+  "data/contracts/generation_manifest_v1/fixture-batch/*.json",
+  "data/contracts/generation_manifest_v1/fixture-batch/assets/*/*.jpg",
   "data/synthetic/fonts/*.ttf",
   "data/synthetic/fonts/*.txt",
   "data/synthetic/fonts/*.yaml",
