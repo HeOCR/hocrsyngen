@@ -34,12 +34,16 @@ SCHEMA_PATH = (
     / "generation_manifest.schema.json"
 )
 HEBREW_CONTRACT_LINE = "אבגד ךםןףץ תיק 42/7: סוף, כסף, דרך, נייר."
-SPARSE_NIQQUD_CONTRACT_LINE = unicodedata.normalize("NFC", "בְּדִיקָה קצרה: סעיף 3, עמוד 12.")
+SPARSE_NIQQUD_CONTRACT_LINE = unicodedata.normalize(
+    "NFC", "בְּדִיקָה קצרה: סעיף 3, עמוד 12."
+)
 HEBREW_CONTRACT_LINES = [HEBREW_CONTRACT_LINE, SPARSE_NIQQUD_CONTRACT_LINE]
 
 
 def _load_manifest(output_dir: Path) -> dict:
-    return json.loads((output_dir / "generation_manifest.json").read_text(encoding="utf-8"))
+    return json.loads(
+        (output_dir / "generation_manifest.json").read_text(encoding="utf-8")
+    )
 
 
 def _image_pixels(image: Image.Image) -> list[tuple[int, int, int]]:
@@ -101,6 +105,13 @@ def test_generation_is_deterministic_for_fixed_seed(tmp_path: Path) -> None:
         sample["pages"][0]["sha256"] for sample in second["samples"]
     ]
     assert first["samples"][0]["recipe_id"] != first["samples"][1]["recipe_id"]
+    assert {
+        sample["provenance"]["template_id"]: sample["provenance"]["font_id"]
+        for sample in first["samples"]
+    } == {
+        "printed_letter": "alef-regular",
+        "handwritten_note": "gveret-levin-regular",
+    }
 
 
 def test_count_zero_emits_empty_manifest(tmp_path: Path) -> None:
@@ -111,7 +122,9 @@ def test_count_zero_emits_empty_manifest(tmp_path: Path) -> None:
     assert _load_manifest(output_dir)["samples"] == []
 
 
-def test_manifest_text_preserves_hebrew_logical_order_rtl_metadata(tmp_path: Path) -> None:
+def test_manifest_text_preserves_hebrew_logical_order_rtl_metadata(
+    tmp_path: Path,
+) -> None:
     payload = generate_batch(count=1, seed=17, output_dir=tmp_path).to_dict()
     sample = payload["samples"][0]
     text = sample["text"]
@@ -124,7 +137,9 @@ def test_manifest_text_preserves_hebrew_logical_order_rtl_metadata(tmp_path: Pat
     assert _rtl_display_text("סימן 12") == "סימן 12"
 
 
-def test_generated_manifest_preserves_logical_order_hebrew_contract_cases(tmp_path: Path) -> None:
+def test_generated_manifest_preserves_logical_order_hebrew_contract_cases(
+    tmp_path: Path,
+) -> None:
     output_dir = tmp_path / "contract-batch"
     corpus_path = _write_contract_corpus(tmp_path / "contract_corpus.txt")
     manifest = generator_module.generate_manifest(
@@ -171,7 +186,9 @@ def test_draw_rtl_text_passes_logical_text_to_pillow_with_rtl_direction() -> Non
     draw = RecordingDraw()
     font = object()
 
-    _draw_rtl_text(draw, (500, 40), HEBREW_CONTRACT_LINE, font=font, fill=(1, 2, 3), anchor="ra")
+    _draw_rtl_text(
+        draw, (500, 40), HEBREW_CONTRACT_LINE, font=font, fill=(1, 2, 3), anchor="ra"
+    )
 
     assert draw.calls == [
         {
@@ -186,7 +203,9 @@ def test_draw_rtl_text_passes_logical_text_to_pillow_with_rtl_direction() -> Non
     assert _rtl_display_text(HEBREW_CONTRACT_LINE) == HEBREW_CONTRACT_LINE
 
 
-def test_renderer_smoke_outputs_asset_for_hebrew_contract_cases_without_mutating_manifest_text(tmp_path: Path) -> None:
+def test_renderer_smoke_outputs_asset_for_hebrew_contract_cases_without_mutating_manifest_text(
+    tmp_path: Path,
+) -> None:
     output_dir = tmp_path / "rendered-contract"
     corpus_path = _write_contract_corpus(tmp_path / "contract_corpus.txt")
     documents = generate_documents(
@@ -205,11 +224,17 @@ def test_renderer_smoke_outputs_asset_for_hebrew_contract_cases_without_mutating
         image = opened.convert("RGB")
         assert image.size == CANVAS_SIZE
         rendered_region = image.crop((140, 250, 1060, 760))
-        dark_ink_pixels = sum(1 for r, g, b in _image_pixels(rendered_region) if r < 115 and g < 105 and b < 95)
+        dark_ink_pixels = sum(
+            1
+            for r, g, b in _image_pixels(rendered_region)
+            if r < 115 and g < 105 and b < 95
+        )
         assert dark_ink_pixels > 5_000
 
 
-def test_text_corpus_covers_final_letters_numerals_punctuation_and_sparse_niqqud() -> None:
+def test_text_corpus_covers_final_letters_numerals_punctuation_and_sparse_niqqud() -> (
+    None
+):
     corpus = default_text_corpus_path().read_text(encoding="utf-8")
 
     assert all(letter in corpus for letter in "ךםןףץ")
@@ -218,7 +243,9 @@ def test_text_corpus_covers_final_letters_numerals_punctuation_and_sparse_niqqud
     assert any("\u0591" <= character <= "\u05c7" for character in corpus)
 
 
-def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Path) -> None:
+def test_synthetic_generation_uses_packaged_fonts_and_curated_text(
+    tmp_path: Path,
+) -> None:
     documents = generate_documents(
         count=2,
         seed=11,
@@ -230,7 +257,10 @@ def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Pat
 
     assert {document.path.suffix for document in documents} == {".jpg"}
     assert {document.generator_version for document in documents} == {"d4a-realism-v2"}
-    assert {document.font_id for document in documents} == {"gveret-levin-regular"}
+    assert {document.template_id: document.font_id for document in documents} == {
+        "printed_letter": "alef-regular",
+        "handwritten_note": "gveret-levin-regular",
+    }
     assert {document.recipe_id for document in documents} == {
         "printed_letter_form_v1",
         "handwritten_note_marginalia_v1",
@@ -254,21 +284,29 @@ def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) 
     with Image.open(by_template["printed_letter"].path).convert("RGB") as printed:
         form_region = printed.crop((140, 330, 1060, 820))
         printed_pixels = _image_pixels(form_region)
-        red_stamp_pixels = sum(1 for r, g, b in printed_pixels if r > 90 and r > g * 1.45 and r > b * 1.45)
-        dark_ink_pixels = sum(1 for r, g, b in printed_pixels if r < 115 and g < 105 and b < 95)
+        red_stamp_pixels = sum(
+            1 for r, g, b in printed_pixels if r > 90 and r > g * 1.45 and r > b * 1.45
+        )
+        dark_ink_pixels = sum(
+            1 for r, g, b in printed_pixels if r < 115 and g < 105 and b < 95
+        )
         assert red_stamp_pixels > 500
         assert dark_ink_pixels > 5_000
 
     with Image.open(by_template["handwritten_note"].path).convert("RGB") as handwritten:
         marginalia_region = handwritten.crop((120, 430, 280, 760))
         marginalia_pixels = _image_pixels(marginalia_region)
-        marginalia_ink_pixels = sum(1 for r, g, b in marginalia_pixels if r < 115 and g < 105 and b < 95)
+        marginalia_ink_pixels = sum(
+            1 for r, g, b in marginalia_pixels if r < 115 and g < 105 and b < 95
+        )
         assert marginalia_ink_pixels > 150
 
 
 def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
     invalid_template_output = tmp_path / "invalid-template"
-    with pytest.raises(ValueError, match="Unsupported synthetic template_id: typo_template"):
+    with pytest.raises(
+        ValueError, match="Unsupported synthetic template_id: typo_template"
+    ):
         generate_documents(
             count=1,
             seed=7,
@@ -296,7 +334,7 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
     missing_font_manifest_path = tmp_path / "missing_font_manifest.yaml"
     missing_font_output = tmp_path / "missing-font-output"
     missing_font_manifest_path.write_text(
-        'fonts:\n  - id: missing-font\n    file: missing.ttf\n    style: handwritten_like\n',
+        "fonts:\n  - id: missing-font\n    file: missing.ttf\n    style: printed\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="Synthetic font file is missing"):
@@ -314,10 +352,12 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
     invalid_font_output = tmp_path / "invalid-font-output"
     (tmp_path / "invalid.ttf").write_bytes(b"not a font")
     invalid_font_manifest_path.write_text(
-        'fonts:\n  - id: invalid-font\n    file: invalid.ttf\n    style: handwritten_like\n',
+        "fonts:\n  - id: invalid-font\n    file: invalid.ttf\n    style: printed\n",
         encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="Synthetic font file is invalid or unreadable"):
+    with pytest.raises(
+        ValueError, match="Synthetic font file is invalid or unreadable"
+    ):
         generate_documents(
             count=1,
             seed=7,
@@ -333,7 +373,9 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
     assert not (tmp_path / "negative-seed").exists()
 
     with pytest.raises(ValueError, match="requires at least one template_id"):
-        generate_batch(count=1, seed=7, output_dir=tmp_path / "empty-templates", template_ids=[])
+        generate_batch(
+            count=1, seed=7, output_dir=tmp_path / "empty-templates", template_ids=[]
+        )
     assert not (tmp_path / "empty-templates").exists()
 
     file_output = tmp_path / "file-output"
@@ -374,19 +416,44 @@ def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:
         _font_path(manifest_path, {"id": "broken-font", "file": "nested/font.ttf"})
     with pytest.raises(ValueError, match="flat relative filename"):
         _font_path(manifest_path, {"id": "broken-font", "file": "nested\\font.ttf"})
+    assert _select_font(
+        [{"id": "alef-regular", "style": "printed"}], "printed_letter"
+    ) == {
+        "id": "alef-regular",
+        "style": "printed",
+    }
     with pytest.raises(ValueError, match="No synthetic font registered"):
-        _select_font([{"id": "alef-regular", "style": "printed"}], "printed_letter")
+        _select_font([{"id": "alef-regular", "style": "printed"}], "handwritten_note")
 
     image = Image.new("RGB", (600, 400), (255, 255, 255))
     draw = ImageDraw.Draw(image)
-    font = _load_font(_font_path(default_font_manifest_path(), {"id": "alef-regular", "file": "Alef-Regular.ttf"}), 42)
+    font = _load_font(
+        _font_path(
+            default_font_manifest_path(),
+            {"id": "alef-regular", "file": "Alef-Regular.ttf"},
+        ),
+        42,
+    )
     assert _wrap_hebrew_text(draw, "", font, max_width=200) == [""]
-    assert len(_wrap_hebrew_text(draw, "מכתב מנהלי רישום ארכיוני הודעה פנימית", font, max_width=100)) > 1
+    assert (
+        len(
+            _wrap_hebrew_text(
+                draw, "מכתב מנהלי רישום ארכיוני הודעה פנימית", font, max_width=100
+            )
+        )
+        > 1
+    )
 
 
-def test_generation_requires_raqm_for_hebrew_rendering(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_generation_requires_raqm_for_hebrew_rendering(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     _pillow_has_raqm.cache_clear()
-    monkeypatch.setattr(generator_module.features, "check", lambda feature: False if feature == "raqm" else True)
+    monkeypatch.setattr(
+        generator_module.features,
+        "check",
+        lambda feature: False if feature == "raqm" else True,
+    )
 
     with pytest.raises(RuntimeError, match="requires Pillow with libraqm support"):
         generate_batch(count=1, seed=17, output_dir=tmp_path)
@@ -396,7 +463,10 @@ def test_generation_requires_raqm_for_hebrew_rendering(tmp_path: Path, monkeypat
 
 def test_no_hocrgen_network_or_gpu_baseline_dependencies() -> None:
     project_root = Path(__file__).resolve().parents[1]
-    source = "\n".join(path.read_text(encoding="utf-8") for path in (project_root / "src" / "hocrsyngen").glob("*.py"))
+    source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (project_root / "src" / "hocrsyngen").glob("*.py")
+    )
     pyproject = (project_root / "pyproject.toml").read_text(encoding="utf-8")
 
     assert "import hocrgen" not in source
