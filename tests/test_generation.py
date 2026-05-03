@@ -24,6 +24,7 @@ from hocrsyngen.generator import (
     template_catalog,
     write_manifest,
 )
+from hocrsyngen.io import sha256_file
 from hocrsyngen.manifest import TextMetadata
 
 
@@ -109,6 +110,140 @@ def test_generation_is_deterministic_for_fixed_seed(tmp_path: Path) -> None:
         "printed_letter": "alef-regular",
         "handwritten_note": "gveret-levin-regular",
     }
+
+
+def test_stable_seed_manifest_identity_and_output_layout_drift_guard(tmp_path: Path) -> None:
+    output_dir = tmp_path / "stable-seed"
+    payload = generate_batch(count=4, seed=29, output_dir=output_dir).to_dict()
+
+    assert set(output_dir.iterdir()) == {
+        output_dir / "assets",
+        output_dir / "generation_manifest.json",
+    }
+    assert _load_manifest(output_dir) == payload
+    assert payload["manifest_version"] == "1.0"
+    assert payload["generator_name"] == "hocrsyngen"
+    assert payload["license"] == "PROJECT-SYNTHETIC"
+    assert [sample["sample_id"] for sample in payload["samples"]] == [
+        "hocrsyngen-s00000029-000000",
+        "hocrsyngen-s00000029-000001",
+        "hocrsyngen-s00000029-000002",
+        "hocrsyngen-s00000029-000003",
+    ]
+
+    expected_stable_projection = [
+        {
+            "sample_id": "hocrsyngen-s00000029-000000",
+            "page_id": "hocrsyngen-s00000029-000000-page-0001",
+            "asset_path": "assets/hocrsyngen-s00000029-000000/page_0001.jpg",
+            "recipe_id": "printed_letter_form_v1",
+            "template_id": "printed_letter",
+            "degradation_preset": "office_scan_soft",
+            "font_id": "alef-regular",
+            "sample_index": 0,
+            "title": "מכתב מנהלי",
+        },
+        {
+            "sample_id": "hocrsyngen-s00000029-000001",
+            "page_id": "hocrsyngen-s00000029-000001-page-0001",
+            "asset_path": "assets/hocrsyngen-s00000029-000001/page_0001.jpg",
+            "recipe_id": "handwritten_note_marginalia_v1",
+            "template_id": "handwritten_note",
+            "degradation_preset": "notebook_scan_worn",
+            "font_id": "gveret-levin-regular",
+            "sample_index": 1,
+            "title": "רישום קצר",
+        },
+        {
+            "sample_id": "hocrsyngen-s00000029-000002",
+            "page_id": "hocrsyngen-s00000029-000002-page-0001",
+            "asset_path": "assets/hocrsyngen-s00000029-000002/page_0001.jpg",
+            "recipe_id": "printed_letter_form_v1",
+            "template_id": "printed_letter",
+            "degradation_preset": "office_scan_soft",
+            "font_id": "alef-regular",
+            "sample_index": 2,
+            "title": "רישום ארכיוני",
+        },
+        {
+            "sample_id": "hocrsyngen-s00000029-000003",
+            "page_id": "hocrsyngen-s00000029-000003-page-0001",
+            "asset_path": "assets/hocrsyngen-s00000029-000003/page_0001.jpg",
+            "recipe_id": "handwritten_note_marginalia_v1",
+            "template_id": "handwritten_note",
+            "degradation_preset": "notebook_scan_worn",
+            "font_id": "gveret-levin-regular",
+            "sample_index": 3,
+            "title": "פנקס הערות",
+        },
+    ]
+
+    stable_projection = []
+    for sample in payload["samples"]:
+        [page] = sample["pages"]
+        asset_path = PurePosixPath(page["asset_path"])
+        stable_projection.append(
+            {
+                "sample_id": sample["sample_id"],
+                "page_id": page["page_id"],
+                "asset_path": page["asset_path"],
+                "recipe_id": sample["recipe_id"],
+                "template_id": sample["provenance"]["template_id"],
+                "degradation_preset": sample["provenance"]["degradation_preset"],
+                "font_id": sample["provenance"]["font_id"],
+                "sample_index": sample["provenance"]["sample_index"],
+                "title": sample["text"]["logical_order"].splitlines()[0],
+            }
+        )
+
+        assert not asset_path.is_absolute()
+        assert ".." not in asset_path.parts
+        assert "\\" not in page["asset_path"]
+        assert page["media_type"] == "image/jpeg"
+        assert (page["width"], page["height"]) == CANVAS_SIZE
+        assert (output_dir / Path(*asset_path.parts)).is_file()
+        assert sample["generator_version"] == "d4a-realism-v2"
+        assert sample["provenance"]["seed"] == 29
+        assert sample["provenance"]["recipe_id"] == sample["recipe_id"]
+        assert sample["provenance"]["source_corpus"] == "packaged:synthetic/texts/hebrew_lines.txt"
+        assert sample["controls"] == {"persona": None, "condition": None}
+        assert sample["license"] == "PROJECT-SYNTHETIC"
+        assert sample["text"]["script"] == "Hebr"
+        assert sample["text"]["language"] == "he"
+        assert sample["text"]["direction"] == "rtl"
+        assert sample["text"]["unicode_normalization"] == "NFC"
+        assert sample["text"]["logical_order"] == unicodedata.normalize(
+            "NFC", sample["text"]["logical_order"]
+        )
+
+    assert stable_projection == expected_stable_projection
+
+
+def test_stable_seed_page_hashes_track_assets_and_seed_changes(tmp_path: Path) -> None:
+    first_dir = tmp_path / "first"
+    second_dir = tmp_path / "second"
+    changed_seed_dir = tmp_path / "changed-seed"
+    first = generate_batch(count=3, seed=29, output_dir=first_dir).to_dict()
+    second = generate_batch(count=3, seed=29, output_dir=second_dir).to_dict()
+    changed_seed = generate_batch(count=3, seed=30, output_dir=changed_seed_dir).to_dict()
+
+    first_hashes = [sample["pages"][0]["sha256"] for sample in first["samples"]]
+    second_hashes = [sample["pages"][0]["sha256"] for sample in second["samples"]]
+    changed_seed_hashes = [
+        sample["pages"][0]["sha256"] for sample in changed_seed["samples"]
+    ]
+
+    assert first_hashes == second_hashes
+    assert first_hashes != changed_seed_hashes
+    assert len(set(first_hashes)) == len(first_hashes)
+    for batch_dir, payload in [
+        (first_dir, first),
+        (second_dir, second),
+        (changed_seed_dir, changed_seed),
+    ]:
+        for sample in payload["samples"]:
+            page = sample["pages"][0]
+            assert page["sha256"] == sha256_file(batch_dir / page["asset_path"])
 
 
 def test_count_zero_emits_empty_manifest(tmp_path: Path) -> None:

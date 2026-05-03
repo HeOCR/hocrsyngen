@@ -39,6 +39,8 @@ it.
 
 - CLI contracts.
 - Generation determinism.
+- Stable generated-batch drift guards for seed/sample ids, governed manifest
+  fields, output layout, and page hash behavior across fixed and changed seeds.
 - Manifest schema.
 - Hebrew logical-order metadata.
 - Packaged fonts and text.
@@ -57,6 +59,7 @@ Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail 
 ## Quality Gates
 
 - Deterministic seed behavior.
+- Stable generated-batch manifest identity and output layout for governed seeds.
 - Portable relative paths.
 - SHA-256 correctness.
 - JPEG readability and dimensions.
