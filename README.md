@@ -96,7 +96,9 @@ generated batch is invalid.
 
 Text output remains the default validation report for human-facing CLI use.
 `hocrsyngen validate PATH --format json` emits a deterministic
-machine-readable validation report without changing manifest v1:
+machine-readable validation report to stdout without changing manifest v1. The
+`path` field echoes the original CLI argument string, not a resolved canonical
+filesystem path:
 
 ```json
 {
@@ -109,7 +111,8 @@ machine-readable validation report without changing manifest v1:
 ```
 
 Invalid batches keep the non-zero validation exit code and emit a deterministic
-JSON error report when JSON output is requested:
+JSON error report to stdout when JSON output is requested. Validation errors
+encoded in JSON leave stderr empty:
 
 ```json
 {

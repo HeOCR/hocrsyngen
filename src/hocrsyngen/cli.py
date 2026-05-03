@@ -56,28 +56,26 @@ def _format_template_catalog_json(catalog: list[TemplateCatalogEntry]) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-def _format_validation_report_json(
-    path: Path,
-    *,
-    sample_count: int | None = None,
-    page_count: int | None = None,
-    error: str | None = None,
+def _format_valid_validation_report_json(
+    path: Path, *, sample_count: int, page_count: int
 ) -> str:
-    if error is None:
-        payload: dict[str, object] = {
-            "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
-            "valid": True,
-            "sample_count": sample_count,
-            "page_count": page_count,
-            "path": str(path),
-        }
-    else:
-        payload = {
-            "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
-            "valid": False,
-            "path": str(path),
-            "error": error,
-        }
+    payload: dict[str, object] = {
+        "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+        "valid": True,
+        "sample_count": sample_count,
+        "page_count": page_count,
+        "path": str(path),
+    }
+    return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def _format_invalid_validation_report_json(path: Path, *, error: str) -> str:
+    payload: dict[str, object] = {
+        "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+        "valid": False,
+        "path": str(path),
+        "error": error,
+    }
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
@@ -185,12 +183,12 @@ def main(argv: list[str] | None = None) -> int:
             result = validate_batch(args.path)
         except BatchValidationError as exc:
             if args.format == "json":
-                print(_format_validation_report_json(args.path, error=str(exc)))
+                print(_format_invalid_validation_report_json(args.path, error=str(exc)))
                 return 1
             parser.exit(1, f"hocrsyngen validate: {exc}\n")
         if args.format == "json":
             print(
-                _format_validation_report_json(
+                _format_valid_validation_report_json(
                     args.path,
                     sample_count=result.sample_count,
                     page_count=result.page_count,
