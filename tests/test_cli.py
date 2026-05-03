@@ -10,6 +10,7 @@ import pytest
 
 from hocrsyngen.cli import (
     TEMPLATE_CATALOG_SCHEMA_VERSION,
+    VALIDATION_REPORT_SCHEMA_VERSION,
     _format_template_catalog_entry,
     _format_template_catalog_json,
     main,
@@ -385,3 +386,55 @@ def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: 
     assert not console_asset.is_absolute()
     assert (console_output / console_asset).is_file()
     assert json.loads((module_output / "generation_manifest.json").read_text(encoding="utf-8"))["samples"] == []
+
+    console_validate_json = subprocess.run(
+        [
+            str(target_dir / "bin" / "hocrsyngen"),
+            "validate",
+            str(console_output),
+            "--format",
+            "json",
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert console_validate_json.stderr == ""
+    assert json.loads(console_validate_json.stdout) == {
+        "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+        "valid": True,
+        "sample_count": 1,
+        "page_count": 1,
+        "path": str(console_output),
+    }
+
+    invalid_batch = isolated_cwd / "missing-manifest"
+    invalid_batch.mkdir()
+    module_validate_json = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "hocrsyngen.cli",
+            "validate",
+            str(invalid_batch),
+            "--format",
+            "json",
+        ],
+        check=False,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert module_validate_json.returncode == 1
+    assert module_validate_json.stderr == ""
+    assert json.loads(module_validate_json.stdout) == {
+        "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+        "valid": False,
+        "path": str(invalid_batch),
+        "error": f"Missing manifest: {invalid_batch / 'generation_manifest.json'}",
+    }
