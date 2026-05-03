@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://heocr.org/schemas/hocrsyngen/generation_manifest.v1.schema.json",
+  "title": "hocrsyngen generation_manifest.json v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "generator_name",
+    "license",
+    "synthetic_disclosure",
+    "samples"
+  ],
+  "properties": {
+    "manifest_version": { "const": "1.0" },
+    "generator_name": { "const": "hocrsyngen" },
+    "license": { "const": "PROJECT-SYNTHETIC" },
+    "synthetic_disclosure": {
+      "type": "string",
+      "minLength": 1
+    },
+    "samples": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/sample" }
+    }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._/-]+$"
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "pages",
+        "text",
+        "generator_version",
+        "recipe_id",
+        "provenance",
+        "license",
+        "synthetic_disclosure",
+        "controls"
+      ],
+      "properties": {
+        "sample_id": {
+          "type": "string",
+          "pattern": "^hocrsyngen-s[0-9]{8}-[0-9]{6}$"
+        },
+        "pages": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/pageAsset" }
+        },
+        "text": { "$ref": "#/$defs/textMetadata" },
+        "generator_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "license": { "const": "PROJECT-SYNTHETIC" },
+        "synthetic_disclosure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "controls": { "$ref": "#/$defs/controls" }
+      }
+    },
+    "pageAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page_id",
+        "asset_path",
+        "media_type",
+        "sha256",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "page_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asset_path": { "$ref": "#/$defs/relativePath" },
+        "media_type": { "const": "image/jpeg" },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "textMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logical_order",
+        "script",
+        "language",
+        "direction",
+        "unicode_normalization"
+      ],
+      "properties": {
+        "logical_order": {
+          "type": "string",
+          "minLength": 1
+        },
+        "script": { "const": "Hebr" },
+        "language": { "const": "he" },
+        "direction": { "const": "rtl" },
+        "unicode_normalization": { "const": "NFC" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seed",
+        "sample_index",
+        "template_id",
+        "recipe_id",
+        "degradation_preset",
+        "font_id",
+        "source_corpus"
+      ],
+      "properties": {
+        "seed": { "type": "integer" },
+        "sample_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "template_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "degradation_preset": {
+          "type": "string",
+          "minLength": 1
+        },
+        "font_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_corpus": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["persona", "condition"],
+      "properties": {
+        "persona": {
+          "type": ["string", "null"]
+        },
+        "condition": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}
