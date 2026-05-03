@@ -15,11 +15,13 @@ from hocrsyngen.generator import (
     _font_path,
     _load_font,
     _pillow_has_raqm,
+    _draw_rtl_text,
     _rtl_display_text,
     _select_font,
     _wrap_hebrew_text,
     generate_batch,
     generate_documents,
+    write_manifest,
 )
 from hocrsyngen.manifest import TextMetadata
 
@@ -131,9 +133,16 @@ def test_generated_manifest_preserves_logical_order_hebrew_contract_cases(tmp_pa
         template_ids=["printed_letter"],
         font_manifest_path=default_font_manifest_path(),
         text_corpus_path=corpus_path,
-    ).to_dict()
+    )
+    manifest_path = write_manifest(manifest, output_dir)
+    raw_manifest = manifest_path.read_text(encoding="utf-8")
+    payload = json.loads(raw_manifest)
 
-    sample = manifest["samples"][0]
+    assert HEBREW_CONTRACT_LINE in raw_manifest
+    assert SPARSE_NIQQUD_CONTRACT_LINE in raw_manifest
+    assert "\\u05" not in raw_manifest
+
+    sample = payload["samples"][0]
     text = sample["text"]["logical_order"]
     lines = text.splitlines()
 
@@ -150,7 +159,33 @@ def test_generated_manifest_preserves_logical_order_hebrew_contract_cases(tmp_pa
     _assert_logical_hebrew_contract(text)
 
 
-def test_renderer_outputs_asset_for_hebrew_contract_cases_without_mutating_manifest_text(tmp_path: Path) -> None:
+def test_draw_rtl_text_passes_logical_text_to_pillow_with_rtl_direction() -> None:
+    class RecordingDraw:
+        def __init__(self) -> None:
+            self.calls: list[dict] = []
+
+        def text(self, xy, text, **kwargs) -> None:
+            self.calls.append({"xy": xy, "text": text, **kwargs})
+
+    draw = RecordingDraw()
+    font = object()
+
+    _draw_rtl_text(draw, (500, 40), HEBREW_CONTRACT_LINE, font=font, fill=(1, 2, 3), anchor="ra")
+
+    assert draw.calls == [
+        {
+            "xy": (500, 40),
+            "text": HEBREW_CONTRACT_LINE,
+            "font": font,
+            "fill": (1, 2, 3),
+            "anchor": "ra",
+            "direction": "rtl",
+        }
+    ]
+    assert _rtl_display_text(HEBREW_CONTRACT_LINE) == HEBREW_CONTRACT_LINE
+
+
+def test_renderer_smoke_outputs_asset_for_hebrew_contract_cases_without_mutating_manifest_text(tmp_path: Path) -> None:
     output_dir = tmp_path / "rendered-contract"
     corpus_path = _write_contract_corpus(tmp_path / "contract_corpus.txt")
     documents = generate_documents(
