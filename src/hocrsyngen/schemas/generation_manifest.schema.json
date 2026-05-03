@@ -16,8 +16,7 @@
     "generator_name": { "const": "hocrsyngen" },
     "license": { "const": "PROJECT-SYNTHETIC" },
     "synthetic_disclosure": {
-      "type": "string",
-      "minLength": 1
+      "const": "Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for hocrgen governance and is not real-source provenance."
     },
     "samples": {
       "type": "array",
@@ -66,8 +65,7 @@
         "provenance": { "$ref": "#/$defs/provenance" },
         "license": { "const": "PROJECT-SYNTHETIC" },
         "synthetic_disclosure": {
-          "type": "string",
-          "minLength": 1
+          "const": "Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for hocrgen governance and is not real-source provenance."
         },
         "controls": { "$ref": "#/$defs/controls" }
       }
