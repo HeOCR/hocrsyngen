@@ -10,6 +10,12 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 4. Add style/persona controls only after manifest/metadata semantics are explicit.
 5. Keep optional ML-backed synthesis separate from baseline dependencies.
 
+## Planning Notation
+
+Every planned PR should have a notation tied to its roadmap phase. Use the phase letter/number plus a lowercase letter, for example `S2b`. Do not use numeric-only notations; this keeps roadmap notation distinct from GitHub PR numbers.
+
+PR titles should start with the notation, for example `S2b: Add bidi and niqqud rendering fixtures`. If a PR changes scope during implementation, update this roadmap before or inside that PR so the notation remains accurate.
+
 ## Phase S0 — Planning And Contract Foundation
 
 Current status: `current`.
@@ -21,6 +27,13 @@ Scope:
 - S0a: agent-context architecture and planning docs.
 - S0b: clarify public contracts and integration boundaries.
 - S0c: document manifest v1 and validation behavior.
+
+Planned PR breakdown:
+
+- `S0a` — Planning foundation and agent context. Status: done in PR #17.
+- `S0b` — Executable `hocrgen` integration contract tests for installed CLI, fixture export, generation reports, validation reports, and invalid validation JSON. Status: next.
+- `S0c` — Manifest/schema drift guard: verify `generation_manifest_v1.md`, schema constraints, validation errors, and fixture expectations stay aligned. Status: planned.
+- `S0d` — Roadmap PR notation breakdown and handoff hygiene. Status: current.
 
 Deliverables:
 
@@ -50,6 +63,13 @@ Scope:
 - Keep current deterministic printed/handwritten-like templates stable.
 - Improve documentation, fixture reproducibility, and installed-package contract tests as needed.
 - Maintain no-network and no-heavy-dependency baseline.
+
+Planned PR breakdown:
+
+- `S1a` — Fixture reproducibility contract: document and test exact regeneration workflow for the packaged fixture without changing fixture assets unless intentionally regenerated.
+- `S1b` — Installed CLI smoke matrix: strengthen installed-package command coverage for `templates`, `contracts`, `contracts export`, `generate`, and `validate`.
+- `S1c` — Determinism drift guard: add focused tests that compare seed/sample ids, manifest fields, hashes, and output layout expectations for stable seeds.
+- `S1d` — Baseline dependency audit: add or refine tests that fail on accidental `hocrgen`, network, GPU, LLM, diffusion, Torch, TensorFlow, or deep-learning baseline dependencies.
 
 Deliverables:
 
@@ -81,6 +101,13 @@ Scope:
 - More deterministic fixtures for final forms, numerals, punctuation, sparse niqqud, Latin fragments, dates, and identifiers.
 - Rendering coverage metadata may be planned, but schema changes require versioned design.
 
+Planned PR breakdown:
+
+- `S2a` — Hebrew edge text corpus fixtures: add deterministic test inputs for final forms, numerals, punctuation, dates, identifiers, and Latin fragments.
+- `S2b` — Bidi and niqqud rendering fixtures: add tests for sparse/full niqqud, mixed-direction text, punctuation placement, and logical-order preservation.
+- `S2c` — Font shaping audit: document and test Pillow/libraqm behavior needed for current packaged fonts and RTL rendering.
+- `S2d` — Rendering coverage report design: define coverage metadata/reporting expectations before any schema-affecting implementation.
+
 Deliverables:
 
 - Hebrew rendering fixture suite.
@@ -111,6 +138,13 @@ Scope:
 - Stronger degradation presets.
 - Layout metadata and filtering strategy.
 
+Planned PR breakdown:
+
+- `S3a` — Layout metadata design: decide what layout metadata is needed, whether it belongs in manifest v1 additions or a future version, and how `hocrgen` should filter it.
+- `S3b` — Hebrew document family recipes: add the first new governed document family only after S3a settles metadata and validation implications.
+- `S3c` — Degradation preset expansion: add stronger deterministic degradation presets with tests and fixture review guidance.
+- `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection.
+
 Deliverables:
 
 - New documented templates and recipes.
@@ -140,6 +174,13 @@ Scope:
 - Style controls: slant, spacing, pressure proxy, baseline drift, character variability, ligature/allograph choices, and line discipline.
 - Condition controls: concentration/fatigue/stress-like rendering controls only; avoid psychological truth claims.
 - Reproducibility and metadata rules.
+
+Planned PR breakdown:
+
+- `S4a` — Persona/style/condition semantics ADR: define allowed metadata, forbidden claims, validation expectations, and compatibility rules before implementation.
+- `S4b` — Deterministic style parameter bundles: implement the smallest synthetic style controls that do not require schema breaking changes.
+- `S4c` — Condition control bundles: add rendering-control-only condition presets after S4a, with tests proving no real identity, medical, psychological, or authorship claims.
+- `S4d` — Style consistency checks: add tests or reports that verify synthetic style controls are reproducible across a batch.
 
 Deliverables:
 
@@ -173,6 +214,13 @@ Scope:
 - Optional ML-backed synthesis as a separate optional path.
 - Evaluation against held-out real Hebrew handwriting through `hocrgen`/HeOCR benchmarks when available.
 
+Planned PR breakdown:
+
+- `S5a` — Handwriting research acceptance criteria: define experiment boundaries, reproducibility requirements, licensing constraints, and evaluation gates.
+- `S5b` — Allograph and character-level prototype: explore deterministic allograph variation outside heavyweight model dependencies.
+- `S5c` — Word/line assembly prototype: test geometric perturbation and line assembly realism while preserving logical-order ground truth.
+- `S5d` — Optional learned-generation packaging design: design extras/subpackages/experiments for ML-backed generation without contaminating baseline dependencies.
+
 Deliverables:
 
 - Research prototypes outside baseline dependencies.
@@ -204,6 +252,13 @@ Scope:
 - Domain shift tracking.
 - Synthetic should complement real data and remain capped by `hocrgen` release profiles.
 
+Planned PR breakdown:
+
+- `S6a` — Realism inspection rubric: define review categories, pass/fail examples, and rejection reasons for synthetic batches.
+- `S6b` — Downstream utility measurement contract: document how `hocrgen`/HeOCR benchmarks should consume hocrsyngen outputs for CER/WER only when references exist.
+- `S6c` — Synthetic diversity and domain-shift metrics: define measurable diversity and synthetic-to-real gap tracking.
+- `S6d` — Release cap handoff policy: document how hocrsyngen metadata supports hocrgen release profiles without moving governance into this repo.
+
 Deliverables:
 
 - Visual inspection rubric.
@@ -234,6 +289,12 @@ Scope:
 - Identify abstractions needed for future Arabic or other RTL scripts.
 - Do not generalize prematurely.
 - Avoid breaking Hebrew-specific validation.
+
+Planned PR breakdown:
+
+- `S7a` — Script abstraction design: identify minimal abstractions needed for future RTL scripts while preserving Hebrew-specific validation.
+- `S7b` — Hebrew regression guard: add tests that prevent future script abstraction work from weakening Hebrew RTL/NFC/manifest guarantees.
+- `S7c` — Arabic-ready feasibility note: document Arabic-specific shaping, metadata, font, and validation differences without implementing Arabic support.
 
 Deliverables:
 
