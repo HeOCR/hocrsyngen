@@ -293,6 +293,23 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
             output_dir=tmp_path / "out",
         )
 
+    missing_font_manifest_path = tmp_path / "missing_font_manifest.yaml"
+    missing_font_output = tmp_path / "missing-font-output"
+    missing_font_manifest_path.write_text(
+        'fonts:\n  - id: missing-font\n    file: missing.ttf\n    style: handwritten_like\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Synthetic font file is missing"):
+        generate_documents(
+            count=1,
+            seed=7,
+            template_ids=["printed_letter"],
+            font_manifest_path=missing_font_manifest_path,
+            text_corpus_path=text_corpus_path,
+            output_dir=missing_font_output,
+        )
+    assert not missing_font_output.exists()
+
     with pytest.raises(ValueError, match="seed must be non-negative"):
         generate_batch(count=1, seed=-1, output_dir=tmp_path / "negative-seed")
     assert not (tmp_path / "negative-seed").exists()

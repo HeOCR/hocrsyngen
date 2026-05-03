@@ -425,14 +425,20 @@ def generate_documents(
         raise ValueError(f"Synthetic font manifest has no registered fonts: {font_manifest_path}")
     if not corpus:
         raise ValueError(f"Synthetic text corpus is empty: {text_corpus_path}")
+    font_entries_by_template: dict[str, dict[str, str]] = {}
+    font_paths_by_template: dict[str, Path] = {}
+    for template_id in dict.fromkeys(template_ids):
+        font_entry = _select_font(fonts, template_id)
+        font_entries_by_template[template_id] = font_entry
+        font_paths_by_template[template_id] = _font_path(font_manifest_path, font_entry)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     documents: list[SyntheticDocument] = []
     for index in range(count):
         template_id = template_ids[index % len(template_ids)]
         recipe = _recipe_for_template(template_id)
-        font_entry = _select_font(fonts, template_id)
-        font_path = _font_path(font_manifest_path, font_entry)
+        font_entry = font_entries_by_template[template_id]
+        font_path = font_paths_by_template[template_id]
         title = _select_title(template_id, index)
         body_lines = _select_body_lines(randomizer, corpus, template_id)
         footer = _footer_text(randomizer)
