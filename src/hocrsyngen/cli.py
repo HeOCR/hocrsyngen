@@ -10,9 +10,11 @@ from hocrsyngen.generator import (
     generate_batch,
     template_catalog,
 )
+from hocrsyngen.manifest import GenerationManifest
 from hocrsyngen.validation import BatchValidationError, validate_batch
 
 
+GENERATION_REPORT_SCHEMA_VERSION = "generation_report.v1"
 TEMPLATE_CATALOG_SCHEMA_VERSION = "template_catalog.v1"
 VALIDATION_REPORT_SCHEMA_VERSION = "validation_report.v1"
 
@@ -52,6 +54,19 @@ def _format_template_catalog_json(catalog: list[TemplateCatalogEntry]) -> str:
             }
             for entry in catalog
         ],
+    }
+    return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def _format_generation_report_json(
+    output_path: Path, manifest: GenerationManifest
+) -> str:
+    payload: dict[str, object] = {
+        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+        "sample_count": len(manifest.samples),
+        "page_count": sum(len(sample.pages) for sample in manifest.samples),
+        "output_path": str(output_path),
+        "manifest_path": str(output_path / "generation_manifest.json"),
     }
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
@@ -110,6 +125,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", type=Path, required=True, help="Output directory."
     )
     generate.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the generation report.",
+    )
+    generate.add_argument(
         "--template-id",
         action="append",
         dest="template_ids",
@@ -163,7 +184,7 @@ def main(argv: list[str] | None = None) -> int:
                 f"generate: output path exists and is not a directory: {args.output}"
             )
         try:
-            generate_batch(
+            manifest = generate_batch(
                 count=args.count,
                 seed=args.seed,
                 output_dir=args.output,
@@ -177,6 +198,8 @@ def main(argv: list[str] | None = None) -> int:
             )
         except (RuntimeError, ValueError) as exc:
             parser.error(f"generate: {exc}")
+        if args.format == "json":
+            print(_format_generation_report_json(args.output, manifest))
         return 0
     if args.command == "validate":
         try:
