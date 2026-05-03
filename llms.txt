@@ -1,0 +1,40 @@
+# hocrsyngen
+
+hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample batches. It emits `generation_manifest.json` plus relative JPEG page assets. hocrgen remains the downstream governance, validation, release, and publication toolchain.
+
+## Compact Source Tree
+
+- `src/hocrsyngen/`: Python package.
+- `src/hocrsyngen/schemas/`: JSON schemas for serialized contracts.
+- `src/hocrsyngen/data/synthetic/`: governed packaged fonts and Hebrew text corpus.
+- `src/hocrsyngen/data/contracts/`: packaged downstream contract fixtures.
+- `tests/`: CLI, generation, validation, installation, and package-resource tests.
+- `docs/`: architecture, scope, specs, roadmap, research, testing, and decisions.
+
+## Critical File Map
+
+- `src/hocrsyngen/cli.py`: public CLI commands and machine-readable reports.
+- `src/hocrsyngen/generator.py`: deterministic rendering, templates, degradation, font/text selection.
+- `src/hocrsyngen/manifest.py`: manifest dataclasses and constants.
+- `src/hocrsyngen/validation.py`: batch validation, schema validation, asset integrity checks.
+- `src/hocrsyngen/schemas/generation_manifest.schema.json`: serialized manifest contract.
+- `src/hocrsyngen/data/contracts/generation_manifest_v1/fixture-batch/`: downstream integration fixture.
+- `src/hocrsyngen/data/synthetic/fonts/manifest.yaml`: governed packaged font registry.
+- `src/hocrsyngen/data/synthetic/texts/hebrew_lines.txt`: packaged Hebrew text corpus.
+- `tests/`: contract, generation, validation, installation, and wheel packaging tests.
+
+## Public Contracts
+
+- `hocrsyngen templates`
+- `hocrsyngen contracts`
+- `hocrsyngen contracts export`
+- `hocrsyngen generate`
+- `hocrsyngen validate`
+- `generation_manifest.json` v1
+- Packaged contract fixture id `generation_manifest_v1_fixture_batch`
+
+## Non-Goals And Boundaries
+
+- No `hocrgen` import from `hocrsyngen`.
+- No baseline network, GPU, LLM, or diffusion dependencies.
+- No publication or release governance inside `hocrsyngen`.

@@ -17,6 +17,17 @@ assembly, and export to `HeOCR` and `HeOCRsynth`.
 Generated directories are deterministic candidate synthetic inputs for later
 `hocrgen` governance. They are not release-ready dataset payloads by themselves.
 
+## Project Documentation
+
+- [Documentation index](docs/README.md)
+- [Repository scope](docs/repository_scope.md)
+- [Architecture](docs/architecture.md)
+- [generation_manifest.json v1](docs/generation_manifest_v1.md)
+- [hocrgen integration](docs/hocrgen_integration.md)
+- [Roadmap](docs/roadmap.md)
+- [Research program](docs/research_program.md)
+- [Testing and quality](docs/testing_and_quality.md)
+
 ## CLI
 
 ```bash
