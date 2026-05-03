@@ -427,6 +427,17 @@ def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:
             [{"id": "alef-regular", "style": "handwritten_like"}],
             "printed_letter",
         )
+    assert _select_font(
+        [{"id": "gveret-levin-regular", "style": "handwritten_like"}], "handwritten_note"
+    ) == {
+        "id": "gveret-levin-regular",
+        "style": "handwritten_like",
+    }
+    with pytest.raises(ValueError, match="has style 'printed'"):
+        _select_font(
+            [{"id": "gveret-levin-regular", "style": "printed"}],
+            "handwritten_note",
+        )
     with pytest.raises(ValueError, match="No synthetic font registered"):
         _select_font([{"id": "alef-regular", "style": "printed"}], "handwritten_note")
 
