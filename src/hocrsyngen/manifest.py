@@ -23,6 +23,8 @@ class TextMetadata:
     unicode_normalization: Literal["NFC"] = "NFC"
 
     def __post_init__(self) -> None:
+        if not self.logical_order:
+            raise ValueError("Manifest logical_order text must be non-empty.")
         if self.logical_order != unicodedata.normalize("NFC", self.logical_order):
             raise ValueError("Manifest logical_order text must be NFC-normalized.")
 

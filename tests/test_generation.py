@@ -21,6 +21,7 @@ from hocrsyngen.generator import (
     generate_batch,
     generate_documents,
 )
+from hocrsyngen.manifest import TextMetadata
 
 
 SCHEMA_PATH = (
@@ -30,6 +31,9 @@ SCHEMA_PATH = (
     / "schemas"
     / "generation_manifest.schema.json"
 )
+HEBREW_CONTRACT_LINE = "אבגד ךםןףץ תיק 42/7: סוף, כסף, דרך, נייר."
+SPARSE_NIQQUD_CONTRACT_LINE = unicodedata.normalize("NFC", "בְּדִיקָה קצרה: סעיף 3, עמוד 12.")
+HEBREW_CONTRACT_LINES = [HEBREW_CONTRACT_LINE, SPARSE_NIQQUD_CONTRACT_LINE]
 
 
 def _load_manifest(output_dir: Path) -> dict:
@@ -38,6 +42,23 @@ def _load_manifest(output_dir: Path) -> dict:
 
 def _image_pixels(image: Image.Image) -> list[tuple[int, int, int]]:
     return list(image.getdata())
+
+
+def _write_contract_corpus(path: Path, lines: list[str] | None = None) -> Path:
+    path.write_text("\n".join(lines or HEBREW_CONTRACT_LINES) + "\n", encoding="utf-8")
+    return path
+
+
+def _assert_logical_hebrew_contract(text: str) -> None:
+    assert HEBREW_CONTRACT_LINE in text
+    assert SPARSE_NIQQUD_CONTRACT_LINE in text
+    assert HEBREW_CONTRACT_LINE[::-1] not in text
+    assert SPARSE_NIQQUD_CONTRACT_LINE[::-1] not in text
+    assert text == unicodedata.normalize("NFC", text)
+    assert all(letter in text for letter in "ךםןףץ")
+    assert "42/7:" in text
+    assert "סוף, כסף, דרך, נייר." in text
+    assert any("\u0591" <= character <= "\u05c7" for character in text)
 
 
 def test_cli_manifest_contract_schema_and_relative_assets(tmp_path: Path) -> None:
@@ -100,10 +121,61 @@ def test_manifest_text_preserves_hebrew_logical_order_rtl_metadata(tmp_path: Pat
     assert _rtl_display_text("סימן 12") == "סימן 12"
 
 
+def test_generated_manifest_preserves_logical_order_hebrew_contract_cases(tmp_path: Path) -> None:
+    output_dir = tmp_path / "contract-batch"
+    corpus_path = _write_contract_corpus(tmp_path / "contract_corpus.txt")
+    manifest = generator_module.generate_manifest(
+        count=1,
+        seed=101,
+        output_dir=output_dir,
+        template_ids=["printed_letter"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=corpus_path,
+    ).to_dict()
+
+    sample = manifest["samples"][0]
+    text = sample["text"]["logical_order"]
+    lines = text.splitlines()
+
+    assert lines[0] == "מכתב מנהלי"
+    assert lines[1:3] == HEBREW_CONTRACT_LINES
+    assert len(lines) == 4
+    assert sample["text"] == {
+        "logical_order": text,
+        "script": "Hebr",
+        "language": "he",
+        "direction": "rtl",
+        "unicode_normalization": "NFC",
+    }
+    _assert_logical_hebrew_contract(text)
+
+
+def test_renderer_outputs_asset_for_hebrew_contract_cases_without_mutating_manifest_text(tmp_path: Path) -> None:
+    output_dir = tmp_path / "rendered-contract"
+    corpus_path = _write_contract_corpus(tmp_path / "contract_corpus.txt")
+    documents = generate_documents(
+        count=1,
+        seed=101,
+        template_ids=["printed_letter"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=corpus_path,
+        output_dir=output_dir,
+    )
+
+    document = documents[0]
+    assert document.logical_text.splitlines()[1:3] == HEBREW_CONTRACT_LINES
+    _assert_logical_hebrew_contract(document.logical_text)
+    with Image.open(document.path).convert("RGB") as image:
+        assert image.size == CANVAS_SIZE
+        rendered_region = image.crop((140, 250, 1060, 760))
+        dark_ink_pixels = sum(1 for r, g, b in _image_pixels(rendered_region) if r < 115 and g < 105 and b < 95)
+        assert dark_ink_pixels > 5_000
+
+
 def test_text_corpus_covers_final_letters_numerals_punctuation_and_sparse_niqqud() -> None:
     corpus = default_text_corpus_path().read_text(encoding="utf-8")
 
-    assert any(letter in corpus for letter in "ךםןףץ")
+    assert all(letter in corpus for letter in "ךםןףץ")
     assert any(character.isdigit() for character in corpus)
     assert any(character in corpus for character in ":,./")
     assert any("\u0591" <= character <= "\u05c7" for character in corpus)
@@ -196,6 +268,14 @@ def test_schema_rejects_backslash_asset_paths(tmp_path: Path) -> None:
 
     with pytest.raises(jsonschema.ValidationError):
         jsonschema.validate(payload, schema)
+
+
+def test_text_metadata_rejects_empty_or_non_nfc_logical_order() -> None:
+    with pytest.raises(ValueError, match="non-empty"):
+        TextMetadata(logical_order="")
+
+    with pytest.raises(ValueError, match="NFC-normalized"):
+        TextMetadata(logical_order="\ufb31")
 
 
 def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:
