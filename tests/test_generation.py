@@ -116,10 +116,18 @@ def test_stable_seed_manifest_identity_and_output_layout_drift_guard(tmp_path: P
     output_dir = tmp_path / "stable-seed"
     payload = generate_batch(count=4, seed=29, output_dir=output_dir).to_dict()
 
-    assert set(output_dir.iterdir()) == {
-        output_dir / "assets",
-        output_dir / "generation_manifest.json",
-    }
+    assert sorted(path.relative_to(output_dir).as_posix() for path in output_dir.rglob("*")) == [
+        "assets",
+        "assets/hocrsyngen-s00000029-000000",
+        "assets/hocrsyngen-s00000029-000000/page_0001.jpg",
+        "assets/hocrsyngen-s00000029-000001",
+        "assets/hocrsyngen-s00000029-000001/page_0001.jpg",
+        "assets/hocrsyngen-s00000029-000002",
+        "assets/hocrsyngen-s00000029-000002/page_0001.jpg",
+        "assets/hocrsyngen-s00000029-000003",
+        "assets/hocrsyngen-s00000029-000003/page_0001.jpg",
+        "generation_manifest.json",
+    ]
     assert _load_manifest(output_dir) == payload
     assert payload["manifest_version"] == "1.0"
     assert payload["generator_name"] == "hocrsyngen"
@@ -234,7 +242,12 @@ def test_stable_seed_page_hashes_track_assets_and_seed_changes(tmp_path: Path) -
     ]
 
     assert first_hashes == second_hashes
-    assert first_hashes != changed_seed_hashes
+    assert all(
+        first_hash != changed_seed_hash
+        for first_hash, changed_seed_hash in zip(
+            first_hashes, changed_seed_hashes, strict=True
+        )
+    )
     assert len(set(first_hashes)) == len(first_hashes)
     for batch_dir, payload in [
         (first_dir, first),
@@ -243,6 +256,8 @@ def test_stable_seed_page_hashes_track_assets_and_seed_changes(tmp_path: Path) -
     ]:
         for sample in payload["samples"]:
             page = sample["pages"][0]
+            assert len(page["sha256"]) == 64
+            assert set(page["sha256"]) <= set("0123456789abcdef")
             assert page["sha256"] == sha256_file(batch_dir / page["asset_path"])
 
 
