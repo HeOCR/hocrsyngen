@@ -21,11 +21,21 @@ from hocrsyngen.generator import (
 )
 
 
-SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schemas" / "generation_manifest.schema.json"
+SCHEMA_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "src"
+    / "hocrsyngen"
+    / "schemas"
+    / "generation_manifest.schema.json"
+)
 
 
 def _load_manifest(output_dir: Path) -> dict:
     return json.loads((output_dir / "generation_manifest.json").read_text(encoding="utf-8"))
+
+
+def _image_pixels(image: Image.Image) -> list[tuple[int, int, int]]:
+    return list(image.getdata())
 
 
 def test_cli_manifest_contract_schema_and_relative_assets(tmp_path: Path) -> None:
@@ -124,7 +134,7 @@ def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) 
 
     with Image.open(by_template["printed_letter"].path).convert("RGB") as printed:
         form_region = printed.crop((140, 330, 1060, 820))
-        printed_pixels = list(form_region.get_flattened_data())
+        printed_pixels = _image_pixels(form_region)
         red_stamp_pixels = sum(1 for r, g, b in printed_pixels if r > 90 and r > g * 1.45 and r > b * 1.45)
         dark_ink_pixels = sum(1 for r, g, b in printed_pixels if r < 115 and g < 105 and b < 95)
         assert red_stamp_pixels > 500
@@ -132,7 +142,7 @@ def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) 
 
     with Image.open(by_template["handwritten_note"].path).convert("RGB") as handwritten:
         marginalia_region = handwritten.crop((120, 430, 280, 760))
-        marginalia_pixels = list(marginalia_region.get_flattened_data())
+        marginalia_pixels = _image_pixels(marginalia_region)
         marginalia_ink_pixels = sum(1 for r, g, b in marginalia_pixels if r < 115 and g < 105 and b < 95)
         assert marginalia_ink_pixels > 150
 
@@ -161,6 +171,21 @@ def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
             text_corpus_path=text_corpus_path,
             output_dir=tmp_path / "out",
         )
+
+    with pytest.raises(ValueError, match="seed must be non-negative"):
+        generate_batch(count=1, seed=-1, output_dir=tmp_path / "negative-seed")
+
+    with pytest.raises(ValueError, match="requires at least one template_id"):
+        generate_batch(count=1, seed=7, output_dir=tmp_path / "empty-templates", template_ids=[])
+
+
+def test_schema_rejects_backslash_asset_paths(tmp_path: Path) -> None:
+    payload = generate_batch(count=1, seed=17, output_dir=tmp_path).to_dict()
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    payload["samples"][0]["pages"][0]["asset_path"] = "..\\page.jpg"
+
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(payload, schema)
 
 
 def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:

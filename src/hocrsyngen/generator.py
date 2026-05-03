@@ -389,6 +389,8 @@ def generate_documents(
     text_corpus_path: Path,
     output_dir: Path,
 ) -> list[SyntheticDocument]:
+    if seed < 0:
+        raise ValueError("Synthetic generation seed must be non-negative.")
     randomizer = random.Random(seed)
     font_manifest = load_font_manifest(font_manifest_path)
     fonts = font_manifest.get("fonts")
@@ -453,7 +455,7 @@ def generate_manifest(
     persona: str | None = None,
     condition: str | None = None,
 ) -> GenerationManifest:
-    template_ids = template_ids or DEFAULT_TEMPLATE_IDS
+    template_ids = DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids
     font_manifest_path = font_manifest_path or default_font_manifest_path()
     text_corpus_path = text_corpus_path or default_text_corpus_path()
     documents = generate_documents(count, seed, template_ids, font_manifest_path, text_corpus_path, output_dir)

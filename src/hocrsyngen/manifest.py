@@ -38,7 +38,7 @@ class PageAsset:
 
     def __post_init__(self) -> None:
         path = PurePosixPath(self.asset_path)
-        if path.is_absolute() or ".." in path.parts:
+        if path.is_absolute() or ".." in path.parts or "\\" in self.asset_path:
             raise ValueError(f"Manifest asset paths must be relative portable paths: {self.asset_path}")
 
 
