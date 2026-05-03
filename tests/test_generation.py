@@ -264,6 +264,42 @@ def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
     assert catalog["handwritten_note"].font_id == "gveret-levin-regular"
 
 
+def test_template_catalog_rejects_malformed_or_missing_style_font_manifest(tmp_path: Path) -> None:
+    malformed_manifest_path = tmp_path / "malformed.yaml"
+    malformed_manifest_path.write_text("not_fonts: []\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="missing a valid 'fonts' list"):
+        template_catalog(font_manifest_path=malformed_manifest_path)
+
+    missing_style_manifest_path = tmp_path / "missing-style.yaml"
+    missing_style_manifest_path.write_text(
+        "fonts:\n  - id: alef-regular\n    file: Alef-Regular.ttf\n    style: printed\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="No synthetic font registered for style: handwritten_like"):
+        template_catalog(["handwritten_note"], font_manifest_path=missing_style_manifest_path)
+
+    missing_file_manifest_path = tmp_path / "missing-file.yaml"
+    missing_file_manifest_path.write_text(
+        "fonts:\n  - id: missing-font\n    file: missing.ttf\n    style: printed\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Synthetic font file is missing"):
+        template_catalog(["printed_letter"], font_manifest_path=missing_file_manifest_path)
+
+    invalid_font_manifest_path = tmp_path / "invalid-font.yaml"
+    (tmp_path / "invalid.ttf").write_bytes(b"not a font")
+    invalid_font_manifest_path.write_text(
+        "fonts:\n  - id: invalid-font\n    file: invalid.ttf\n    style: printed\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Synthetic font file is invalid or unreadable"):
+        template_catalog(["printed_letter"], font_manifest_path=invalid_font_manifest_path)
+
+
 def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) -> None:
     documents = generate_documents(
         count=2,

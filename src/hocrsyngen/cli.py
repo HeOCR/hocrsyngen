@@ -3,7 +3,12 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from hocrsyngen.generator import DEFAULT_TEMPLATE_IDS, generate_batch
+from hocrsyngen.generator import (
+    DEFAULT_TEMPLATE_IDS,
+    TemplateCatalogEntry,
+    generate_batch,
+    template_catalog,
+)
 from hocrsyngen.validation import BatchValidationError, validate_batch
 
 
@@ -17,9 +22,23 @@ def _non_negative_int(value: str) -> int:
     return parsed
 
 
+def _format_template_catalog_entry(entry: TemplateCatalogEntry) -> str:
+    return (
+        f"template_id={entry.template_id} "
+        f"recipe_id={entry.recipe_id} "
+        f"layout_style={entry.layout_style} "
+        f"font_style={entry.font_style} "
+        f"font_id={entry.font_id} "
+        f"degradation_preset={entry.degradation_preset}"
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="hocrsyngen")
     subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser(
+        "templates", help="List packaged synthetic template catalog entries."
+    )
     generate = subparsers.add_parser(
         "generate", help="Generate a deterministic synthetic fixture batch."
     )
@@ -65,6 +84,18 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.command == "templates":
+        try:
+            catalog = template_catalog()
+        except FileNotFoundError as exc:
+            parser.error(
+                f"templates: required packaged resource is missing: {exc.filename or exc}"
+            )
+        except ValueError as exc:
+            parser.error(f"templates: {exc}")
+        for entry in catalog:
+            print(_format_template_catalog_entry(entry))
+        return 0
     if args.command == "generate":
         if args.output.exists() and not args.output.is_dir():
             parser.error(
