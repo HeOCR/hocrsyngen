@@ -11,6 +11,7 @@ from typing import Any
 import jsonschema
 import pytest
 
+from hocrsyngen.cli import main
 from hocrsyngen.generator import template_catalog
 from hocrsyngen.validation import BatchValidationError, validate_batch
 
@@ -83,6 +84,17 @@ EXPECTED_SCHEMA_NODES = [
     ("$defs", "provenance"),
     ("$defs", "controls"),
 ]
+FIXTURE_REGENERATION_SEED = 17
+FIXTURE_REGENERATION_COUNT = 2
+RENDER_STACK_DEPENDENT_SHA256 = "<render-stack-dependent>"
+EXPECTED_PACKAGED_FIXTURE_PAGE_SHA256 = {
+    "assets/hocrsyngen-s00000017-000000/page_0001.jpg": (
+        "50700a08f555ae3273e4c7c2f19544a8ff4b307af4cbc52eb9d986c43f6c09fd"
+    ),
+    "assets/hocrsyngen-s00000017-000001/page_0001.jpg": (
+        "4615d215ec2e8ea5b13750f09f6da41a07075d1f74554812cc25cd4f5238b428"
+    ),
+}
 
 
 def _load_schema() -> dict[str, Any]:
@@ -130,6 +142,14 @@ def _load_packaged_fixture_manifest(batch_dir: Path) -> dict[str, Any]:
 def _fixture_payload() -> dict[str, Any]:
     with resources.as_file(_packaged_contract_fixture()) as batch_dir:
         return _load_packaged_fixture_manifest(batch_dir)
+
+
+def _stable_manifest_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    stable = copy.deepcopy(payload)
+    for sample in stable["samples"]:
+        for page in sample["pages"]:
+            page["sha256"] = RENDER_STACK_DEPENDENT_SHA256
+    return stable
 
 
 def _copy_packaged_contract_fixture(target: Path) -> Path:
@@ -402,6 +422,61 @@ def test_packaged_generation_manifest_fixture_matches_v1_contract_expectations()
                 assert ".." not in asset_path.parts
                 assert "\\" not in page["asset_path"]
                 assert (batch_dir / Path(*asset_path.parts)).is_file()
+
+
+def test_packaged_generation_manifest_fixture_is_reproducible_from_stable_inputs(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    regenerated_dir = tmp_path / "fixture-batch"
+
+    assert (
+        main(
+            [
+                "generate",
+                "--count",
+                str(FIXTURE_REGENERATION_COUNT),
+                "--seed",
+                str(FIXTURE_REGENERATION_SEED),
+                "--output",
+                str(regenerated_dir),
+            ]
+        )
+        == 0
+    )
+    assert capsys.readouterr().out == ""
+    regenerated_manifest = _load_packaged_fixture_manifest(regenerated_dir)
+
+    with resources.as_file(_packaged_contract_fixture()) as packaged_dir:
+        packaged_manifest = _load_packaged_fixture_manifest(packaged_dir)
+        packaged_result = validate_batch(packaged_dir)
+    regenerated_result = validate_batch(regenerated_dir)
+
+    assert packaged_result.sample_count == FIXTURE_REGENERATION_COUNT
+    assert packaged_result.page_count == FIXTURE_REGENERATION_COUNT
+    assert regenerated_result.sample_count == packaged_result.sample_count
+    assert regenerated_result.page_count == packaged_result.page_count
+    assert {
+        page["asset_path"]: page["sha256"]
+        for sample in packaged_manifest["samples"]
+        for page in sample["pages"]
+    } == EXPECTED_PACKAGED_FIXTURE_PAGE_SHA256
+    assert _stable_manifest_payload(regenerated_manifest) == _stable_manifest_payload(
+        packaged_manifest
+    )
+    assert [
+        (sample["sample_id"], sample["provenance"]["template_id"])
+        for sample in packaged_manifest["samples"]
+    ] == [
+        ("hocrsyngen-s00000017-000000", "printed_letter"),
+        ("hocrsyngen-s00000017-000001", "handwritten_note"),
+    ]
+    assert [
+        (sample["provenance"]["seed"], sample["provenance"]["sample_index"])
+        for sample in packaged_manifest["samples"]
+    ] == [
+        (FIXTURE_REGENERATION_SEED, 0),
+        (FIXTURE_REGENERATION_SEED, 1),
+    ]
 
 
 @pytest.mark.parametrize(

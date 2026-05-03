@@ -13,6 +13,28 @@ PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
 
 There is no configured lint command unless one is added explicitly.
 
+## Packaged Fixture Reproducibility
+
+The packaged `generation_manifest_v1_fixture_batch` fixture is the stable contract
+fixture for `generation_manifest.json` v1. Its expected regeneration inputs are:
+
+- command: `PYTHONPATH=src python -m hocrsyngen.cli generate --count 2 --seed 17 --output out/fixture-batch`
+- seed: `17`
+- count: `2`
+- sample ids: `hocrsyngen-s00000017-000000`, `hocrsyngen-s00000017-000001`
+- template order: `printed_letter`, then `handwritten_note`
+- source corpus: `packaged:synthetic/texts/hebrew_lines.txt`
+
+The executable fixture reproducibility contract runs the documented CLI
+generation path, compares the stable manifest fields from those inputs against
+the packaged fixture, and validates both batches. Exact JPEG `sha256` values can
+vary across Pillow/libjpeg/font rendering stacks, so fixture reproducibility
+tests mask regenerated image hashes for cross-stack comparison while separately
+pinning the committed packaged fixture hashes. The CLI contract tests also check
+fixture catalog counts. Packaged fixture assets should only be regenerated when
+the existing fixture is proven invalid or a deliberate contract update requires
+it.
+
 ## Current Test Coverage
 
 - CLI contracts.
@@ -38,6 +60,7 @@ Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail 
 - NFC text.
 - Governed template/provenance match.
 - Packaged fixture validity.
+- Packaged fixture stable-field reproducibility from seed `17` and count `2`.
 
 ## Future Quality Gates
 

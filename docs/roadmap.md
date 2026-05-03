@@ -4,8 +4,8 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Merge this planning/agent-context PR.
-2. Guard the manifest/schema/docs contract against drift.
+1. Guard packaged fixture reproducibility for `generation_manifest_v1_fixture_batch`.
+2. Strengthen installed-package CLI contract coverage where gaps remain.
 3. Add Hebrew rendering/spec coverage docs/tests before deeper generator changes.
 4. Add style/persona controls only after manifest/metadata semantics are explicit.
 5. Keep optional ML-backed synthesis separate from baseline dependencies.
@@ -18,7 +18,7 @@ PR titles should start with the notation, for example `S2b: Add bidi and niqqud 
 
 ## Phase S0 — Planning And Contract Foundation
 
-Current status: `current`.
+Current status: `done`.
 
 Objective: establish the repository's design, boundaries, contract docs, roadmap, and agent context before additional implementation proceeds.
 
@@ -32,7 +32,7 @@ Planned PR breakdown:
 
 - `S0a` — Planning foundation and agent context. Status: done in PR #17.
 - `S0b` — Executable `hocrgen` integration contract tests for installed CLI, fixture export, generation reports, validation reports, and invalid validation JSON. Status: done in PR #19.
-- `S0c` — Manifest/schema drift guard: verify `generation_manifest_v1.md`, schema constraints, validation errors, and fixture expectations stay aligned. Status: current.
+- `S0c` — Manifest/schema drift guard: verify `generation_manifest_v1.md`, schema constraints, validation errors, and fixture expectations stay aligned. Status: done in PR #20.
 - `S0d` — Roadmap PR notation breakdown and handoff hygiene. Status: done.
 
 Deliverables:
@@ -54,7 +54,7 @@ Risks/dependencies:
 
 ## Phase S1 — Baseline Deterministic Generator Hardening
 
-Current status: `planned`.
+Current status: `current`.
 
 Objective: keep the current deterministic printed and handwritten-like templates stable while improving reproducibility and package contract confidence.
 
@@ -66,7 +66,7 @@ Scope:
 
 Planned PR breakdown:
 
-- `S1a` — Fixture reproducibility contract: document and test exact regeneration workflow for the packaged fixture without changing fixture assets unless intentionally regenerated.
+- `S1a` — Fixture reproducibility contract: document and test exact regeneration workflow for the packaged fixture without changing fixture assets unless intentionally regenerated. Status: current.
 - `S1b` — Installed CLI smoke matrix: strengthen installed-package command coverage for `templates`, `contracts`, `contracts export`, `generate`, and `validate`.
 - `S1c` — Determinism drift guard: add focused tests that compare seed/sample ids, manifest fields, hashes, and output layout expectations for stable seeds.
 - `S1d` — Baseline dependency audit: add or refine tests that fail on accidental `hocrgen`, network, GPU, LLM, diffusion, Torch, TensorFlow, or deep-learning baseline dependencies.
