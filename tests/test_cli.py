@@ -489,6 +489,40 @@ def test_installed_package_console_entry_point_and_packaged_resources(
         text=True,
     )
 
+    installed_contract_fixture_check = (
+        "import json\n"
+        "import subprocess\n"
+        "import sys\n"
+        "from importlib import resources\n"
+        "fixture = resources.files('hocrsyngen') / 'data' / 'contracts' / 'generation_manifest_v1' / 'fixture-batch'\n"
+        "with resources.as_file(fixture) as fixture_path:\n"
+        "    completed = subprocess.run(\n"
+        "        [sys.executable, '-m', 'hocrsyngen.cli', 'validate', str(fixture_path), '--format', 'json'],\n"
+        "        check=True,\n"
+        "        stdout=subprocess.PIPE,\n"
+        "        stderr=subprocess.PIPE,\n"
+        "        text=True,\n"
+        "    )\n"
+        "    assert completed.stderr == ''\n"
+        "    payload = json.loads(completed.stdout)\n"
+        "    assert payload == {\n"
+        "        'schema_version': 'validation_report.v1',\n"
+        "        'valid': True,\n"
+        "        'sample_count': 2,\n"
+        "        'page_count': 2,\n"
+        "        'path': str(fixture_path),\n"
+        "    }\n"
+    )
+    subprocess.run(
+        [sys.executable, "-c", installed_contract_fixture_check],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
     console_templates = subprocess.run(
         [str(target_dir / "bin" / "hocrsyngen"), "templates"],
         check=True,
