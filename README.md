@@ -174,12 +174,64 @@ From a source checkout, reproduce the current fixture with:
 PYTHONPATH=src python -m hocrsyngen.cli generate --count 2 --seed 17 --output src/hocrsyngen/data/contracts/generation_manifest_v1/fixture-batch
 ```
 
+Downstream packages should discover and export this packaged fixture through the
+installed `hocrsyngen` CLI instead of importing `hocrsyngen` internals:
+
+```bash
+hocrsyngen contracts
+hocrsyngen contracts --format json
+hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch --output out/fixture-batch
+hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch --output out/fixture-batch --format json
+```
+
+The current contract fixture id is
+`generation_manifest_v1_fixture_batch`. `hocrsyngen contracts --format json`
+emits a deterministic package fixture catalog:
+
+```json
+{
+  "schema_version": "contract_fixture_catalog.v1",
+  "fixtures": [
+    {
+      "fixture_id": "generation_manifest_v1_fixture_batch",
+      "contract": "generation_manifest.v1",
+      "sample_count": 2,
+      "page_count": 2,
+      "resource_path": "data/contracts/generation_manifest_v1/fixture-batch",
+      "manifest_resource_path": "data/contracts/generation_manifest_v1/fixture-batch/generation_manifest.json"
+    }
+  ]
+}
+```
+
+`hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch
+--output PATH --format json` copies the packaged fixture batch to a normal
+filesystem directory, validates the exported batch with `validate_batch()`, and
+emits a deterministic machine-readable export report:
+
+```json
+{
+  "schema_version": "contract_fixture_export.v1",
+  "fixture_id": "generation_manifest_v1_fixture_batch",
+  "contract": "generation_manifest.v1",
+  "sample_count": 2,
+  "page_count": 2,
+  "output_path": "out/fixture-batch",
+  "manifest_path": "out/fixture-batch/generation_manifest.json"
+}
+```
+
+This CLI/package boundary gives `hocrgen` a stable installed-package contract
+without depending on private module names, resource layout helpers, or Python
+objects inside `hocrsyngen`.
+
 It contains `generation_manifest.json` v1 plus relative JPEG page assets for
 the two current governed packaged templates. The fixture is contract evidence
 for downstream `hocrgen` adapter tests and is candidate synthetic input only;
 it is not release-ready dataset data. `hocrgen` should ingest or validate the
 fixture manifest, preserve the relative asset contract, and then apply its own
-governance, privacy, review, dedupe, split, cap, benchmark, and export gates.
+governance, privacy, review, dedupe, split, cap, benchmark, release, and export
+gates.
 
 ## Development
 
