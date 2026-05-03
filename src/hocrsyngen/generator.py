@@ -97,6 +97,13 @@ def _load_font(font_path: Path, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(str(font_path), size)
 
 
+def _validate_font(font_path: Path) -> None:
+    try:
+        _load_font(font_path, 16)
+    except OSError as exc:
+        raise ValueError(f"Synthetic font file is invalid or unreadable: {font_path}") from exc
+
+
 def _wrap_hebrew_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
     _require_raqm()
     words = text.split()
@@ -429,8 +436,10 @@ def generate_documents(
     font_paths_by_template: dict[str, Path] = {}
     for template_id in dict.fromkeys(template_ids):
         font_entry = _select_font(fonts, template_id)
+        font_path = _font_path(font_manifest_path, font_entry)
+        _validate_font(font_path)
         font_entries_by_template[template_id] = font_entry
-        font_paths_by_template[template_id] = _font_path(font_manifest_path, font_entry)
+        font_paths_by_template[template_id] = font_path
     output_dir.mkdir(parents=True, exist_ok=True)
 
     documents: list[SyntheticDocument] = []

@@ -102,6 +102,23 @@ def test_generate_cli_reports_missing_packaged_resource_cleanly(
     assert "Traceback" not in stderr
 
 
+def test_generate_cli_reports_invalid_packaged_resource_cleanly(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail_generation(**_kwargs) -> None:
+        raise ValueError("Synthetic font file is invalid or unreadable: /tmp/invalid.ttf")
+
+    monkeypatch.setattr("hocrsyngen.cli.generate_batch", fail_generation)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main(["generate", "--count", "1", "--seed", "17", "--output", str(tmp_path / "out")])
+
+    assert exc_info.value.code == 2
+    stderr = capsys.readouterr().err
+    assert "Synthetic font file is invalid or unreadable" in stderr
+    assert "Traceback" not in stderr
+
+
 def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: Path) -> None:
     project_root = Path(__file__).resolve().parents[1]
     target_dir = tmp_path / "site"
