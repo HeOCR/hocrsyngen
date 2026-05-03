@@ -21,6 +21,7 @@ governance. They are not release-ready dataset payloads by themselves.
 
 ```bash
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch
+hocrsyngen validate out/fixture-batch
 ```
 
 The command writes:
@@ -37,6 +38,13 @@ Manifest v1 includes stable sample ids, relative image paths, logical-order
 Hebrew text, script/language/direction metadata, generator version, recipe id,
 seed provenance, `PROJECT-SYNTHETIC` licensing, synthetic disclosure, and
 optional persona/condition controls only.
+
+`hocrsyngen validate PATH` checks `PATH/generation_manifest.json` against the
+packaged manifest schema, verifies v1 constants and Hebrew RTL metadata,
+confirms referenced page assets are portable paths under `PATH`, recomputes
+asset SHA-256 values, and verifies JPEG dimensions match the manifest. The
+command is read-only and returns a non-zero exit code with deterministic errors
+when a generated batch is invalid.
 
 ## Development
 
