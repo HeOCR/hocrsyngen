@@ -140,7 +140,7 @@ def _validate_sample_constants(
 def _load_governed_template_catalog() -> dict[str, TemplateCatalogEntry]:
     try:
         entries = template_catalog(DEFAULT_TEMPLATE_IDS)
-    except ValueError as exc:
+    except (OSError, ValueError) as exc:
         raise BatchValidationError(
             f"Could not load governed template catalog: {exc}"
         ) from exc

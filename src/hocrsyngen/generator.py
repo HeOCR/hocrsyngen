@@ -241,12 +241,14 @@ def template_catalog(
     font_manifest_path: Path | None = None,
 ) -> list[TemplateCatalogEntry]:
     template_ids = DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids
+    font_manifest_path = font_manifest_path or default_font_manifest_path()
     recipes = recipe_catalog(template_ids)
-    fonts = _load_font_entries(font_manifest_path or default_font_manifest_path())
+    fonts = _load_font_entries(font_manifest_path)
     catalog: list[TemplateCatalogEntry] = []
     for template_id in template_ids:
         recipe = recipes[template_id]
         font_entry = _select_font(fonts, template_id)
+        _font_path(font_manifest_path, font_entry)
         font_id = str(font_entry.get("id", "")).strip()
         if not font_id:
             raise ValueError(f"Synthetic font entry is missing an id for style: {recipe.font_style}")
