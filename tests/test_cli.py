@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from hocrsyngen.cli import _format_template_catalog_entry, main
+from hocrsyngen.cli import _format_template_catalog_entry, _format_template_catalog_json, main
 from hocrsyngen.generator import TemplateCatalogEntry
 
 
@@ -49,6 +49,69 @@ def test_templates_cli_smoke_outputs_stable_catalog_lines(capsys: pytest.Capture
     assert main(["templates"]) == 0
 
     assert capsys.readouterr().out.splitlines() == EXPECTED_TEMPLATE_LINES
+
+
+def test_templates_cli_text_format_matches_default(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["templates", "--format", "text"]) == 0
+
+    assert capsys.readouterr().out.splitlines() == EXPECTED_TEMPLATE_LINES
+
+
+def test_format_template_catalog_json_uses_public_schema_only() -> None:
+    payload = json.loads(
+        _format_template_catalog_json(
+            [
+                TemplateCatalogEntry(
+                    template_id="printed_letter",
+                    recipe_id="printed_letter_form_v1",
+                    layout_style="printed_form",
+                    font_style="printed",
+                    font_id="alef-regular",
+                    degradation_preset="office_scan_soft",
+                )
+            ]
+        )
+    )
+
+    assert payload == {
+        "schema_version": "template_catalog.v1",
+        "templates": [
+            {
+                "template_id": "printed_letter",
+                "recipe_id": "printed_letter_form_v1",
+                "layout_style": "printed_form",
+                "font_style": "printed",
+                "font_id": "alef-regular",
+                "degradation_preset": "office_scan_soft",
+            }
+        ],
+    }
+
+
+def test_templates_cli_json_outputs_deterministic_catalog(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["templates", "--format", "json"]) == 0
+
+    assert json.loads(capsys.readouterr().out) == {
+        "schema_version": "template_catalog.v1",
+        "templates": [
+            {
+                "template_id": "printed_letter",
+                "recipe_id": "printed_letter_form_v1",
+                "layout_style": "printed_form",
+                "font_style": "printed",
+                "font_id": "alef-regular",
+                "degradation_preset": "office_scan_soft",
+            },
+            {
+                "template_id": "handwritten_note",
+                "recipe_id": "handwritten_note_marginalia_v1",
+                "layout_style": "handwritten_note",
+                "font_style": "handwritten_like",
+                "font_id": "gveret-levin-regular",
+                "degradation_preset": "notebook_scan_worn",
+            },
+        ],
+    }
 
 
 def test_templates_cli_reports_invalid_packaged_resource_cleanly(
@@ -254,6 +317,17 @@ def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: 
         text=True,
     )
     assert module_templates.stdout.splitlines() == EXPECTED_TEMPLATE_LINES
+
+    console_templates_json = subprocess.run(
+        [str(target_dir / "bin" / "hocrsyngen"), "templates", "--format", "json"],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert json.loads(console_templates_json.stdout)["schema_version"] == "template_catalog.v1"
 
     console_output = isolated_cwd / "console-out"
     subprocess.run(
