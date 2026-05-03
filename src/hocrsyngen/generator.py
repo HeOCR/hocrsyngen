@@ -404,19 +404,23 @@ def generate_documents(
     text_corpus_path: Path,
     output_dir: Path,
 ) -> list[SyntheticDocument]:
-    _require_raqm()
     if seed < 0:
         raise ValueError("Synthetic generation seed must be non-negative.")
+    if count < 0:
+        raise ValueError("Synthetic generation count must be non-negative.")
+    if not template_ids:
+        raise ValueError("Synthetic generation requires at least one template_id.")
+    recipe_catalog(template_ids)
+    if output_dir.exists() and not output_dir.is_dir():
+        raise ValueError(f"Synthetic generation output path exists and is not a directory: {output_dir}")
+
+    _require_raqm()
     randomizer = random.Random(seed)
     font_manifest = load_font_manifest(font_manifest_path)
     fonts = font_manifest.get("fonts")
     if not isinstance(fonts, list):
         raise ValueError(f"Synthetic font manifest is missing a valid 'fonts' list: {font_manifest_path}")
     corpus = load_text_corpus(text_corpus_path)
-    if count < 0:
-        raise ValueError("Synthetic generation count must be non-negative.")
-    if not template_ids:
-        raise ValueError("Synthetic generation requires at least one template_id.")
     if not fonts:
         raise ValueError(f"Synthetic font manifest has no registered fonts: {font_manifest_path}")
     if not corpus:
