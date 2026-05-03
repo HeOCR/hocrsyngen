@@ -8,7 +8,64 @@ from pathlib import Path
 
 import pytest
 
-from hocrsyngen.cli import main
+from hocrsyngen.cli import _format_template_catalog_entry, main
+from hocrsyngen.generator import TemplateCatalogEntry
+
+
+EXPECTED_TEMPLATE_LINES = [
+    (
+        "template_id=printed_letter "
+        "recipe_id=printed_letter_form_v1 "
+        "layout_style=printed_form "
+        "font_style=printed "
+        "font_id=alef-regular "
+        "degradation_preset=office_scan_soft"
+    ),
+    (
+        "template_id=handwritten_note "
+        "recipe_id=handwritten_note_marginalia_v1 "
+        "layout_style=handwritten_note "
+        "font_style=handwritten_like "
+        "font_id=gveret-levin-regular "
+        "degradation_preset=notebook_scan_worn"
+    ),
+]
+
+
+def test_format_template_catalog_entry() -> None:
+    assert _format_template_catalog_entry(
+        TemplateCatalogEntry(
+            template_id="printed_letter",
+            recipe_id="printed_letter_form_v1",
+            layout_style="printed_form",
+            font_style="printed",
+            font_id="alef-regular",
+            degradation_preset="office_scan_soft",
+        )
+    ) == EXPECTED_TEMPLATE_LINES[0]
+
+
+def test_templates_cli_smoke_outputs_stable_catalog_lines(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["templates"]) == 0
+
+    assert capsys.readouterr().out.splitlines() == EXPECTED_TEMPLATE_LINES
+
+
+def test_templates_cli_reports_invalid_packaged_resource_cleanly(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail_catalog() -> None:
+        raise ValueError("Synthetic font manifest is missing a valid 'fonts' list: /tmp/manifest.yaml")
+
+    monkeypatch.setattr("hocrsyngen.cli.template_catalog", fail_catalog)
+
+    with pytest.raises(SystemExit) as exc_info:
+        main(["templates"])
+
+    assert exc_info.value.code == 2
+    stderr = capsys.readouterr().err
+    assert "templates: Synthetic font manifest is missing a valid 'fonts' list" in stderr
+    assert "Traceback" not in stderr
 
 
 def test_generate_cli_smoke(tmp_path: Path) -> None:
@@ -175,6 +232,28 @@ def test_installed_package_console_entry_point_and_packaged_resources(tmp_path: 
         stderr=subprocess.PIPE,
         text=True,
     )
+
+    console_templates = subprocess.run(
+        [str(target_dir / "bin" / "hocrsyngen"), "templates"],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert console_templates.stdout.splitlines() == EXPECTED_TEMPLATE_LINES
+
+    module_templates = subprocess.run(
+        [sys.executable, "-m", "hocrsyngen.cli", "templates"],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert module_templates.stdout.splitlines() == EXPECTED_TEMPLATE_LINES
 
     console_output = isolated_cwd / "console-out"
     subprocess.run(
