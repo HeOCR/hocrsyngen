@@ -60,6 +60,63 @@ def installed_package(
     return target_dir, isolated_cwd, env
 
 
+@pytest.fixture(scope="module")
+def wheel_installed_package(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> tuple[Path, Path, Path, dict[str, str]]:
+    project_root = Path(__file__).resolve().parents[1]
+    tmp_path = tmp_path_factory.mktemp("wheel-installed-package")
+    wheel_dir = tmp_path / "wheels"
+    target_dir = tmp_path / "site"
+    isolated_cwd = tmp_path / "isolated"
+    wheel_dir.mkdir()
+    isolated_cwd.mkdir()
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "wheel",
+            "--no-deps",
+            "--no-build-isolation",
+            "--wheel-dir",
+            str(wheel_dir),
+            str(project_root),
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    wheels = sorted(wheel_dir.glob("hocrsyngen-*.whl"))
+    assert len(wheels) == 1
+    wheel_path = wheels[0]
+
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--target",
+            str(target_dir),
+            "--no-deps",
+            str(wheel_path),
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(target_dir)
+    return wheel_path, target_dir, isolated_cwd, env
+
+
 EXPECTED_TEMPLATE_LINES = [
     (
         "template_id=printed_letter "
@@ -939,6 +996,105 @@ def test_installed_package_console_entry_point_and_packaged_resources(
         "valid": False,
         "path": str(invalid_batch),
         "error": f"Missing manifest: {invalid_batch / 'generation_manifest.json'}",
+    }
+
+
+def test_wheel_distribution_contracts_cli_and_packaged_resources(
+    wheel_installed_package: tuple[Path, Path, Path, dict[str, str]],
+) -> None:
+    wheel_path, target_dir, isolated_cwd, env = wheel_installed_package
+    assert wheel_path.is_file()
+
+    resource_check = (
+        "from importlib import resources\n"
+        "required = [\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/generation_manifest.json',\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/assets/hocrsyngen-s00000017-000000/page_0001.jpg',\n"
+        "    'data/contracts/generation_manifest_v1/fixture-batch/assets/hocrsyngen-s00000017-000001/page_0001.jpg',\n"
+        "]\n"
+        "root = resources.files('hocrsyngen')\n"
+        "missing = [path for path in required if not (root / path).is_file()]\n"
+        "assert not missing, missing\n"
+    )
+    subprocess.run(
+        [sys.executable, "-c", resource_check],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    console_contracts_json = subprocess.run(
+        [str(target_dir / "bin" / "hocrsyngen"), "contracts", "--format", "json"],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert console_contracts_json.stderr == ""
+    assert json.loads(console_contracts_json.stdout) == (
+        EXPECTED_CONTRACT_FIXTURE_CATALOG_JSON
+    )
+
+    export_output = isolated_cwd / "wheel-contract-export"
+    console_contract_export = subprocess.run(
+        [
+            str(target_dir / "bin" / "hocrsyngen"),
+            "contracts",
+            "export",
+            "--fixture-id",
+            "generation_manifest_v1_fixture_batch",
+            "--output",
+            str(export_output),
+            "--format",
+            "json",
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert console_contract_export.stderr == ""
+    assert json.loads(console_contract_export.stdout) == {
+        "schema_version": CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION,
+        "fixture_id": "generation_manifest_v1_fixture_batch",
+        "contract": "generation_manifest.v1",
+        "sample_count": 2,
+        "page_count": 2,
+        "output_path": str(export_output),
+        "manifest_path": str(export_output / "generation_manifest.json"),
+    }
+
+    module_validate_json = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "hocrsyngen.cli",
+            "validate",
+            str(export_output),
+            "--format",
+            "json",
+        ],
+        check=True,
+        cwd=isolated_cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    assert module_validate_json.stderr == ""
+    assert json.loads(module_validate_json.stdout) == {
+        "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+        "valid": True,
+        "sample_count": 2,
+        "page_count": 2,
+        "path": str(export_output),
     }
 
 
