@@ -24,6 +24,7 @@ hocrsyngen templates
 hocrsyngen templates --format json
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch
 hocrsyngen validate out/fixture-batch
+hocrsyngen validate out/fixture-batch --format json
 ```
 
 `hocrsyngen templates` prints one deterministic catalog line per packaged
@@ -92,6 +93,32 @@ referenced page assets are portable paths under `PATH`, recomputes asset SHA-256
 values, and verifies JPEG dimensions match the manifest. The command is
 read-only and returns a non-zero exit code with deterministic errors when a
 generated batch is invalid.
+
+Text output remains the default validation report for human-facing CLI use.
+`hocrsyngen validate PATH --format json` emits a deterministic
+machine-readable validation report without changing manifest v1:
+
+```json
+{
+  "schema_version": "validation_report.v1",
+  "valid": true,
+  "sample_count": 2,
+  "page_count": 2,
+  "path": "out/fixture-batch"
+}
+```
+
+Invalid batches keep the non-zero validation exit code and emit a deterministic
+JSON error report when JSON output is requested:
+
+```json
+{
+  "schema_version": "validation_report.v1",
+  "valid": false,
+  "path": "out/fixture-batch",
+  "error": "Missing manifest: out/fixture-batch/generation_manifest.json"
+}
+```
 
 The governed template contract currently packaged with `hocrsyngen` is:
 

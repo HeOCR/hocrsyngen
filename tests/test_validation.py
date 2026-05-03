@@ -7,7 +7,7 @@ import pytest
 from PIL import Image
 
 import hocrsyngen.validation as validation_module
-from hocrsyngen.cli import main
+from hocrsyngen.cli import VALIDATION_REPORT_SCHEMA_VERSION, main
 from hocrsyngen.generator import generate_batch, template_catalog
 from hocrsyngen.io import sha256_file
 from hocrsyngen.validation import BatchValidationError, validate_batch
@@ -46,6 +46,31 @@ def test_validate_generated_batch_passes(
     assert captured.err == ""
 
 
+def test_validate_json_reports_generated_batch(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    batch_dir = _generated_batch(tmp_path)
+
+    assert main(["validate", str(batch_dir), "--format", "json"]) == 0
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == (
+        json.dumps(
+            {
+                "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+                "valid": True,
+                "sample_count": 1,
+                "page_count": 1,
+                "path": str(batch_dir),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    )
+
+
 def test_validate_missing_manifest_fails_cleanly(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -60,6 +85,31 @@ def test_validate_missing_manifest_fails_cleanly(
     assert captured.out == ""
     assert "Missing manifest" in captured.err
     assert "Traceback" not in captured.err
+
+
+def test_validate_json_reports_invalid_batch(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    batch_dir = tmp_path / "missing-manifest"
+    batch_dir.mkdir()
+
+    assert main(["validate", str(batch_dir), "--format", "json"]) == 1
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == (
+        json.dumps(
+            {
+                "schema_version": VALIDATION_REPORT_SCHEMA_VERSION,
+                "valid": False,
+                "path": str(batch_dir),
+                "error": f"Missing manifest: {batch_dir / 'generation_manifest.json'}",
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    )
 
 
 def test_validate_malformed_json_fails_cleanly(tmp_path: Path) -> None:
