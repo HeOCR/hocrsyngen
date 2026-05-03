@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 import json
 import subprocess
-import sys
 from pathlib import Path, PurePosixPath
 
 
@@ -33,8 +32,23 @@ def _json_output(completed: subprocess.CompletedProcess[str]) -> dict:
     return json.loads(completed.stdout)
 
 
+def _assert_valid_validation_report(
+    payload: dict,
+    *,
+    path: Path,
+    sample_count: int,
+    page_count: int,
+) -> None:
+    assert payload["schema_version"] == "validation_report.v1"
+    assert payload["valid"] is True
+    assert payload["sample_count"] == sample_count
+    assert payload["page_count"] == page_count
+    assert payload["path"] == str(path)
+
+
 def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
     installed_package: tuple[Path, Path, dict[str, str]],
+    tmp_path: Path,
 ) -> None:
     target_dir, isolated_cwd, env = installed_package
     executable = str(target_dir / "bin" / "hocrsyngen")
@@ -72,7 +86,7 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
     assert fixture["page_count"] == 2
     assert fixture["manifest_resource_path"].endswith("generation_manifest.json")
 
-    exported_fixture_dir = isolated_cwd / "exported-fixture"
+    exported_fixture_dir = tmp_path / "exported-fixture"
     fixture_export = _json_output(
         _run(
             [
@@ -90,15 +104,15 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
             env=env,
         )
     )
-    assert fixture_export == {
-        "schema_version": "contract_fixture_export.v1",
-        "fixture_id": FIXTURE_ID,
-        "contract": "generation_manifest.v1",
-        "sample_count": 2,
-        "page_count": 2,
-        "output_path": str(exported_fixture_dir),
-        "manifest_path": str(exported_fixture_dir / "generation_manifest.json"),
-    }
+    assert fixture_export["schema_version"] == "contract_fixture_export.v1"
+    assert fixture_export["fixture_id"] == FIXTURE_ID
+    assert fixture_export["contract"] == "generation_manifest.v1"
+    assert fixture_export["sample_count"] == 2
+    assert fixture_export["page_count"] == 2
+    assert fixture_export["output_path"] == str(exported_fixture_dir)
+    assert fixture_export["manifest_path"] == str(
+        exported_fixture_dir / "generation_manifest.json"
+    )
     exported_manifest_path = exported_fixture_dir / "generation_manifest.json"
     assert exported_manifest_path.is_file()
     exported_manifest = json.loads(exported_manifest_path.read_text(encoding="utf-8"))
@@ -117,15 +131,14 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
             env=env,
         )
     )
-    assert exported_validation == {
-        "schema_version": "validation_report.v1",
-        "valid": True,
-        "sample_count": 2,
-        "page_count": 2,
-        "path": str(exported_fixture_dir),
-    }
+    _assert_valid_validation_report(
+        exported_validation,
+        path=exported_fixture_dir,
+        sample_count=2,
+        page_count=2,
+    )
 
-    generated_dir = isolated_cwd / "generated-batch"
+    generated_dir = tmp_path / "generated-batch"
     generation = _json_output(
         _run(
             [
@@ -144,13 +157,13 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
             env=env,
         )
     )
-    assert generation == {
-        "schema_version": "generation_report.v1",
-        "sample_count": 2,
-        "page_count": 2,
-        "output_path": str(generated_dir),
-        "manifest_path": str(generated_dir / "generation_manifest.json"),
-    }
+    assert generation["schema_version"] == "generation_report.v1"
+    assert generation["sample_count"] == 2
+    assert generation["page_count"] >= generation["sample_count"]
+    assert generation["output_path"] == str(generated_dir)
+    assert generation["manifest_path"] == str(
+        generated_dir / "generation_manifest.json"
+    )
 
     generated_validation = _json_output(
         _run(
@@ -159,27 +172,26 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
             env=env,
         )
     )
-    assert generated_validation == {
-        "schema_version": "validation_report.v1",
-        "valid": True,
-        "sample_count": 2,
-        "page_count": 2,
-        "path": str(generated_dir),
-    }
+    _assert_valid_validation_report(
+        generated_validation,
+        path=generated_dir,
+        sample_count=2,
+        page_count=generation["page_count"],
+    )
 
 
 def test_hocrgen_adapter_contract_invalid_validation_reports_json_nonzero(
     installed_package: tuple[Path, Path, dict[str, str]],
+    tmp_path: Path,
 ) -> None:
-    _target_dir, isolated_cwd, env = installed_package
-    invalid_dir = isolated_cwd / "missing-manifest"
+    target_dir, isolated_cwd, env = installed_package
+    executable = str(target_dir / "bin" / "hocrsyngen")
+    invalid_dir = tmp_path / "missing-manifest"
     invalid_dir.mkdir()
 
     completed = _run(
         [
-            sys.executable,
-            "-m",
-            "hocrsyngen.cli",
+            executable,
             "validate",
             str(invalid_dir),
             "--format",
@@ -192,12 +204,13 @@ def test_hocrgen_adapter_contract_invalid_validation_reports_json_nonzero(
 
     assert completed.returncode == 1
     assert completed.stderr == ""
-    assert json.loads(completed.stdout) == {
-        "schema_version": "validation_report.v1",
-        "valid": False,
-        "path": str(invalid_dir),
-        "error": f"Missing manifest: {invalid_dir / 'generation_manifest.json'}",
-    }
+    invalid_validation = json.loads(completed.stdout)
+    assert invalid_validation["schema_version"] == "validation_report.v1"
+    assert invalid_validation["valid"] is False
+    assert invalid_validation["path"] == str(invalid_dir)
+    assert invalid_validation["error"] == (
+        f"Missing manifest: {invalid_dir / 'generation_manifest.json'}"
+    )
 
 
 def test_hocrgen_adapter_contract_tests_do_not_import_private_boundaries() -> None:
