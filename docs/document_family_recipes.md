@@ -79,10 +79,11 @@ The original templates and presets remain governed and unchanged:
 fixture regeneration command still uses only `printed_letter` and
 `handwritten_note`.
 
-Reviewers should compare each stronger variant against its base family using
-coarse visual criteria: stronger skew/blur/grain should be visible, Hebrew text
-should remain readable, stamps and identifiers should remain inspectable where
-present, and artifacts should not create clipping or incoherent overlap.
+Reviewers should compare each stronger variant against its base family using the
+human criteria in [visual_inspection_rubric.md](visual_inspection_rubric.md).
+The short expectation is that stronger skew, blur, grain, or fading should be
+visible while Hebrew text, stamps, identifiers, ruled regions, and marginalia
+remain inspectable and free of incoherent clipping or overlap.
 
 ## Downstream Use
 

@@ -145,8 +145,8 @@ Planned PR breakdown:
 
 - `S3a` — Layout metadata design: decide what layout metadata is needed, which future public boundary should expose it, and how `hocrgen` should filter it. Status: done in PR #31.
 - `S3b` — Hebrew document family recipes: add the first new governed document family only after S3a settles metadata and validation implications. Status: done in PR #32.
-- `S3c` — Degradation preset expansion: add stronger deterministic degradation presets with tests and fixture review guidance. Status: current.
-- `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection.
+- `S3c` — Degradation preset expansion: add stronger deterministic degradation presets with tests and fixture review guidance. Status: done in PR #33.
+- `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection. Status: current.
 
 Deliverables:
 

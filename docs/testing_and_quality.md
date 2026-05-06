@@ -65,6 +65,10 @@ it.
   logical-order preservation.
 - Packaged fonts and text.
 - Visual smoke checks.
+- Human visual inspection guidance for S3 layout realism, Hebrew readability,
+  artifacts, clipping, overlap, degradation acceptability, and candidate
+  rejection is documented in
+  [visual_inspection_rubric.md](visual_inspection_rubric.md).
 - Deterministic degradation preset coverage for stronger governed scan/wear
   variants exposed through the existing template catalog and manifest
   provenance fields, including directional blur/luminance checks plus minimum
@@ -120,6 +124,9 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
   [rendering_coverage_reporting.md](rendering_coverage_reporting.md) recommends
   a future separate batch-level report artifact outside `generation_manifest.json`
   v1.
+- Review sidecar artifacts for visual inspection evidence remain future work and
+  must stay outside `generation_manifest.json` v1 unless a versioned schema
+  update is designed.
 - Synthetic persona/style consistency checks.
 - `hocrgen`-side utility measurement.
 
