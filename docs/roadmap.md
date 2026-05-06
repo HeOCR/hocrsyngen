@@ -93,7 +93,7 @@ Risks/dependencies:
 
 ## Phase S2 — Hebrew Rendering And Text-Quality Hardening
 
-Current status: `current`.
+Current status: `done`.
 
 Objective: improve confidence that generated Hebrew text is rendered and represented correctly across important linguistic and layout cases.
 
@@ -109,7 +109,7 @@ Planned PR breakdown:
 - `S2a` — Hebrew edge text corpus fixtures: add deterministic test inputs for final forms, numerals, punctuation, dates, identifiers, and Latin fragments. Status: done in PR #27.
 - `S2b` — Bidi and niqqud rendering fixtures: add tests for sparse/full niqqud, mixed-direction text, punctuation placement, and logical-order preservation. Status: done in PR #28.
 - `S2c` — Font shaping audit: document and test Pillow/libraqm behavior needed for current packaged fonts and RTL rendering. Status: done in PR #29.
-- `S2d` — Rendering coverage report design: define coverage metadata/reporting expectations before any schema-affecting implementation. Status: current.
+- `S2d` — Rendering coverage report design: define coverage metadata/reporting expectations before any schema-affecting implementation. Status: done in PR #30.
 
 Deliverables:
 
@@ -130,7 +130,7 @@ Risks/dependencies:
 
 ## Phase S3 — Document-Layout Realism
 
-Current status: `future`.
+Current status: `current`.
 
 Objective: make synthetic samples resemble believable Hebrew document families while keeping deterministic generation and manifest contracts intact.
 
@@ -143,7 +143,7 @@ Scope:
 
 Planned PR breakdown:
 
-- `S3a` — Layout metadata design: decide what layout metadata is needed, whether it belongs in manifest v1 additions or a future version, and how `hocrgen` should filter it.
+- `S3a` — Layout metadata design: decide what layout metadata is needed, which future public boundary should expose it, and how `hocrgen` should filter it. Status: current.
 - `S3b` — Hebrew document family recipes: add the first new governed document family only after S3a settles metadata and validation implications.
 - `S3c` — Degradation preset expansion: add stronger deterministic degradation presets with tests and fixture review guidance.
 - `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection.
