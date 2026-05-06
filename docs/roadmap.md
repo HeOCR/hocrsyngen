@@ -145,8 +145,8 @@ Planned PR breakdown:
 
 - `S3a` — Layout metadata design: decide what layout metadata is needed, which future public boundary should expose it, and how `hocrgen` should filter it. Status: done in PR #31.
 - `S3b` — Hebrew document family recipes: add the first new governed document family only after S3a settles metadata and validation implications. Status: done in PR #32.
-- `S3c` — Degradation preset expansion: add stronger deterministic degradation presets with tests and fixture review guidance. Status: current.
-- `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection.
+- `S3c` — Degradation preset expansion: add stronger deterministic degradation presets with tests and fixture review guidance. Status: done in PR #33.
+- `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection. Status: current.
 
 Deliverables:
 
@@ -245,26 +245,28 @@ Risks/dependencies:
 
 Current status: `future`.
 
-Objective: define how synthetic batches are accepted, capped, inspected, and measured before downstream release consideration.
+Objective: define downstream acceptance, caps, inspection evidence, and utility
+measurement before any synthetic batch is considered for release.
 
 Scope:
 
 - Define realism and OCR/HTR utility metrics.
-- Human inspection rubrics.
+- Downstream acceptance rubrics that build on, but do not replace, the S3
+  generator-quality visual inspection checklist.
 - CER/WER utility only when ground truth exists downstream.
 - Domain shift tracking.
 - Synthetic should complement real data and remain capped by `hocrgen` release profiles.
 
 Planned PR breakdown:
 
-- `S6a` — Realism inspection rubric: define review categories, pass/fail examples, and rejection reasons for synthetic batches.
+- `S6a` — Downstream realism acceptance rubric: define hocrgen/HeOCR acceptance categories, calibrated examples, review evidence, and release-gate rejection reasons that build on the S3 generator-quality visual inspection checklist.
 - `S6b` — Downstream utility measurement contract: document how `hocrgen`/HeOCR benchmarks should consume hocrsyngen outputs for CER/WER only when references exist.
 - `S6c` — Synthetic diversity and domain-shift metrics: define measurable diversity and synthetic-to-real gap tracking.
 - `S6d` — Release cap handoff policy: document how hocrsyngen metadata supports hocrgen release profiles without moving governance into this repo.
 
 Deliverables:
 
-- Visual inspection rubric.
+- Downstream acceptance and inspection-evidence rubric.
 - Utility evaluation plan.
 - Domain-shift tracking plan.
 - `hocrgen` handoff expectations for caps and profiles.

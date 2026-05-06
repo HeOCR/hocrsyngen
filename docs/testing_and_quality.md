@@ -81,6 +81,18 @@ it.
 - Hosted CI coverage for tests, required CLI smoke commands, libraqm availability,
   and package build/install checks.
 
+## Manual Inspection Guidance
+
+S3 human visual inspection guidance is documented in
+[visual_inspection_rubric.md](visual_inspection_rubric.md). It covers layout
+realism, Hebrew readability, artifacts, clipping, overlap, degradation
+acceptability, inspectability of stamps/identifiers/marginalia/ruled regions,
+and candidate rejection notes.
+
+This guidance is not automated test coverage and is not a CI gate. It is a
+manual review aid for generator-quality spot checks until any future review
+sidecar or downstream acceptance workflow is explicitly designed.
+
 ## Environmental Requirement
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
@@ -120,6 +132,9 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
   [rendering_coverage_reporting.md](rendering_coverage_reporting.md) recommends
   a future separate batch-level report artifact outside `generation_manifest.json`
   v1.
+- Review sidecar artifacts for visual inspection evidence remain future work and
+  must stay outside `generation_manifest.json` v1 unless a versioned schema
+  update is designed.
 - Synthetic persona/style consistency checks.
 - `hocrgen`-side utility measurement.
 
