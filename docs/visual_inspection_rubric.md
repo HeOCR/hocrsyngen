@@ -38,27 +38,63 @@ authorship, medical condition, psychological condition, or sensitive attributes
 from visual review. Persona, condition, stamps, identifiers, marginalia, and wear
 are synthetic generator controls only.
 
+## Inspection Procedure
+
+Use this procedure for a manual S3 spot check. It is intentionally lightweight
+and does not create a required sidecar artifact.
+
+1. Generate or select a validated batch using public CLI surfaces. For new
+   template review, include the base template and the stronger degradation
+   variant when both exist.
+2. Open each rendered JPEG page for the selected samples and keep the manifest
+   nearby so notes can cite stable sample ids, page ids, template ids, recipe
+   ids, and degradation presets.
+3. Inspect at page level first: confirm the image opens, has page-like
+   dimensions, is not blank or corrupt, and shows the expected document family.
+4. Inspect content-bearing regions next: main Hebrew body text, headers,
+   footers, ruled lines, stamps, identifiers, marginalia, borders, and card
+   sections where present.
+5. Compare stronger degradation variants against their base family. The variant
+   should visibly increase scan or wear artifacts while preserving the primary
+   text and layout signals that make the family inspectable.
+6. Record only concise human notes outside `hocrsyngen` outputs. Include stable
+   public identifiers and the visual reason, such as `text clipped at right
+   edge`, `stamp unreadable`, or `heavy wear hides body lines`.
+
+The inspection unit is a rendered page. A sample or batch should be flagged when
+any reviewed page has a generator-quality rejection issue. For broad batch
+review, inspect at least one page for each governed template id present in the
+batch, plus both base and stronger variants when a PR changes degradation
+behavior.
+
 ## Pass Criteria
 
 A candidate page is visually acceptable for S3 document-layout realism when all
 of these conditions hold:
 
-- The document family is recognizable from visible layout structure, not only
-  from manifest provenance.
-- Hebrew text remains readable enough for human inspection, including through
-  the selected degradation preset.
-- RTL visual flow looks plausible: Hebrew is not obviously reversed, broken into
-  isolated glyphs, or displaced by mixed-direction fragments.
-- Text, ruled areas, stamps, identifiers, marginalia, and borders do not clip,
-  crop, collide, or create incoherent overlap.
-- Degradation artifacts look like plausible scan or wear artifacts for the
-  template family and do not dominate the document.
+- The document family is identifiable from visible structure. A reviewer should
+  be able to tell a letter/form, notebook note, or archive card apart without
+  reading manifest provenance first.
+- The main Hebrew body text has multiple legible content lines. Degradation may
+  soften strokes or add texture, but it must not hide the primary text block.
+- RTL visual flow has no obvious rendering failure: Hebrew is not visually
+  reversed, split into isolated glyphs, or displaced away from its intended
+  line.
+- Content-bearing elements are inside the page image. Main text, ruled areas,
+  stamps, identifiers, marginalia, borders, headers, and footers must not be
+  cropped by an image edge.
+- Content-bearing elements do not obscure each other. Overlap is acceptable only
+  when it reads as a deliberate synthetic mark and does not hide the primary text
+  or identifier being reviewed.
+- Degradation is visible at the intended strength but preserves family-level
+  layout signals. It may obscure small texture; it must not erase the document
+  structure, primary text, stamps, or identifiers that the recipe introduces.
 - Repeated regions such as form rows, ruled notebook lines, card sections, and
-  footer/header areas remain visually aligned enough to inspect.
-- Synthetic identifiers, dates, stamps, and labels are inspectable when they are
-  part of the governed recipe.
-- JPEG assets open correctly, have the expected page-like dimensions, and do
-  not appear blank, fully saturated, or corrupt.
+  footer/header areas remain visually locatable and coherent.
+- Synthetic identifiers, dates, stamps, and labels are visually locatable and at
+  least partially readable when they are part of the governed recipe.
+- JPEG assets open correctly, have the expected page-like dimensions, and do not
+  appear blank, fully saturated, mostly empty by accident, or corrupt.
 
 ## Template-Specific Checks
 
@@ -99,8 +135,8 @@ For `archive_card` and `archive_card_faded_scan`, reviewers should confirm:
 Reject or flag a candidate page for generator-quality follow-up when any of
 these are visible:
 
-- Hebrew text is unreadable because of rendering failure, excessive blur, severe
-  compression, over-darkening, over-fading, or missing ink.
+- Main Hebrew body text is unreadable because of rendering failure, excessive
+  blur, severe compression, over-darkening, over-fading, or missing ink.
 - Hebrew appears visually reversed, badly shaped, split into isolated glyphs, or
   inconsistent with the expected RTL rendering path.
 - Important text, borders, stamps, identifiers, ruled regions, or marginalia are
@@ -111,6 +147,8 @@ these are visible:
   repeated mechanical noise, impossible stains, excessive uniform grain, or
   implausible skew for the family.
 - The visible layout does not match the governed template family or recipe.
+- A stronger degradation variant no longer preserves the reviewable family
+  features visible in the base template.
 - The page is blank, corrupt, fully saturated, mostly empty by accident, or not a
   readable JPEG page asset.
 - The visual content implies real provenance, real identity, real authorship, or

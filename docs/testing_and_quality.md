@@ -65,10 +65,6 @@ it.
   logical-order preservation.
 - Packaged fonts and text.
 - Visual smoke checks.
-- Human visual inspection guidance for S3 layout realism, Hebrew readability,
-  artifacts, clipping, overlap, degradation acceptability, and candidate
-  rejection is documented in
-  [visual_inspection_rubric.md](visual_inspection_rubric.md).
 - Deterministic degradation preset coverage for stronger governed scan/wear
   variants exposed through the existing template catalog and manifest
   provenance fields, including directional blur/luminance checks plus minimum
@@ -84,6 +80,18 @@ it.
   alignment.
 - Hosted CI coverage for tests, required CLI smoke commands, libraqm availability,
   and package build/install checks.
+
+## Manual Inspection Guidance
+
+S3 human visual inspection guidance is documented in
+[visual_inspection_rubric.md](visual_inspection_rubric.md). It covers layout
+realism, Hebrew readability, artifacts, clipping, overlap, degradation
+acceptability, inspectability of stamps/identifiers/marginalia/ruled regions,
+and candidate rejection notes.
+
+This guidance is not automated test coverage and is not a CI gate. It is a
+manual review aid for generator-quality spot checks until any future review
+sidecar or downstream acceptance workflow is explicitly designed.
 
 ## Environmental Requirement
 
