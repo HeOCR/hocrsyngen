@@ -211,29 +211,65 @@ def _style_batch_manifest_projection(payload: dict) -> list[dict[str, object]]:
     ]
 
 
-def _style_batch_visual_metrics(batch_dir: Path, payload: dict) -> list[dict[str, object]]:
-    metrics: list[dict[str, object]] = []
+def _style_bundle_parameter_signature(persona: str) -> dict[str, int]:
+    style_bundle = _style_bundle(persona)
+    return {
+        "printed_line_height": style_bundle.printed_line_height,
+        "printed_x_jitter_span": style_bundle.printed_x_jitter,
+        "printed_y_jitter_span": (
+            style_bundle.printed_y_jitter[1] - style_bundle.printed_y_jitter[0]
+        ),
+        "handwritten_line_height": style_bundle.handwritten_line_height,
+        "handwritten_x_jitter_span": style_bundle.handwritten_x_jitter,
+        "handwritten_y_jitter_span": (
+            style_bundle.handwritten_y_jitter[1] - style_bundle.handwritten_y_jitter[0]
+        ),
+        "archive_line_height": style_bundle.archive_line_height,
+        "archive_y_jitter_span": (
+            style_bundle.archive_y_jitter[1] - style_bundle.archive_y_jitter[0]
+        ),
+        "ink_delta": style_bundle.ink_delta,
+    }
+
+
+def _style_batch_page_hashes(payload: dict) -> list[str]:
+    return [sample["pages"][0]["sha256"] for sample in payload["samples"]]
+
+
+def _style_batch_rendered_signature(batch_dir: Path, payload: dict) -> list[dict[str, object]]:
+    signature: list[dict[str, object]] = []
     for sample in payload["samples"]:
         page = sample["pages"][0]
         with Image.open(batch_dir / page["asset_path"]).convert("RGB") as image:
-            metrics.append(
+            signature.append(
                 {
                     "sample_id": sample["sample_id"],
                     "template_id": sample["provenance"]["template_id"],
-                    "sha256": page["sha256"],
                     "dark_ink_pixels": _dark_ink_pixel_count(image),
                     "mean_luminance": round(_mean_luminance(image), 3),
                     "mean_edge_strength": round(_mean_edge_strength(image), 3),
                 }
             )
-    return metrics
+    return signature
 
 
-def _style_consistency_profile(batch_dir: Path, payload: dict) -> dict[str, object]:
+def _style_batch_dark_ink_total(batch_dir: Path, payload: dict) -> int:
+    return sum(
+        sample_signature["dark_ink_pixels"]
+        for sample_signature in _style_batch_rendered_signature(batch_dir, payload)
+        if isinstance(sample_signature["dark_ink_pixels"], int)
+    )
+
+
+def _style_consistency_profile(
+    persona: str, batch_dir: Path, payload: dict
+) -> dict[str, object]:
     return {
         "controls": [sample["controls"] for sample in payload["samples"]],
         "manifest_projection": _style_batch_manifest_projection(payload),
-        "visual_metrics": _style_batch_visual_metrics(batch_dir, payload),
+        "style_parameters": _style_bundle_parameter_signature(persona),
+        "page_hashes": _style_batch_page_hashes(payload),
+        "rendered_signature": _style_batch_rendered_signature(batch_dir, payload),
     }
 
 
@@ -622,8 +658,8 @@ def test_style_consistency_profile_is_reproducible_across_batch(
         persona=persona,
     ).to_dict()
 
-    assert _style_consistency_profile(first_dir, first) == _style_consistency_profile(
-        second_dir, second
+    assert _style_consistency_profile(persona, first_dir, first) == _style_consistency_profile(
+        persona, second_dir, second
     )
     assert [sample["controls"] for sample in first["samples"]] == [
         {"persona": persona, "condition": None},
@@ -653,12 +689,38 @@ def test_style_consistency_profiles_distinguish_supported_style_bundles(
         batches[persona] = (
             batch_dir,
             payload,
-            _style_consistency_profile(batch_dir, payload),
+            _style_consistency_profile(persona, batch_dir, payload),
         )
 
     standard_projection = batches["style_standard_v1"][2]["manifest_projection"]
     for persona in NON_DEFAULT_STYLE_BUNDLE_IDS:
         assert batches[persona][2]["manifest_projection"] == standard_projection
+
+    standard_parameters = batches["style_standard_v1"][2]["style_parameters"]
+    open_parameters = batches["style_open_drift_v1"][2]["style_parameters"]
+    compact_parameters = batches["style_compact_steady_v1"][2]["style_parameters"]
+    for key in [
+        "printed_line_height",
+        "printed_x_jitter_span",
+        "printed_y_jitter_span",
+        "handwritten_line_height",
+        "handwritten_x_jitter_span",
+        "handwritten_y_jitter_span",
+        "archive_line_height",
+        "archive_y_jitter_span",
+        "ink_delta",
+    ]:
+        assert open_parameters[key] > standard_parameters[key] > compact_parameters[key]
+
+    dark_ink_totals = {
+        persona: _style_batch_dark_ink_total(batch_dir, payload)
+        for persona, (batch_dir, payload, _profile) in batches.items()
+    }
+    assert (
+        dark_ink_totals["style_open_drift_v1"]
+        < dark_ink_totals["style_standard_v1"]
+        < dark_ink_totals["style_compact_steady_v1"]
+    )
 
     for first_persona, second_persona in [
         ("style_standard_v1", "style_open_drift_v1"),
@@ -669,7 +731,9 @@ def test_style_consistency_profiles_distinguish_supported_style_bundles(
         second_dir, second_payload, second_profile = batches[second_persona]
 
         assert first_profile["controls"] != second_profile["controls"]
-        assert first_profile["visual_metrics"] != second_profile["visual_metrics"]
+        assert first_profile["style_parameters"] != second_profile["style_parameters"]
+        assert first_profile["page_hashes"] != second_profile["page_hashes"]
+        assert first_profile["rendered_signature"] != second_profile["rendered_signature"]
         assert (
             _batch_changed_pixel_count(first_dir, first_payload, second_dir, second_payload)
             > 250_000
