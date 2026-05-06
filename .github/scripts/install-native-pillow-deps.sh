@@ -19,7 +19,13 @@ case "$(uname -s)" in
     ;;
   Darwin)
     brew update
-    brew install libraqm pkg-config jpeg zlib freetype lcms2 openjpeg libtiff webp
+    for package in libraqm pkgconf jpeg zlib freetype little-cms2 openjpeg libtiff webp; do
+      if brew list --formula "$package" >/dev/null 2>&1; then
+        echo "Homebrew formula already installed: $package"
+      else
+        brew install "$package"
+      fi
+    done
     ;;
   *)
     echo "Unsupported runner OS for native Pillow/libraqm dependency installation: $(uname -s)" >&2
