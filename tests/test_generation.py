@@ -195,6 +195,103 @@ def _dark_ink_pixel_count(image: Image.Image) -> int:
     return sum(1 for r, g, b in _image_pixels(image) if r < 115 and g < 105 and b < 95)
 
 
+def _style_batch_manifest_projection(payload: dict) -> list[dict[str, object]]:
+    return [
+        {
+            "sample_id": sample["sample_id"],
+            "recipe_id": sample["recipe_id"],
+            "provenance": sample["provenance"],
+            "text": sample["text"],
+            "asset_path": sample["pages"][0]["asset_path"],
+            "media_type": sample["pages"][0]["media_type"],
+            "width": sample["pages"][0]["width"],
+            "height": sample["pages"][0]["height"],
+        }
+        for sample in payload["samples"]
+    ]
+
+
+def _style_bundle_parameter_signature(persona: str) -> dict[str, int]:
+    style_bundle = _style_bundle(persona)
+    return {
+        "printed_line_height": style_bundle.printed_line_height,
+        "printed_x_jitter_span": style_bundle.printed_x_jitter,
+        "printed_y_jitter_span": (
+            style_bundle.printed_y_jitter[1] - style_bundle.printed_y_jitter[0]
+        ),
+        "handwritten_line_height": style_bundle.handwritten_line_height,
+        "handwritten_x_jitter_span": style_bundle.handwritten_x_jitter,
+        "handwritten_y_jitter_span": (
+            style_bundle.handwritten_y_jitter[1] - style_bundle.handwritten_y_jitter[0]
+        ),
+        "archive_line_height": style_bundle.archive_line_height,
+        "archive_y_jitter_span": (
+            style_bundle.archive_y_jitter[1] - style_bundle.archive_y_jitter[0]
+        ),
+        "ink_delta": style_bundle.ink_delta,
+    }
+
+
+def _style_batch_page_hashes(payload: dict) -> list[str]:
+    return [sample["pages"][0]["sha256"] for sample in payload["samples"]]
+
+
+def _style_batch_rendered_signature(batch_dir: Path, payload: dict) -> list[dict[str, object]]:
+    signature: list[dict[str, object]] = []
+    for sample in payload["samples"]:
+        page = sample["pages"][0]
+        with Image.open(batch_dir / page["asset_path"]).convert("RGB") as image:
+            signature.append(
+                {
+                    "sample_id": sample["sample_id"],
+                    "template_id": sample["provenance"]["template_id"],
+                    "dark_ink_pixels": _dark_ink_pixel_count(image),
+                    "mean_luminance": round(_mean_luminance(image), 3),
+                    "mean_edge_strength": round(_mean_edge_strength(image), 3),
+                }
+            )
+    return signature
+
+
+def _style_batch_dark_ink_total(batch_dir: Path, payload: dict) -> int:
+    return sum(
+        sample_signature["dark_ink_pixels"]
+        for sample_signature in _style_batch_rendered_signature(batch_dir, payload)
+        if isinstance(sample_signature["dark_ink_pixels"], int)
+    )
+
+
+def _style_consistency_profile(
+    persona: str, batch_dir: Path, payload: dict
+) -> dict[str, object]:
+    return {
+        "controls": [sample["controls"] for sample in payload["samples"]],
+        "manifest_projection": _style_batch_manifest_projection(payload),
+        "style_parameters": _style_bundle_parameter_signature(persona),
+        "page_hashes": _style_batch_page_hashes(payload),
+        "rendered_signature": _style_batch_rendered_signature(batch_dir, payload),
+    }
+
+
+def _batch_changed_pixel_count(
+    first_dir: Path,
+    first_payload: dict,
+    second_dir: Path,
+    second_payload: dict,
+) -> int:
+    changed_pixels = 0
+    for first_sample, second_sample in zip(
+        first_payload["samples"], second_payload["samples"], strict=True
+    ):
+        first_page = first_sample["pages"][0]
+        second_page = second_sample["pages"][0]
+        with Image.open(first_dir / first_page["asset_path"]).convert("RGB") as first_image:
+            with Image.open(second_dir / second_page["asset_path"]).convert("RGB") as second_image:
+                assert first_image.size == second_image.size == CANVAS_SIZE
+                changed_pixels += _changed_pixel_count(first_image, second_image)
+    return changed_pixels
+
+
 def _red_stamp_pixel_count(image: Image.Image) -> int:
     return sum(1 for r, g, b in _image_pixels(image) if r > 90 and r > g * 1.45 and r > b * 1.45)
 
@@ -536,6 +633,111 @@ def test_non_default_style_bundles_change_rendering_without_contract_drift(
             with Image.open(styled_dir / styled_page["asset_path"]).convert("RGB") as styled_image:
                 assert default_image.size == styled_image.size == CANVAS_SIZE
                 assert _changed_pixel_count(default_image, styled_image) > 20_000
+
+
+@pytest.mark.parametrize("persona", STYLE_BUNDLE_IDS)
+def test_style_consistency_profile_is_reproducible_across_batch(
+    tmp_path: Path,
+    persona: str,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    first_dir = tmp_path / f"{persona}-first"
+    second_dir = tmp_path / f"{persona}-second"
+    first = generate_batch(
+        count=6,
+        seed=131,
+        output_dir=first_dir,
+        template_ids=template_ids,
+        persona=persona,
+    ).to_dict()
+    second = generate_batch(
+        count=6,
+        seed=131,
+        output_dir=second_dir,
+        template_ids=template_ids,
+        persona=persona,
+    ).to_dict()
+
+    assert _style_consistency_profile(persona, first_dir, first) == _style_consistency_profile(
+        persona, second_dir, second
+    )
+    assert [sample["controls"] for sample in first["samples"]] == [
+        {"persona": persona, "condition": None},
+        {"persona": persona, "condition": None},
+        {"persona": persona, "condition": None},
+        {"persona": persona, "condition": None},
+        {"persona": persona, "condition": None},
+        {"persona": persona, "condition": None},
+    ]
+    assert [sample["provenance"]["template_id"] for sample in first["samples"]] == template_ids * 2
+
+
+def test_style_consistency_profiles_distinguish_supported_style_bundles(
+    tmp_path: Path,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    batches: dict[str, tuple[Path, dict, dict[str, object]]] = {}
+    for persona in STYLE_BUNDLE_IDS:
+        batch_dir = tmp_path / persona
+        payload = generate_batch(
+            count=6,
+            seed=137,
+            output_dir=batch_dir,
+            template_ids=template_ids,
+            persona=persona,
+        ).to_dict()
+        batches[persona] = (
+            batch_dir,
+            payload,
+            _style_consistency_profile(persona, batch_dir, payload),
+        )
+
+    standard_projection = batches["style_standard_v1"][2]["manifest_projection"]
+    for persona in NON_DEFAULT_STYLE_BUNDLE_IDS:
+        assert batches[persona][2]["manifest_projection"] == standard_projection
+
+    standard_parameters = batches["style_standard_v1"][2]["style_parameters"]
+    open_parameters = batches["style_open_drift_v1"][2]["style_parameters"]
+    compact_parameters = batches["style_compact_steady_v1"][2]["style_parameters"]
+    for key in [
+        "printed_line_height",
+        "printed_x_jitter_span",
+        "printed_y_jitter_span",
+        "handwritten_line_height",
+        "handwritten_x_jitter_span",
+        "handwritten_y_jitter_span",
+        "archive_line_height",
+        "archive_y_jitter_span",
+        "ink_delta",
+    ]:
+        assert open_parameters[key] > standard_parameters[key] > compact_parameters[key]
+
+    dark_ink_totals = {
+        persona: _style_batch_dark_ink_total(batch_dir, payload)
+        for persona, (batch_dir, payload, _profile) in batches.items()
+    }
+    assert (
+        dark_ink_totals["style_open_drift_v1"]
+        < dark_ink_totals["style_standard_v1"]
+        < dark_ink_totals["style_compact_steady_v1"]
+    )
+
+    for first_persona, second_persona in [
+        ("style_standard_v1", "style_open_drift_v1"),
+        ("style_standard_v1", "style_compact_steady_v1"),
+        ("style_open_drift_v1", "style_compact_steady_v1"),
+    ]:
+        first_dir, first_payload, first_profile = batches[first_persona]
+        second_dir, second_payload, second_profile = batches[second_persona]
+
+        assert first_profile["controls"] != second_profile["controls"]
+        assert first_profile["style_parameters"] != second_profile["style_parameters"]
+        assert first_profile["page_hashes"] != second_profile["page_hashes"]
+        assert first_profile["rendered_signature"] != second_profile["rendered_signature"]
+        assert (
+            _batch_changed_pixel_count(first_dir, first_payload, second_dir, second_payload)
+            > 250_000
+        )
 
 
 def test_style_bundle_controls_use_neutral_synthetic_ids(tmp_path: Path) -> None:
