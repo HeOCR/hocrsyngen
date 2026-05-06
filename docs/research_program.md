@@ -14,8 +14,8 @@ The research program should improve realism and utility without weakening the ba
 2. Handwriting-like font and allograph expansion.
 3. Character-level and stroke-like perturbation.
 4. Word, line, and page assembly realism.
-5. Persona-conditioned synthetic writing styles.
-6. Condition controls such as fatigue, stress, and concentration as rendering parameters only.
+5. Synthetic persona parameter bundles for repeatable generated styles.
+6. Condition controls as neutral rendering parameters only.
 7. Optional learned generation models as separate optional packages or experiments.
 8. Evaluation and domain-shift measurement.
 
@@ -36,14 +36,24 @@ The research program should improve realism and utility without weakening the ba
 - A persona can define a stable style profile across a batch.
 - Topic/register preferences may be used as synthetic corpus controls.
 - Document-type preferences may guide template selection.
-- Persona metadata must not claim a real identity or imitate a living person.
+- Persona metadata must not claim a real identity, demographic profile,
+  authorship, provenance, or living-person imitation.
 
 ## Condition Model Design
 
 - Condition id is a rendering-control bundle.
-- Example condition labels: careful, rushed, tired, distracted, formal, cramped.
-- Conditions must map to measurable rendering parameters such as spacing, stroke variation proxy, baseline drift, line discipline, degradation, or layout density.
-- Conditions must not be represented as mental-state assertions or medical claims.
+- Condition labels should prefer neutral, measurable rendering descriptions over
+  human-state labels.
+- Conditions must map to measurable rendering parameters such as spacing, stroke
+  variation proxy, baseline drift, line discipline, degradation, or layout
+  density.
+- Conditions must not be represented as mental-state assertions, disability
+  claims, sensitive attributes, or medical claims.
+
+The normative semantics for persona, style, and condition controls are recorded
+in [ADR 0005](decisions/0005-persona-style-condition-semantics.md). Future
+research prototypes should not promote richer control metadata into public
+catalog, manifest, or sidecar contracts without a documented compatibility path.
 
 ## Evaluation Plan
 
@@ -59,6 +69,8 @@ The research program should improve realism and utility without weakening the ba
 - Synthetic disclosure is always present.
 - No claims of real authorship.
 - No imitation of a living person's handwriting.
+- No medical, psychological, disability, sensitive-attribute, demographic, or
+  provenance claims from persona/style/condition controls.
 - Asset licenses must be tracked.
 - Generated data does not bypass `hocrgen` release governance.
 

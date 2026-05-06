@@ -23,7 +23,8 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [roadmap.md](roadmap.md): hocrsyngen-specific phases from planning foundation through Hebrew rendering, realism, research, evaluation, and future script abstraction.
 - [research_program.md](research_program.md): planning track for believable synthetic Hebrew handwriting and document generation.
 - [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.
-- [decisions/](decisions/): accepted ADR-style design decisions.
+- [decisions/](decisions/): accepted ADR-style design decisions, including persona/style/condition semantics.
+- [decisions/0005-persona-style-condition-semantics.md](decisions/0005-persona-style-condition-semantics.md): normative semantics and forbidden-claim boundaries for synthetic persona, style, and condition controls.
 
 ## Suggested Reading Order
 
