@@ -41,28 +41,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install native libraqm dependencies on Ubuntu
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libraqm-dev \
-            libfribidi-dev \
-            libharfbuzz-dev \
-            libjpeg-dev \
-            zlib1g-dev \
-            libfreetype6-dev \
-            liblcms2-dev \
-            libopenjp2-7-dev \
-            libtiff-dev \
-            libwebp-dev \
-            pkg-config
-
-      - name: Install native libraqm dependencies on macOS
-        if: runner.os == 'macOS'
-        run: |
-          brew update
-          brew install libraqm pkg-config jpeg zlib freetype lcms2 openjpeg libtiff webp
+      - name: Install native Pillow/libraqm dependencies
+        run: .github/scripts/install-native-pillow-deps.sh
 
       - name: Install Python dependencies
         run: |
@@ -103,21 +83,8 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install native libraqm dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libraqm-dev \
-            libfribidi-dev \
-            libharfbuzz-dev \
-            libjpeg-dev \
-            zlib1g-dev \
-            libfreetype6-dev \
-            liblcms2-dev \
-            libopenjp2-7-dev \
-            libtiff-dev \
-            libwebp-dev \
-            pkg-config
+      - name: Install native Pillow/libraqm dependencies
+        run: .github/scripts/install-native-pillow-deps.sh
 
       - name: Build distributions
         run: |
@@ -139,6 +106,8 @@ jobs:
           PY
           hocrsyngen templates
           hocrsyngen contracts --format json
+          hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch --output out/wheel-exported-fixture --format json
+          hocrsyngen validate out/wheel-exported-fixture --format json
           hocrsyngen generate --count 2 --seed 17 --output out/wheel-fixture-batch
           hocrsyngen validate out/wheel-fixture-batch --format json
 

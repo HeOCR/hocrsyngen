@@ -18,11 +18,11 @@ There is no configured lint command unless one is added explicitly.
 The repository CI workflow runs on pull requests and pushes to `main`.
 
 - Test matrix: Ubuntu and macOS runners on Python 3.11 and 3.12.
-- CI installs native Pillow/libraqm/FriBiDi/Harfbuzz build dependencies before Python dependencies.
+- CI installs native Pillow/libraqm/FriBiDi/Harfbuzz build dependencies before Python dependencies through `.github/scripts/install-native-pillow-deps.sh`.
 - CI explicitly checks `PIL.features.check("raqm")` and fails with a libraqm requirement message if Hebrew RTL shaping support is unavailable.
 - CI installs the package with `python -m pip install -e ".[test]"`.
 - CI runs `python -m pytest` and the required CLI smoke commands from this document.
-- A separate Ubuntu/Python 3.12 packaging job builds the sdist and wheel, installs the wheel in a clean virtual environment, verifies libraqm support, runs installed `hocrsyngen` CLI smoke commands, and uploads `dist/*` as a workflow artifact.
+- A separate Ubuntu/Python 3.12 packaging job builds the sdist and wheel, installs the wheel in a clean virtual environment, verifies libraqm support, runs installed `hocrsyngen` CLI smoke commands including `contracts export` plus validation of the exported fixture, and uploads `dist/*` as a workflow artifact.
 
 CI intentionally does not run linting until the repository adopts and documents a lint tool.
 
