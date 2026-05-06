@@ -15,6 +15,7 @@ from hocrsyngen.generator import (
     CONDITION_BUNDLES,
     STYLE_BUNDLES,
     _condition_bundle,
+    _conditioned_line_height,
     _degradation_preset,
     _font_path,
     load_font_manifest,
@@ -683,6 +684,58 @@ def test_non_default_condition_bundles_change_rendering_without_contract_drift(
             with Image.open(conditioned_dir / conditioned_page["asset_path"]).convert("RGB") as conditioned_image:
                 assert default_image.size == conditioned_image.size == CANVAS_SIZE
                 assert _changed_pixel_count(default_image, conditioned_image) > 20_000
+
+
+def test_low_contrast_condition_reduces_visual_contrast_metrics(
+    tmp_path: Path,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    default_dir = tmp_path / "default"
+    low_contrast_dir = tmp_path / "low-contrast"
+    default = generate_batch(
+        count=3,
+        seed=97,
+        output_dir=default_dir,
+        template_ids=template_ids,
+    ).to_dict()
+    low_contrast = generate_batch(
+        count=3,
+        seed=97,
+        output_dir=low_contrast_dir,
+        template_ids=template_ids,
+        condition="condition_low_contrast_v1",
+    ).to_dict()
+
+    for default_sample, low_contrast_sample in zip(default["samples"], low_contrast["samples"], strict=True):
+        default_page = default_sample["pages"][0]
+        low_contrast_page = low_contrast_sample["pages"][0]
+        with Image.open(default_dir / default_page["asset_path"]).convert("RGB") as default_image:
+            with Image.open(low_contrast_dir / low_contrast_page["asset_path"]).convert("RGB") as low_contrast_image:
+                assert _mean_luminance(low_contrast_image) > _mean_luminance(default_image)
+                assert _mean_edge_strength(low_contrast_image) < _mean_edge_strength(default_image)
+                assert _dark_ink_pixel_count(low_contrast_image) < _dark_ink_pixel_count(default_image)
+
+
+def test_condition_bundle_parameters_match_public_rendering_semantics() -> None:
+    standard = _condition_bundle("condition_standard_v1")
+    low_contrast = _condition_bundle("condition_low_contrast_v1")
+    dense_spacing = _condition_bundle("condition_dense_spacing_v1")
+
+    assert low_contrast.line_height_scale == standard.line_height_scale
+    assert low_contrast.ink_delta > standard.ink_delta
+    assert low_contrast.blur_delta > standard.blur_delta
+    assert low_contrast.contrast_scale < standard.contrast_scale
+    assert low_contrast.brightness_scale > standard.brightness_scale
+    assert low_contrast.grain_alpha_scale == standard.grain_alpha_scale
+
+    assert dense_spacing.ink_delta == standard.ink_delta
+    assert dense_spacing.blur_delta == standard.blur_delta
+    assert dense_spacing.contrast_scale == standard.contrast_scale
+    assert dense_spacing.brightness_scale == standard.brightness_scale
+    assert dense_spacing.grain_alpha_scale == standard.grain_alpha_scale
+    assert _conditioned_line_height(68, dense_spacing) < _conditioned_line_height(68, standard)
+    assert _conditioned_line_height(76, dense_spacing) < _conditioned_line_height(76, standard)
+    assert _conditioned_line_height(78, dense_spacing) < _conditioned_line_height(78, standard)
 
 
 def test_condition_bundles_compose_with_persona_style_controls(

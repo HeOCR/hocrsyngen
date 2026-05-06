@@ -343,8 +343,8 @@ CONDITION_BUNDLES: dict[str, ConditionBundle] = {
         ink_delta=18,
         blur_delta=0.22,
         contrast_scale=0.82,
-        brightness_scale=1.03,
-        grain_alpha_scale=1.55,
+        brightness_scale=1.14,
+        grain_alpha_scale=1.0,
     ),
     "condition_dense_spacing_v1": ConditionBundle(
         condition_id="condition_dense_spacing_v1",

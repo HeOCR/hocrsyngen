@@ -130,7 +130,10 @@ manifest v1 `controls.condition` string slot. The supported ids are
 generator-control ids after manifest validation, but should not infer identity,
 authorship, provenance, medical, psychological, disability, sensitive-attribute,
 review, release, or publication metadata from them. S4c does not add a
-`condition` object or richer manifest v1 metadata.
+`condition` object or richer manifest v1 metadata. Dense spacing tightens
+rendered body text line placement only; downstream tools should not infer that
+template guide lines, form rows, archive card grids, stamps, marginalia, or
+other scaffolding were rescaled.
 
 Until a future public catalog, manifest/schema update, or explicit sidecar
 artifact exposes richer control metadata, `hocrgen` should not infer persona,
