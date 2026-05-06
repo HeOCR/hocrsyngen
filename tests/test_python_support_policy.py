@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import tomllib
 from pathlib import Path
 
@@ -25,21 +24,65 @@ EXPECTED_NEW_MINOR_DOC = (
     "classifiers, and support-policy docs together before being described as "
     "CI-supported."
 )
+CANONICAL_POLICY_PATH = PROJECT_ROOT / "docs" / "testing_and_quality.md"
+CANONICAL_POLICY_REFERENCE = "docs/testing_and_quality.md"
 
 
 def _load_pyproject() -> dict:
     return tomllib.loads(PYPROJECT_PATH.read_text(encoding="utf-8"))
 
 
+def _leading_spaces(line: str) -> int:
+    return len(line) - len(line.lstrip(" "))
+
+
 def _ci_test_matrix_python_versions() -> list[str]:
-    workflow_text = CI_WORKFLOW_PATH.read_text(encoding="utf-8")
-    test_job_match = re.search(
-        r"jobs:\n  test:.*?python-version:\n(?P<versions>(?:          - \"[^\"]+\"\n)+)",
-        workflow_text,
-        flags=re.DOTALL,
+    workflow_lines = CI_WORKFLOW_PATH.read_text(encoding="utf-8").splitlines()
+    test_job_index = next(
+        (
+            index
+            for index, line in enumerate(workflow_lines)
+            if line == "  test:"
+        ),
+        None,
     )
-    assert test_job_match is not None
-    return re.findall(r'- "([^"]+)"', test_job_match.group("versions"))
+    assert test_job_index is not None, (
+        f"{CI_WORKFLOW_PATH.relative_to(PROJECT_ROOT)} must define a test job."
+    )
+
+    test_job_lines: list[str] = []
+    for line in workflow_lines[test_job_index + 1 :]:
+        if line and _leading_spaces(line) <= 2:
+            break
+        test_job_lines.append(line)
+
+    python_version_line_index = next(
+        (
+            index
+            for index, line in enumerate(test_job_lines)
+            if line.strip() == "python-version:"
+        ),
+        None,
+    )
+    assert python_version_line_index is not None, (
+        f"{CI_WORKFLOW_PATH.relative_to(PROJECT_ROOT)} must declare a "
+        "python-version matrix list for the test job."
+    )
+
+    versions: list[str] = []
+    for line in test_job_lines[python_version_line_index + 1 :]:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if not stripped.startswith("- "):
+            break
+        versions.append(stripped.removeprefix("- ").strip("\"'"))
+
+    assert versions, (
+        f"{CI_WORKFLOW_PATH.relative_to(PROJECT_ROOT)} python-version matrix "
+        "must list supported/tested Python versions."
+    )
+    return versions
 
 
 def _compact_whitespace(text: str) -> str:
@@ -49,9 +92,14 @@ def _compact_whitespace(text: str) -> str:
 def test_python_metadata_distinguishes_source_floor_from_tested_versions() -> None:
     pyproject = _load_pyproject()
     project = pyproject["project"]
+    python_classifiers = [
+        classifier
+        for classifier in project["classifiers"]
+        if classifier.startswith("Programming Language :: Python")
+    ]
 
     assert project["requires-python"] == EXPECTED_REQUIRES_PYTHON
-    assert project["classifiers"] == EXPECTED_PYTHON_CLASSIFIERS
+    assert python_classifiers == EXPECTED_PYTHON_CLASSIFIERS
 
 
 def test_ci_python_matrix_tracks_supported_tested_versions() -> None:
@@ -59,21 +107,16 @@ def test_ci_python_matrix_tracks_supported_tested_versions() -> None:
 
 
 def test_python_support_policy_docs_track_metadata_and_ci() -> None:
-    docs_by_path = {
-        path: path.read_text(encoding="utf-8")
-        for path in [
-            PROJECT_ROOT / "README.md",
-            PROJECT_ROOT / "docs" / "architecture.md",
-            PROJECT_ROOT / "docs" / "testing_and_quality.md",
-            PROJECT_ROOT
-            / "docs"
-            / "decisions"
-            / "0003-baseline-dependency-policy.md",
-        ]
-    }
+    canonical_policy = _compact_whitespace(
+        CANONICAL_POLICY_PATH.read_text(encoding="utf-8")
+    )
+    assert EXPECTED_SOURCE_FLOOR_DOC in canonical_policy
+    assert EXPECTED_TESTED_VERSION_DOC in canonical_policy
+    assert EXPECTED_NEW_MINOR_DOC in canonical_policy
 
-    for text in docs_by_path.values():
-        compact_text = _compact_whitespace(text)
-        assert EXPECTED_SOURCE_FLOOR_DOC in compact_text
-        assert EXPECTED_TESTED_VERSION_DOC in compact_text
-        assert EXPECTED_NEW_MINOR_DOC in compact_text
+    for path in [
+        PROJECT_ROOT / "README.md",
+        PROJECT_ROOT / "docs" / "architecture.md",
+        PROJECT_ROOT / "docs" / "decisions" / "0003-baseline-dependency-policy.md",
+    ]:
+        assert CANONICAL_POLICY_REFERENCE in path.read_text(encoding="utf-8")

@@ -38,8 +38,8 @@ Treat the CLI, manifest schema, and contract fixture as stable downstream surfac
 
 ## Dependency Model
 
-- Package metadata declares Python 3.11+ as the source-compatibility floor.
-- CI-supported and tested Python versions are currently 3.11 and 3.12. New Python minor versions should be added to the CI matrix, package classifiers, and support-policy docs together before being described as CI-supported.
+- Python 3.11+ source-compatibility floor; see `docs/testing_and_quality.md`
+  for the canonical CI-supported version policy.
 - `jsonschema` for manifest schema validation.
 - `Pillow` for image rendering and JPEG inspection.
 - Pillow libraqm support is required for Hebrew RTL rendering.
