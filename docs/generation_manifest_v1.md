@@ -84,6 +84,7 @@ The governed template contract currently requires:
 | --- | --- | --- | --- |
 | `printed_letter` | `printed_letter_form_v1` | `office_scan_soft` | `alef-regular` |
 | `handwritten_note` | `handwritten_note_marginalia_v1` | `notebook_scan_worn` | `gveret-levin-regular` |
+| `archive_card` | `archive_card_identifier_v1` | `office_scan_soft` | `alef-regular` |
 
 ## Compatibility Rules
 

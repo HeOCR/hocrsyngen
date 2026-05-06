@@ -68,6 +68,21 @@ def test_validate_generated_batch_passes(
     assert captured.err == ""
 
 
+def test_validate_accepts_explicit_archive_card_template(tmp_path: Path) -> None:
+    batch_dir = tmp_path / "archive-card-batch"
+    generate_batch(
+        count=1,
+        seed=37,
+        output_dir=batch_dir,
+        template_ids=["archive_card"],
+    )
+
+    result = validate_batch(batch_dir)
+
+    assert result.sample_count == 1
+    assert result.page_count == 1
+
+
 def test_packaged_generation_manifest_contract_fixture_validates() -> None:
     with resources.as_file(_packaged_contract_fixture()) as batch_dir:
         result = validate_batch(batch_dir)
@@ -286,6 +301,26 @@ def test_validate_rejects_known_template_with_wrong_recipe_id(tmp_path: Path) ->
     with pytest.raises(
         BatchValidationError,
         match=r"samples\[0\]\.provenance\.recipe_id must be printed_letter_form_v1",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_archive_card_with_wrong_recipe_id(tmp_path: Path) -> None:
+    batch_dir = tmp_path / "archive-card-batch"
+    generate_batch(
+        count=1,
+        seed=37,
+        output_dir=batch_dir,
+        template_ids=["archive_card"],
+    )
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["recipe_id"] = "printed_letter_form_v1"
+    payload["samples"][0]["provenance"]["recipe_id"] = "printed_letter_form_v1"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.recipe_id must be archive_card_identifier_v1",
     ):
         validate_batch(batch_dir)
 

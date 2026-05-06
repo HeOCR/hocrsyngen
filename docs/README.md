@@ -18,6 +18,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [hocrgen_integration.md](hocrgen_integration.md): stable downstream integration contract for `hocrgen`.
 - [rendering_coverage_reporting.md](rendering_coverage_reporting.md): design direction for future Hebrew rendering coverage reports outside manifest v1.
 - [layout_metadata_design.md](layout_metadata_design.md): design direction for future document-layout metadata and hocrgen filtering boundaries.
+- [document_family_recipes.md](document_family_recipes.md): governed document-family recipes and their current catalog/manifest boundaries.
 - [roadmap.md](roadmap.md): hocrsyngen-specific phases from planning foundation through Hebrew rendering, realism, research, evaluation, and future script abstraction.
 - [research_program.md](research_program.md): planning track for believable synthetic Hebrew handwriting and document generation.
 - [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.

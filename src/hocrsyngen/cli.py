@@ -10,7 +10,7 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 
 from hocrsyngen.generator import (
-    DEFAULT_TEMPLATE_IDS,
+    GOVERNED_TEMPLATE_IDS,
     TemplateCatalogEntry,
     generate_batch,
     template_catalog,
@@ -310,7 +310,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--template-id",
         action="append",
         dest="template_ids",
-        choices=DEFAULT_TEMPLATE_IDS,
+        choices=GOVERNED_TEMPLATE_IDS,
         help="Template id to include. May be provided more than once.",
     )
     generate.add_argument(

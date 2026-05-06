@@ -61,6 +61,7 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
     assert {entry["template_id"] for entry in templates["templates"]} >= {
         "printed_letter",
         "handwritten_note",
+        "archive_card",
     }
     for entry in templates["templates"]:
         assert {
