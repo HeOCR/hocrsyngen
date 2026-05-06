@@ -25,7 +25,13 @@ GENERATOR_VERSION = "d4a-realism-v2"
 CANVAS_SIZE = (1200, 1600)
 PAPER_MARGIN = 96
 DEFAULT_TEMPLATE_IDS = ["printed_letter", "handwritten_note"]
-GOVERNED_TEMPLATE_IDS = [*DEFAULT_TEMPLATE_IDS, "archive_card"]
+GOVERNED_TEMPLATE_IDS = [
+    *DEFAULT_TEMPLATE_IDS,
+    "archive_card",
+    "printed_letter_heavy_scan",
+    "handwritten_note_heavy_wear",
+    "archive_card_faded_scan",
+]
 
 PRINTED_TITLES = ["מכתב מנהלי", "דו\"ח קבלה", "רישום ארכיוני"]
 HANDWRITTEN_TITLES = ["פנקס הערות", "רישום קצר", "הודעה פנימית"]
@@ -36,13 +42,13 @@ FOOTER_LABELS = ["סימן", "רישום", "עמוד"]
 @dataclass(frozen=True)
 class SyntheticRecipe:
     template_id: str
+    render_template_id: str
     recipe_id: str
     layout_style: str
     font_style: str
     degradation_preset: str
     paper_tone: str
     line_count: int
-    jpeg_quality: int
 
 
 @dataclass(frozen=True)
@@ -71,6 +77,16 @@ class TemplateCatalogEntry:
     font_style: str
     font_id: str
     degradation_preset: str
+
+
+@dataclass(frozen=True)
+class DegradationPreset:
+    angle_range: float
+    blur_range: tuple[float, float]
+    contrast: float
+    brightness: float
+    grain_passes: int
+    jpeg_quality: int
 
 
 @dataclass(frozen=True)
@@ -181,27 +197,66 @@ def _apply_grain(image: Image.Image, randomizer: random.Random) -> Image.Image:
     return Image.blend(image, textured, alpha=0.08)
 
 
-def _degrade(image: Image.Image, randomizer: random.Random, background: tuple[int, int, int], preset: str) -> Image.Image:
-    if preset == "notebook_scan_worn":
-        angle_range = 1.5
-        blur_range = (0.25, 0.75)
-        contrast = 0.92
-        brightness = 0.97
-        grain_passes = 2
-    else:
-        angle_range = 0.85
-        blur_range = (0.15, 0.45)
-        contrast = 0.96
-        brightness = 0.99
-        grain_passes = 1
+DEGRADATION_PRESETS: dict[str, DegradationPreset] = {
+    "office_scan_soft": DegradationPreset(
+        angle_range=0.85,
+        blur_range=(0.15, 0.45),
+        contrast=0.96,
+        brightness=0.99,
+        grain_passes=1,
+        jpeg_quality=82,
+    ),
+    "notebook_scan_worn": DegradationPreset(
+        angle_range=1.5,
+        blur_range=(0.25, 0.75),
+        contrast=0.92,
+        brightness=0.97,
+        grain_passes=2,
+        jpeg_quality=78,
+    ),
+    "office_scan_heavy": DegradationPreset(
+        angle_range=1.35,
+        blur_range=(0.45, 0.95),
+        contrast=0.88,
+        brightness=0.93,
+        grain_passes=3,
+        jpeg_quality=78,
+    ),
+    "notebook_scan_heavy_wear": DegradationPreset(
+        angle_range=1.85,
+        blur_range=(0.35, 0.85),
+        contrast=0.88,
+        brightness=0.94,
+        grain_passes=3,
+        jpeg_quality=74,
+    ),
+    "archive_scan_faded": DegradationPreset(
+        angle_range=1.1,
+        blur_range=(0.35, 0.85),
+        contrast=0.78,
+        brightness=1.06,
+        grain_passes=3,
+        jpeg_quality=78,
+    ),
+}
 
-    angle = randomizer.uniform(-angle_range, angle_range)
+
+def _degradation_preset(preset: str) -> DegradationPreset:
+    try:
+        return DEGRADATION_PRESETS[preset]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported synthetic degradation_preset: {preset}") from exc
+
+
+def _degrade(image: Image.Image, randomizer: random.Random, background: tuple[int, int, int], preset: str) -> Image.Image:
+    parameters = _degradation_preset(preset)
+    angle = randomizer.uniform(-parameters.angle_range, parameters.angle_range)
     degraded = image.rotate(angle, resample=Image.Resampling.BICUBIC, expand=False, fillcolor=background)
-    degraded = degraded.filter(ImageFilter.GaussianBlur(radius=randomizer.uniform(*blur_range)))
-    for _ in range(grain_passes):
+    degraded = degraded.filter(ImageFilter.GaussianBlur(radius=randomizer.uniform(*parameters.blur_range)))
+    for _ in range(parameters.grain_passes):
         degraded = _apply_grain(degraded, randomizer)
-    degraded = ImageEnhance.Contrast(degraded).enhance(contrast)
-    degraded = ImageEnhance.Brightness(degraded).enhance(brightness)
+    degraded = ImageEnhance.Contrast(degraded).enhance(parameters.contrast)
+    degraded = ImageEnhance.Brightness(degraded).enhance(parameters.brightness)
     return degraded
 
 
@@ -209,35 +264,68 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
     if template_id == "printed_letter":
         return SyntheticRecipe(
             template_id=template_id,
+            render_template_id="printed_letter",
             recipe_id="printed_letter_form_v1",
             layout_style="printed_form",
             font_style="printed",
             degradation_preset="office_scan_soft",
             paper_tone="printed",
             line_count=4,
-            jpeg_quality=82,
         )
     if template_id == "handwritten_note":
         return SyntheticRecipe(
             template_id=template_id,
+            render_template_id="handwritten_note",
             recipe_id="handwritten_note_marginalia_v1",
             layout_style="handwritten_note",
             font_style="handwritten_like",
             degradation_preset="notebook_scan_worn",
             paper_tone="handwritten",
             line_count=3,
-            jpeg_quality=78,
         )
     if template_id == "archive_card":
         return SyntheticRecipe(
             template_id=template_id,
+            render_template_id="archive_card",
             recipe_id="archive_card_identifier_v1",
             layout_style="multi_region_page",
             font_style="printed",
             degradation_preset="office_scan_soft",
             paper_tone="printed",
             line_count=3,
-            jpeg_quality=82,
+        )
+    if template_id == "printed_letter_heavy_scan":
+        return SyntheticRecipe(
+            template_id=template_id,
+            render_template_id="printed_letter",
+            recipe_id="printed_letter_form_heavy_scan_v1",
+            layout_style="printed_form",
+            font_style="printed",
+            degradation_preset="office_scan_heavy",
+            paper_tone="printed",
+            line_count=4,
+        )
+    if template_id == "handwritten_note_heavy_wear":
+        return SyntheticRecipe(
+            template_id=template_id,
+            render_template_id="handwritten_note",
+            recipe_id="handwritten_note_marginalia_heavy_wear_v1",
+            layout_style="handwritten_note",
+            font_style="handwritten_like",
+            degradation_preset="notebook_scan_heavy_wear",
+            paper_tone="handwritten",
+            line_count=3,
+        )
+    if template_id == "archive_card_faded_scan":
+        return SyntheticRecipe(
+            template_id=template_id,
+            render_template_id="archive_card",
+            recipe_id="archive_card_identifier_faded_scan_v1",
+            layout_style="multi_region_page",
+            font_style="printed",
+            degradation_preset="archive_scan_faded",
+            paper_tone="printed",
+            line_count=3,
         )
     raise ValueError(f"Unsupported synthetic template_id: {template_id}")
 
@@ -388,8 +476,9 @@ def _draw_archive_card(
     body_lines: list[str],
     footer: str,
     font_path: Path,
+    template_id: str,
 ) -> ArchiveCardRender:
-    recipe = _recipe_for_template("archive_card")
+    recipe = _recipe_for_template(template_id)
     background = (246, 241, 230)
     image = _paper_background(randomizer, CANVAS_SIZE, recipe.paper_tone).convert("RGBA")
     draw = ImageDraw.Draw(image)
@@ -478,7 +567,7 @@ def _draw_document(
     template_id: str,
 ) -> Image.Image:
     recipe = _recipe_for_template(template_id)
-    form_layout = recipe.layout_style == "printed_form"
+    form_layout = recipe.render_template_id == "printed_letter"
     handwritten_text = recipe.font_style == "handwritten_like"
     background = (246, 241, 230) if form_layout else (243, 235, 220)
     image = _paper_background(randomizer, CANVAS_SIZE, recipe.paper_tone).convert("RGBA")
@@ -549,9 +638,10 @@ def _select_font(fonts: list[dict[str, str]], template_id: str) -> dict[str, str
 
 
 def _select_title(template_id: str, index: int) -> str:
-    if template_id == "handwritten_note":
+    render_template_id = _recipe_for_template(template_id).render_template_id
+    if render_template_id == "handwritten_note":
         titles = HANDWRITTEN_TITLES
-    elif template_id == "archive_card":
+    elif render_template_id == "archive_card":
         titles = ARCHIVE_CARD_TITLES
     else:
         titles = PRINTED_TITLES
@@ -614,8 +704,8 @@ def generate_documents(
         asset_path = f"assets/{sample_id}/page_0001.jpg"
         path = output_dir / asset_path
         path.parent.mkdir(parents=True, exist_ok=True)
-        if template_id == "archive_card":
-            archive_render = _draw_archive_card(randomizer, title, body_lines, footer, font_path)
+        if recipe.render_template_id == "archive_card":
+            archive_render = _draw_archive_card(randomizer, title, body_lines, footer, font_path, template_id)
             image = archive_render.image
             logical_text = unicodedata.normalize("NFC", "\n".join(archive_render.logical_lines))
             document_body = "\n".join(archive_render.rendered_body_lines)
@@ -625,7 +715,8 @@ def generate_documents(
             logical_text = unicodedata.normalize("NFC", "\n".join([title, *body_lines, footer]))
             document_body = "\n".join(body_lines)
             document_footer = footer
-        image.save(path, format="JPEG", quality=recipe.jpeg_quality, optimize=True)
+        degradation_preset = _degradation_preset(recipe.degradation_preset)
+        image.save(path, format="JPEG", quality=degradation_preset.jpeg_quality, optimize=True)
         documents.append(
             SyntheticDocument(
                 sample_id=sample_id,

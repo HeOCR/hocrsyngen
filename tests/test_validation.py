@@ -83,6 +83,32 @@ def test_validate_accepts_explicit_archive_card_template(tmp_path: Path) -> None
     assert result.page_count == 1
 
 
+@pytest.mark.parametrize(
+    "template_id",
+    [
+        "printed_letter_heavy_scan",
+        "handwritten_note_heavy_wear",
+        "archive_card_faded_scan",
+    ],
+)
+def test_validate_accepts_degradation_template_variants(
+    tmp_path: Path,
+    template_id: str,
+) -> None:
+    batch_dir = tmp_path / template_id
+    generate_batch(
+        count=1,
+        seed=43,
+        output_dir=batch_dir,
+        template_ids=[template_id],
+    )
+
+    result = validate_batch(batch_dir)
+
+    assert result.sample_count == 1
+    assert result.page_count == 1
+
+
 def test_packaged_generation_manifest_contract_fixture_validates() -> None:
     with resources.as_file(_packaged_contract_fixture()) as batch_dir:
         result = validate_batch(batch_dir)
@@ -336,6 +362,27 @@ def test_validate_rejects_known_template_with_wrong_degradation_preset(
     with pytest.raises(
         BatchValidationError,
         match=r"samples\[0\]\.provenance\.degradation_preset must be office_scan_soft",
+    ):
+        validate_batch(batch_dir)
+
+
+def test_validate_rejects_degradation_variant_with_wrong_preset(
+    tmp_path: Path,
+) -> None:
+    batch_dir = tmp_path / "heavy-scan-batch"
+    generate_batch(
+        count=1,
+        seed=43,
+        output_dir=batch_dir,
+        template_ids=["printed_letter_heavy_scan"],
+    )
+    payload = _load_manifest(batch_dir)
+    payload["samples"][0]["provenance"]["degradation_preset"] = "office_scan_soft"
+    _write_manifest(batch_dir, payload)
+
+    with pytest.raises(
+        BatchValidationError,
+        match=r"samples\[0\]\.provenance\.degradation_preset must be office_scan_heavy",
     ):
         validate_batch(batch_dir)
 

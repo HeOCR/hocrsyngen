@@ -21,7 +21,10 @@ For `hocrsyngen templates --format json`, assert:
 - `schema_version == "template_catalog.v1"`.
 - `templates` is a list.
 - Each template has `template_id`, `recipe_id`, `layout_style`, `font_style`, `font_id`, and `degradation_preset`.
-- The current packaged catalog includes `printed_letter`, `handwritten_note`, and `archive_card`.
+- The current packaged catalog includes `printed_letter`, `handwritten_note`,
+  `archive_card`, and the stronger degradation variants
+  `printed_letter_heavy_scan`, `handwritten_note_heavy_wear`, and
+  `archive_card_faded_scan`.
 
 For `hocrsyngen contracts --format json`, assert:
 
@@ -90,6 +93,17 @@ identifiers, density, or reviewability. Those fields require a future stable
 catalog join, versioned manifest/schema change, or explicit sidecar artifact;
 they should not be inferred from private Python recipe, document, or drawing
 helpers.
+
+The S3c stronger degradation variants are exposed as separate `template_id`
+values because manifest v1 does not have a separate preset-selection field or
+base-template field. Downstream grouping should use this documented public
+mapping until a future catalog/schema exposes base-family metadata:
+
+| Base family | Template ids |
+| --- | --- |
+| `printed_letter` | `printed_letter`, `printed_letter_heavy_scan` |
+| `handwritten_note` | `handwritten_note`, `handwritten_note_heavy_wear` |
+| `archive_card` | `archive_card`, `archive_card_faded_scan` |
 
 ## Candidate Lifecycle
 
