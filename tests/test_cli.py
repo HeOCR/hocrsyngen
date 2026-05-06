@@ -22,7 +22,7 @@ from hocrsyngen.cli import (
     _format_template_catalog_json,
     main,
 )
-from hocrsyngen.generator import TemplateCatalogEntry
+from hocrsyngen.generator import SUPPORTED_STYLE_BUNDLE_IDS, TemplateCatalogEntry
 from hocrsyngen.validation import validate_batch
 from hocrsyngen.validation import BatchValidationError, ValidationResult
 
@@ -911,6 +911,20 @@ def test_generate_cli_accepts_persona_style_bundle_control(
     assert all("style" not in sample for sample in manifest["samples"])
 
 
+def test_generate_cli_help_lists_persona_style_bundle_choices(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        main(["generate", "--help"])
+
+    assert exc_info.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "--persona" in help_text
+    assert "Synthetic style bundle id" in help_text
+    for persona in SUPPORTED_STYLE_BUNDLE_IDS:
+        assert persona in help_text
+
+
 def test_generate_cli_json_reports_zero_count(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -1031,7 +1045,7 @@ def test_generate_cli_rejects_invalid_persona_style_without_partial_output(
 
     assert exc_info.value.code == 2
     captured = capsys.readouterr()
-    assert "Unsupported synthetic persona style bundle" in captured.err
+    assert "invalid choice: 'real_writer_claim'" in captured.err
     assert "style_standard_v1" in captured.err
     assert not output_dir.exists()
 

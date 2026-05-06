@@ -300,6 +300,7 @@ STYLE_BUNDLES: dict[str, StyleBundle] = {
         ink_delta=-8,
     ),
 }
+SUPPORTED_STYLE_BUNDLE_IDS = tuple(STYLE_BUNDLES)
 
 
 def _style_bundle(persona: str | None) -> StyleBundle:
@@ -308,7 +309,7 @@ def _style_bundle(persona: str | None) -> StyleBundle:
     try:
         return STYLE_BUNDLES[persona]
     except KeyError as exc:
-        supported = ", ".join(sorted(STYLE_BUNDLES))
+        supported = ", ".join(SUPPORTED_STYLE_BUNDLE_IDS)
         raise ValueError(
             f"Unsupported synthetic persona style bundle: {persona}. "
             f"Supported style bundles: {supported}"
