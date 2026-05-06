@@ -256,3 +256,8 @@ python -m pytest
 The GitHub Actions CI workflow runs the test suite, required CLI smoke commands,
 Pillow libraqm checks for Hebrew RTL rendering, and package build/install checks
 on Ubuntu and macOS for Python 3.11 and 3.12.
+
+Package metadata declares Python 3.11+ as the source-compatibility floor.
+CI-supported and tested Python versions are currently 3.11 and 3.12. New Python
+minor versions should be added to the CI matrix, package classifiers, and
+support-policy docs together before being described as CI-supported.

@@ -12,6 +12,11 @@ license = { text = "MIT" }
 authors = [
   { name = "HeOCR" },
 ]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
 dependencies = [
   "jsonschema>=4",
   "Pillow>=10",

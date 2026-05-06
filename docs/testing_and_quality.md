@@ -18,6 +18,8 @@ There is no configured lint command unless one is added explicitly.
 The repository CI workflow runs on pull requests and pushes to `main`.
 
 - Test matrix: Ubuntu and macOS runners on Python 3.11 and 3.12.
+- Package metadata declares Python 3.11+ as the source-compatibility floor.
+- CI-supported and tested Python versions are currently 3.11 and 3.12. New Python minor versions should be added to the CI matrix, package classifiers, and support-policy docs together before being described as CI-supported.
 - CI installs native Pillow/libraqm/FriBiDi/Harfbuzz build dependencies before Python dependencies through `.github/scripts/install-native-pillow-deps.sh`.
 - CI explicitly checks `PIL.features.check("raqm")` and fails with a libraqm requirement message if Hebrew RTL shaping support is unavailable.
 - CI installs the package with `python -m pip install -e ".[test]"`.
@@ -87,8 +89,8 @@ Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail 
 - Packaged fixture stable-field reproducibility from seed `17` and count `2`.
 - Baseline dependency policy remains aligned across source imports,
   `pyproject.toml`, and dependency-policy docs.
-- GitHub Actions CI remains aligned with supported Python versions, required CLI
-  smoke commands, and the Pillow libraqm requirement.
+- GitHub Actions CI remains aligned with CI-supported Python versions, package
+  metadata, required CLI smoke commands, and the Pillow libraqm requirement.
 
 ## Future Quality Gates
 
