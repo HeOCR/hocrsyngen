@@ -12,6 +12,8 @@ Accepted
 
 The baseline stays lightweight. The accepted baseline runtime dependencies are `jsonschema` and `Pillow`; the accepted test extra dependency is `pytest`.
 
+The canonical Python support policy lives in `docs/testing_and_quality.md`.
+
 It must not add network, GPU, LLM, diffusion, Torch, TensorFlow, or other deep-learning dependencies.
 
 Optional research dependencies must be isolated in future extras, subpackages, experiments, or design documents.

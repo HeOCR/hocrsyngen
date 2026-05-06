@@ -69,7 +69,8 @@ Planned PR breakdown:
 - `S1b` — Installed CLI smoke matrix: strengthen installed-package command coverage for `templates`, `contracts`, `contracts export`, `generate`, and `validate`. Status: done in PR #22.
 - `S1c` — Determinism drift guard: add focused tests that compare seed/sample ids, manifest fields, hashes, and output layout expectations for stable seeds. Status: done in PR #23.
 - `S1d` — Baseline dependency audit: add or refine tests that fail on accidental `hocrgen`, network, GPU, LLM, diffusion, Torch, TensorFlow, or deep-learning baseline dependencies. Status: done in PR #24.
-- `S1e` — GitHub Actions CI framework: run tests, required CLI smoke commands, libraqm checks, and package build/install validation on PRs and pushes to `main`. Status: current.
+- `S1e` — GitHub Actions CI framework: run tests, required CLI smoke commands, libraqm checks, and package build/install validation on PRs and pushes to `main`. Status: done in PR #25.
+- `S1f` — Python support policy alignment: document the Python 3.11+ metadata floor, CI-supported Python 3.11 and 3.12 versions, and drift guards that keep metadata, CI, and docs aligned. Status: current.
 
 Deliverables:
 

@@ -256,3 +256,5 @@ python -m pytest
 The GitHub Actions CI workflow runs the test suite, required CLI smoke commands,
 Pillow libraqm checks for Hebrew RTL rendering, and package build/install checks
 on Ubuntu and macOS for Python 3.11 and 3.12.
+
+See `docs/testing_and_quality.md` for the canonical Python support policy.

@@ -38,7 +38,8 @@ Treat the CLI, manifest schema, and contract fixture as stable downstream surfac
 
 ## Dependency Model
 
-- Python 3.11+.
+- Python 3.11+ source-compatibility floor; see `docs/testing_and_quality.md`
+  for the canonical CI-supported version policy.
 - `jsonschema` for manifest schema validation.
 - `Pillow` for image rendering and JPEG inspection.
 - Pillow libraqm support is required for Hebrew RTL rendering.
