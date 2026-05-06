@@ -183,7 +183,7 @@ Planned PR breakdown:
 
 - `S4a` — Persona/style/condition semantics ADR: define allowed metadata, forbidden claims, validation expectations, and compatibility rules before implementation. Status: current.
 - `S4b` — Deterministic style parameter bundles: implement the smallest synthetic style controls that do not require schema breaking changes.
-- `S4c` — Condition control bundles: add rendering-control-only condition presets after S4a, with tests proving no real identity, medical, psychological, or authorship claims.
+- `S4c` — Condition control bundles: add rendering-control-only condition presets after S4a, with tests proving public metadata follows the full forbidden-claims boundary in ADR 0005.
 - `S4d` — Style consistency checks: add tests or reports that verify synthetic style controls are reproducible across a batch.
 
 Deliverables:
