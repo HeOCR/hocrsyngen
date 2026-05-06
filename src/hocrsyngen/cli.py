@@ -11,6 +11,7 @@ from pathlib import Path
 
 from hocrsyngen.generator import (
     GOVERNED_TEMPLATE_IDS,
+    SUPPORTED_STYLE_BUNDLE_IDS,
     TemplateCatalogEntry,
     generate_batch,
     template_catalog,
@@ -315,7 +316,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     generate.add_argument(
         "--persona",
-        help="Optional generator control only; not a real-writer identity claim.",
+        choices=SUPPORTED_STYLE_BUNDLE_IDS,
+        help=(
+            "Synthetic style bundle id to write to controls.persona; not a "
+            "real-writer identity claim."
+        ),
     )
     generate.add_argument(
         "--condition",

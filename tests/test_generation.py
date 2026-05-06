@@ -12,6 +12,7 @@ import hocrsyngen.generator as generator_module
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.generator import (
     CANVAS_SIZE,
+    STYLE_BUNDLES,
     _degradation_preset,
     _font_path,
     load_font_manifest,
@@ -21,6 +22,7 @@ from hocrsyngen.generator import (
     _require_raqm,
     _rtl_display_text,
     _select_font,
+    _style_bundle,
     _wrap_hebrew_text,
     generate_batch,
     generate_documents,
@@ -38,6 +40,7 @@ SCHEMA_PATH = (
     / "schemas"
     / "generation_manifest.schema.json"
 )
+REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 EDGE_TEXT_CORPUS_PATH = FIXTURES_DIR / "hebrew_edge_text_corpus.txt"
 BIDI_NIQQUD_CORPUS_PATH = FIXTURES_DIR / "bidi_niqqud_rendering_corpus.txt"
@@ -128,6 +131,27 @@ DEGRADATION_VARIANT_CASES = [
         "archive_scan_faded",
         "alef-regular",
     ),
+]
+STYLE_BUNDLE_IDS = [
+    "style_standard_v1",
+    "style_open_drift_v1",
+    "style_compact_steady_v1",
+]
+NON_DEFAULT_STYLE_BUNDLE_IDS = ["style_open_drift_v1", "style_compact_steady_v1"]
+FORBIDDEN_STYLE_CONTROL_TERMS = [
+    "identity",
+    "author",
+    "writer",
+    "medical",
+    "health",
+    "psychological",
+    "disability",
+    "sensitive",
+    "demographic",
+    "provenance",
+    "review",
+    "release",
+    "publication",
 ]
 
 
@@ -401,6 +425,149 @@ def test_stable_seed_page_hashes_track_assets_and_seed_changes(tmp_path: Path) -
             assert len(page["sha256"]) == 64
             assert set(page["sha256"]) <= set("0123456789abcdef")
             assert page["sha256"] == sha256_file(batch_dir / page["asset_path"])
+
+
+@pytest.mark.parametrize("persona", STYLE_BUNDLE_IDS)
+def test_persona_style_bundles_are_deterministic_manifest_controls(
+    tmp_path: Path,
+    persona: str,
+) -> None:
+    first_dir = tmp_path / f"{persona}-first"
+    second_dir = tmp_path / f"{persona}-second"
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    first = generate_batch(
+        count=3,
+        seed=53,
+        output_dir=first_dir,
+        template_ids=template_ids,
+        persona=persona,
+    ).to_dict()
+    second = generate_batch(
+        count=3,
+        seed=53,
+        output_dir=second_dir,
+        template_ids=template_ids,
+        persona=persona,
+    ).to_dict()
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+
+    assert first == second
+    jsonschema.validate(first, schema)
+    assert [sample["controls"] for sample in first["samples"]] == [
+        {"persona": persona, "condition": None},
+        {"persona": persona, "condition": None},
+        {"persona": persona, "condition": None},
+    ]
+    assert [sample["provenance"]["template_id"] for sample in first["samples"]] == template_ids
+    assert [sample["pages"][0]["sha256"] for sample in first["samples"]] == [
+        sample["pages"][0]["sha256"] for sample in second["samples"]
+    ]
+
+
+def test_standard_style_bundle_matches_default_rendering_except_controls(
+    tmp_path: Path,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    default = generate_batch(
+        count=3,
+        seed=59,
+        output_dir=tmp_path / "default",
+        template_ids=template_ids,
+    ).to_dict()
+    standard = generate_batch(
+        count=3,
+        seed=59,
+        output_dir=tmp_path / "standard",
+        template_ids=template_ids,
+        persona="style_standard_v1",
+    ).to_dict()
+
+    for default_sample, standard_sample in zip(default["samples"], standard["samples"], strict=True):
+        assert default_sample["controls"] == {"persona": None, "condition": None}
+        assert standard_sample["controls"] == {"persona": "style_standard_v1", "condition": None}
+        assert default_sample["text"] == standard_sample["text"]
+        assert default_sample["provenance"] == standard_sample["provenance"]
+        assert default_sample["pages"][0]["sha256"] == standard_sample["pages"][0]["sha256"]
+
+
+@pytest.mark.parametrize("persona", NON_DEFAULT_STYLE_BUNDLE_IDS)
+def test_non_default_style_bundles_change_rendering_without_contract_drift(
+    tmp_path: Path,
+    persona: str,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    default_dir = tmp_path / f"{persona}-default"
+    styled_dir = tmp_path / f"{persona}-styled"
+    default = generate_batch(
+        count=3,
+        seed=61,
+        output_dir=default_dir,
+        template_ids=template_ids,
+    ).to_dict()
+    styled = generate_batch(
+        count=3,
+        seed=61,
+        output_dir=styled_dir,
+        template_ids=template_ids,
+        persona=persona,
+    ).to_dict()
+
+    for default_sample, styled_sample in zip(default["samples"], styled["samples"], strict=True):
+        default_page = default_sample["pages"][0]
+        styled_page = styled_sample["pages"][0]
+        assert styled_sample["controls"] == {"persona": persona, "condition": None}
+        assert default_sample["text"] == styled_sample["text"]
+        assert default_sample["provenance"] == styled_sample["provenance"]
+        assert styled_page["asset_path"] == default_page["asset_path"]
+        assert styled_page["sha256"] != default_page["sha256"]
+        assert styled_sample["text"]["logical_order"] == unicodedata.normalize(
+            "NFC", styled_sample["text"]["logical_order"]
+        )
+        with Image.open(default_dir / default_page["asset_path"]).convert("RGB") as default_image:
+            with Image.open(styled_dir / styled_page["asset_path"]).convert("RGB") as styled_image:
+                assert default_image.size == styled_image.size == CANVAS_SIZE
+                assert _changed_pixel_count(default_image, styled_image) > 20_000
+
+
+def test_style_bundle_controls_use_neutral_synthetic_ids(tmp_path: Path) -> None:
+    assert set(STYLE_BUNDLES) == set(STYLE_BUNDLE_IDS)
+    assert _style_bundle(None) == STYLE_BUNDLES["style_standard_v1"]
+
+    for persona in STYLE_BUNDLE_IDS:
+        lowered = persona.lower()
+        assert lowered.startswith("style_")
+        assert all(term not in lowered for term in FORBIDDEN_STYLE_CONTROL_TERMS)
+
+    payload = generate_batch(
+        count=3,
+        seed=67,
+        output_dir=tmp_path / "style-metadata",
+        persona="style_open_drift_v1",
+    ).to_dict()
+    controls_text = json.dumps(
+        [sample["controls"] for sample in payload["samples"]],
+        ensure_ascii=False,
+        sort_keys=True,
+    ).lower()
+    assert "style_open_drift_v1" in controls_text
+    assert all(term not in controls_text for term in FORBIDDEN_STYLE_CONTROL_TERMS)
+
+
+def test_style_bundle_docs_describe_controls_as_synthetic_only() -> None:
+    docs = "\n".join(
+        [
+            (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            (REPO_ROOT / "docs" / "generation_manifest_v1.md").read_text(encoding="utf-8"),
+            (REPO_ROOT / "docs" / "hocrgen_integration.md").read_text(encoding="utf-8"),
+        ]
+    )
+
+    for persona in STYLE_BUNDLE_IDS:
+        assert persona in docs
+    assert "generate --persona STYLE_ID" in docs
+    assert "synthetic style bundle" in docs
+    assert "not identity, authorship, provenance, medical" in docs
+    assert "do not add a `style` field" in docs
 
 
 def test_count_zero_emits_empty_manifest(tmp_path: Path) -> None:

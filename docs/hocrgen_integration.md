@@ -114,6 +114,14 @@ manifest v1 controls do not carry real identity, authorship, medical,
 psychological, sensitive-attribute, provenance, review, release, or publication
 metadata.
 
+S4b exposes deterministic synthetic style bundles through
+`hocrsyngen generate --persona STYLE_ID`, using the existing manifest v1
+`controls.persona` string slot. The supported ids are `style_standard_v1`,
+`style_open_drift_v1`, and `style_compact_steady_v1`. `hocrgen` may treat these
+as neutral generator-control ids after manifest validation, but should not infer
+writer identity, authorship, provenance, review state, release eligibility, or
+human attributes from them.
+
 Until a future public catalog, manifest/schema update, or explicit sidecar
 artifact exposes richer control metadata, `hocrgen` should not infer persona,
 style, or condition semantics from private Python recipe objects, drawing

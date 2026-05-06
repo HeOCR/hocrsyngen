@@ -70,6 +70,14 @@ Persona, style, and condition semantics are governed by
 controls are `string|null` synthetic control slots, not richer machine-readable
 identity, health, authorship, provenance, review, or release metadata.
 
+S4b deterministic style bundles are selected through the existing
+`hocrsyngen generate --persona STYLE_ID` option and are serialized only as
+`controls.persona`. Supported style bundle ids are `style_standard_v1`,
+`style_open_drift_v1`, and `style_compact_steady_v1`. These ids describe
+synthetic rendering parameters such as line spacing, baseline drift, horizontal
+line-position variance, and ink pressure proxy; they do not add a `style` field
+or any richer manifest v1 metadata.
+
 ## Validation Behavior
 
 Validation checks:
