@@ -50,7 +50,10 @@ it.
 - Installed package and wheel public CLI smoke matrix for console-script and
   `python -m hocrsyngen.cli` entry points across `templates`, `contracts`,
   `contracts export`, `generate`, and `validate`.
-- No baseline `hocrgen`, network, GPU, or deep-learning dependency.
+- Baseline dependency audit coverage for declared runtime/test dependencies,
+  accidental `hocrgen` imports, network/REST imports, GPU/LLM/diffusion/Torch/
+  TensorFlow/deep-learning imports, and docs-to-`pyproject.toml` policy
+  alignment.
 
 ## Environmental Requirement
 
@@ -67,6 +70,8 @@ Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail 
 - Governed template/provenance match.
 - Packaged fixture validity.
 - Packaged fixture stable-field reproducibility from seed `17` and count `2`.
+- Baseline dependency policy remains aligned across source imports,
+  `pyproject.toml`, and dependency-policy docs.
 
 ## Future Quality Gates
 

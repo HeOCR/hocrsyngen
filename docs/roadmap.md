@@ -4,11 +4,10 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Guard packaged fixture reproducibility for `generation_manifest_v1_fixture_batch`.
-2. Strengthen installed-package CLI contract coverage where gaps remain.
-3. Add Hebrew rendering/spec coverage docs/tests before deeper generator changes.
-4. Add style/persona controls only after manifest/metadata semantics are explicit.
-5. Keep optional ML-backed synthesis separate from baseline dependencies.
+1. Complete the baseline dependency audit so package boundaries stay explicit.
+2. Add Hebrew rendering/spec coverage docs/tests before deeper generator changes.
+3. Add style/persona controls only after manifest/metadata semantics are explicit.
+4. Keep optional ML-backed synthesis separate from baseline dependencies.
 
 ## Planning Notation
 
@@ -68,8 +67,8 @@ Planned PR breakdown:
 
 - `S1a` — Fixture reproducibility contract: document and test exact regeneration workflow for the packaged fixture without changing fixture assets unless intentionally regenerated. Status: done in PR #21.
 - `S1b` — Installed CLI smoke matrix: strengthen installed-package command coverage for `templates`, `contracts`, `contracts export`, `generate`, and `validate`. Status: done in PR #22.
-- `S1c` — Determinism drift guard: add focused tests that compare seed/sample ids, manifest fields, hashes, and output layout expectations for stable seeds. Status: current.
-- `S1d` — Baseline dependency audit: add or refine tests that fail on accidental `hocrgen`, network, GPU, LLM, diffusion, Torch, TensorFlow, or deep-learning baseline dependencies.
+- `S1c` — Determinism drift guard: add focused tests that compare seed/sample ids, manifest fields, hashes, and output layout expectations for stable seeds. Status: done in PR #23.
+- `S1d` — Baseline dependency audit: add or refine tests that fail on accidental `hocrgen`, network, GPU, LLM, diffusion, Torch, TensorFlow, or deep-learning baseline dependencies. Status: current.
 
 Deliverables:
 
