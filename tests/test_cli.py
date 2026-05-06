@@ -119,6 +119,30 @@ EXPECTED_TEMPLATE_LINES = [
         "font_id=alef-regular "
         "degradation_preset=office_scan_soft"
     ),
+    (
+        "template_id=printed_letter_heavy_scan "
+        "recipe_id=printed_letter_form_heavy_scan_v1 "
+        "layout_style=printed_form "
+        "font_style=printed "
+        "font_id=alef-regular "
+        "degradation_preset=office_scan_heavy"
+    ),
+    (
+        "template_id=handwritten_note_heavy_wear "
+        "recipe_id=handwritten_note_marginalia_heavy_wear_v1 "
+        "layout_style=handwritten_note "
+        "font_style=handwritten_like "
+        "font_id=gveret-levin-regular "
+        "degradation_preset=notebook_scan_heavy_wear"
+    ),
+    (
+        "template_id=archive_card_faded_scan "
+        "recipe_id=archive_card_identifier_faded_scan_v1 "
+        "layout_style=multi_region_page "
+        "font_style=printed "
+        "font_id=alef-regular "
+        "degradation_preset=archive_scan_faded"
+    ),
 ]
 EXPECTED_TEMPLATE_CATALOG_JSON = {
     "schema_version": TEMPLATE_CATALOG_SCHEMA_VERSION,
@@ -146,6 +170,30 @@ EXPECTED_TEMPLATE_CATALOG_JSON = {
             "font_style": "printed",
             "font_id": "alef-regular",
             "degradation_preset": "office_scan_soft",
+        },
+        {
+            "template_id": "printed_letter_heavy_scan",
+            "recipe_id": "printed_letter_form_heavy_scan_v1",
+            "layout_style": "printed_form",
+            "font_style": "printed",
+            "font_id": "alef-regular",
+            "degradation_preset": "office_scan_heavy",
+        },
+        {
+            "template_id": "handwritten_note_heavy_wear",
+            "recipe_id": "handwritten_note_marginalia_heavy_wear_v1",
+            "layout_style": "handwritten_note",
+            "font_style": "handwritten_like",
+            "font_id": "gveret-levin-regular",
+            "degradation_preset": "notebook_scan_heavy_wear",
+        },
+        {
+            "template_id": "archive_card_faded_scan",
+            "recipe_id": "archive_card_identifier_faded_scan_v1",
+            "layout_style": "multi_region_page",
+            "font_style": "printed",
+            "font_id": "alef-regular",
+            "degradation_preset": "archive_scan_faded",
         },
     ],
 }

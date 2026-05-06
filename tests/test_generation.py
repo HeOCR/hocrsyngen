@@ -6,12 +6,13 @@ from pathlib import Path, PurePosixPath
 
 import jsonschema
 import pytest
-from PIL import Image, ImageChops, ImageDraw, features
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, features
 
 import hocrsyngen.generator as generator_module
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.generator import (
     CANVAS_SIZE,
+    _degradation_preset,
     _font_path,
     load_font_manifest,
     _load_font,
@@ -105,6 +106,29 @@ PACKAGED_FONT_AUDIT_CASES = [
     ("handwritten_note", 46),
     ("archive_card", 42),
 ]
+DEGRADATION_VARIANT_CASES = [
+    (
+        "printed_letter",
+        "printed_letter_heavy_scan",
+        "printed_letter_form_heavy_scan_v1",
+        "office_scan_heavy",
+        "alef-regular",
+    ),
+    (
+        "handwritten_note",
+        "handwritten_note_heavy_wear",
+        "handwritten_note_marginalia_heavy_wear_v1",
+        "notebook_scan_heavy_wear",
+        "gveret-levin-regular",
+    ),
+    (
+        "archive_card",
+        "archive_card_faded_scan",
+        "archive_card_identifier_faded_scan_v1",
+        "archive_scan_faded",
+        "alef-regular",
+    ),
+]
 
 
 def _load_manifest(output_dir: Path) -> dict:
@@ -113,6 +137,41 @@ def _load_manifest(output_dir: Path) -> dict:
 
 def _image_pixels(image: Image.Image) -> list[tuple[int, int, int]]:
     return list(image.getdata())
+
+
+def _changed_pixel_count(first: Image.Image, second: Image.Image) -> int:
+    return sum(
+        1
+        for pixel in _image_pixels(ImageChops.difference(first, second))
+        if pixel != (0, 0, 0)
+    )
+
+
+def _mean_luminance(image: Image.Image) -> float:
+    pixels = _image_pixels(image)
+    return sum(r + g + b for r, g, b in pixels) / (3 * len(pixels))
+
+
+def _mean_edge_strength(image: Image.Image) -> float:
+    edge_image = image.convert("L").filter(ImageFilter.FIND_EDGES)
+    edge_pixels = list(edge_image.getdata())
+    return sum(edge_pixels) / len(edge_pixels)
+
+
+def _dark_ink_pixel_count(image: Image.Image) -> int:
+    return sum(1 for r, g, b in _image_pixels(image) if r < 115 and g < 105 and b < 95)
+
+
+def _red_stamp_pixel_count(image: Image.Image) -> int:
+    return sum(1 for r, g, b in _image_pixels(image) if r > 90 and r > g * 1.45 and r > b * 1.45)
+
+
+def _ruled_pixel_count(image: Image.Image) -> int:
+    return sum(
+        1
+        for r, g, b in _image_pixels(image)
+        if 145 <= r <= 225 and 135 <= g <= 215 and 115 <= b <= 200
+    )
 
 
 def _write_contract_corpus(path: Path, lines: list[str] | None = None) -> Path:
@@ -774,6 +833,135 @@ def test_archive_card_manifest_text_matches_rendered_body_overflow(tmp_path: Pat
     assert logical_lines[-6:] == ["מקור", "תאריך", "מספר", "הערה", "ארכיון", document.footer]
 
 
+@pytest.mark.parametrize(
+    ("base_template_id", "variant_template_id", "recipe_id", "degradation_preset", "font_id"),
+    DEGRADATION_VARIANT_CASES,
+)
+def test_degradation_template_variants_are_deterministic_and_cataloged(
+    tmp_path: Path,
+    base_template_id: str,
+    variant_template_id: str,
+    recipe_id: str,
+    degradation_preset: str,
+    font_id: str,
+) -> None:
+    first_dir = tmp_path / f"{variant_template_id}-first"
+    second_dir = tmp_path / f"{variant_template_id}-second"
+    first = generate_batch(
+        count=1,
+        seed=43,
+        output_dir=first_dir,
+        template_ids=[variant_template_id],
+    ).to_dict()
+    second = generate_batch(
+        count=1,
+        seed=43,
+        output_dir=second_dir,
+        template_ids=[variant_template_id],
+    ).to_dict()
+
+    assert first == second
+    [sample] = first["samples"]
+    assert sample["recipe_id"] == recipe_id
+    assert sample["provenance"] == {
+        "seed": 43,
+        "sample_index": 0,
+        "template_id": variant_template_id,
+        "recipe_id": recipe_id,
+        "degradation_preset": degradation_preset,
+        "font_id": font_id,
+        "source_corpus": "packaged:synthetic/texts/hebrew_lines.txt",
+    }
+    catalog = {entry.template_id: entry for entry in template_catalog()}
+    assert catalog[variant_template_id].recipe_id == recipe_id
+    assert catalog[variant_template_id].degradation_preset == degradation_preset
+    assert catalog[variant_template_id].font_id == font_id
+    assert catalog[base_template_id].degradation_preset != degradation_preset
+    assert _degradation_preset(degradation_preset).jpeg_quality < _degradation_preset(
+        catalog[base_template_id].degradation_preset
+    ).jpeg_quality
+
+
+@pytest.mark.parametrize(
+    ("base_template_id", "variant_template_id", "_recipe_id", "_degradation_preset", "_font_id"),
+    DEGRADATION_VARIANT_CASES,
+)
+def test_stronger_degradation_variants_change_visual_smoke_metrics(
+    tmp_path: Path,
+    base_template_id: str,
+    variant_template_id: str,
+    _recipe_id: str,
+    _degradation_preset: str,
+    _font_id: str,
+) -> None:
+    base_documents = generate_documents(
+        count=1,
+        seed=47,
+        template_ids=[base_template_id],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=default_text_corpus_path(),
+        output_dir=tmp_path / base_template_id,
+    )
+    variant_documents = generate_documents(
+        count=1,
+        seed=47,
+        template_ids=[variant_template_id],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=default_text_corpus_path(),
+        output_dir=tmp_path / variant_template_id,
+    )
+
+    base_document = base_documents[0]
+    variant_document = variant_documents[0]
+    assert base_document.sha256 != variant_document.sha256
+    assert base_document.logical_text == variant_document.logical_text
+
+    with Image.open(base_document.path).convert("RGB") as base_image:
+        with Image.open(variant_document.path).convert("RGB") as variant_image:
+            assert _changed_pixel_count(base_image, variant_image) > 900_000
+            assert _mean_luminance(base_image) - _mean_luminance(variant_image) > 8.0
+            assert _mean_edge_strength(base_image) > _mean_edge_strength(variant_image)
+            assert _dark_ink_pixel_count(variant_image) > 6_000
+
+            if base_template_id == "printed_letter":
+                form_region = variant_image.crop((140, 330, 1060, 820))
+                assert _dark_ink_pixel_count(form_region) > 8_000
+                assert _red_stamp_pixel_count(variant_image) > 700
+                assert _ruled_pixel_count(form_region) > 100_000
+            elif base_template_id == "handwritten_note":
+                marginalia_region = variant_image.crop((120, 430, 280, 760))
+                assert _dark_ink_pixel_count(marginalia_region) > 50
+                assert _dark_ink_pixel_count(variant_image) > 20_000
+            else:
+                card_region = variant_image.crop((170, 230, 1030, 1260))
+                assert _dark_ink_pixel_count(card_region) > 5_000
+                assert _red_stamp_pixel_count(card_region) > 300
+                assert _ruled_pixel_count(card_region) > 100_000
+
+
+def test_archive_card_faded_scan_preserves_rendered_logical_text_boundary(tmp_path: Path) -> None:
+    documents = generate_documents(
+        count=1,
+        seed=37,
+        template_ids=["archive_card_faded_scan"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=default_text_corpus_path(),
+        output_dir=tmp_path / "archive-card-faded",
+    )
+
+    [document] = documents
+    assert document.template_id == "archive_card_faded_scan"
+    assert document.recipe_id == "archive_card_identifier_faded_scan_v1"
+    assert document.degradation_preset == "archive_scan_faded"
+    logical_lines = document.logical_text.splitlines()
+    assert logical_lines[0] == "כרטיס ארכיון"
+    assert logical_lines[1].startswith("מזהה א-")
+    assert "ארכיון" in logical_lines
+    assert logical_lines[-1] == document.footer
+    assert " - א-" in document.footer
+    assert document.logical_text == unicodedata.normalize("NFC", document.logical_text)
+
+
 def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
     catalog = {entry.template_id: entry for entry in template_catalog()}
 
@@ -790,6 +978,18 @@ def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
     assert catalog["archive_card"].degradation_preset == "office_scan_soft"
     assert catalog["archive_card"].font_style == "printed"
     assert catalog["archive_card"].font_id == "alef-regular"
+    assert catalog["printed_letter_heavy_scan"].recipe_id == "printed_letter_form_heavy_scan_v1"
+    assert catalog["printed_letter_heavy_scan"].degradation_preset == "office_scan_heavy"
+    assert catalog["printed_letter_heavy_scan"].font_style == "printed"
+    assert catalog["printed_letter_heavy_scan"].font_id == "alef-regular"
+    assert catalog["handwritten_note_heavy_wear"].recipe_id == "handwritten_note_marginalia_heavy_wear_v1"
+    assert catalog["handwritten_note_heavy_wear"].degradation_preset == "notebook_scan_heavy_wear"
+    assert catalog["handwritten_note_heavy_wear"].font_style == "handwritten_like"
+    assert catalog["handwritten_note_heavy_wear"].font_id == "gveret-levin-regular"
+    assert catalog["archive_card_faded_scan"].recipe_id == "archive_card_identifier_faded_scan_v1"
+    assert catalog["archive_card_faded_scan"].degradation_preset == "archive_scan_faded"
+    assert catalog["archive_card_faded_scan"].font_style == "printed"
+    assert catalog["archive_card_faded_scan"].font_id == "alef-regular"
 
 
 def test_template_catalog_rejects_malformed_or_missing_style_font_manifest(tmp_path: Path) -> None:

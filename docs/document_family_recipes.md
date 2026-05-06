@@ -53,6 +53,37 @@ The default two-sample fixture regeneration command continues to cycle only the
 existing `printed_letter` and `handwritten_note` templates so the packaged
 manifest v1 contract fixture remains stable.
 
+## S3c Degradation Presets
+
+S3c expands governed degradation coverage through explicit template variants.
+The variants use the existing `template_catalog.v1` and manifest v1 provenance
+fields; they do not add manifest fields, schema changes, review status,
+release eligibility, balancing policy, or publication behavior.
+
+This is a manifest v1 compatibility compromise. The variant `template_id` values
+carry both the document-family/layout identity and the selected degradation
+preset because manifest v1 has no separate `base_template_id`,
+`document_family`, or preset-selection field. Downstream consumers that need to
+group variants by family should use the documented mapping below, not private
+Python recipe names.
+
+| Template id | Recipe id | Base family | Degradation preset |
+| --- | --- | --- | --- |
+| `printed_letter_heavy_scan` | `printed_letter_form_heavy_scan_v1` | `printed_letter` | `office_scan_heavy` |
+| `handwritten_note_heavy_wear` | `handwritten_note_marginalia_heavy_wear_v1` | `handwritten_note` | `notebook_scan_heavy_wear` |
+| `archive_card_faded_scan` | `archive_card_identifier_faded_scan_v1` | `archive_card` | `archive_scan_faded` |
+
+The original templates and presets remain governed and unchanged:
+`printed_letter` uses `office_scan_soft`, `handwritten_note` uses
+`notebook_scan_worn`, and `archive_card` uses `office_scan_soft`. The default
+fixture regeneration command still uses only `printed_letter` and
+`handwritten_note`.
+
+Reviewers should compare each stronger variant against its base family using
+coarse visual criteria: stronger skew/blur/grain should be visible, Hebrew text
+should remain readable, stamps and identifiers should remain inspectable where
+present, and artifacts should not create clipping or incoherent overlap.
+
 ## Downstream Use
 
 `hocrgen` can discover the recipe before generation through:
@@ -62,8 +93,12 @@ hocrsyngen templates --format json
 ```
 
 After generation, `hocrgen` can filter validated manifest v1 samples by
-`provenance.template_id == "archive_card"` and confirm the matching governed
-recipe/provenance fields. Any richer filtering by page regions, identifiers,
-reviewability, density, or annotations requires a future stable catalog version,
-manifest/schema update, or review sidecar as described in
+`provenance.template_id` and confirm the matching governed recipe/provenance
+fields. To group S3c variants with their base families under manifest v1,
+`hocrgen` should treat `printed_letter_heavy_scan` as a `printed_letter`
+variant, `handwritten_note_heavy_wear` as a `handwritten_note` variant, and
+`archive_card_faded_scan` as an `archive_card` variant. Any richer filtering by
+page regions, identifiers, reviewability, density, annotations, or base family
+requires a future stable catalog version, manifest/schema update, or review
+sidecar as described in
 [layout_metadata_design.md](layout_metadata_design.md).

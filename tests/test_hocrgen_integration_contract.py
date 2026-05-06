@@ -62,6 +62,9 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
         "printed_letter",
         "handwritten_note",
         "archive_card",
+        "printed_letter_heavy_scan",
+        "handwritten_note_heavy_wear",
+        "archive_card_faded_scan",
     }
     for entry in templates["templates"]:
         assert {
