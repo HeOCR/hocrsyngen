@@ -4,7 +4,7 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Complete the baseline dependency audit so package boundaries stay explicit.
+1. Establish hosted CI so baseline tests, CLI contracts, and package checks run on PRs.
 2. Add Hebrew rendering/spec coverage docs/tests before deeper generator changes.
 3. Add style/persona controls only after manifest/metadata semantics are explicit.
 4. Keep optional ML-backed synthesis separate from baseline dependencies.
@@ -68,7 +68,8 @@ Planned PR breakdown:
 - `S1a` — Fixture reproducibility contract: document and test exact regeneration workflow for the packaged fixture without changing fixture assets unless intentionally regenerated. Status: done in PR #21.
 - `S1b` — Installed CLI smoke matrix: strengthen installed-package command coverage for `templates`, `contracts`, `contracts export`, `generate`, and `validate`. Status: done in PR #22.
 - `S1c` — Determinism drift guard: add focused tests that compare seed/sample ids, manifest fields, hashes, and output layout expectations for stable seeds. Status: done in PR #23.
-- `S1d` — Baseline dependency audit: add or refine tests that fail on accidental `hocrgen`, network, GPU, LLM, diffusion, Torch, TensorFlow, or deep-learning baseline dependencies. Status: current.
+- `S1d` — Baseline dependency audit: add or refine tests that fail on accidental `hocrgen`, network, GPU, LLM, diffusion, Torch, TensorFlow, or deep-learning baseline dependencies. Status: done in PR #24.
+- `S1e` — GitHub Actions CI framework: run tests, required CLI smoke commands, libraqm checks, and package build/install validation on PRs and pushes to `main`. Status: current.
 
 Deliverables:
 
@@ -81,11 +82,13 @@ Exit criteria:
 - Baseline generation remains deterministic by seed.
 - Contract fixture export and validation work from installed package and wheel.
 - No baseline dependency expansion beyond lightweight local rendering/validation needs.
+- Hosted CI runs the baseline test and packaging gates for supported Python versions.
 
 Risks/dependencies:
 
 - Image output may vary if font rendering stack changes.
 - Fixture updates require coordinated docs and tests.
+- Hosted runner package availability can affect Pillow libraqm setup.
 
 ## Phase S2 — Hebrew Rendering And Text-Quality Hardening
 

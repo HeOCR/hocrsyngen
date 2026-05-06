@@ -1,5 +1,7 @@
 # hocrsyngen
 
+[![CI](https://github.com/HeOCR/hocrsyngen/actions/workflows/ci.yml/badge.svg)](https://github.com/HeOCR/hocrsyngen/actions/workflows/ci.yml)
+
 Synthetic Hebrew OCR/HTR sample generation for the HeOCR project.
 
 This package owns deterministic candidate synthetic sample generation. `hocrgen`
@@ -247,5 +249,10 @@ gates.
 ## Development
 
 ```bash
+python -m pip install -e ".[test]"
 python -m pytest
 ```
+
+The GitHub Actions CI workflow runs the test suite, required CLI smoke commands,
+Pillow libraqm checks for Hebrew RTL rendering, and package build/install checks
+on Ubuntu and macOS for Python 3.11 and 3.12.
