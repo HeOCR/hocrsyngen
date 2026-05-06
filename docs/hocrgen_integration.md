@@ -105,6 +105,21 @@ mapping until a future catalog/schema exposes base-family metadata:
 | `handwritten_note` | `handwritten_note`, `handwritten_note_heavy_wear` |
 | `archive_card` | `archive_card`, `archive_card_faded_scan` |
 
+## Persona, Style, And Condition Boundaries
+
+Persona, style, and condition controls are synthetic generator parameter
+bundles only, as defined in
+[ADR 0005](decisions/0005-persona-style-condition-semantics.md). Current
+manifest v1 controls do not carry real identity, authorship, medical,
+psychological, sensitive-attribute, provenance, review, release, or publication
+metadata.
+
+Until a future public catalog, manifest/schema update, or explicit sidecar
+artifact exposes richer control metadata, `hocrgen` should not infer persona,
+style, or condition semantics from private Python recipe objects, drawing
+helpers, filenames, or local implementation details. Downstream caps,
+stratification, review, and release decisions remain `hocrgen` policy.
+
 ## Candidate Lifecycle
 
 1. `hocrsyngen` generates candidate synthetic batch.

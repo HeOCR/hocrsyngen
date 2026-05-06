@@ -34,7 +34,11 @@ Generated batches are candidate synthetic inputs. They must be imported into `ho
 
 `hocrsyngen` should not import `hocrgen`. Integration is through the installed CLI, `generation_manifest.json` v1, and packaged contract fixtures. This keeps the generator lightweight and preserves a clear boundary between synthetic generation and dataset governance.
 
-Persona and condition controls, when added, are generator parameter bundles only. They must not be represented as real identity, medical, psychological, or authorship claims.
+Persona, style, and condition controls are generator parameter bundles only.
+They must not be represented as real identity, real authorship, medical,
+psychological, sensitive-attribute, provenance, or release-eligibility claims.
+The durable semantics are recorded in
+[ADR 0005](decisions/0005-persona-style-condition-semantics.md).
 
 ## Current Implementation Facts
 
@@ -48,7 +52,8 @@ Persona and condition controls, when added, are generator parameter bundles only
 
 - Expand Hebrew rendering coverage without weakening the existing manifest contract.
 - Add richer governed fonts and corpora only with provenance and license records.
-- Plan style/persona/condition metadata before adding new manifest semantics.
+- Plan style/persona/condition metadata before adding new manifest semantics,
+  following [ADR 0005](decisions/0005-persona-style-condition-semantics.md).
 - Keep optional ML-backed research paths isolated from the baseline package.
 
 ## Risks And Open Questions

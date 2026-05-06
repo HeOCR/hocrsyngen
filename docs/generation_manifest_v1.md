@@ -65,6 +65,10 @@ Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for h
 - `condition`: `string|null`.
 
 These are synthetic generator controls only. They are not real-writer, identity, medical, psychological, or authorship claims.
+Persona, style, and condition semantics are governed by
+[ADR 0005](decisions/0005-persona-style-condition-semantics.md): current v1
+controls are `string|null` synthetic control slots, not richer machine-readable
+identity, health, authorship, provenance, review, or release metadata.
 
 ## Validation Behavior
 
@@ -95,6 +99,9 @@ The governed template contract currently requires:
 - `hocrgen` consumers should validate using the manifest contract, not private internals.
 - New manifest fields require schema, docs, and tests updates.
 - Breaking semantic changes require versioned design before implementation.
+- Richer persona, style, or condition metadata requires a documented catalog,
+  sidecar, or manifest/schema update before it becomes a public machine
+  contract.
 
 ## Example Shape
 

@@ -135,7 +135,11 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 - Review sidecar artifacts for visual inspection evidence remain future work and
   must stay outside `generation_manifest.json` v1 unless a versioned schema
   update is designed.
-- Synthetic persona/style consistency checks.
+- Synthetic persona/style consistency checks governed by
+  [ADR 0005](decisions/0005-persona-style-condition-semantics.md), including
+  checks that public metadata does not imply real identity, authorship, medical
+  or psychological state, sensitive attributes, provenance, review status, or
+  release eligibility.
 - `hocrgen`-side utility measurement.
 
 ## Handling Test Failures

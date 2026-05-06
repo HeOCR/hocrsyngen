@@ -130,7 +130,7 @@ Risks/dependencies:
 
 ## Phase S3 — Document-Layout Realism
 
-Current status: `current`.
+Current status: `done`.
 
 Objective: make synthetic samples resemble believable Hebrew document families while keeping deterministic generation and manifest contracts intact.
 
@@ -146,7 +146,7 @@ Planned PR breakdown:
 - `S3a` — Layout metadata design: decide what layout metadata is needed, which future public boundary should expose it, and how `hocrgen` should filter it. Status: done in PR #31.
 - `S3b` — Hebrew document family recipes: add the first new governed document family only after S3a settles metadata and validation implications. Status: done in PR #32.
 - `S3c` — Degradation preset expansion: add stronger deterministic degradation presets with tests and fixture review guidance. Status: done in PR #33.
-- `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection. Status: current.
+- `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection. Status: done in PR #34.
 
 Deliverables:
 
@@ -167,7 +167,7 @@ Risks/dependencies:
 
 ## Phase S4 — Persona/Style/Condition Controls
 
-Current status: `future`.
+Current status: `current`.
 
 Objective: add synthetic style and condition parameter bundles without implying real identity, health, psychology, or authorship.
 
@@ -175,12 +175,13 @@ Scope:
 
 - Synthetic personas as generator parameter bundles, not real identities.
 - Style controls: slant, spacing, pressure proxy, baseline drift, character variability, ligature/allograph choices, and line discipline.
-- Condition controls: concentration/fatigue/stress-like rendering controls only; avoid psychological truth claims.
+- Condition controls: neutral rendering-control presets only; avoid health,
+  psychological, disability, sensitive-attribute, or human-state claims.
 - Reproducibility and metadata rules.
 
 Planned PR breakdown:
 
-- `S4a` — Persona/style/condition semantics ADR: define allowed metadata, forbidden claims, validation expectations, and compatibility rules before implementation.
+- `S4a` — Persona/style/condition semantics ADR: define allowed metadata, forbidden claims, validation expectations, and compatibility rules before implementation. Status: current.
 - `S4b` — Deterministic style parameter bundles: implement the smallest synthetic style controls that do not require schema breaking changes.
 - `S4c` — Condition control bundles: add rendering-control-only condition presets after S4a, with tests proving no real identity, medical, psychological, or authorship claims.
 - `S4d` — Style consistency checks: add tests or reports that verify synthetic style controls are reproducible across a batch.
@@ -193,7 +194,7 @@ Deliverables:
 
 Exit criteria:
 
-- Persona and condition controls are documented as synthetic-only.
+- Persona, style, and condition controls are documented as synthetic-only.
 - Manifest changes, if any, are versioned or additive with tests.
 - No real-writer imitation claims are introduced.
 
