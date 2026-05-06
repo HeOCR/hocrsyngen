@@ -12,7 +12,10 @@ import hocrsyngen.generator as generator_module
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.generator import (
     CANVAS_SIZE,
+    CONDITION_BUNDLES,
     STYLE_BUNDLES,
+    _condition_bundle,
+    _conditioned_line_height,
     _degradation_preset,
     _font_path,
     load_font_manifest,
@@ -138,6 +141,12 @@ STYLE_BUNDLE_IDS = [
     "style_compact_steady_v1",
 ]
 NON_DEFAULT_STYLE_BUNDLE_IDS = ["style_open_drift_v1", "style_compact_steady_v1"]
+CONDITION_BUNDLE_IDS = [
+    "condition_standard_v1",
+    "condition_low_contrast_v1",
+    "condition_dense_spacing_v1",
+]
+NON_DEFAULT_CONDITION_BUNDLE_IDS = ["condition_low_contrast_v1", "condition_dense_spacing_v1"]
 FORBIDDEN_STYLE_CONTROL_TERMS = [
     "identity",
     "author",
@@ -568,6 +577,249 @@ def test_style_bundle_docs_describe_controls_as_synthetic_only() -> None:
     assert "synthetic style bundle" in docs
     assert "not identity, authorship, provenance, medical" in docs
     assert "do not add a `style` field" in docs
+
+
+@pytest.mark.parametrize("condition", CONDITION_BUNDLE_IDS)
+def test_condition_bundles_are_deterministic_manifest_controls(
+    tmp_path: Path,
+    condition: str,
+) -> None:
+    first_dir = tmp_path / f"{condition}-first"
+    second_dir = tmp_path / f"{condition}-second"
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    first = generate_batch(
+        count=3,
+        seed=71,
+        output_dir=first_dir,
+        template_ids=template_ids,
+        condition=condition,
+    ).to_dict()
+    second = generate_batch(
+        count=3,
+        seed=71,
+        output_dir=second_dir,
+        template_ids=template_ids,
+        condition=condition,
+    ).to_dict()
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+
+    assert first == second
+    jsonschema.validate(first, schema)
+    assert [sample["controls"] for sample in first["samples"]] == [
+        {"persona": None, "condition": condition},
+        {"persona": None, "condition": condition},
+        {"persona": None, "condition": condition},
+    ]
+    assert [sample["provenance"]["template_id"] for sample in first["samples"]] == template_ids
+    assert [sample["pages"][0]["sha256"] for sample in first["samples"]] == [
+        sample["pages"][0]["sha256"] for sample in second["samples"]
+    ]
+
+
+def test_standard_condition_bundle_matches_default_rendering_except_controls(
+    tmp_path: Path,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    default = generate_batch(
+        count=3,
+        seed=73,
+        output_dir=tmp_path / "default",
+        template_ids=template_ids,
+    ).to_dict()
+    standard = generate_batch(
+        count=3,
+        seed=73,
+        output_dir=tmp_path / "standard",
+        template_ids=template_ids,
+        condition="condition_standard_v1",
+    ).to_dict()
+
+    for default_sample, standard_sample in zip(default["samples"], standard["samples"], strict=True):
+        assert default_sample["controls"] == {"persona": None, "condition": None}
+        assert standard_sample["controls"] == {"persona": None, "condition": "condition_standard_v1"}
+        assert default_sample["text"] == standard_sample["text"]
+        assert default_sample["provenance"] == standard_sample["provenance"]
+        assert default_sample["pages"][0]["sha256"] == standard_sample["pages"][0]["sha256"]
+
+
+@pytest.mark.parametrize("condition", NON_DEFAULT_CONDITION_BUNDLE_IDS)
+def test_non_default_condition_bundles_change_rendering_without_contract_drift(
+    tmp_path: Path,
+    condition: str,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    default_dir = tmp_path / f"{condition}-default"
+    conditioned_dir = tmp_path / f"{condition}-conditioned"
+    default = generate_batch(
+        count=3,
+        seed=79,
+        output_dir=default_dir,
+        template_ids=template_ids,
+    ).to_dict()
+    conditioned = generate_batch(
+        count=3,
+        seed=79,
+        output_dir=conditioned_dir,
+        template_ids=template_ids,
+        condition=condition,
+    ).to_dict()
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+
+    jsonschema.validate(conditioned, schema)
+    for default_sample, conditioned_sample in zip(default["samples"], conditioned["samples"], strict=True):
+        default_page = default_sample["pages"][0]
+        conditioned_page = conditioned_sample["pages"][0]
+        assert conditioned_sample["controls"] == {"persona": None, "condition": condition}
+        assert default_sample["text"] == conditioned_sample["text"]
+        assert default_sample["provenance"] == conditioned_sample["provenance"]
+        assert conditioned_page["asset_path"] == default_page["asset_path"]
+        assert conditioned_page["sha256"] != default_page["sha256"]
+        assert conditioned_sample["text"]["logical_order"] == unicodedata.normalize(
+            "NFC", conditioned_sample["text"]["logical_order"]
+        )
+        assert "condition" not in {
+            key for key in conditioned_sample if key not in {"controls"}
+        }
+        with Image.open(default_dir / default_page["asset_path"]).convert("RGB") as default_image:
+            with Image.open(conditioned_dir / conditioned_page["asset_path"]).convert("RGB") as conditioned_image:
+                assert default_image.size == conditioned_image.size == CANVAS_SIZE
+                assert _changed_pixel_count(default_image, conditioned_image) > 20_000
+
+
+def test_low_contrast_condition_reduces_visual_contrast_metrics(
+    tmp_path: Path,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    default_dir = tmp_path / "default"
+    low_contrast_dir = tmp_path / "low-contrast"
+    default = generate_batch(
+        count=3,
+        seed=97,
+        output_dir=default_dir,
+        template_ids=template_ids,
+    ).to_dict()
+    low_contrast = generate_batch(
+        count=3,
+        seed=97,
+        output_dir=low_contrast_dir,
+        template_ids=template_ids,
+        condition="condition_low_contrast_v1",
+    ).to_dict()
+
+    for default_sample, low_contrast_sample in zip(default["samples"], low_contrast["samples"], strict=True):
+        default_page = default_sample["pages"][0]
+        low_contrast_page = low_contrast_sample["pages"][0]
+        with Image.open(default_dir / default_page["asset_path"]).convert("RGB") as default_image:
+            with Image.open(low_contrast_dir / low_contrast_page["asset_path"]).convert("RGB") as low_contrast_image:
+                assert _mean_luminance(low_contrast_image) > _mean_luminance(default_image)
+                assert _mean_edge_strength(low_contrast_image) < _mean_edge_strength(default_image)
+                assert _dark_ink_pixel_count(low_contrast_image) < _dark_ink_pixel_count(default_image)
+
+
+def test_condition_bundle_parameters_match_public_rendering_semantics() -> None:
+    standard = _condition_bundle("condition_standard_v1")
+    low_contrast = _condition_bundle("condition_low_contrast_v1")
+    dense_spacing = _condition_bundle("condition_dense_spacing_v1")
+
+    assert low_contrast.line_height_scale == standard.line_height_scale
+    assert low_contrast.ink_delta > standard.ink_delta
+    assert low_contrast.blur_delta > standard.blur_delta
+    assert low_contrast.contrast_scale < standard.contrast_scale
+    assert low_contrast.brightness_scale > standard.brightness_scale
+    assert low_contrast.grain_alpha_scale == standard.grain_alpha_scale
+
+    assert dense_spacing.ink_delta == standard.ink_delta
+    assert dense_spacing.blur_delta == standard.blur_delta
+    assert dense_spacing.contrast_scale == standard.contrast_scale
+    assert dense_spacing.brightness_scale == standard.brightness_scale
+    assert dense_spacing.grain_alpha_scale == standard.grain_alpha_scale
+    assert _conditioned_line_height(68, dense_spacing) < _conditioned_line_height(68, standard)
+    assert _conditioned_line_height(76, dense_spacing) < _conditioned_line_height(76, standard)
+    assert _conditioned_line_height(78, dense_spacing) < _conditioned_line_height(78, standard)
+
+
+def test_condition_bundles_compose_with_persona_style_controls(
+    tmp_path: Path,
+) -> None:
+    template_ids = ["printed_letter", "handwritten_note", "archive_card"]
+    default = generate_batch(
+        count=3,
+        seed=83,
+        output_dir=tmp_path / "default",
+        template_ids=template_ids,
+    ).to_dict()
+    combined = generate_batch(
+        count=3,
+        seed=83,
+        output_dir=tmp_path / "combined",
+        template_ids=template_ids,
+        persona="style_open_drift_v1",
+        condition="condition_dense_spacing_v1",
+    ).to_dict()
+
+    for default_sample, combined_sample in zip(default["samples"], combined["samples"], strict=True):
+        assert combined_sample["controls"] == {
+            "persona": "style_open_drift_v1",
+            "condition": "condition_dense_spacing_v1",
+        }
+        assert default_sample["text"] == combined_sample["text"]
+        assert default_sample["provenance"] == combined_sample["provenance"]
+        assert default_sample["pages"][0]["sha256"] != combined_sample["pages"][0]["sha256"]
+
+
+def test_condition_bundle_controls_use_neutral_synthetic_ids(tmp_path: Path) -> None:
+    assert set(CONDITION_BUNDLES) == set(CONDITION_BUNDLE_IDS)
+    assert _condition_bundle(None) == CONDITION_BUNDLES["condition_standard_v1"]
+
+    for condition in CONDITION_BUNDLE_IDS:
+        lowered = condition.lower()
+        assert lowered.startswith("condition_")
+        assert all(term not in lowered for term in FORBIDDEN_STYLE_CONTROL_TERMS)
+
+    payload = generate_batch(
+        count=3,
+        seed=89,
+        output_dir=tmp_path / "condition-metadata",
+        condition="condition_low_contrast_v1",
+    ).to_dict()
+    controls_text = json.dumps(
+        [sample["controls"] for sample in payload["samples"]],
+        ensure_ascii=False,
+        sort_keys=True,
+    ).lower()
+    assert "condition_low_contrast_v1" in controls_text
+    assert all(term not in controls_text for term in FORBIDDEN_STYLE_CONTROL_TERMS)
+
+
+def test_condition_bundle_docs_describe_controls_as_synthetic_only() -> None:
+    docs = "\n".join(
+        [
+            (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            (REPO_ROOT / "docs" / "generation_manifest_v1.md").read_text(encoding="utf-8"),
+            (REPO_ROOT / "docs" / "hocrgen_integration.md").read_text(encoding="utf-8"),
+        ]
+    )
+
+    for condition in CONDITION_BUNDLE_IDS:
+        assert condition in docs
+    assert "generate --condition CONDITION_ID" in docs
+    assert "synthetic rendering-control condition bundle" in docs
+    assert "not identity, authorship, provenance, medical" in docs
+    assert "do not add a `condition` object" in docs
+
+
+def test_invalid_condition_bundle_rejects_without_partial_output(tmp_path: Path) -> None:
+    output_dir = tmp_path / "should-not-exist"
+
+    with pytest.raises(ValueError, match="Unsupported synthetic condition rendering bundle"):
+        generate_batch(
+            count=1,
+            seed=17,
+            output_dir=output_dir,
+            condition="medical_claim",
+        )
+
+    assert not output_dir.exists()
 
 
 def test_count_zero_emits_empty_manifest(tmp_path: Path) -> None:

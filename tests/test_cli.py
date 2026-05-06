@@ -22,7 +22,7 @@ from hocrsyngen.cli import (
     _format_template_catalog_json,
     main,
 )
-from hocrsyngen.generator import SUPPORTED_STYLE_BUNDLE_IDS, TemplateCatalogEntry
+from hocrsyngen.generator import SUPPORTED_CONDITION_BUNDLE_IDS, SUPPORTED_STYLE_BUNDLE_IDS, TemplateCatalogEntry
 from hocrsyngen.validation import validate_batch
 from hocrsyngen.validation import BatchValidationError, ValidationResult
 
@@ -925,6 +925,57 @@ def test_generate_cli_help_lists_persona_style_bundle_choices(
         assert persona in help_text
 
 
+def test_generate_cli_accepts_condition_bundle_control(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "condition-batch"
+
+    assert (
+        main(
+            [
+                "generate",
+                "--count",
+                "2",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--condition",
+                "condition_low_contrast_v1",
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert json.loads(captured.out)["sample_count"] == 2
+    manifest = json.loads(
+        (output_dir / "generation_manifest.json").read_text(encoding="utf-8")
+    )
+    assert [sample["controls"] for sample in manifest["samples"]] == [
+        {"condition": "condition_low_contrast_v1", "persona": None},
+        {"condition": "condition_low_contrast_v1", "persona": None},
+    ]
+    assert all("condition" not in {key for key in sample if key != "controls"} for sample in manifest["samples"])
+
+
+def test_generate_cli_help_lists_condition_bundle_choices(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        main(["generate", "--help"])
+
+    assert exc_info.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "--condition" in help_text
+    assert "Synthetic rendering condition bundle id" in help_text
+    for condition in SUPPORTED_CONDITION_BUNDLE_IDS:
+        assert condition in help_text
+
+
 def test_generate_cli_json_reports_zero_count(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -1047,6 +1098,33 @@ def test_generate_cli_rejects_invalid_persona_style_without_partial_output(
     captured = capsys.readouterr()
     assert "invalid choice: 'real_writer_claim'" in captured.err
     assert "style_standard_v1" in captured.err
+    assert not output_dir.exists()
+
+
+def test_generate_cli_rejects_invalid_condition_without_partial_output(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "should-not-exist"
+
+    with pytest.raises(SystemExit) as exc_info:
+        main(
+            [
+                "generate",
+                "--count",
+                "1",
+                "--seed",
+                "17",
+                "--condition",
+                "medical_claim",
+                "--output",
+                str(output_dir),
+            ]
+        )
+
+    assert exc_info.value.code == 2
+    captured = capsys.readouterr()
+    assert "invalid choice: 'medical_claim'" in captured.err
+    assert "condition_standard_v1" in captured.err
     assert not output_dir.exists()
 
 

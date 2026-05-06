@@ -73,6 +73,11 @@ it.
   `style_open_drift_v1`, and `style_compact_steady_v1` through the existing
   `--persona` control slot, including repeatability, visual-difference smoke
   checks, invalid-control rejection, and forbidden-claim metadata checks.
+- Deterministic S4c condition bundle coverage for `condition_standard_v1`,
+  `condition_low_contrast_v1`, and `condition_dense_spacing_v1` through the
+  existing `--condition` control slot, including repeatability,
+  visual-difference smoke checks, composition with persona style bundles,
+  invalid-control rejection, and forbidden-claim metadata checks.
 - Validation errors.
 - Installed package and wheel resource checks.
 - Installed package and wheel public CLI smoke matrix for console-script and

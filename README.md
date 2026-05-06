@@ -125,6 +125,18 @@ pressure proxy; they are not identity, authorship, provenance, medical,
 psychological, disability, demographic, review, release, or publication
 metadata.
 
+`hocrsyngen generate --condition CONDITION_ID` selects a deterministic synthetic
+rendering-control condition bundle and writes the selected id to
+`controls.condition`. Supported S4c condition ids are `condition_standard_v1`,
+`condition_low_contrast_v1`, and `condition_dense_spacing_v1`. These ids describe
+neutral rendering adjustments such as scan contrast, blur, brightness, and body
+text line-spacing density. Dense spacing tightens rendered body text line
+placement only; it does not rescale template guide lines, form rows, archive
+card grids, stamps, marginalia, or other scaffolding. These ids are not
+identity, authorship, provenance, medical, psychological, disability,
+demographic, review, release, or publication metadata, and they do not add a
+`condition` object or richer manifest v1 metadata.
+
 `hocrsyngen validate PATH` checks `PATH/generation_manifest.json` against the
 packaged manifest schema, verifies v1 constants and Hebrew RTL metadata,
 verifies top-level constants (`manifest_version`, `generator_name`, `license`,

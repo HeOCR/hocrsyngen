@@ -122,6 +122,19 @@ as neutral generator-control ids after manifest validation, but should not infer
 writer identity, authorship, provenance, review state, release eligibility, or
 human attributes from them.
 
+S4c exposes each deterministic synthetic rendering-control condition bundle
+through `hocrsyngen generate --condition CONDITION_ID`, using the existing
+manifest v1 `controls.condition` string slot. The supported ids are
+`condition_standard_v1`, `condition_low_contrast_v1`, and
+`condition_dense_spacing_v1`. `hocrgen` may treat these as neutral
+generator-control ids after manifest validation, but should not infer identity,
+authorship, provenance, medical, psychological, disability, sensitive-attribute,
+review, release, or publication metadata from them. S4c does not add a
+`condition` object or richer manifest v1 metadata. Dense spacing tightens
+rendered body text line placement only; downstream tools should not infer that
+template guide lines, form rows, archive card grids, stamps, marginalia, or
+other scaffolding were rescaled.
+
 Until a future public catalog, manifest/schema update, or explicit sidecar
 artifact exposes richer control metadata, `hocrgen` should not infer persona,
 style, or condition semantics from private Python recipe objects, drawing

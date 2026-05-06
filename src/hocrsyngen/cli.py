@@ -11,6 +11,7 @@ from pathlib import Path
 
 from hocrsyngen.generator import (
     GOVERNED_TEMPLATE_IDS,
+    SUPPORTED_CONDITION_BUNDLE_IDS,
     SUPPORTED_STYLE_BUNDLE_IDS,
     TemplateCatalogEntry,
     generate_batch,
@@ -324,7 +325,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     generate.add_argument(
         "--condition",
-        help="Optional generator control only; not a real condition claim.",
+        choices=SUPPORTED_CONDITION_BUNDLE_IDS,
+        help=(
+            "Synthetic rendering condition bundle id to write to controls.condition; "
+            "not a real condition claim."
+        ),
     )
     validate = subparsers.add_parser(
         "validate", help="Validate a generated hocrsyngen fixture batch."
