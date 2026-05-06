@@ -21,7 +21,7 @@ For `hocrsyngen templates --format json`, assert:
 - `schema_version == "template_catalog.v1"`.
 - `templates` is a list.
 - Each template has `template_id`, `recipe_id`, `layout_style`, `font_style`, `font_id`, and `degradation_preset`.
-- The current packaged catalog includes `printed_letter` and `handwritten_note`.
+- The current packaged catalog includes `printed_letter`, `handwritten_note`, and `archive_card`.
 
 For `hocrsyngen contracts --format json`, assert:
 

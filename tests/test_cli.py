@@ -111,6 +111,14 @@ EXPECTED_TEMPLATE_LINES = [
         "font_id=gveret-levin-regular "
         "degradation_preset=notebook_scan_worn"
     ),
+    (
+        "template_id=archive_card "
+        "recipe_id=archive_card_identifier_v1 "
+        "layout_style=multi_region_page "
+        "font_style=printed "
+        "font_id=alef-regular "
+        "degradation_preset=office_scan_soft"
+    ),
 ]
 EXPECTED_TEMPLATE_CATALOG_JSON = {
     "schema_version": TEMPLATE_CATALOG_SCHEMA_VERSION,
@@ -130,6 +138,14 @@ EXPECTED_TEMPLATE_CATALOG_JSON = {
             "font_style": "handwritten_like",
             "font_id": "gveret-levin-regular",
             "degradation_preset": "notebook_scan_worn",
+        },
+        {
+            "template_id": "archive_card",
+            "recipe_id": "archive_card_identifier_v1",
+            "layout_style": "multi_region_page",
+            "font_style": "printed",
+            "font_id": "alef-regular",
+            "degradation_preset": "office_scan_soft",
         },
     ],
 }
@@ -729,6 +745,40 @@ def test_generate_cli_smoke(tmp_path: Path, capsys: pytest.CaptureFixture[str]) 
     }
     for sample in payload["samples"]:
         assert (output_dir / sample["pages"][0]["asset_path"]).is_file()
+
+
+def test_generate_cli_accepts_explicit_archive_card_template(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "archive-card-batch"
+
+    assert (
+        main(
+            [
+                "generate",
+                "--count",
+                "1",
+                "--seed",
+                "37",
+                "--output",
+                str(output_dir),
+                "--template-id",
+                "archive_card",
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["sample_count"] == 1
+    payload = json.loads((output_dir / "generation_manifest.json").read_text(encoding="utf-8"))
+    [sample] = payload["samples"]
+    assert sample["recipe_id"] == "archive_card_identifier_v1"
+    assert sample["provenance"]["template_id"] == "archive_card"
+    assert sample["provenance"]["font_id"] == "alef-regular"
+    assert (output_dir / sample["pages"][0]["asset_path"]).is_file()
 
 
 def test_generate_cli_json_outputs_deterministic_report(

@@ -103,6 +103,7 @@ FONT_SHAPING_AUDIT_LINES = [
 PACKAGED_FONT_AUDIT_CASES = [
     ("printed_letter", 42),
     ("handwritten_note", 46),
+    ("archive_card", 42),
 ]
 
 
@@ -693,6 +694,86 @@ def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Pat
         assert not PurePosixPath(document.asset_path).is_absolute()
 
 
+def test_archive_card_generation_preserves_v1_provenance_and_hebrew_text(tmp_path: Path) -> None:
+    documents = generate_documents(
+        count=1,
+        seed=37,
+        template_ids=["archive_card"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=default_text_corpus_path(),
+        output_dir=tmp_path / "archive-card",
+    )
+
+    [document] = documents
+    assert document.template_id == "archive_card"
+    assert document.recipe_id == "archive_card_identifier_v1"
+    assert document.degradation_preset == "office_scan_soft"
+    assert document.font_id == "alef-regular"
+    assert document.title == "כרטיס ארכיון"
+    assert document.logical_text == unicodedata.normalize("NFC", document.logical_text)
+    document_lines = document.logical_text.splitlines()
+    assert document_lines[0] == "כרטיס ארכיון"
+    assert document_lines[1].startswith("מזהה א-")
+    assert any(line == "ארכיון" for line in document_lines)
+    assert document.footer.startswith("עמוד ")
+    assert " - א-" in document.footer
+    assert document.footer == document_lines[-1]
+    assert document.path.is_file()
+    assert not PurePosixPath(document.asset_path).is_absolute()
+
+    manifest = generate_batch(
+        count=1,
+        seed=37,
+        output_dir=tmp_path / "archive-card-manifest",
+        template_ids=["archive_card"],
+    ).to_dict()
+    [sample] = manifest["samples"]
+    assert sample["recipe_id"] == "archive_card_identifier_v1"
+    assert sample["provenance"] == {
+        "seed": 37,
+        "sample_index": 0,
+        "template_id": "archive_card",
+        "recipe_id": "archive_card_identifier_v1",
+        "degradation_preset": "office_scan_soft",
+        "font_id": "alef-regular",
+        "source_corpus": "packaged:synthetic/texts/hebrew_lines.txt",
+    }
+    assert sample["text"]["direction"] == "rtl"
+    assert sample["text"]["unicode_normalization"] == "NFC"
+    logical_lines = sample["text"]["logical_order"].splitlines()
+    assert logical_lines[0] == "כרטיס ארכיון"
+    assert logical_lines[1].startswith("מזהה א-")
+    assert any(line == "ארכיון" for line in logical_lines)
+    assert logical_lines[-1].startswith("עמוד ")
+    assert " - א-" in logical_lines[-1]
+
+
+def test_archive_card_manifest_text_matches_rendered_body_overflow(tmp_path: Path) -> None:
+    corpus_path = tmp_path / "long_archive_card_corpus.txt"
+    corpus_path.write_text(
+        " ".join(f"מילה{index:02d}" for index in range(80)) + "\n",
+        encoding="utf-8",
+    )
+
+    documents = generate_documents(
+        count=1,
+        seed=37,
+        template_ids=["archive_card"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=corpus_path,
+        output_dir=tmp_path / "archive-card-overflow",
+    )
+
+    [document] = documents
+    body_lines = document.body.splitlines()
+    logical_lines = document.logical_text.splitlines()
+
+    assert 1 <= len(body_lines) <= 7
+    assert body_lines == logical_lines[3 : 3 + len(body_lines)]
+    assert "מילה79" not in document.logical_text
+    assert logical_lines[-6:] == ["מקור", "תאריך", "מספר", "הערה", "ארכיון", document.footer]
+
+
 def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
     catalog = {entry.template_id: entry for entry in template_catalog()}
 
@@ -704,6 +785,11 @@ def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
     assert catalog["handwritten_note"].degradation_preset == "notebook_scan_worn"
     assert catalog["handwritten_note"].font_style == "handwritten_like"
     assert catalog["handwritten_note"].font_id == "gveret-levin-regular"
+    assert catalog["archive_card"].recipe_id == "archive_card_identifier_v1"
+    assert catalog["archive_card"].layout_style == "multi_region_page"
+    assert catalog["archive_card"].degradation_preset == "office_scan_soft"
+    assert catalog["archive_card"].font_style == "printed"
+    assert catalog["archive_card"].font_id == "alef-regular"
 
 
 def test_template_catalog_rejects_malformed_or_missing_style_font_manifest(tmp_path: Path) -> None:
@@ -744,9 +830,9 @@ def test_template_catalog_rejects_malformed_or_missing_style_font_manifest(tmp_p
 
 def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) -> None:
     documents = generate_documents(
-        count=2,
+        count=3,
         seed=31,
-        template_ids=["printed_letter", "handwritten_note"],
+        template_ids=["printed_letter", "handwritten_note", "archive_card"],
         font_manifest_path=default_font_manifest_path(),
         text_corpus_path=default_text_corpus_path(),
         output_dir=tmp_path / "synthetic",
@@ -766,6 +852,16 @@ def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) 
         marginalia_pixels = _image_pixels(marginalia_region)
         marginalia_ink_pixels = sum(1 for r, g, b in marginalia_pixels if r < 115 and g < 105 and b < 95)
         assert marginalia_ink_pixels > 150
+
+    with Image.open(by_template["archive_card"].path).convert("RGB") as archive_card:
+        card_region = archive_card.crop((170, 230, 1030, 1260))
+        card_pixels = _image_pixels(card_region)
+        red_stamp_pixels = sum(1 for r, g, b in card_pixels if r > 90 and r > g * 1.45 and r > b * 1.45)
+        ruled_pixels = sum(1 for r, g, b in card_pixels if 145 <= r <= 225 and 135 <= g <= 215 and 115 <= b <= 200)
+        dark_ink_pixels = sum(1 for r, g, b in card_pixels if r < 115 and g < 105 and b < 95)
+        assert red_stamp_pixels > 350
+        assert ruled_pixels > 10_000
+        assert dark_ink_pixels > 4_000
 
 
 def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:
@@ -878,6 +974,12 @@ def test_font_path_wrapping_and_font_selection_helpers(tmp_path: Path) -> None:
         _font_path(manifest_path, {"id": "broken-font", "file": "nested\\font.ttf"})
     assert _select_font(
         [{"id": "alef-regular", "style": "printed"}], "printed_letter"
+    ) == {
+        "id": "alef-regular",
+        "style": "printed",
+    }
+    assert _select_font(
+        [{"id": "alef-regular", "style": "printed"}], "archive_card"
     ) == {
         "id": "alef-regular",
         "style": "printed",

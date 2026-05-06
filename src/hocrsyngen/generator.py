@@ -25,9 +25,11 @@ GENERATOR_VERSION = "d4a-realism-v2"
 CANVAS_SIZE = (1200, 1600)
 PAPER_MARGIN = 96
 DEFAULT_TEMPLATE_IDS = ["printed_letter", "handwritten_note"]
+GOVERNED_TEMPLATE_IDS = [*DEFAULT_TEMPLATE_IDS, "archive_card"]
 
 PRINTED_TITLES = ["מכתב מנהלי", "דו\"ח קבלה", "רישום ארכיוני"]
 HANDWRITTEN_TITLES = ["פנקס הערות", "רישום קצר", "הודעה פנימית"]
+ARCHIVE_CARD_TITLES = ["כרטיס ארכיון", "רישום כרטסת", "תיק מסווג"]
 FOOTER_LABELS = ["סימן", "רישום", "עמוד"]
 
 
@@ -69,6 +71,14 @@ class TemplateCatalogEntry:
     font_style: str
     font_id: str
     degradation_preset: str
+
+
+@dataclass(frozen=True)
+class ArchiveCardRender:
+    image: Image.Image
+    rendered_body_lines: list[str]
+    footer_text: str
+    logical_lines: list[str]
 
 
 def load_font_manifest(path: Path) -> dict[str, list[dict[str, str]]]:
@@ -218,6 +228,17 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             line_count=3,
             jpeg_quality=78,
         )
+    if template_id == "archive_card":
+        return SyntheticRecipe(
+            template_id=template_id,
+            recipe_id="archive_card_identifier_v1",
+            layout_style="multi_region_page",
+            font_style="printed",
+            degradation_preset="office_scan_soft",
+            paper_tone="printed",
+            line_count=3,
+            jpeg_quality=82,
+        )
     raise ValueError(f"Unsupported synthetic template_id: {template_id}")
 
 
@@ -240,7 +261,7 @@ def template_catalog(
     *,
     font_manifest_path: Path | None = None,
 ) -> list[TemplateCatalogEntry]:
-    template_ids = DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids
+    template_ids = GOVERNED_TEMPLATE_IDS if template_ids is None else template_ids
     font_manifest_path = font_manifest_path or default_font_manifest_path()
     recipes = recipe_catalog(template_ids)
     fonts = _load_font_entries(font_manifest_path)
@@ -361,6 +382,93 @@ def _draw_handwritten_underline(draw: ImageDraw.ImageDraw, randomizer: random.Ra
         draw.line(points, fill=(56, 44, 34), width=2)
 
 
+def _draw_archive_card(
+    randomizer: random.Random,
+    title: str,
+    body_lines: list[str],
+    footer: str,
+    font_path: Path,
+) -> ArchiveCardRender:
+    recipe = _recipe_for_template("archive_card")
+    background = (246, 241, 230)
+    image = _paper_background(randomizer, CANVAS_SIZE, recipe.paper_tone).convert("RGBA")
+    draw = ImageDraw.Draw(image)
+
+    title_font = _load_font(font_path, 58)
+    label_font = _load_font(font_path, 30)
+    body_font = _load_font(font_path, 38)
+    footer_font = _load_font(font_path, 28)
+    stamp_font = _load_font(font_path, 32)
+
+    card_left = PAPER_MARGIN + 80 + randomizer.randint(-10, 10)
+    card_top = PAPER_MARGIN + 150 + randomizer.randint(-10, 10)
+    card_right = CANVAS_SIZE[0] - PAPER_MARGIN - 70 + randomizer.randint(-10, 10)
+    card_bottom = CANVAS_SIZE[1] - PAPER_MARGIN - 200 + randomizer.randint(-8, 8)
+    edge = (169, 157, 134, 255)
+    faint = (214, 204, 183, 255)
+    shadow = (225, 217, 199, 255)
+    ink = (33, 29, 24, 255)
+    label_ink = (92, 80, 65, 255)
+    stamp_ink = (126, 45, 39, 255)
+
+    draw.rectangle((card_left + 12, card_top + 14, card_right + 12, card_bottom + 14), outline=shadow, width=3)
+    draw.rectangle((card_left, card_top, card_right, card_bottom), outline=edge, width=4)
+    draw.line((card_left, card_top + 136, card_right, card_top + 136), fill=faint, width=3)
+    draw.line((card_left + 260, card_top + 136, card_left + 260, card_bottom), fill=faint, width=2)
+    for row in range(1, 7):
+        y = card_top + 136 + row * 92 + randomizer.randint(-2, 2)
+        draw.line((card_left, y, card_right, y), fill=faint, width=2)
+
+    title_x = card_right - 46
+    title_y = card_top + 40
+    _draw_rtl_text(draw, (title_x, title_y), title, font=title_font, fill=ink)
+
+    archive_id = f"א-{randomizer.randint(1200, 9980)}-{randomizer.randint(10, 99)}"
+    archive_date = f"{randomizer.randint(1, 28):02d}/{randomizer.randint(1, 12):02d}/{randomizer.randint(1930, 1978)}"
+    archive_id_text = f"מזהה {archive_id}"
+    _draw_rtl_text(draw, (card_right - 48, card_top + 116), archive_id_text, font=label_font, fill=label_ink)
+    _draw_rtl_text(draw, (card_left + 224, card_top + 116), archive_date, font=label_font, fill=label_ink)
+
+    wrapped_lines: list[str] = []
+    max_width = card_right - card_left - 340
+    for line in body_lines:
+        wrapped_lines.extend(_wrap_hebrew_text(draw, line, body_font, max_width))
+    rendered_body_lines = wrapped_lines[:7]
+
+    for index, line in enumerate(rendered_body_lines):
+        y = card_top + 196 + index * 78 + randomizer.randint(-2, 2)
+        _draw_rtl_text(draw, (card_right - 48, y), line, font=body_font, fill=ink)
+
+    labels = ["מקור", "תאריך", "מספר", "הערה"]
+    for index, label in enumerate(labels):
+        y = card_top + 218 + index * 118 + randomizer.randint(-2, 2)
+        _draw_rtl_text(draw, (card_left + 222, y), label, font=label_font, fill=label_ink)
+
+    stamp_x = card_left + 190
+    stamp_y = card_bottom - 128
+    draw.ellipse((stamp_x - 92, stamp_y - 42, stamp_x + 92, stamp_y + 42), outline=stamp_ink, width=4)
+    _draw_rtl_text(draw, (stamp_x + 48, stamp_y - 14), "ארכיון", font=stamp_font, fill=stamp_ink)
+
+    footer_text = f"{footer} - {archive_id}"
+    _draw_rtl_text(draw, (card_right - 48, card_bottom - 48), footer_text, font=footer_font, fill=label_ink)
+    _draw_stains(image, randomizer, handwritten=False)
+    logical_lines = [
+        title,
+        archive_id_text,
+        archive_date,
+        *rendered_body_lines,
+        *labels,
+        "ארכיון",
+        footer_text,
+    ]
+    return ArchiveCardRender(
+        image=_degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset),
+        rendered_body_lines=rendered_body_lines,
+        footer_text=footer_text,
+        logical_lines=logical_lines,
+    )
+
+
 def _draw_document(
     randomizer: random.Random,
     title: str,
@@ -441,7 +549,12 @@ def _select_font(fonts: list[dict[str, str]], template_id: str) -> dict[str, str
 
 
 def _select_title(template_id: str, index: int) -> str:
-    titles = HANDWRITTEN_TITLES if template_id == "handwritten_note" else PRINTED_TITLES
+    if template_id == "handwritten_note":
+        titles = HANDWRITTEN_TITLES
+    elif template_id == "archive_card":
+        titles = ARCHIVE_CARD_TITLES
+    else:
+        titles = PRINTED_TITLES
     return titles[index % len(titles)]
 
 
@@ -501,16 +614,25 @@ def generate_documents(
         asset_path = f"assets/{sample_id}/page_0001.jpg"
         path = output_dir / asset_path
         path.parent.mkdir(parents=True, exist_ok=True)
-        image = _draw_document(randomizer, title, body_lines, footer, font_path, template_id)
+        if template_id == "archive_card":
+            archive_render = _draw_archive_card(randomizer, title, body_lines, footer, font_path)
+            image = archive_render.image
+            logical_text = unicodedata.normalize("NFC", "\n".join(archive_render.logical_lines))
+            document_body = "\n".join(archive_render.rendered_body_lines)
+            document_footer = archive_render.footer_text
+        else:
+            image = _draw_document(randomizer, title, body_lines, footer, font_path, template_id)
+            logical_text = unicodedata.normalize("NFC", "\n".join([title, *body_lines, footer]))
+            document_body = "\n".join(body_lines)
+            document_footer = footer
         image.save(path, format="JPEG", quality=recipe.jpeg_quality, optimize=True)
-        logical_text = unicodedata.normalize("NFC", "\n".join([title, *body_lines, footer]))
         documents.append(
             SyntheticDocument(
                 sample_id=sample_id,
                 sample_index=index,
                 title=title,
-                body="\n".join(body_lines),
-                footer=footer,
+                body=document_body,
+                footer=document_footer,
                 template_id=template_id,
                 recipe_id=recipe.recipe_id,
                 degradation_preset=recipe.degradation_preset,

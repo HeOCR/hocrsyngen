@@ -346,7 +346,7 @@ def test_manifest_contract_schema_rejects_synthetic_disclosure_drift(
 def test_manifest_contract_documented_governed_templates_match_catalog() -> None:
     doc = _load_contract_doc()
 
-    for entry in template_catalog(["printed_letter", "handwritten_note"]):
+    for entry in template_catalog():
         expected_row = (
             f"| `{entry.template_id}` | `{entry.recipe_id}` | "
             f"`{entry.degradation_preset}` | `{entry.font_id}` |"
