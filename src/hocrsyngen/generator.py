@@ -104,6 +104,17 @@ class StyleBundle:
 
 
 @dataclass(frozen=True)
+class ConditionBundle:
+    condition_id: str
+    line_height_scale: float
+    ink_delta: int
+    blur_delta: float
+    contrast_scale: float
+    brightness_scale: float
+    grain_alpha_scale: float
+
+
+@dataclass(frozen=True)
 class ArchiveCardRender:
     image: Image.Image
     rendered_body_lines: list[str]
@@ -204,11 +215,11 @@ def _paper_background(randomizer: random.Random, size: tuple[int, int], tone: st
     return Image.blend(image, textured, alpha=0.05)
 
 
-def _apply_grain(image: Image.Image, randomizer: random.Random) -> Image.Image:
+def _apply_grain(image: Image.Image, randomizer: random.Random, *, alpha: float = 0.08) -> Image.Image:
     noise = Image.frombytes("L", image.size, randomizer.randbytes(image.size[0] * image.size[1]))
     noise = noise.point(lambda value: int(96 + ((value - 128) * 0.22)))
     textured = ImageChops.add_modulo(image.convert("RGB"), Image.merge("RGB", (noise, noise, noise)))
-    return Image.blend(image, textured, alpha=0.08)
+    return Image.blend(image, textured, alpha=alpha)
 
 
 DEGRADATION_PRESETS: dict[str, DegradationPreset] = {
@@ -316,6 +327,51 @@ def _style_bundle(persona: str | None) -> StyleBundle:
         ) from exc
 
 
+CONDITION_BUNDLES: dict[str, ConditionBundle] = {
+    "condition_standard_v1": ConditionBundle(
+        condition_id="condition_standard_v1",
+        line_height_scale=1.0,
+        ink_delta=0,
+        blur_delta=0.0,
+        contrast_scale=1.0,
+        brightness_scale=1.0,
+        grain_alpha_scale=1.0,
+    ),
+    "condition_low_contrast_v1": ConditionBundle(
+        condition_id="condition_low_contrast_v1",
+        line_height_scale=1.0,
+        ink_delta=18,
+        blur_delta=0.22,
+        contrast_scale=0.82,
+        brightness_scale=1.03,
+        grain_alpha_scale=1.55,
+    ),
+    "condition_dense_spacing_v1": ConditionBundle(
+        condition_id="condition_dense_spacing_v1",
+        line_height_scale=0.82,
+        ink_delta=0,
+        blur_delta=0.0,
+        contrast_scale=1.0,
+        brightness_scale=1.0,
+        grain_alpha_scale=1.0,
+    ),
+}
+SUPPORTED_CONDITION_BUNDLE_IDS = tuple(CONDITION_BUNDLES)
+
+
+def _condition_bundle(condition: str | None) -> ConditionBundle:
+    if condition is None:
+        return CONDITION_BUNDLES["condition_standard_v1"]
+    try:
+        return CONDITION_BUNDLES[condition]
+    except KeyError as exc:
+        supported = ", ".join(SUPPORTED_CONDITION_BUNDLE_IDS)
+        raise ValueError(
+            f"Unsupported synthetic condition rendering bundle: {condition}. "
+            f"Supported condition bundles: {supported}"
+        ) from exc
+
+
 def _map_jitter(
     value: int,
     source: tuple[int, int],
@@ -331,15 +387,29 @@ def _map_jitter(
     return round(target_min + (ratio * (target_max - target_min)))
 
 
-def _degrade(image: Image.Image, randomizer: random.Random, background: tuple[int, int, int], preset: str) -> Image.Image:
+def _conditioned_line_height(line_height: int, condition_bundle: ConditionBundle) -> int:
+    return max(1, round(line_height * condition_bundle.line_height_scale))
+
+
+def _degrade(
+    image: Image.Image,
+    randomizer: random.Random,
+    background: tuple[int, int, int],
+    preset: str,
+    condition_bundle: ConditionBundle,
+) -> Image.Image:
     parameters = _degradation_preset(preset)
     angle = randomizer.uniform(-parameters.angle_range, parameters.angle_range)
     degraded = image.rotate(angle, resample=Image.Resampling.BICUBIC, expand=False, fillcolor=background)
-    degraded = degraded.filter(ImageFilter.GaussianBlur(radius=randomizer.uniform(*parameters.blur_range)))
+    degraded = degraded.filter(
+        ImageFilter.GaussianBlur(
+            radius=randomizer.uniform(*parameters.blur_range) + condition_bundle.blur_delta
+        )
+    )
     for _ in range(parameters.grain_passes):
-        degraded = _apply_grain(degraded, randomizer)
-    degraded = ImageEnhance.Contrast(degraded).enhance(parameters.contrast)
-    degraded = ImageEnhance.Brightness(degraded).enhance(parameters.brightness)
+        degraded = _apply_grain(degraded, randomizer, alpha=0.08 * condition_bundle.grain_alpha_scale)
+    degraded = ImageEnhance.Contrast(degraded).enhance(parameters.contrast * condition_bundle.contrast_scale)
+    degraded = ImageEnhance.Brightness(degraded).enhance(parameters.brightness * condition_bundle.brightness_scale)
     return degraded
 
 
@@ -561,6 +631,7 @@ def _draw_archive_card(
     font_path: Path,
     template_id: str,
     style_bundle: StyleBundle,
+    condition_bundle: ConditionBundle,
 ) -> ArchiveCardRender:
     recipe = _recipe_for_template(template_id)
     background = (246, 241, 230)
@@ -618,10 +689,10 @@ def _draw_archive_card(
         y = (
             card_top
             + 196
-            + index * style_bundle.archive_line_height
+            + index * _conditioned_line_height(style_bundle.archive_line_height, condition_bundle)
             + y_jitter
         )
-        ink_value = max(18, min(80, 33 + style_bundle.ink_delta))
+        ink_value = max(18, min(80, 33 + style_bundle.ink_delta + condition_bundle.ink_delta))
         body_ink = (ink_value, max(16, ink_value - 4), max(12, ink_value - 9), 255)
         _draw_rtl_text(draw, (card_right - 48, y), line, font=body_font, fill=body_ink)
 
@@ -648,7 +719,7 @@ def _draw_archive_card(
         footer_text,
     ]
     return ArchiveCardRender(
-        image=_degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset),
+        image=_degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle),
         rendered_body_lines=rendered_body_lines,
         footer_text=footer_text,
         logical_lines=logical_lines,
@@ -663,6 +734,7 @@ def _draw_document(
     font_path: Path,
     template_id: str,
     style_bundle: StyleBundle,
+    condition_bundle: ConditionBundle,
 ) -> Image.Image:
     recipe = _recipe_for_template(template_id)
     form_layout = recipe.render_template_id == "printed_letter"
@@ -697,7 +769,8 @@ def _draw_document(
         wrapped_lines.extend(_wrap_hebrew_text(draw, line, body_font, max_width))
 
     standard = STYLE_BUNDLES["style_standard_v1"]
-    line_height = style_bundle.handwritten_line_height if handwritten_text else style_bundle.printed_line_height
+    base_line_height = style_bundle.handwritten_line_height if handwritten_text else style_bundle.printed_line_height
+    line_height = _conditioned_line_height(base_line_height, condition_bundle)
     standard_x_jitter = standard.handwritten_x_jitter if handwritten_text else standard.printed_x_jitter
     target_x_jitter = style_bundle.handwritten_x_jitter if handwritten_text else style_bundle.printed_x_jitter
     standard_y_jitter = standard.handwritten_y_jitter if handwritten_text else standard.printed_y_jitter
@@ -716,7 +789,7 @@ def _draw_document(
         )
         x = start_x - x_offset
         y = body_top + index * line_height + y_offset
-        ink = randomizer.randint(-8, 7) + style_bundle.ink_delta
+        ink = randomizer.randint(-8, 7) + style_bundle.ink_delta + condition_bundle.ink_delta
         fill = (max(18, 33 + ink), max(16, 28 + ink), max(12, 23 + ink), 255)
         _draw_rtl_text(draw, (x, y), line, font=body_font, fill=fill)
         if not form_layout and index in {0, len(wrapped_lines) - 1}:
@@ -739,7 +812,7 @@ def _draw_document(
             draw.line((x - 120, y, x, y), fill=(132, 121, 102, 255), width=2)
             _draw_rtl_text(draw, (x, y + 12), "אישור", font=annotation_font, fill=(104, 92, 76, 255))
 
-    return _degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset)
+    return _degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle)
 
 
 def _select_font(fonts: list[dict[str, str]], template_id: str) -> dict[str, str]:
@@ -779,6 +852,7 @@ def generate_documents(
     output_dir: Path,
     *,
     persona: str | None = None,
+    condition: str | None = None,
 ) -> list[SyntheticDocument]:
     if seed < 0:
         raise ValueError("Synthetic generation seed must be non-negative.")
@@ -788,6 +862,7 @@ def generate_documents(
         raise ValueError("Synthetic generation requires at least one template_id.")
     recipe_catalog(template_ids)
     style_bundle = _style_bundle(persona)
+    condition_bundle = _condition_bundle(condition)
     if output_dir.exists() and not output_dir.is_dir():
         raise ValueError(f"Synthetic generation output path exists and is not a directory: {output_dir}")
 
@@ -821,13 +896,31 @@ def generate_documents(
         path = output_dir / asset_path
         path.parent.mkdir(parents=True, exist_ok=True)
         if recipe.render_template_id == "archive_card":
-            archive_render = _draw_archive_card(randomizer, title, body_lines, footer, font_path, template_id, style_bundle)
+            archive_render = _draw_archive_card(
+                randomizer,
+                title,
+                body_lines,
+                footer,
+                font_path,
+                template_id,
+                style_bundle,
+                condition_bundle,
+            )
             image = archive_render.image
             logical_text = unicodedata.normalize("NFC", "\n".join(archive_render.logical_lines))
             document_body = "\n".join(archive_render.rendered_body_lines)
             document_footer = archive_render.footer_text
         else:
-            image = _draw_document(randomizer, title, body_lines, footer, font_path, template_id, style_bundle)
+            image = _draw_document(
+                randomizer,
+                title,
+                body_lines,
+                footer,
+                font_path,
+                template_id,
+                style_bundle,
+                condition_bundle,
+            )
             logical_text = unicodedata.normalize("NFC", "\n".join([title, *body_lines, footer]))
             document_body = "\n".join(body_lines)
             document_footer = footer
@@ -876,6 +969,7 @@ def generate_manifest(
         text_corpus_path,
         output_dir,
         persona=persona,
+        condition=condition,
     )
     samples = [
         GeneratedSample(

@@ -78,6 +78,15 @@ synthetic rendering parameters such as line spacing, baseline drift, horizontal
 line-position variance, and ink pressure proxy; they do not add a `style` field
 or any richer manifest v1 metadata.
 
+S4c deterministic condition bundles are selected through the existing
+`hocrsyngen generate --condition CONDITION_ID` option and are serialized only as
+`controls.condition`. Supported condition bundle ids are
+`condition_standard_v1`, `condition_low_contrast_v1`, and
+`condition_dense_spacing_v1`. These ids describe synthetic rendering-control
+parameters such as scan contrast, blur, grain intensity, and line-spacing
+density; they do not add a `condition` object or any richer manifest v1
+metadata.
+
 ## Validation Behavior
 
 Validation checks:
