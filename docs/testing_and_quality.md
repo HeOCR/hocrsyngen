@@ -69,6 +69,10 @@ it.
   variants exposed through the existing template catalog and manifest
   provenance fields, including directional blur/luminance checks plus minimum
   ink, stamp, ruled-region, and marginalia smoke thresholds.
+- Deterministic S4b style bundle coverage for `style_standard_v1`,
+  `style_open_drift_v1`, and `style_compact_steady_v1` through the existing
+  `--persona` control slot, including repeatability, visual-difference smoke
+  checks, invalid-control rejection, and forbidden-claim metadata checks.
 - Validation errors.
 - Installed package and wheel resource checks.
 - Installed package and wheel public CLI smoke matrix for console-script and
@@ -135,11 +139,10 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 - Review sidecar artifacts for visual inspection evidence remain future work and
   must stay outside `generation_manifest.json` v1 unless a versioned schema
   update is designed.
-- Synthetic persona/style/condition consistency checks governed by
-  [ADR 0005](decisions/0005-persona-style-condition-semantics.md), including
-  checks that public metadata does not imply real identity, authorship, medical
-  or psychological state, sensitive attributes, provenance, review status, or
-  release eligibility.
+- Additional synthetic persona/style/condition consistency reports governed by
+  [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
+  S4b style-bundle repeatability and forbidden-claim checks now covered in the
+  automated suite.
 - `hocrgen`-side utility measurement.
 
 ## Handling Test Failures

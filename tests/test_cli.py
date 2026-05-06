@@ -874,6 +874,43 @@ def test_generate_cli_json_outputs_deterministic_report(
     assert len(manifest["samples"]) == 2
 
 
+def test_generate_cli_accepts_persona_style_bundle_control(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "style-batch"
+
+    assert (
+        main(
+            [
+                "generate",
+                "--count",
+                "2",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--persona",
+                "style_compact_steady_v1",
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert json.loads(captured.out)["sample_count"] == 2
+    manifest = json.loads(
+        (output_dir / "generation_manifest.json").read_text(encoding="utf-8")
+    )
+    assert [sample["controls"] for sample in manifest["samples"]] == [
+        {"condition": None, "persona": "style_compact_steady_v1"},
+        {"condition": None, "persona": "style_compact_steady_v1"},
+    ]
+    assert all("style" not in sample for sample in manifest["samples"])
+
+
 def test_generate_cli_json_reports_zero_count(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -969,6 +1006,33 @@ def test_generate_cli_rejects_invalid_template_without_partial_output(
 
     assert exc_info.value.code == 2
     assert "invalid choice: 'typo_template'" in capsys.readouterr().err
+    assert not output_dir.exists()
+
+
+def test_generate_cli_rejects_invalid_persona_style_without_partial_output(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "should-not-exist"
+
+    with pytest.raises(SystemExit) as exc_info:
+        main(
+            [
+                "generate",
+                "--count",
+                "1",
+                "--seed",
+                "17",
+                "--persona",
+                "real_writer_claim",
+                "--output",
+                str(output_dir),
+            ]
+        )
+
+    assert exc_info.value.code == 2
+    captured = capsys.readouterr()
+    assert "Unsupported synthetic persona style bundle" in captured.err
+    assert "style_standard_v1" in captured.err
     assert not output_dir.exists()
 
 

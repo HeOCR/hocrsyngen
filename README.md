@@ -116,6 +116,15 @@ through the existing `sample.recipe_id`, `sample.provenance.template_id`,
 `sample.provenance.recipe_id`, `sample.provenance.degradation_preset`, and
 `sample.provenance.font_id` fields; no extra manifest fields are required.
 
+`hocrsyngen generate --persona STYLE_ID` selects a deterministic synthetic style
+bundle and writes the selected id to `controls.persona`. Supported S4b style ids
+are `style_standard_v1`, `style_open_drift_v1`, and
+`style_compact_steady_v1`. These are neutral generator controls for rendering
+parameters such as spacing, baseline drift, horizontal variance, and ink
+pressure proxy; they are not identity, authorship, provenance, medical,
+psychological, disability, demographic, review, release, or publication
+metadata.
+
 `hocrsyngen validate PATH` checks `PATH/generation_manifest.json` against the
 packaged manifest schema, verifies v1 constants and Hebrew RTL metadata,
 verifies top-level constants (`manifest_version`, `generator_name`, `license`,

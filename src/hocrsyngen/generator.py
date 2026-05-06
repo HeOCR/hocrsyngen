@@ -90,6 +90,20 @@ class DegradationPreset:
 
 
 @dataclass(frozen=True)
+class StyleBundle:
+    persona_id: str
+    printed_line_height: int
+    printed_x_jitter: int
+    printed_y_jitter: tuple[int, int]
+    handwritten_line_height: int
+    handwritten_x_jitter: int
+    handwritten_y_jitter: tuple[int, int]
+    archive_line_height: int
+    archive_y_jitter: tuple[int, int]
+    ink_delta: int
+
+
+@dataclass(frozen=True)
 class ArchiveCardRender:
     image: Image.Image
     rendered_body_lines: list[str]
@@ -246,6 +260,74 @@ def _degradation_preset(preset: str) -> DegradationPreset:
         return DEGRADATION_PRESETS[preset]
     except KeyError as exc:
         raise ValueError(f"Unsupported synthetic degradation_preset: {preset}") from exc
+
+
+STYLE_BUNDLES: dict[str, StyleBundle] = {
+    "style_standard_v1": StyleBundle(
+        persona_id="style_standard_v1",
+        printed_line_height=68,
+        printed_x_jitter=6,
+        printed_y_jitter=(-2, 2),
+        handwritten_line_height=76,
+        handwritten_x_jitter=28,
+        handwritten_y_jitter=(-10, 8),
+        archive_line_height=78,
+        archive_y_jitter=(-2, 2),
+        ink_delta=0,
+    ),
+    "style_open_drift_v1": StyleBundle(
+        persona_id="style_open_drift_v1",
+        printed_line_height=82,
+        printed_x_jitter=18,
+        printed_y_jitter=(-7, 7),
+        handwritten_line_height=94,
+        handwritten_x_jitter=46,
+        handwritten_y_jitter=(-18, 16),
+        archive_line_height=92,
+        archive_y_jitter=(-7, 7),
+        ink_delta=15,
+    ),
+    "style_compact_steady_v1": StyleBundle(
+        persona_id="style_compact_steady_v1",
+        printed_line_height=58,
+        printed_x_jitter=2,
+        printed_y_jitter=(-1, 1),
+        handwritten_line_height=64,
+        handwritten_x_jitter=12,
+        handwritten_y_jitter=(-4, 4),
+        archive_line_height=66,
+        archive_y_jitter=(-1, 1),
+        ink_delta=-8,
+    ),
+}
+
+
+def _style_bundle(persona: str | None) -> StyleBundle:
+    if persona is None:
+        return STYLE_BUNDLES["style_standard_v1"]
+    try:
+        return STYLE_BUNDLES[persona]
+    except KeyError as exc:
+        supported = ", ".join(sorted(STYLE_BUNDLES))
+        raise ValueError(
+            f"Unsupported synthetic persona style bundle: {persona}. "
+            f"Supported style bundles: {supported}"
+        ) from exc
+
+
+def _map_jitter(
+    value: int,
+    source: tuple[int, int],
+    target: tuple[int, int],
+) -> int:
+    if source == target:
+        return value
+    source_min, source_max = source
+    target_min, target_max = target
+    if source_min == source_max:
+        return target_min
+    ratio = (value - source_min) / (source_max - source_min)
+    return round(target_min + (ratio * (target_max - target_min)))
 
 
 def _degrade(image: Image.Image, randomizer: random.Random, background: tuple[int, int, int], preset: str) -> Image.Image:
@@ -477,6 +559,7 @@ def _draw_archive_card(
     footer: str,
     font_path: Path,
     template_id: str,
+    style_bundle: StyleBundle,
 ) -> ArchiveCardRender:
     recipe = _recipe_for_template(template_id)
     background = (246, 241, 230)
@@ -525,8 +608,21 @@ def _draw_archive_card(
     rendered_body_lines = wrapped_lines[:7]
 
     for index, line in enumerate(rendered_body_lines):
-        y = card_top + 196 + index * 78 + randomizer.randint(-2, 2)
-        _draw_rtl_text(draw, (card_right - 48, y), line, font=body_font, fill=ink)
+        standard = STYLE_BUNDLES["style_standard_v1"]
+        y_jitter = _map_jitter(
+            randomizer.randint(*standard.archive_y_jitter),
+            standard.archive_y_jitter,
+            style_bundle.archive_y_jitter,
+        )
+        y = (
+            card_top
+            + 196
+            + index * style_bundle.archive_line_height
+            + y_jitter
+        )
+        ink_value = max(18, min(80, 33 + style_bundle.ink_delta))
+        body_ink = (ink_value, max(16, ink_value - 4), max(12, ink_value - 9), 255)
+        _draw_rtl_text(draw, (card_right - 48, y), line, font=body_font, fill=body_ink)
 
     labels = ["מקור", "תאריך", "מספר", "הערה"]
     for index, label in enumerate(labels):
@@ -565,6 +661,7 @@ def _draw_document(
     footer: str,
     font_path: Path,
     template_id: str,
+    style_bundle: StyleBundle,
 ) -> Image.Image:
     recipe = _recipe_for_template(template_id)
     form_layout = recipe.render_template_id == "printed_letter"
@@ -598,12 +695,27 @@ def _draw_document(
     for line in body_lines:
         wrapped_lines.extend(_wrap_hebrew_text(draw, line, body_font, max_width))
 
-    line_height = 76 if handwritten_text else 68
+    standard = STYLE_BUNDLES["style_standard_v1"]
+    line_height = style_bundle.handwritten_line_height if handwritten_text else style_bundle.printed_line_height
+    standard_x_jitter = standard.handwritten_x_jitter if handwritten_text else standard.printed_x_jitter
+    target_x_jitter = style_bundle.handwritten_x_jitter if handwritten_text else style_bundle.printed_x_jitter
+    standard_y_jitter = standard.handwritten_y_jitter if handwritten_text else standard.printed_y_jitter
+    target_y_jitter = style_bundle.handwritten_y_jitter if handwritten_text else style_bundle.printed_y_jitter
     start_x = CANVAS_SIZE[0] - PAPER_MARGIN - randomizer.randint(0, 20)
     for index, line in enumerate(wrapped_lines):
-        x = start_x - randomizer.randint(0, 28 if handwritten_text else 6)
-        y = body_top + index * line_height + randomizer.randint(-10 if handwritten_text else -2, 8 if handwritten_text else 2)
-        ink = randomizer.randint(-8, 7)
+        x_offset = _map_jitter(
+            randomizer.randint(0, standard_x_jitter),
+            (0, standard_x_jitter),
+            (0, target_x_jitter),
+        )
+        y_offset = _map_jitter(
+            randomizer.randint(*standard_y_jitter),
+            standard_y_jitter,
+            target_y_jitter,
+        )
+        x = start_x - x_offset
+        y = body_top + index * line_height + y_offset
+        ink = randomizer.randint(-8, 7) + style_bundle.ink_delta
         fill = (max(18, 33 + ink), max(16, 28 + ink), max(12, 23 + ink), 255)
         _draw_rtl_text(draw, (x, y), line, font=body_font, fill=fill)
         if not form_layout and index in {0, len(wrapped_lines) - 1}:
@@ -664,6 +776,8 @@ def generate_documents(
     font_manifest_path: Path,
     text_corpus_path: Path,
     output_dir: Path,
+    *,
+    persona: str | None = None,
 ) -> list[SyntheticDocument]:
     if seed < 0:
         raise ValueError("Synthetic generation seed must be non-negative.")
@@ -672,6 +786,7 @@ def generate_documents(
     if not template_ids:
         raise ValueError("Synthetic generation requires at least one template_id.")
     recipe_catalog(template_ids)
+    style_bundle = _style_bundle(persona)
     if output_dir.exists() and not output_dir.is_dir():
         raise ValueError(f"Synthetic generation output path exists and is not a directory: {output_dir}")
 
@@ -705,13 +820,13 @@ def generate_documents(
         path = output_dir / asset_path
         path.parent.mkdir(parents=True, exist_ok=True)
         if recipe.render_template_id == "archive_card":
-            archive_render = _draw_archive_card(randomizer, title, body_lines, footer, font_path, template_id)
+            archive_render = _draw_archive_card(randomizer, title, body_lines, footer, font_path, template_id, style_bundle)
             image = archive_render.image
             logical_text = unicodedata.normalize("NFC", "\n".join(archive_render.logical_lines))
             document_body = "\n".join(archive_render.rendered_body_lines)
             document_footer = archive_render.footer_text
         else:
-            image = _draw_document(randomizer, title, body_lines, footer, font_path, template_id)
+            image = _draw_document(randomizer, title, body_lines, footer, font_path, template_id, style_bundle)
             logical_text = unicodedata.normalize("NFC", "\n".join([title, *body_lines, footer]))
             document_body = "\n".join(body_lines)
             document_footer = footer
@@ -752,7 +867,15 @@ def generate_manifest(
     template_ids = DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids
     font_manifest_path = font_manifest_path or default_font_manifest_path()
     text_corpus_path = text_corpus_path or default_text_corpus_path()
-    documents = generate_documents(count, seed, template_ids, font_manifest_path, text_corpus_path, output_dir)
+    documents = generate_documents(
+        count,
+        seed,
+        template_ids,
+        font_manifest_path,
+        text_corpus_path,
+        output_dir,
+        persona=persona,
+    )
     samples = [
         GeneratedSample(
             sample_id=document.sample_id,
