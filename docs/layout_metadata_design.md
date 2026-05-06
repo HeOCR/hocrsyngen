@@ -12,6 +12,22 @@ S3a should not add undocumented fields to `generation_manifest.json` v1 because
 the v1 schema rejects unknown fields and is already a downstream contract for
 `hocrgen` integration.
 
+The S3a boundary decision is:
+
+- Pre-generation capability metadata belongs in a future versioned template or
+  layout catalog surface. This is the right boundary for document family,
+  layout style, supported page regions, annotation types, identifier types,
+  production mix, and degradation preset capability.
+- Durable per-sample layout metadata belongs in a future manifest/schema change,
+  not in a sidecar, when downstream consumers need the metadata to stay attached
+  to each generated sample after import.
+- Batch-level review, audit, and coverage evidence belongs in a future optional
+  sidecar artifact when the data describes inspection results or aggregate
+  evidence rather than sample identity.
+- Release caps, balancing rules, review status, dataset eligibility, and
+  publication decisions belong in `hocrgen` policy, not in `hocrsyngen` baseline
+  outputs.
+
 The current stable metadata available to downstream consumers is:
 
 - `hocrsyngen templates --format json`, which exposes template id, recipe id,
@@ -22,16 +38,10 @@ The current stable metadata available to downstream consumers is:
 - Validation reports that prove a generated batch satisfies the manifest and
   asset contract.
 
-Future richer layout metadata should use one of these explicit designs:
-
-- A versioned manifest/schema change when metadata must travel with each
-  generated sample.
-- A future template or layout catalog contract when metadata describes generator
-  capabilities before generation.
-- A future optional batch-level sidecar artifact when metadata is review or
-  evidence about generated outputs rather than core sample identity.
-- `hocrgen`-side policy when the data is about release caps, source composition,
-  review status, or dataset governance.
+The current stable surfaces are enough for coarse filtering by existing
+template, recipe, font, and degradation ids. They are not enough for filtering by
+document family, page regions, marginalia, stamps, identifiers, density, or
+reviewability without a future catalog, manifest, or sidecar contract.
 
 ## Metadata Purpose
 
@@ -85,6 +95,25 @@ enumerations and stable ids. Free-text notes can exist in design docs and review
 rubrics, but machine contracts should avoid open-ended labels unless the field
 is explicitly documented as advisory.
 
+The minimum future taxonomy should be specified at the contract boundary before
+implementation. The initial recommended fields are:
+
+| Field | Scope | Example governed ids | Recommended boundary |
+| --- | --- | --- | --- |
+| `document_family` | Capability and per-sample identity | `administrative_form`, `letter`, `notebook_note`, `ledger`, `classroom_note`, `archive_card` | Catalog first; manifest/schema when emitted per sample |
+| `layout_style` | Capability and per-sample identity | `printed_form`, `handwritten_note`, `mixed_overlay`, `tabular`, `freeform_note`, `multi_region_page` | Catalog first; manifest/schema when emitted per sample |
+| `text_production_mix` | Capability and per-sample identity | `printed`, `handwritten_like`, `printed_with_handwritten_annotation`, `handwritten_like_with_printed_annotation` | Catalog first; manifest/schema when emitted per sample |
+| `page_regions` | Capability and optional evidence | `header`, `title`, `body`, `footer`, `form_rows`, `table_cells`, `signature_area`, `margin`, `stamp_area`, `identifier_area` | Catalog for supported regions; sidecar for review evidence; manifest/schema only if required per sample |
+| `annotation_types` | Capability and optional evidence | `marginal_note`, `underline`, `correction`, `tick`, `arrow`, `synthetic_stamp` | Catalog for supported annotations; sidecar for evidence |
+| `identifier_types` | Capability and optional evidence | `form_number`, `date`, `ledger_id`, `archive_id`, `page_number` | Catalog for supported identifiers; manifest/schema only if identifiers become durable sample metadata |
+| `degradation_preset` | Capability and per-sample provenance | Existing ids such as `office_scan_soft` and `notebook_scan_worn`; future ids for stronger wear presets | Existing catalog/provenance today; catalog and manifest/schema for future ids |
+| `layout_density` | Capability and optional per-sample summary | `sparse`, `moderate`, `dense` | Catalog for intended density; manifest/schema if emitted per sample |
+| `review_features` | Review evidence only | `has_stable_regions`, `has_visible_identifier`, `has_reviewable_annotations` | Sidecar or review rubric, not manifest v1 |
+
+Future contracts may refine these ids, but they should not replace the coarse
+categories with private helper names, local file names, or pixel-level drawing
+parameters.
+
 ## Stable Boundaries For hocrgen
 
 `hocrgen` should filter and cap current `hocrsyngen` batches using only stable
@@ -94,16 +123,24 @@ public surfaces:
   available template ids, recipe ids, layout styles, font styles, font ids, and
   degradation presets.
 - During import, validate `generation_manifest.json` v1 and use manifest
-  provenance fields for sample-level filtering.
+  provenance fields for sample-level filtering by template id, recipe id,
+  degradation preset, font id, seed, sample index, and source corpus.
 - For contract tests, use `hocrsyngen contracts export` instead of package
   internals.
 
+Manifest v1 alone does not support filtering generated samples by document
+family, font style, page regions, marginalia, stamps, identifiers, density, or
+reviewability. Until a future contract exposes those fields, `hocrgen` can only
+derive them by joining a validated manifest sample's template or recipe id
+against a stable catalog snapshot that documents those capabilities.
+
 Future pre-generation family caps should be added through a documented catalog
-surface. Future post-generation sample filters that require richer per-sample
-metadata should use either a versioned manifest/schema update or an explicit
-sidecar artifact. `hocrgen` should not inspect `SyntheticRecipe`,
-`SyntheticDocument`, drawing helper names, package resource paths, or other
-private Python implementation details.
+surface. Future post-generation sample filters that require durable richer
+per-sample metadata should use a versioned manifest/schema update. Future
+filters based on review or audit evidence should use an explicit sidecar
+artifact. `hocrgen` should not inspect `SyntheticRecipe`, `SyntheticDocument`,
+drawing helper names, package resource paths, or other private Python
+implementation details.
 
 `hocrgen` remains responsible for release eligibility, synthetic caps, source
 composition, balancing, review, privacy, dedupe, leakage checks, release
@@ -131,19 +168,36 @@ it must update the JSON schema, `generation_manifest_v1.md` or a successor
 version document, validation behavior, tests, contract fixture expectations, and
 `hocrgen` integration notes together.
 
+## Sidecar Path And Reference Rules
+
+Any future layout review, audit, or coverage sidecar must follow the same
+portable reference policy as manifest v1 asset paths:
+
+- relative POSIX paths only;
+- no absolute paths;
+- no drive-letter paths;
+- no backslashes;
+- no `..` path segments.
+
+Sidecar references should use stable public identifiers such as manifest sample
+ids, page ids, template ids, recipe ids, fixture ids, and relative asset paths.
+They should not use local temporary paths, package resource paths, private
+Python class names, drawing helper names, or platform-specific identifiers.
+
 ## Future Implementation Sequence
 
 The recommended implementation order after S3a is:
 
-1. Design a small stable layout taxonomy with governed ids for document
-   families, layout styles, page regions, annotation types, identifier types,
-   and degradation presets.
-2. Decide whether the first production surface is a template catalog expansion,
-   a versioned manifest addition, or an optional sidecar artifact.
-3. Add tests for that chosen public surface before changing generator output.
-4. Add the first new document family recipe only after the metadata contract and
+1. Add a versioned template or layout catalog expansion for pre-generation
+   capability metadata, using the coarse taxonomy in this document.
+2. Add tests for that catalog surface before changing generator output.
+3. Add the first new document family recipe only after the metadata contract and
    validation implications are settled.
-5. Add review rubrics and fixture guidance so realism improvements remain
+4. Add a versioned manifest/schema change only when richer metadata must travel
+   with generated samples after import.
+5. Add an optional sidecar only for review, audit, or coverage evidence that is
+   not core sample identity.
+6. Add review rubrics and fixture guidance so realism improvements remain
    inspectable and reproducible.
 
 S3a stops at this design. Template, schema, generator, fixture, and CLI changes

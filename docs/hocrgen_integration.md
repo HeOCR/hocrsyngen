@@ -83,9 +83,13 @@ Current layout filtering should use only stable CLI and manifest surfaces.
 Before generation, `hocrgen` can inspect `hocrsyngen templates --format json` for
 template ids, recipe ids, layout styles, font styles, font ids, and degradation
 presets. After generation, it can validate `generation_manifest.json` v1 and
-filter on manifest provenance fields. Richer per-sample layout metadata requires
-a future versioned manifest/schema change or an explicit sidecar artifact; it
-should not be inferred from private Python recipe, document, or drawing helpers.
+filter only on manifest provenance fields: template id, recipe id, degradation
+preset, font id, seed, sample index, and source corpus. Manifest v1 does not
+carry document family, font style, page regions, marginalia, stamps,
+identifiers, density, or reviewability. Those fields require a future stable
+catalog join, versioned manifest/schema change, or explicit sidecar artifact;
+they should not be inferred from private Python recipe, document, or drawing
+helpers.
 
 ## Candidate Lifecycle
 
