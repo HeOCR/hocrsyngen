@@ -77,6 +77,16 @@ After receiving a valid `hocrsyngen` batch, `hocrgen` remains responsible for:
 - Release export.
 - Publication.
 
+## Layout Filtering Boundaries
+
+Current layout filtering should use only stable CLI and manifest surfaces.
+Before generation, `hocrgen` can inspect `hocrsyngen templates --format json` for
+template ids, recipe ids, layout styles, font styles, font ids, and degradation
+presets. After generation, it can validate `generation_manifest.json` v1 and
+filter on manifest provenance fields. Richer per-sample layout metadata requires
+a future versioned manifest/schema change or an explicit sidecar artifact; it
+should not be inferred from private Python recipe, document, or drawing helpers.
+
 ## Candidate Lifecycle
 
 1. `hocrsyngen` generates candidate synthetic batch.
