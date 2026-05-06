@@ -26,6 +26,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Architecture](docs/architecture.md)
 - [generation_manifest.json v1](docs/generation_manifest_v1.md)
 - [hocrgen integration](docs/hocrgen_integration.md)
+- [Post-S4d production readiness](docs/production_readiness.md)
 - [Roadmap](docs/roadmap.md)
 - [Research program](docs/research_program.md)
 - [Testing and quality](docs/testing_and_quality.md)
@@ -48,7 +49,8 @@ style, resolved packaged font id, and degradation preset.
 Text output remains the default for human-facing CLI use. `hocrsyngen templates
 --format json` emits the same governed template catalog as deterministic
 machine-readable metadata for orchestration code that should not import
-`hocrsyngen` internals:
+`hocrsyngen` internals. This abbreviated example shows the shape of the
+machine-readable catalog:
 
 ```json
 {
@@ -77,6 +79,11 @@ machine-readable metadata for orchestration code that should not import
 The JSON catalog is package metadata only. It does not change manifest v1 and
 does not assemble, validate, export, or publish release payloads; those remain
 `hocrgen` responsibilities.
+
+After S4d, `hocrsyngen` is ready to generate validated candidate synthetic
+batches. Readiness for public dataset use still depends on downstream
+`hocrgen` import governance, review, caps, dedupe, release assembly, export, and
+publication policy.
 
 Text output remains the default generation behavior for human-facing CLI use;
 successful generation does not print a report unless requested.
@@ -183,6 +190,10 @@ The governed template contract currently packaged with `hocrsyngen` is:
 | --- | --- | --- | --- | --- |
 | `printed_letter` | `printed_letter_form_v1` | `office_scan_soft` | `printed` | `alef-regular` |
 | `handwritten_note` | `handwritten_note_marginalia_v1` | `notebook_scan_worn` | `handwritten_like` | `gveret-levin-regular` |
+| `archive_card` | `archive_card_identifier_v1` | `office_scan_soft` | `printed` | `alef-regular` |
+| `printed_letter_heavy_scan` | `printed_letter_form_heavy_scan_v1` | `office_scan_heavy` | `printed` | `alef-regular` |
+| `handwritten_note_heavy_wear` | `handwritten_note_marginalia_heavy_wear_v1` | `notebook_scan_heavy_wear` | `handwritten_like` | `gveret-levin-regular` |
+| `archive_card_faded_scan` | `archive_card_identifier_faded_scan_v1` | `archive_scan_faded` | `printed` | `alef-regular` |
 
 The packaged font id is resolved from the packaged default
 `data/synthetic/fonts/manifest.yaml` by matching each governed recipe's font
@@ -260,12 +271,12 @@ without depending on private module names, resource layout helpers, or Python
 objects inside `hocrsyngen`.
 
 It contains `generation_manifest.json` v1 plus relative JPEG page assets for
-the two current governed packaged templates. The fixture is contract evidence
-for downstream `hocrgen` adapter tests and is candidate synthetic input only;
-it is not release-ready dataset data. `hocrgen` should ingest or validate the
-fixture manifest, preserve the relative asset contract, and then apply its own
-governance, privacy, review, dedupe, split, cap, benchmark, release, and export
-gates.
+two stable fixture samples, currently covering `printed_letter` and
+`handwritten_note`. The fixture is contract evidence for downstream `hocrgen`
+adapter tests and is candidate synthetic input only; it is not release-ready
+dataset data. `hocrgen` should ingest or validate the fixture manifest,
+preserve the relative asset contract, and then apply its own governance,
+privacy, review, dedupe, split, cap, benchmark, release, and export gates.
 
 ## Development
 

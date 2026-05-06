@@ -4,10 +4,33 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Establish hosted CI so baseline tests, CLI contracts, and package checks run on PRs.
-2. Add Hebrew rendering/spec coverage docs/tests before deeper generator changes.
-3. Add style/persona controls only after manifest/metadata semantics are explicit.
-4. Keep optional ML-backed synthesis separate from baseline dependencies.
+1. Treat S4d as the last merged baseline milestone: deterministic style,
+   condition, degradation, manifest, validation, and installed-package CLI
+   contracts are ready for candidate synthetic batch generation.
+2. Keep generated batches classified as candidate synthetic inputs until
+   `hocrgen` applies import governance, review, caps, dedupe, release assembly,
+   export, and publication policy.
+3. Make production-readiness gaps explicit in this roadmap or in a named
+   external `hocrgen` dependency. Do not leave required release, review, or
+   quality gates only in conversation notes.
+4. Prioritize high-lift quality work through stable public boundaries: coverage
+   reports, richer catalog metadata, more document families, handwriting
+   realism research, and downstream utility measurement.
+5. Keep optional ML-backed synthesis separate from baseline dependencies.
+
+## Current Baseline After S4d
+
+`S4d` - style consistency checks - is merged in PR #38. The current baseline can
+generate and validate deterministic candidate batches through public CLI JSON
+surfaces. This readiness does not make any generated batch release-ready.
+`hocrgen` remains the owner of dataset import, release profiles, review, dedupe,
+privacy, caps, benchmark handling, release export, and publication.
+
+The post-S4d readiness plan is tracked in
+[production_readiness.md](production_readiness.md). Any future planning update
+that identifies a crucial missing production or quality item must either add a
+roadmap notation here or record the item as an external `hocrgen` dependency in
+that document.
 
 ## Planning Notation
 
@@ -33,6 +56,9 @@ Planned PR breakdown:
 - `S0b` — Executable `hocrgen` integration contract tests for installed CLI, fixture export, generation reports, validation reports, and invalid validation JSON. Status: done in PR #19.
 - `S0c` — Manifest/schema drift guard: verify `generation_manifest_v1.md`, schema constraints, validation errors, and fixture expectations stay aligned. Status: done in PR #20.
 - `S0d` — Roadmap PR notation breakdown and handoff hygiene. Status: done.
+- `S0e` — Post-S4d production-readiness roadmap alignment: make crucial
+  missing pieces, high-lift quality work, and external `hocrgen` dependencies
+  explicit after S4d. Status: done.
 
 Deliverables:
 
@@ -110,6 +136,10 @@ Planned PR breakdown:
 - `S2b` — Bidi and niqqud rendering fixtures: add tests for sparse/full niqqud, mixed-direction text, punctuation placement, and logical-order preservation. Status: done in PR #28.
 - `S2c` — Font shaping audit: document and test Pillow/libraqm behavior needed for current packaged fonts and RTL rendering. Status: done in PR #29.
 - `S2d` — Rendering coverage report design: define coverage metadata/reporting expectations before any schema-affecting implementation. Status: done in PR #30.
+- `S2e` — Rendering coverage report artifact: implement a separate
+  `rendering_coverage_report.v1` batch artifact, outside manifest v1, that
+  summarizes covered and missing Hebrew rendering dimensions for generated
+  candidate batches. Status: future.
 
 Deliverables:
 
@@ -147,6 +177,14 @@ Planned PR breakdown:
 - `S3b` — Hebrew document family recipes: add the first new governed document family only after S3a settles metadata and validation implications. Status: done in PR #32.
 - `S3c` — Degradation preset expansion: add stronger deterministic degradation presets with tests and fixture review guidance. Status: done in PR #33.
 - `S3d` — Visual inspection rubric: document human review criteria for layout realism, artifacts, Hebrew readability, and candidate rejection. Status: done in PR #34.
+- `S3e` — Richer template catalog metadata: add a versioned public catalog
+  surface for document family, base family, page regions, annotation types,
+  identifier types, layout density, and review features before any downstream
+  code relies on private recipe internals. Status: future.
+- `S3f` — Additional governed document families: add the next set of realistic
+  Hebrew document families, such as ledgers, classroom-like notes, receipts, or
+  mixed printed/handwritten overlays, through governed template ids and tests.
+  Status: future.
 
 Deliverables:
 
@@ -167,7 +205,7 @@ Risks/dependencies:
 
 ## Phase S4 — Persona/Style/Condition Controls
 
-Current status: `current`.
+Current status: `done`.
 
 Objective: add synthetic style and condition parameter bundles without implying real identity, health, psychology, or authorship.
 
@@ -184,7 +222,7 @@ Planned PR breakdown:
 - `S4a` — Persona/style/condition semantics ADR: define allowed metadata, forbidden claims, validation expectations, and compatibility rules before implementation. Status: done in PR #35.
 - `S4b` — Deterministic style parameter bundles: implement the smallest synthetic style controls that do not require schema breaking changes. Status: done in PR #36.
 - `S4c` — Condition control bundles: add rendering-control-only condition presets after S4a, with tests proving public metadata follows the full forbidden-claims boundary in ADR 0005. Status: done in PR #37.
-- `S4d` — Style consistency checks: add tests or reports that verify synthetic style controls are reproducible across a batch. Status: current.
+- `S4d` — Style consistency checks: add tests or reports that verify synthetic style controls are reproducible across a batch. Status: done in PR #38.
 
 Deliverables:
 
@@ -264,6 +302,16 @@ Planned PR breakdown:
 - `S6b` — Downstream utility measurement contract: document how `hocrgen`/HeOCR benchmarks should consume hocrsyngen outputs for CER/WER only when references exist.
 - `S6c` — Synthetic diversity and domain-shift metrics: define measurable diversity and synthetic-to-real gap tracking.
 - `S6d` — Release cap handoff policy: document how hocrsyngen metadata supports hocrgen release profiles without moving governance into this repo.
+- `S6e` — Review evidence sidecar contract: define a portable optional sidecar
+  for reviewed sample ids, page ids, rejection reasons, visual inspection
+  evidence, and reviewer workflow boundaries without changing manifest v1.
+- `S6f` — Candidate batch profile and mix handoff: define how `hocrgen` should
+  request or record template/style/condition/seed mixes, synthetic caps, and
+  dry-run audit summaries using public `hocrsyngen` metadata.
+- `S6g` — `hocrgen` adapter handoff checklist: document the concrete external
+  `hocrgen` implementation dependency for installed CLI import, validation,
+  governance, and dry-run rehearsal without adding adapter code to
+  `hocrsyngen`.
 
 Deliverables:
 
@@ -271,6 +319,7 @@ Deliverables:
 - Utility evaluation plan.
 - Domain-shift tracking plan.
 - `hocrgen` handoff expectations for caps and profiles.
+- Optional review sidecar and batch-profile contract designs.
 
 Exit criteria:
 
