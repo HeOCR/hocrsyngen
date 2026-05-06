@@ -16,6 +16,9 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [architecture.md](architecture.md): current module map, data flow, public surfaces, dependencies, failure modes, and extension points.
 - [generation_manifest_v1.md](generation_manifest_v1.md): serialized `generation_manifest.json` v1 contract and validation expectations.
 - [hocrgen_integration.md](hocrgen_integration.md): stable downstream integration contract for `hocrgen`.
+- [production_readiness.md](production_readiness.md): post-S4d readiness state,
+  crucial missing pieces, high-lift quality work, and external `hocrgen`
+  dependencies before candidate batches become governed dataset inputs.
 - [rendering_coverage_reporting.md](rendering_coverage_reporting.md): design direction for future Hebrew rendering coverage reports outside manifest v1.
 - [layout_metadata_design.md](layout_metadata_design.md): design direction for future document-layout metadata and hocrgen filtering boundaries.
 - [document_family_recipes.md](document_family_recipes.md): governed document-family recipes and their current catalog/manifest boundaries.
@@ -33,6 +36,6 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 3. Read [architecture.md](architecture.md) and [generation_manifest_v1.md](generation_manifest_v1.md) before changing code or contracts.
 4. Read [hocrgen_integration.md](hocrgen_integration.md) before touching downstream adapter assumptions.
 5. Read [testing_and_quality.md](testing_and_quality.md) before running or changing tests.
-6. Read [roadmap.md](roadmap.md), [research_program.md](research_program.md), and [decisions/](decisions/) for planning context.
+6. Read [roadmap.md](roadmap.md), [production_readiness.md](production_readiness.md), [research_program.md](research_program.md), and [decisions/](decisions/) for planning context.
 
 Coding agents should also read [AGENTS.md](../AGENTS.md), [llms.txt](../llms.txt), and the current [.agent-plan.md](../.agent-plan.md) before editing.

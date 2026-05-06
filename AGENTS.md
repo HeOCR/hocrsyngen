@@ -51,6 +51,21 @@ PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
 - `docs/` = human-readable architecture, specs, plans, and decisions.
 - `README.md` = user-facing entry point, not the full planning archive.
 
+## Planning Hygiene
+
+- Keep `docs/roadmap.md`, `docs/production_readiness.md`, and `.agent-plan.md`
+  aligned when roadmap state changes.
+- As of PR #38, `S4d` is the last merged roadmap item and Phase S4 is complete.
+  Do not describe persona/style/condition controls as current work unless a new
+  S4 follow-up is explicitly added.
+- When a crucial production-readiness gap or high-lift quality item is found,
+  either add a roadmap notation in `docs/roadmap.md` or record it as an
+  external `hocrgen` dependency in `docs/production_readiness.md`.
+- Do not implement `hocrgen` import, governance, release profiles, review
+  workflows, synthetic caps, export, or publication in this repository. Document
+  those as downstream dependencies and keep `hocrsyngen` focused on candidate
+  generation, validation, contracts, and generator-quality evidence.
+
 ## Branch And PR Conventions
 
 - Use branch names like `docs/...`, `refactor/...`, `feature/...`, or `test/...`.

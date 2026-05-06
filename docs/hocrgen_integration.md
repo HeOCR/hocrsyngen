@@ -149,6 +149,23 @@ stratification, review, and release decisions remain `hocrgen` policy.
 4. `hocrgen` applies dataset governance.
 5. HeOCR receives only release-approved outputs.
 
+## Post-S4d Production Readiness Dependencies
+
+After S4d, `hocrsyngen` can generate and validate deterministic candidate
+batches, but `hocrgen` still needs explicit downstream work before those
+candidates can participate in governed dataset flows:
+
+- installed-CLI import adapter and dry-run ingestion;
+- release profiles, synthetic caps, and source-composition policy;
+- review workflow and any future review evidence sidecar consumption;
+- dedupe, leakage, benchmark/reference, release export, and publication gates;
+- downstream utility and domain-shift measurement when real references exist.
+
+`hocrsyngen` tracks supporting contract and documentation work in
+[production_readiness.md](production_readiness.md) and [roadmap.md](roadmap.md).
+The actual adapter, governance, caps, review workflow, and release behavior must
+be implemented in `hocrgen`, not in this repository.
+
 ## Fixture Expectations For hocrgen Adapter Tests
 
 - Export the packaged fixture through `hocrsyngen contracts export`, not by copying package internals directly.
@@ -164,3 +181,5 @@ stratification, review, and release decisions remain `hocrgen` policy.
 - `hocrgen` adapter tests should avoid assumptions about private Python dataclass names or package resource paths.
 - Any future manifest field needed by `hocrgen` must be added through schema, docs, and tests, with versioning when required.
 - Release profile rules and synthetic caps belong in `hocrgen`, not in `hocrsyngen`.
+- Richer layout filtering, review evidence, and batch mix orchestration require
+  future public contracts before downstream tools rely on them.

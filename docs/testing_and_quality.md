@@ -144,10 +144,13 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 - Rendering coverage report. The S2d design in
   [rendering_coverage_reporting.md](rendering_coverage_reporting.md) recommends
   a future separate batch-level report artifact outside `generation_manifest.json`
-  v1.
+  v1. The roadmap now tracks the implementation as `S2e`.
 - Review sidecar artifacts for visual inspection evidence remain future work and
   must stay outside `generation_manifest.json` v1 unless a versioned schema
-  update is designed.
+  update is designed. The roadmap now tracks this as `S6e`.
+- Candidate batch profile and mix handoff should define how generated batches
+  cover template, style, condition, and seed dimensions before large-scale
+  dataset rehearsals. The roadmap now tracks this as `S6f`.
 - Additional synthetic persona/style/condition consistency reports governed by
   [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
   automated S4 style consistency checks now covered in the test suite.
