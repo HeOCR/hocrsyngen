@@ -53,7 +53,7 @@ Risks/dependencies:
 
 ## Phase S1 — Baseline Deterministic Generator Hardening
 
-Current status: `current`.
+Current status: `done`.
 
 Objective: keep the current deterministic printed and handwritten-like templates stable while improving reproducibility and package contract confidence.
 
@@ -70,7 +70,7 @@ Planned PR breakdown:
 - `S1c` — Determinism drift guard: add focused tests that compare seed/sample ids, manifest fields, hashes, and output layout expectations for stable seeds. Status: done in PR #23.
 - `S1d` — Baseline dependency audit: add or refine tests that fail on accidental `hocrgen`, network, GPU, LLM, diffusion, Torch, TensorFlow, or deep-learning baseline dependencies. Status: done in PR #24.
 - `S1e` — GitHub Actions CI framework: run tests, required CLI smoke commands, libraqm checks, and package build/install validation on PRs and pushes to `main`. Status: done in PR #25.
-- `S1f` — Python support policy alignment: document the Python 3.11+ metadata floor, CI-supported Python 3.11 and 3.12 versions, and drift guards that keep metadata, CI, and docs aligned. Status: current.
+- `S1f` — Python support policy alignment: document the Python 3.11+ metadata floor, CI-supported Python 3.11 and 3.12 versions, and drift guards that keep metadata, CI, and docs aligned. Status: done in PR #26.
 
 Deliverables:
 
@@ -93,7 +93,7 @@ Risks/dependencies:
 
 ## Phase S2 — Hebrew Rendering And Text-Quality Hardening
 
-Current status: `planned`.
+Current status: `current`.
 
 Objective: improve confidence that generated Hebrew text is rendered and represented correctly across important linguistic and layout cases.
 
@@ -106,7 +106,7 @@ Scope:
 
 Planned PR breakdown:
 
-- `S2a` — Hebrew edge text corpus fixtures: add deterministic test inputs for final forms, numerals, punctuation, dates, identifiers, and Latin fragments.
+- `S2a` — Hebrew edge text corpus fixtures: add deterministic test inputs for final forms, numerals, punctuation, dates, identifiers, and Latin fragments. Status: current.
 - `S2b` — Bidi and niqqud rendering fixtures: add tests for sparse/full niqqud, mixed-direction text, punctuation placement, and logical-order preservation.
 - `S2c` — Font shaping audit: document and test Pillow/libraqm behavior needed for current packaged fonts and RTL rendering.
 - `S2d` — Rendering coverage report design: define coverage metadata/reporting expectations before any schema-affecting implementation.

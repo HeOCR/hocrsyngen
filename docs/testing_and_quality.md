@@ -58,6 +58,8 @@ it.
   fields, output layout, and page hash behavior across fixed and changed seeds.
 - Manifest schema.
 - Hebrew logical-order metadata.
+- S2a Hebrew edge text fixture coverage for final forms, numerals, punctuation,
+  dates, identifiers, and Latin fragments.
 - Packaged fonts and text.
 - Visual smoke checks.
 - Validation errors.

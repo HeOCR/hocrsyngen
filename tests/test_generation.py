@@ -35,9 +35,34 @@ SCHEMA_PATH = (
     / "schemas"
     / "generation_manifest.schema.json"
 )
+FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
+EDGE_TEXT_CORPUS_PATH = FIXTURES_DIR / "hebrew_edge_text_corpus.txt"
+EDGE_TEXT_CORPUS_NOTES_PATH = FIXTURES_DIR / "README.md"
 HEBREW_CONTRACT_LINE = "אבגד ךםןףץ תיק 42/7: סוף, כסף, דרך, נייר."
 SPARSE_NIQQUD_CONTRACT_LINE = unicodedata.normalize("NFC", "בְּדִיקָה קצרה: סעיף 3, עמוד 12.")
 HEBREW_CONTRACT_LINES = [HEBREW_CONTRACT_LINE, SPARSE_NIQQUD_CONTRACT_LINE]
+HEBREW_EDGE_TEXT_LINES = [
+    "בדיקת סופיות: מלך, חכם, ענן, סוף, ציץ.",
+    "תאריך 03/12/1924 נרשם לצד סכום 1,250.75.",
+    "מזהה תיק HEOCR-2026-אבג-42 נמסר באישור מס' 7.",
+    "קטע Latin קצר: archive ref ABC-17b בתוך משפט עברי.",
+]
+HEBREW_EDGE_TEXT_MARKERS = {
+    "final_forms": ["מלך", "חכם", "ענן", "סוף", "ציץ"],
+    "numerals": ["03", "12", "1924", "1,250.75", "7"],
+    "punctuation": [":", ",", ".", "/", "-", "'"],
+    "dates": ["03/12/1924"],
+    "identifiers": ["HEOCR-2026-אבג-42", "ABC-17b"],
+    "latin_fragments": ["Latin", "archive", "ref", "ABC"],
+}
+HEBREW_EDGE_TEXT_COVERAGE_TERMS = [
+    "final forms",
+    "numerals",
+    "punctuation",
+    "dates",
+    "identifiers",
+    "Latin fragments",
+]
 
 
 def _load_manifest(output_dir: Path) -> dict:
@@ -52,6 +77,14 @@ def _write_contract_corpus(path: Path, lines: list[str] | None = None) -> Path:
     contract_lines = HEBREW_CONTRACT_LINES if lines is None else lines
     path.write_text("\n".join(contract_lines) + "\n", encoding="utf-8")
     return path
+
+
+def _assert_hebrew_edge_text_markers(text: str) -> None:
+    for markers in HEBREW_EDGE_TEXT_MARKERS.values():
+        for marker in markers:
+            assert marker in text
+    assert all(letter in text for letter in "ךםןףץ")
+    assert text == unicodedata.normalize("NFC", text)
 
 
 def _assert_logical_hebrew_contract(text: str) -> None:
@@ -374,6 +407,43 @@ def test_text_corpus_covers_final_letters_numerals_punctuation_and_sparse_niqqud
     assert any(character.isdigit() for character in corpus)
     assert any(character in corpus for character in ":,./")
     assert any("\u0591" <= character <= "\u05c7" for character in corpus)
+
+
+def test_hebrew_edge_text_corpus_fixture_is_curated_and_nfc() -> None:
+    corpus_lines = generator_module.load_text_corpus(EDGE_TEXT_CORPUS_PATH)
+    provenance_notes = EDGE_TEXT_CORPUS_NOTES_PATH.read_text(encoding="utf-8")
+    corpus_text = "\n".join(corpus_lines)
+
+    assert corpus_lines == HEBREW_EDGE_TEXT_LINES
+    assert all(line == unicodedata.normalize("NFC", line) for line in corpus_lines)
+    assert "Synthetic project-authored Hebrew edge text corpus" in provenance_notes
+    assert "not real-source text" in provenance_notes
+    assert all(term in provenance_notes for term in HEBREW_EDGE_TEXT_COVERAGE_TERMS)
+    _assert_hebrew_edge_text_markers(corpus_text)
+
+
+def test_generated_document_preserves_hebrew_edge_text_corpus_logical_order(tmp_path: Path) -> None:
+    output_dir = tmp_path / "edge-text-batch"
+    documents = generate_documents(
+        count=1,
+        seed=2026,
+        template_ids=["printed_letter"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=EDGE_TEXT_CORPUS_PATH,
+        output_dir=output_dir,
+    )
+
+    document = documents[0]
+    text = document.logical_text
+    lines = text.splitlines()
+
+    assert document.title == "מכתב מנהלי"
+    assert document.footer == "עמוד 91"
+    assert lines[0] == "מכתב מנהלי"
+    assert set(lines[1:5]) == set(HEBREW_EDGE_TEXT_LINES)
+    assert len(lines) == 6
+    assert lines[-1] == "עמוד 91"
+    _assert_hebrew_edge_text_markers(text)
 
 
 def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Path) -> None:
