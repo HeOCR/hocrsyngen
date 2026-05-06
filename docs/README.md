@@ -16,6 +16,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [architecture.md](architecture.md): current module map, data flow, public surfaces, dependencies, failure modes, and extension points.
 - [generation_manifest_v1.md](generation_manifest_v1.md): serialized `generation_manifest.json` v1 contract and validation expectations.
 - [hocrgen_integration.md](hocrgen_integration.md): stable downstream integration contract for `hocrgen`.
+- [rendering_coverage_reporting.md](rendering_coverage_reporting.md): design direction for future Hebrew rendering coverage reports outside manifest v1.
 - [roadmap.md](roadmap.md): hocrsyngen-specific phases from planning foundation through Hebrew rendering, realism, research, evaluation, and future script abstraction.
 - [research_program.md](research_program.md): planning track for believable synthetic Hebrew handwriting and document generation.
 - [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.

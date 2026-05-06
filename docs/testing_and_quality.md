@@ -112,7 +112,10 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 
 ## Future Quality Gates
 
-- Rendering coverage report.
+- Rendering coverage report. The S2d design in
+  [rendering_coverage_reporting.md](rendering_coverage_reporting.md) recommends
+  a future separate batch-level report artifact outside `generation_manifest.json`
+  v1.
 - Richer degradation coverage.
 - Synthetic persona/style consistency checks.
 - `hocrgen`-side utility measurement.
