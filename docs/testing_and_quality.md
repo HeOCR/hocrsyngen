@@ -81,6 +81,19 @@ it.
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
 
+For Hebrew rendering tests, Pillow must be built with libraqm enabled so that
+Pillow can route bidirectional layout and OpenType shaping through the native
+libraqm stack, including FriBiDi for bidirectional ordering and Harfbuzz for
+glyph shaping. The generator keeps manifest text in logical-order NFC Hebrew
+and passes that logical text to Pillow with `direction="rtl"`; it must not
+pre-reverse text or bypass the shared RTL drawing path. Font shaping audit
+coverage exercises both packaged font styles, `alef-regular` for printed
+documents and `gveret-levin-regular` for handwritten-like documents, against
+representative Hebrew, niqqud, mixed Hebrew/Latin/numeric fragments, and
+punctuation. These tests use non-empty bounding boxes and coarse ink-pixel
+checks instead of exact image hashes because raster output can vary across
+Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
+
 ## Quality Gates
 
 - Deterministic seed behavior.

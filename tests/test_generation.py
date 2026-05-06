@@ -6,16 +6,18 @@ from pathlib import Path, PurePosixPath
 
 import jsonschema
 import pytest
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, features
 
 import hocrsyngen.generator as generator_module
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.generator import (
     CANVAS_SIZE,
     _font_path,
+    load_font_manifest,
     _load_font,
     _pillow_has_raqm,
     _draw_rtl_text,
+    _require_raqm,
     _rtl_display_text,
     _select_font,
     _wrap_hebrew_text,
@@ -91,6 +93,18 @@ BIDI_NIQQUD_MARKERS = {
     "numeric_fragments": ["2026", "42/7", "08:30", "5"],
     "punctuation": [":", ".", "-", "/", '"', ";", "'", "?"],
 }
+FONT_SHAPING_AUDIT_LINES = [
+    HEBREW_CONTRACT_LINE,
+    SPARSE_NIQQUD_CONTRACT_LINE,
+    BIDI_NIQQUD_LINES[1],
+    BIDI_NIQQUD_LINES[2],
+    BIDI_NIQQUD_LINES[3],
+]
+PACKAGED_FONT_AUDIT_CASES = [
+    ("printed_letter", 42),
+    ("handwritten_note", 46),
+]
+
 
 def _load_manifest(output_dir: Path) -> dict:
     return json.loads((output_dir / "generation_manifest.json").read_text(encoding="utf-8"))
@@ -565,6 +579,93 @@ def test_renderer_smoke_outputs_asset_for_bidi_niqqud_cases(tmp_path: Path) -> N
         rendered_region = image.crop((140, 250, 1060, 760))
         dark_ink_pixels = sum(1 for r, g, b in _image_pixels(rendered_region) if r < 115 and g < 105 and b < 95)
         assert dark_ink_pixels > 5_000
+
+
+@pytest.mark.parametrize(
+    ("template_id", "font_size"),
+    PACKAGED_FONT_AUDIT_CASES,
+)
+def test_packaged_fonts_render_hebrew_shaping_audit_cases_through_rtl_path(
+    template_id: str,
+    font_size: int,
+) -> None:
+    assert features.check("raqm"), (
+        "Pillow libraqm support is required for Hebrew RTL font shaping audit coverage."
+    )
+    assert _pillow_has_raqm()
+
+    manifest_path = default_font_manifest_path()
+    font_manifest = load_font_manifest(manifest_path)
+    fonts = font_manifest["fonts"]
+    catalog_entry = {entry.template_id: entry for entry in template_catalog()}[template_id]
+    font_entry = _select_font(fonts, template_id)
+    assert font_entry["id"] == catalog_entry.font_id
+
+    font = _load_font(_font_path(manifest_path, font_entry), font_size)
+    image = Image.new("RGB", (1100, 520), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+
+    for index, line in enumerate(FONT_SHAPING_AUDIT_LINES):
+        assert line == unicodedata.normalize("NFC", line)
+        y = 55 + (index * 82)
+        left, top, right, bottom = draw.textbbox((1030, y), line, font=font, anchor="ra", direction="rtl")
+        assert right > left
+        assert bottom > top
+        assert right - left > 100
+        assert bottom - top > 10
+        _draw_rtl_text(draw, (1030, y), line, font=font, fill=(20, 18, 15), anchor="ra")
+
+    dark_ink_pixels = sum(1 for r, g, b in _image_pixels(image) if r < 80 and g < 80 and b < 80)
+    assert dark_ink_pixels > 1_000
+
+    rtl_image = Image.new("RGB", (1100, 180), (255, 255, 255))
+    rtl_draw = ImageDraw.Draw(rtl_image)
+    _draw_rtl_text(
+        rtl_draw,
+        (1030, 55),
+        BIDI_NIQQUD_LINES[2],
+        font=font,
+        fill=(20, 18, 15),
+        anchor="ra",
+    )
+
+    ltr_image = Image.new("RGB", (1100, 180), (255, 255, 255))
+    ltr_draw = ImageDraw.Draw(ltr_image)
+    ltr_draw.text(
+        (1030, 55),
+        BIDI_NIQQUD_LINES[2],
+        font=font,
+        fill=(20, 18, 15),
+        anchor="ra",
+        direction="ltr",
+    )
+    direction_diff_pixels = sum(
+        1 for pixel in _image_pixels(ImageChops.difference(rtl_image, ltr_image)) if pixel != (0, 0, 0)
+    )
+    assert direction_diff_pixels > 1_000
+
+
+def test_font_shaping_audit_reports_missing_raqm_as_environment_blocker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _pillow_has_raqm.cache_clear()
+    try:
+        monkeypatch.setattr(
+            generator_module.features,
+            "check",
+            lambda feature: False if feature == "raqm" else True,
+        )
+
+        assert not features.check("raqm")
+        with pytest.raises(RuntimeError, match="requires Pillow with libraqm support for Hebrew RTL rendering"):
+            _require_raqm()
+
+        image = Image.new("RGB", (200, 100), (255, 255, 255))
+        draw = ImageDraw.Draw(image)
+        with pytest.raises(RuntimeError, match="requires Pillow with libraqm support for Hebrew RTL rendering"):
+            _draw_rtl_text(draw, (180, 40), HEBREW_CONTRACT_LINE, font=object(), fill=(0, 0, 0))
+    finally:
+        _pillow_has_raqm.cache_clear()
 
 
 def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Path) -> None:
