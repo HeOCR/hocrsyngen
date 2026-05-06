@@ -73,6 +73,10 @@ it.
   `style_open_drift_v1`, and `style_compact_steady_v1` through the existing
   `--persona` control slot, including repeatability, visual-difference smoke
   checks, invalid-control rejection, and forbidden-claim metadata checks.
+- S4d batch-level style consistency coverage that verifies fixed-seed style
+  profiles are reproducible across repeated generated batches and that
+  supported style bundles remain visually distinguishable without manifest v1
+  shape changes.
 - Deterministic S4c condition bundle coverage for `condition_standard_v1`,
   `condition_low_contrast_v1`, and `condition_dense_spacing_v1` through the
   existing `--condition` control slot, including repeatability,
@@ -146,8 +150,7 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
   update is designed.
 - Additional synthetic persona/style/condition consistency reports governed by
   [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
-  S4b style-bundle repeatability and forbidden-claim checks now covered in the
-  automated suite.
+  automated S4 style consistency checks now covered in the test suite.
 - `hocrgen`-side utility measurement.
 
 ## Handling Test Failures
