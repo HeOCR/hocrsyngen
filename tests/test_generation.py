@@ -614,4 +614,3 @@ def test_generation_requires_raqm_for_hebrew_rendering(tmp_path: Path, monkeypat
         generate_batch(count=1, seed=17, output_dir=tmp_path)
 
     _pillow_has_raqm.cache_clear()
-
