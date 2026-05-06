@@ -37,6 +37,7 @@ SCHEMA_PATH = (
 )
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 EDGE_TEXT_CORPUS_PATH = FIXTURES_DIR / "hebrew_edge_text_corpus.txt"
+BIDI_NIQQUD_CORPUS_PATH = FIXTURES_DIR / "bidi_niqqud_rendering_corpus.txt"
 EDGE_TEXT_CORPUS_NOTES_PATH = FIXTURES_DIR / "README.md"
 HEBREW_CONTRACT_LINE = "אבגד ךםןףץ תיק 42/7: סוף, כסף, דרך, נייר."
 SPARSE_NIQQUD_CONTRACT_LINE = unicodedata.normalize("NFC", "בְּדִיקָה קצרה: סעיף 3, עמוד 12.")
@@ -63,7 +64,33 @@ HEBREW_EDGE_TEXT_COVERAGE_TERMS = [
     "identifiers",
     "Latin fragments",
 ]
-
+BIDI_NIQQUD_LINES = [
+    unicodedata.normalize("NFC", "נִקּוּד דל: בְּדִיקָה קצרה לְתִיק 42/7."),
+    unicodedata.normalize("NFC", "נִקּוּד מלא: הַיְּלָדִים כָּתְבוּ בַּמַּחְבֶּרֶת."),
+    "כיוון מעורב: תיק HEOCR-2026-A17 נבדק בשעה 08:30.",
+    'סימני פיסוק: "שלום", אמרה רחל; האם נרשם מס\' 5?',
+]
+BIDI_NIQQUD_SEED_2027_BODY_LINES = [
+    BIDI_NIQQUD_LINES[0],
+    BIDI_NIQQUD_LINES[1],
+    BIDI_NIQQUD_LINES[3],
+    BIDI_NIQQUD_LINES[2],
+]
+BIDI_NIQQUD_MARKERS = {
+    "sparse_niqqud": [
+        unicodedata.normalize("NFC", "נִקּוּד דל"),
+        unicodedata.normalize("NFC", "בְּדִיקָה"),
+        unicodedata.normalize("NFC", "לְתִיק"),
+    ],
+    "fuller_niqqud": [
+        unicodedata.normalize("NFC", "הַיְּלָדִים"),
+        unicodedata.normalize("NFC", "כָּתְבוּ"),
+        unicodedata.normalize("NFC", "בַּמַּחְבֶּרֶת"),
+    ],
+    "latin_fragments": ["HEOCR", "A17"],
+    "numeric_fragments": ["2026", "42/7", "08:30", "5"],
+    "punctuation": [":", ".", "-", "/", '"', ";", "'", "?"],
+}
 
 def _load_manifest(output_dir: Path) -> dict:
     return json.loads((output_dir / "generation_manifest.json").read_text(encoding="utf-8"))
@@ -96,6 +123,14 @@ def _assert_logical_hebrew_contract(text: str) -> None:
     assert all(letter in text for letter in "ךםןףץ")
     assert "42/7:" in text
     assert "סוף, כסף, דרך, נייר." in text
+    assert any("\u0591" <= character <= "\u05c7" for character in text)
+
+
+def _assert_bidi_niqqud_markers(text: str) -> None:
+    for markers in BIDI_NIQQUD_MARKERS.values():
+        for marker in markers:
+            assert marker in text
+    assert text == unicodedata.normalize("NFC", text)
     assert any("\u0591" <= character <= "\u05c7" for character in text)
 
 
@@ -444,6 +479,92 @@ def test_generated_document_preserves_hebrew_edge_text_corpus_logical_order(tmp_
     assert len(lines) == 6
     assert lines[-1] == "עמוד 91"
     _assert_hebrew_edge_text_markers(text)
+
+
+def test_bidi_niqqud_rendering_corpus_fixture_is_curated_and_nfc() -> None:
+    corpus_lines = generator_module.load_text_corpus(BIDI_NIQQUD_CORPUS_PATH)
+    provenance_notes = EDGE_TEXT_CORPUS_NOTES_PATH.read_text(encoding="utf-8")
+    corpus_text = "\n".join(corpus_lines)
+
+    assert corpus_lines == BIDI_NIQQUD_LINES
+    assert all(line == unicodedata.normalize("NFC", line) for line in corpus_lines)
+    assert "`bidi_niqqud_rendering_corpus.txt`" in provenance_notes
+    assert "Synthetic project-authored Hebrew bidi and niqqud rendering corpus" in provenance_notes
+    assert "not real-source text" in provenance_notes
+    _assert_bidi_niqqud_markers(corpus_text)
+
+
+def test_generated_document_preserves_bidi_niqqud_corpus_logical_order(tmp_path: Path) -> None:
+    output_dir = tmp_path / "bidi-niqqud-batch"
+    documents = generate_documents(
+        count=1,
+        seed=2027,
+        template_ids=["printed_letter"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=BIDI_NIQQUD_CORPUS_PATH,
+        output_dir=output_dir,
+    )
+
+    document = documents[0]
+    text = document.logical_text
+    lines = text.splitlines()
+
+    assert document.title == "מכתב מנהלי"
+    assert document.footer == "עמוד 53"
+    assert lines[0] == "מכתב מנהלי"
+    assert lines[1:5] == BIDI_NIQQUD_SEED_2027_BODY_LINES
+    assert len(lines) == 6
+    assert lines[-1] == "עמוד 53"
+    _assert_bidi_niqqud_markers(text)
+
+
+def test_renderer_routes_bidi_niqqud_lines_through_rtl_text_draw(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output_dir = tmp_path / "routed-bidi-niqqud"
+    draw_calls: list[str] = []
+    original_draw_rtl_text = generator_module._draw_rtl_text
+
+    def recording_draw_rtl_text(draw, xy, text, **kwargs) -> None:
+        draw_calls.append(text)
+        original_draw_rtl_text(draw, xy, text, **kwargs)
+
+    monkeypatch.setattr(generator_module, "_draw_rtl_text", recording_draw_rtl_text)
+
+    documents = generate_documents(
+        count=1,
+        seed=2027,
+        template_ids=["printed_letter"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=BIDI_NIQQUD_CORPUS_PATH,
+        output_dir=output_dir,
+    )
+
+    routed_bidi_lines = [text for text in draw_calls if text in BIDI_NIQQUD_LINES]
+    assert routed_bidi_lines == BIDI_NIQQUD_SEED_2027_BODY_LINES
+    assert documents[0].logical_text.splitlines()[1:5] == routed_bidi_lines
+
+
+def test_renderer_smoke_outputs_asset_for_bidi_niqqud_cases(tmp_path: Path) -> None:
+    output_dir = tmp_path / "rendered-bidi-niqqud"
+    documents = generate_documents(
+        count=1,
+        seed=2027,
+        template_ids=["printed_letter"],
+        font_manifest_path=default_font_manifest_path(),
+        text_corpus_path=BIDI_NIQQUD_CORPUS_PATH,
+        output_dir=output_dir,
+    )
+
+    document = documents[0]
+    _assert_bidi_niqqud_markers(document.logical_text)
+    with Image.open(document.path) as opened:
+        image = opened.convert("RGB")
+        assert image.size == CANVAS_SIZE
+        rendered_region = image.crop((140, 250, 1060, 760))
+        dark_ink_pixels = sum(1 for r, g, b in _image_pixels(rendered_region) if r < 115 and g < 105 and b < 95)
+        assert dark_ink_pixels > 5_000
 
 
 def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Path) -> None:

@@ -106,8 +106,8 @@ Scope:
 
 Planned PR breakdown:
 
-- `S2a` — Hebrew edge text corpus fixtures: add deterministic test inputs for final forms, numerals, punctuation, dates, identifiers, and Latin fragments. Status: current.
-- `S2b` — Bidi and niqqud rendering fixtures: add tests for sparse/full niqqud, mixed-direction text, punctuation placement, and logical-order preservation.
+- `S2a` — Hebrew edge text corpus fixtures: add deterministic test inputs for final forms, numerals, punctuation, dates, identifiers, and Latin fragments. Status: done in PR #27.
+- `S2b` — Bidi and niqqud rendering fixtures: add tests for sparse/full niqqud, mixed-direction text, punctuation placement, and logical-order preservation. Status: current.
 - `S2c` — Font shaping audit: document and test Pillow/libraqm behavior needed for current packaged fonts and RTL rendering.
 - `S2d` — Rendering coverage report design: define coverage metadata/reporting expectations before any schema-affecting implementation.
 

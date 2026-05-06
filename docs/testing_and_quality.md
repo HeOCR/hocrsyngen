@@ -60,6 +60,9 @@ it.
 - Hebrew logical-order metadata.
 - S2a Hebrew edge text fixture coverage for final forms, numerals, punctuation,
   dates, identifiers, and Latin fragments.
+- S2b bidi and niqqud rendering fixture coverage for sparse/full niqqud,
+  mixed Hebrew/Latin/numeric fragments, punctuation, rendered-asset smoke, and
+  logical-order preservation.
 - Packaged fonts and text.
 - Visual smoke checks.
 - Validation errors.
@@ -96,7 +99,6 @@ Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail 
 
 ## Future Quality Gates
 
-- Bidi and niqqud fixture suite.
 - Rendering coverage report.
 - Richer degradation coverage.
 - Synthetic persona/style consistency checks.
