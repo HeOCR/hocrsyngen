@@ -66,7 +66,8 @@ The future artifact should be batch-level JSON with a small stable top-level
 shape:
 
 - `report_version`: version for the report contract, independent from manifest
-  versioning.
+  versioning. The first implementation should use
+  `rendering_coverage_report.v1`.
 - `generator_name` and `generator_version`: the generator identity that produced
   the evidence.
 - `batch`: paths or ids that identify the generated batch under review without
@@ -79,6 +80,88 @@ shape:
 Per-sample references should point to existing manifest sample ids and relative
 asset paths. The report should not duplicate the manifest payload and should not
 be required for basic v1 manifest validation.
+
+The first report contract should require all top-level fields above. Coverage
+entries should use the same shape for every dimension:
+
+- `covered`: stable identifiers or feature names found in the evidence.
+- `missing`: stable identifiers or feature names expected by the current
+  coverage policy but not found in the evidence.
+- `evidence`: sample, fixture, or test references that justify the covered
+  values.
+
+The report should treat `missing` as an explicit result, not as an omitted field.
+An empty `missing` list means the report builder looked for gaps in that
+dimension and found none. A dimension that cannot be evaluated should be listed
+in `limitations`.
+
+Minimal example:
+
+```json
+{
+  "report_version": "rendering_coverage_report.v1",
+  "generator_name": "hocrsyngen",
+  "generator_version": "d4a-realism-v2",
+  "batch": {
+    "manifest_path": "generation_manifest.json",
+    "sample_count": 2,
+    "page_count": 2
+  },
+  "environment": {
+    "pillow_raqm": true,
+    "shaping_stack": {
+      "libraqm": "available",
+      "fribidi": "available",
+      "harfbuzz": "available"
+    }
+  },
+  "coverage": {
+    "fonts": {
+      "covered": ["alef-regular", "gveret-levin-regular"],
+      "missing": [],
+      "evidence": [
+        {
+          "sample_id": "hocrsyngen-s00000017-000000",
+          "asset_path": "assets/hocrsyngen-s00000017-000000/page_0001.jpg"
+        }
+      ]
+    },
+    "text_features": {
+      "covered": ["final_forms", "punctuation", "numerals", "sparse_niqqud"],
+      "missing": ["fuller_niqqud"],
+      "evidence": [
+        {
+          "fixture_id": "generation_manifest_v1_fixture_batch",
+          "sample_id": "hocrsyngen-s00000017-000000"
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "The example omits direction-sensitive image comparison evidence."
+  ]
+}
+```
+
+The example is intentionally partial; it shows the required top-level shape and
+per-dimension coverage semantics, not the full future coverage matrix.
+
+## Path And Reference Rules
+
+All paths stored in the report must follow the same portability policy as
+manifest v1 asset paths:
+
+- relative POSIX paths only;
+- no absolute paths;
+- no drive-letter paths;
+- no backslashes;
+- no `..` path segments.
+
+Report references should use manifest sample ids, fixture ids, template ids,
+recipe ids, font ids, and relative asset paths that already appear in stable
+CLI, fixture, or manifest surfaces. The report should not introduce private
+Python names, local temporary paths, or platform-specific resource paths as
+identifiers.
 
 ## Out Of Manifest V1 Scope
 
@@ -106,8 +189,10 @@ The recommended future implementation sequence is:
    curated fixture evidence without changing generation output by default.
 2. Add focused tests for report content using existing S2a, S2b, and S2c
    coverage fixtures.
-3. Add an explicit CLI or test helper surface only after the artifact contract is
-   tested and documented.
+3. Add a production surface only as an explicit opt-in command or flag after the
+   artifact contract is tested and documented. The default `generate` command
+   should continue to emit only the existing manifest and page assets unless a
+   future PR deliberately changes that behavior.
 4. Coordinate any downstream `hocrgen` use through the artifact boundary rather
    than private Python internals.
 
