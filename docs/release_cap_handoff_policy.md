@@ -60,6 +60,7 @@ Permitted `hocrsyngen` evidence includes:
 - `sample.provenance.degradation_preset`;
 - `sample.provenance.font_id`;
 - `sample.provenance.seed` and `sample.provenance.sample_index`;
+- `sample.provenance.source_corpus`;
 - persona/style control from `sample.controls.persona`;
 - condition control from `sample.controls.condition`;
 - optional `rendering_coverage_report.v1` path and covered/missing dimension
@@ -74,37 +75,57 @@ release governance.
 
 ## Downstream Cap Decision Record
 
-`hocrgen`/HeOCR should retain a cap decision record whenever synthetic
-candidate batches are considered for release planning. The record should live
-outside `generation_manifest.json` v1.
+`hocrgen`/HeOCR must retain a cap decision record whenever synthetic candidate
+batches are considered for release planning. The record must live outside
+`generation_manifest.json` v1.
 
-Recommended fields:
+Minimum required fields:
 
 - cap decision id, owner repository, date, and decision status;
 - release profile id and release profile version;
 - target release id, domain, or benchmark/rehearsal purpose;
 - source candidate batch path or downstream import id;
-- `hocrsyngen` version and generation/export command when known;
+- `hocrsyngen` version and generation/export command, or an explicit
+  `unknown_source_command` limitation when the command cannot be recovered;
 - validation report status and path;
-- manifest sample ids and page ids included, excluded, or held;
+- manifest sample ids and page ids admitted, reduced, held, or rejected;
 - template id, recipe id, document family, base family, degradation preset,
-  font id, seed/sample index range, persona/style control, and condition
-  control strata;
+  font id, seed/sample index range, source corpus, persona/style control, and
+  condition control strata for the considered slice;
 - source-composition policy, including intended real/synthetic source mix;
 - synthetic percentage cap and synthetic absolute-count cap;
-- per-family, per-base-family, per-template, per-style, per-condition,
-  per-degradation, or per-source-corpus limits when applicable;
-- reviewer state, reviewed sample/page ids, and S6a acceptance or rejection
-  references;
-- S6b utility packet ids and whether utility remains unmeasured;
-- S6c diversity/domain-shift packet ids and any warnings or holds;
+- decision status from the S6d decision-status vocabulary below;
+- reason codes from the S6d reason-code vocabulary below;
 - train/dev/test/review/release split role for real and synthetic sources;
 - leakage and benchmark contamination check summary;
-- reason codes for admit, reduce, hold, or reject decisions;
 - limitations, sparse strata, unreviewed strata, and unresolved governance
   dependencies.
 
-The record should explicitly say when a candidate slice is admitted only for a
+Conditionally required fields:
+
+- per-family, per-base-family, per-template, per-style, per-condition,
+  per-degradation, or per-source-corpus limits when the release profile defines
+  those stratum caps;
+- reviewer state, reviewed sample/page ids, and S6a acceptance or rejection
+  references when the decision status is anything beyond `diagnostic_only`;
+- S6b utility packet ids when utility evidence is cited, or
+  `utility_unmeasured` when no governed real-reference utility packet exists;
+- S6c diversity/domain-shift packet ids when diversity, domain shift, or cap
+  risk is cited, or `domain_shift_unmeasured` when no governed real-reference
+  comparison exists;
+- reduction counts and excluded sample/page ids when decision status is
+  `admit_reduced`;
+- hold owner and unblock condition when decision status is `hold`;
+- release approval reference when decision status is `admit_for_release`.
+
+Optional enrichments:
+
+- optional `rendering_coverage_report.v1` path and covered/missing summary;
+- thumbnail or reviewed-image references stored in downstream review systems;
+- dashboard or report links for S6a, S6b, or S6c evidence packets;
+- reviewer names or team ids, if downstream governance permits storing them.
+
+The record must explicitly say when a candidate slice is admitted only for a
 dry-run, calibration, utility evaluation, or release rehearsal rather than a
 public dataset release.
 
@@ -133,10 +154,24 @@ cap risks, but it does not authorize release eligibility. Utility evidence must
 not justify exceeding a release profile's synthetic limit or replacing required
 real-source coverage.
 
-## Reason Codes
+## Decision Status And Reason Codes
 
-Downstream systems should use stable reason names for cap decisions. These
-names are planning guidance until `hocrgen` versions a governance workflow.
+Downstream systems should separate the decision status from the reason codes.
+The decision status says what happened to the candidate slice. Reason codes say
+why. These names are planning guidance until `hocrgen` versions a governance
+workflow.
+
+Decision status values:
+
+| Status | Meaning |
+| --- | --- |
+| `diagnostic_only` | The slice may be used for infrastructure, import, or evidence dry-runs only. It is not release eligible. |
+| `admit_for_dry_run` | The slice is admitted for non-public dry-run or release-rehearsal use under the stated caps. |
+| `admit_for_utility_evaluation` | The slice is admitted for governed utility evaluation, but not for public release by this decision alone. |
+| `admit_reduced` | A reduced subset is admitted because the full requested slice would exceed caps or source-composition policy. |
+| `hold` | The slice is blocked pending missing review, utility, domain-shift, leakage, profile, or governance evidence. |
+| `reject` | The slice must not be used for the target release profile or stated downstream purpose. |
+| `admit_for_release` | The slice is admitted to a governed release candidate after downstream release governance has approved it. |
 
 | Reason | Use when |
 | --- | --- |
@@ -157,6 +192,74 @@ names are planning guidance until `hocrgen` versions a governance workflow.
 Reason records should cite the relevant sample ids, page ids, public provenance
 fields, joined catalog fields, review packet ids, utility packet ids, diversity
 packet ids, and release profile rule that drove the decision.
+
+## Example Cap Decision Record
+
+This example is illustrative, not a versioned machine schema. A real downstream
+record should use `hocrgen`/HeOCR storage and identifiers.
+
+```yaml
+cap_decision_id: cap-heocr-s6dryrun-0001
+owner_repository: hocrgen
+date: 2026-05-08
+decision_status: admit_reduced
+target_release_id: heocr-synthetic-dry-run-2026q2
+release_profile_id: heocr_synthetic_rehearsal_v1
+release_profile_version: 1
+source_candidate_batch: hocrgen-import:hocrsyngen-batch-17
+hocrsyngen_version: 0.1.0
+generation_command: hocrsyngen generate --count 40 --seed 17 --output out/s6d-dry-run --format json
+validation_report:
+  status: valid
+  path: reports/hocrsyngen-batch-17-validation.json
+included_sample_ids:
+  - hocrsyngen-s00000017-000000
+  - hocrsyngen-s00000017-000001
+excluded_sample_ids:
+  - hocrsyngen-s00000017-000018
+  - hocrsyngen-s00000017-000019
+strata:
+  base_family:
+    ledger: 10
+    archive_card: 10
+  persona:
+    style_standard_v1: 12
+    style_open_drift_v1: 8
+  condition:
+    condition_standard_v1: 14
+    condition_low_contrast_v1: 6
+  source_corpus:
+    packaged_hebrew_lines_v1: 20
+source_composition_policy: max_20_percent_synthetic_for_release_rehearsal
+synthetic_percentage_cap: 0.20
+synthetic_absolute_count_cap: 20
+stratum_caps:
+  base_family:
+    ledger: 10
+    archive_card: 10
+  persona:
+    style_open_drift_v1: 8
+split_roles:
+  synthetic: release_rehearsal
+  real: review
+review:
+  state: reviewed_for_rehearsal
+  s6a_packet_id: s6a-review-0007
+utility:
+  state: utility_unmeasured
+domain_shift:
+  s6c_packet_id: s6c-diversity-0012
+  warnings:
+    - single_base_family_dominance
+leakage_check: no held-out benchmark transcriptions used for generation
+reason_codes:
+  - within_release_profile_cap
+  - source_composition_distortion
+  - domain_shift_risk
+limitations:
+  - dry-run only; no public release approval
+  - utility unmeasured against governed real references
+```
 
 ## Split, Leakage, And Benchmark Contamination
 

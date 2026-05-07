@@ -116,11 +116,13 @@ Use a dry-run flow before any real dataset release decision:
    diversity from public manifest/catalog/coverage surfaces, record
    repeated-pattern warnings, and require governed real-reference comparison
    before any synthetic-to-real domain-shift claim is made.
-8. If release caps or source composition are being rehearsed, apply
-   `docs/release_cap_handoff_policy.md`: record the downstream release profile,
-   synthetic percentage and absolute limits, per-family/style/condition caps,
-   reviewer state, reason codes, leakage checks, and limitations outside
-   `generation_manifest.json` v1.
+8. Apply `docs/release_cap_handoff_policy.md` for any release rehearsal: record
+   the downstream release profile, decision status, synthetic percentage and
+   absolute limits, per-family/style/condition/source caps, reviewer state,
+   reason codes, leakage checks, and limitations outside
+   `generation_manifest.json` v1. Only a non-release infrastructure smoke test
+   may omit cap rehearsal, and it should record `diagnostic_only` plus an
+   explicit limitation that release caps were not evaluated.
 9. Record which missing metadata, diversity evidence, utility evidence, review
    evidence, caps, or mix controls would have changed the decision. Feed those
    gaps into `S2e`, `S3e`, `S6e`, and `S6f` before scaling batch size.
