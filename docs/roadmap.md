@@ -139,7 +139,7 @@ Planned PR breakdown:
 - `S2e` — Rendering coverage report artifact: implement a separate
   `rendering_coverage_report.v1` batch artifact, outside manifest v1, that
   summarizes covered and missing Hebrew rendering dimensions for generated
-  candidate batches. Status: active in this PR.
+  candidate batches. Status: done in PR #40.
 
 Deliverables:
 
@@ -180,7 +180,7 @@ Planned PR breakdown:
 - `S3e` — Richer template catalog metadata: add a versioned public catalog
   surface for document family, base family, page regions, annotation types,
   identifier types, layout density, and review features before any downstream
-  code relies on private recipe internals. Status: future.
+  code relies on private recipe internals. Status: active in this PR.
 - `S3f` — Additional governed document families: add the next set of realistic
   Hebrew document families, such as ledgers, classroom-like notes, receipts, or
   mixed printed/handwritten overlays, through governed template ids and tests.

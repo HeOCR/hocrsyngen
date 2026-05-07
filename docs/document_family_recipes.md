@@ -19,8 +19,9 @@ manifest v1 provenance:
 The `archive_card` template id is the stable v1 join key for downstream tools
 that need to treat archive-card samples as a document family. Richer capability
 fields such as `document_family`, `page_regions`, `annotation_types`,
-`identifier_types`, and `layout_density` remain future catalog or schema work.
-They must not be added as undocumented manifest v1 fields.
+`identifier_types`, and `layout_density` are exposed through
+`hocrsyngen templates --format json --catalog-version v2`. They must not be
+added as undocumented manifest v1 fields.
 
 ## S3b Archive Card
 
@@ -96,10 +97,10 @@ hocrsyngen templates --format json
 After generation, `hocrgen` can filter validated manifest v1 samples by
 `provenance.template_id` and confirm the matching governed recipe/provenance
 fields. To group S3c variants with their base families under manifest v1,
-`hocrgen` should treat `printed_letter_heavy_scan` as a `printed_letter`
-variant, `handwritten_note_heavy_wear` as a `handwritten_note` variant, and
-`archive_card_faded_scan` as an `archive_card` variant. Any richer filtering by
-page regions, identifiers, reviewability, density, annotations, or base family
-requires a future stable catalog version, manifest/schema update, or review
-sidecar as described in
+`hocrgen` should join the validated `(template_id, recipe_id)` pair to
+`template_catalog.v2`, where `printed_letter_heavy_scan` has base family
+`printed_letter`, `handwritten_note_heavy_wear` has base family
+`handwritten_note`, and `archive_card_faded_scan` has base family
+`archive_card`. Any richer durable per-sample metadata still requires a future
+manifest/schema update or review sidecar as described in
 [layout_metadata_design.md](layout_metadata_design.md).

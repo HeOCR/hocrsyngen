@@ -29,6 +29,7 @@ from hocrsyngen.generator import (
     _wrap_hebrew_text,
     generate_batch,
     generate_documents,
+    rich_template_catalog,
     template_catalog,
     write_manifest,
 )
@@ -1611,6 +1612,44 @@ def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
     assert catalog["archive_card_faded_scan"].degradation_preset == "archive_scan_faded"
     assert catalog["archive_card_faded_scan"].font_style == "printed"
     assert catalog["archive_card_faded_scan"].font_id == "alef-regular"
+
+
+def test_rich_template_catalog_exposes_stable_join_metadata() -> None:
+    catalog = {entry.template_id: entry for entry in rich_template_catalog()}
+    printed_letter = catalog["printed_letter"].capability_metadata
+    handwritten_note = catalog["handwritten_note"].capability_metadata
+    archive_card = catalog["archive_card"].capability_metadata
+
+    assert catalog["printed_letter"].recipe_id == "printed_letter_form_v1"
+    assert printed_letter.document_family == "letter"
+    assert printed_letter.base_family == "printed_letter"
+    assert printed_letter.page_regions == (
+        "title",
+        "body",
+        "footer",
+        "form_rows",
+        "stamp_area",
+        "signature_area",
+    )
+    assert printed_letter.annotation_types == ("synthetic_stamp",)
+    assert printed_letter.identifier_types == ("footer_label",)
+    assert printed_letter.layout_density == "moderate"
+    assert "has_stable_regions" in printed_letter.review_features
+
+    assert (
+        catalog["printed_letter_heavy_scan"].capability_metadata.base_family
+        == "printed_letter"
+    )
+    assert handwritten_note.document_family == "notebook_note"
+    assert (
+        catalog["handwritten_note_heavy_wear"].capability_metadata.base_family
+        == "handwritten_note"
+    )
+    assert "marginal_note" in handwritten_note.annotation_types
+    assert archive_card.document_family == "archive_card"
+    assert catalog["archive_card_faded_scan"].capability_metadata.base_family == "archive_card"
+    assert archive_card.identifier_types == ("archive_id", "date", "footer_label")
+    assert archive_card.layout_density == "dense"
 
 
 def test_template_catalog_rejects_malformed_or_missing_style_font_manifest(tmp_path: Path) -> None:

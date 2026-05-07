@@ -32,16 +32,22 @@ The current stable metadata available to downstream consumers is:
 
 - `hocrsyngen templates --format json`, which exposes template id, recipe id,
   layout style, font style, font id, and degradation preset.
+- `hocrsyngen templates --format json --catalog-version v2`, which preserves
+  the v1 join keys and adds document family, base family, page regions,
+  annotation types, identifier types, layout density, and review features. Its
+  normative schema is `src/hocrsyngen/schemas/template_catalog.schema.json`.
 - `generation_manifest.json` v1 provenance, which records template id, recipe
   id, degradation preset, font id, seed, sample index, and source corpus.
 - Packaged contract fixtures exported through the CLI.
 - Validation reports that prove a generated batch satisfies the manifest and
   asset contract.
 
-The current stable surfaces are enough for coarse filtering by existing
-template, recipe, font, and degradation ids. They are not enough for filtering by
-document family, page regions, marginalia, stamps, identifiers, density, or
-reviewability without a future catalog, manifest, or sidecar contract.
+The v1 catalog remains enough for coarse filtering by existing template,
+recipe, font, and degradation ids. The v2 catalog is the stable pre-generation
+catalog boundary for filtering by document family, base family, page regions,
+marginalia, stamps, identifiers, density, and reviewability. Manifest v1 is
+unchanged, so durable per-sample richer metadata still requires joining a
+validated sample's template and recipe ids to the catalog.
 
 ## Metadata Purpose
 
@@ -105,7 +111,7 @@ implementation. The initial recommended fields are:
 | `text_production_mix` | Capability and per-sample identity | `printed`, `handwritten_like`, `printed_with_handwritten_annotation`, `handwritten_like_with_printed_annotation` | Catalog first; manifest/schema when emitted per sample |
 | `page_regions` | Capability and optional evidence | `header`, `title`, `body`, `footer`, `form_rows`, `table_cells`, `signature_area`, `margin`, `stamp_area`, `identifier_area` | Catalog for supported regions; sidecar for review evidence; manifest/schema only if required per sample |
 | `annotation_types` | Capability and optional evidence | `marginal_note`, `underline`, `correction`, `tick`, `arrow`, `synthetic_stamp` | Catalog for supported annotations; sidecar for evidence |
-| `identifier_types` | Capability and optional evidence | `form_number`, `date`, `ledger_id`, `archive_id`, `page_number` | Catalog for supported identifiers; manifest/schema only if identifiers become durable sample metadata |
+| `identifier_types` | Capability and optional evidence | `form_number`, `date`, `ledger_id`, `archive_id`, `footer_label`, `page_number` | Catalog for supported identifiers; manifest/schema only if identifiers become durable sample metadata |
 | `degradation_preset` | Capability and per-sample provenance | Existing ids such as `office_scan_soft` and `notebook_scan_worn`; future ids for stronger wear presets | Existing catalog/provenance today; catalog and manifest/schema for future ids |
 | `layout_density` | Capability and optional per-sample summary | `sparse`, `moderate`, `dense` | Catalog for intended density; manifest/schema if emitted per sample |
 | `review_features` | Review evidence only | `has_stable_regions`, `has_visible_identifier`, `has_reviewable_annotations` | Sidecar or review rubric, not manifest v1 |
@@ -122,6 +128,10 @@ public surfaces:
 - Before generation, use `hocrsyngen templates --format json` to discover
   available template ids, recipe ids, layout styles, font styles, font ids, and
   degradation presets.
+- Before generation, use
+  `hocrsyngen templates --format json --catalog-version v2` when filtering or
+  balancing by document family, base family, page regions, annotation types,
+  identifier types, layout density, or review features.
 - During import, validate `generation_manifest.json` v1 and use manifest
   provenance fields for sample-level filtering by template id, recipe id,
   degradation preset, font id, seed, sample index, and source corpus.
@@ -130,9 +140,9 @@ public surfaces:
 
 Manifest v1 alone does not support filtering generated samples by document
 family, font style, page regions, marginalia, stamps, identifiers, density, or
-reviewability. Until a future contract exposes those fields, `hocrgen` can only
-derive them by joining a validated manifest sample's template or recipe id
-against a stable catalog snapshot that documents those capabilities.
+reviewability. `hocrgen` can derive those S3e capabilities by joining a
+validated manifest sample's `(template_id, recipe_id)` provenance pair against
+the stable `template_catalog.v2` output.
 
 Future pre-generation family caps should be added through a documented catalog
 surface. Future post-generation sample filters that require durable richer
@@ -189,7 +199,8 @@ Python class names, drawing helper names, or platform-specific identifiers.
 The recommended implementation order after S3a is:
 
 1. Add a versioned template or layout catalog expansion for pre-generation
-   capability metadata, using the coarse taxonomy in this document.
+   capability metadata, using the coarse taxonomy in this document. S3e
+   implements this as `template_catalog.v2`.
 2. Add tests for that catalog surface before changing generator output.
 3. Add the first new document family recipe only after the metadata contract and
    validation implications are settled.

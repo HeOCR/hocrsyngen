@@ -6,6 +6,7 @@
 
 ```bash
 hocrsyngen templates --format json
+hocrsyngen templates --format json --catalog-version v2
 hocrsyngen contracts --format json
 hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch --output PATH --format json
 hocrsyngen generate --count N --seed S --output PATH --format json
@@ -26,6 +27,22 @@ For `hocrsyngen templates --format json`, assert:
   `archive_card`, and the stronger degradation variants
   `printed_letter_heavy_scan`, `handwritten_note_heavy_wear`, and
   `archive_card_faded_scan`.
+
+For `hocrsyngen templates --format json --catalog-version v2`, assert:
+
+- `schema_version == "template_catalog.v2"`.
+- The payload validates against
+  `src/hocrsyngen/schemas/template_catalog.schema.json`.
+- Each v1 template entry field remains present.
+- Each template also has `document_family`, `base_family`, `page_regions`,
+  `annotation_types`, `identifier_types`, `layout_density`, and
+  `review_features`.
+- The current packaged catalog maps stronger variants to their base families:
+  `printed_letter_heavy_scan -> printed_letter`,
+  `handwritten_note_heavy_wear -> handwritten_note`, and
+  `archive_card_faded_scan -> archive_card`.
+- Validated manifest sample provenance can be joined to v2 catalog entries by
+  `(template_id, recipe_id)` without importing private Python internals.
 
 For `hocrsyngen contracts --format json`, assert:
 
@@ -92,19 +109,21 @@ After receiving a valid `hocrsyngen` batch, `hocrgen` remains responsible for:
 Current layout filtering should use only stable CLI and manifest surfaces.
 Before generation, `hocrgen` can inspect `hocrsyngen templates --format json` for
 template ids, recipe ids, layout styles, font styles, font ids, and degradation
-presets. After generation, it can validate `generation_manifest.json` v1 and
-filter only on manifest provenance fields: template id, recipe id, degradation
-preset, font id, seed, sample index, and source corpus. Manifest v1 does not
-carry document family, font style, page regions, marginalia, stamps,
-identifiers, density, or reviewability. Those fields require a future stable
-catalog join, versioned manifest/schema change, or explicit sidecar artifact;
-they should not be inferred from private Python recipe, document, or drawing
-helpers.
+presets. It can inspect
+`hocrsyngen templates --format json --catalog-version v2` for the richer
+document-family catalog, including document family, base family, page regions,
+annotation types, identifier types, layout density, and review features. After
+generation, it can validate `generation_manifest.json` v1 and join each
+sample's `(provenance.template_id, provenance.recipe_id)` pair to
+`template_catalog.v2` for richer catalog metadata. Manifest v1 itself still
+does not carry document family, font style, page regions, marginalia, stamps,
+identifiers, density, or reviewability. Those fields should not be inferred from
+private Python recipe, document, or drawing helpers.
 
 The S3c stronger degradation variants are exposed as separate `template_id`
 values because manifest v1 does not have a separate preset-selection field or
-base-template field. Downstream grouping should use this documented public
-mapping until a future catalog/schema exposes base-family metadata:
+base-template field. Downstream grouping can now use `template_catalog.v2`
+`base_family` metadata; the mapping is:
 
 | Base family | Template ids |
 | --- | --- |

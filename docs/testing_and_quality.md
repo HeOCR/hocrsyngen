@@ -81,6 +81,11 @@ it.
   `rendering_coverage_report.v1` sidecar, including schema shape, covered and
   missing Hebrew rendering dimensions, portable evidence paths, asset smoke
   evidence, installed-package CLI behavior, and preservation of manifest v1.
+- S3e `template_catalog.v2` coverage for richer public template metadata,
+  including document family, base family, page regions, annotation types,
+  identifier types, layout density, review features, schema validation,
+  installed-package CLI behavior, JSON-only v2 output, and downstream joins
+  from validated manifest template/recipe ids.
 - Deterministic S4c condition bundle coverage for `condition_standard_v1`,
   `condition_low_contrast_v1`, and `condition_dense_spacing_v1` through the
   existing `--condition` control slot, including repeatability,

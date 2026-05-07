@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://heocr.org/schemas/hocrsyngen/template_catalog.v2.schema.json",
+  "title": "hocrsyngen template_catalog.v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "templates"],
+  "properties": {
+    "schema_version": {
+      "const": "template_catalog.v2"
+    },
+    "templates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/template"
+      }
+    }
+  },
+  "$defs": {
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "template_id",
+        "recipe_id",
+        "layout_style",
+        "font_style",
+        "font_id",
+        "degradation_preset",
+        "document_family",
+        "base_family",
+        "page_regions",
+        "annotation_types",
+        "identifier_types",
+        "layout_density",
+        "review_features"
+      ],
+      "properties": {
+        "template_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recipe_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "layout_style": {
+          "enum": ["printed_form", "handwritten_note", "multi_region_page"]
+        },
+        "font_style": {
+          "enum": ["printed", "handwritten_like"]
+        },
+        "font_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "degradation_preset": {
+          "type": "string",
+          "minLength": 1
+        },
+        "document_family": {
+          "enum": ["letter", "notebook_note", "archive_card"]
+        },
+        "base_family": {
+          "enum": ["printed_letter", "handwritten_note", "archive_card"]
+        },
+        "page_regions": {
+          "$ref": "#/$defs/string_id_array"
+        },
+        "annotation_types": {
+          "$ref": "#/$defs/string_id_array"
+        },
+        "identifier_types": {
+          "$ref": "#/$defs/string_id_array"
+        },
+        "layout_density": {
+          "enum": ["sparse", "moderate", "dense"]
+        },
+        "review_features": {
+          "$ref": "#/$defs/string_id_array"
+        }
+      }
+    },
+    "string_id_array": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "uniqueItems": true
+    }
+  }
+}
