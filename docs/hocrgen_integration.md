@@ -183,6 +183,24 @@ the batch manifest. It should not treat the sidecar as release governance,
 review state, dedupe state, publication approval, or a replacement for manifest
 validation.
 
+## Optional Learned-Generation Boundary
+
+S5d learned-generation planning is documented in
+[learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md).
+No learned-generation metadata is part of `generation_manifest.json` v1 or the
+stable installed-package CLI contract. Any future optional learned-generation
+experiment must keep model ids, weights, training data, dependency details,
+evaluation evidence, and review notes in an explicitly designed sidecar,
+catalog, experiment report, optional package, or separate repository until a
+versioned public contract is approved.
+
+`hocrgen` should not infer model provenance, writer identity, review state,
+release eligibility, or downstream utility from private `hocrsyngen`
+implementation details, filenames, optional experiment paths, or learned-output
+sidecars unless a future shared contract defines that behavior. Release
+governance, real-reference evaluation, caps, review, dedupe, export, and
+publication remain downstream responsibilities.
+
 ## Candidate Lifecycle
 
 1. `hocrsyngen` generates candidate synthetic batch.

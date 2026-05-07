@@ -4,32 +4,34 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S5b as the latest merged roadmap state for handwriting research
+1. Treat S5c as the latest merged roadmap state for handwriting research
    planning, with S3f and S4d remaining the completed capability milestones for
    governed document families and style/condition readiness. Together these
    leave deterministic document families, style, condition, degradation,
    manifest, validation, installed-package CLI contracts, S5 research gates, and
-   allograph planning ready for candidate synthetic batch generation and
-   docs-first prototype planning.
+   allograph plus word/line assembly planning ready for candidate synthetic
+   batch generation and docs-first prototype planning.
 2. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
 3. Make production-readiness gaps explicit in this roadmap or in a named
    external `hocrgen` dependency. Do not leave required release, review, or
    quality gates only in conversation notes.
-4. Make S5c the active high-lift quality item: plan deterministic word and line
-   assembly realism before any code enters baseline package behavior.
-5. Keep optional ML-backed synthesis separate from baseline dependencies.
+4. Make S5d the active high-lift quality item: design optional
+   learned-generation packaging boundaries before any ML-backed experiment,
+   extra, subpackage, or separate package is introduced.
+5. Keep optional ML-backed synthesis separate from baseline dependencies,
+   manifest v1, packaged fixtures, and default CLI/test behavior.
 
-## Current Baseline After S5b
+## Current Baseline After S5c
 
-`S5b` - deterministic allograph and character-level prototype planning - is
-merged in PR #44. The current baseline can generate and validate deterministic
-candidate batches through public CLI JSON surfaces, and S5 handwriting research
-now has explicit boundaries for reproducibility, provenance, licensing,
-forbidden claims, manifest v1 compatibility, visual review, allograph planning,
-and stop/reject gates. This readiness does not make any generated batch
-release-ready.
+`S5c` - deterministic word and line assembly prototype planning - is merged in
+PR #45. The current baseline can generate and validate deterministic candidate
+batches through public CLI JSON surfaces, and S5 handwriting research now has
+explicit boundaries for reproducibility, provenance, licensing, forbidden
+claims, manifest v1 compatibility, visual review, allograph planning,
+word/line assembly planning, and stop/reject gates. This readiness does not
+make any generated batch release-ready.
 `hocrgen` remains the owner of dataset import, release profiles, review, dedupe,
 privacy, caps, benchmark handling, release export, and publication.
 
@@ -273,10 +275,13 @@ Planned PR breakdown:
   PR #44; plan tracked in
   [allograph_character_prototype_plan.md](allograph_character_prototype_plan.md).
 - `S5c` — Word/line assembly prototype: test geometric perturbation and line
-  assembly realism while preserving logical-order ground truth. Status: active
-  in this PR; plan tracked in
+  assembly realism while preserving logical-order ground truth. Status: done in
+  PR #45; plan tracked in
   [word_line_assembly_prototype_plan.md](word_line_assembly_prototype_plan.md).
-- `S5d` — Optional learned-generation packaging design: design extras/subpackages/experiments for ML-backed generation without contaminating baseline dependencies.
+- `S5d` — Optional learned-generation packaging design: design
+  extras/subpackages/experiments for ML-backed generation without contaminating
+  baseline dependencies. Status: active in this PR; design tracked in
+  [learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md).
 
 Deliverables:
 

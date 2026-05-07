@@ -240,7 +240,7 @@ must not claim measured downstream utility. In that case the PR must explicitly
 say: "No downstream utility claim is made because no governed real-reference
 evaluation was run."
 
-## Criteria For S5b And S5c
+## Criteria For S5b, S5c, And S5d
 
 S5b allograph and character-level prototypes may proceed when the PR plan:
 
@@ -266,7 +266,9 @@ S5c word and line assembly prototypes may proceed when the PR plan:
 
 S5d optional learned-generation packaging design may proceed only as design
 work until dependency isolation, model/data licensing, reproducibility,
-compute, evaluation, and baseline contamination risks are resolved.
+compute, evaluation, and baseline contamination risks are resolved. The
+packaging boundary is tracked in
+[learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md).
 
 ## Stop Or Reject Criteria
 

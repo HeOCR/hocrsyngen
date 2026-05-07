@@ -22,12 +22,19 @@ sampling plan, deterministic allograph controls, Hebrew-specific cases, asset
 provenance rules, visual evidence plan, and criteria for proceeding, holding, or
 rejecting the direction.
 
-The active S5c follow-up is planned in
+The S5c follow-up is planned in
 [word_line_assembly_prototype_plan.md](word_line_assembly_prototype_plan.md).
 It keeps word and line assembly docs-first and defines deterministic spacing,
 wrapping, baseline drift, slant, per-line perturbation, Hebrew-specific review
 cases, S5b allograph interaction, manifest v1 boundaries, visual evidence, and
 proceed/hold/stop gates.
+
+The active S5d follow-up is planned in
+[learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md).
+It keeps optional learned-generation work docs-first and defines experiment,
+extra, subpackage, and separate-package boundaries for ML-backed methods without
+contaminating baseline dependencies, manifest v1, packaged fixtures, or default
+CLI/test behavior.
 
 ## Research Tracks
 
@@ -98,11 +105,16 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 - Generated data does not bypass `hocrgen` release governance.
 - Research directions must stop when licensing, provenance, reproducibility,
   forbidden-claim, manifest-compatibility, or review-gate criteria are not met.
+- Learned-generation directions must also stop when dependency isolation,
+  model/data redistribution, automatic-download, network, GPU, baseline
+  contamination, or governed real-reference evaluation boundaries are not met.
 
 ## Open Questions
 
 - What minimal metadata is needed before schema v2?
 - How should Hebrew handwriting realism be evaluated without enough real reference data?
-- How can optional ML generators be exposed without contaminating baseline package dependencies?
+- Which optional learned-generation prototype, if any, can satisfy the S5d
+  packaging boundary without baseline dependency, manifest, fixture, or
+  provenance contamination?
 - Which style controls are useful to downstream OCR/HTR evaluation rather than merely visually varied?
 - How should `hocrgen` cap or stratify synthetic persona/style groups in release profiles?
