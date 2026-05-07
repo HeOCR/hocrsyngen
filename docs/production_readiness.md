@@ -4,12 +4,12 @@ This document makes the current readiness state explicit. It records what is
 ready in `hocrsyngen`, what remains before generated batches can become
 governed dataset inputs, and which roadmap items should carry the work.
 
-## Current State After S3f
+## Current State After S5a
 
-The last merged roadmap item is `S3f` - additional governed document families,
-merged in PR #42. At this point `hocrsyngen` can generate and validate
-deterministic candidate synthetic Hebrew OCR/HTR batches through public CLI
-surfaces:
+The last merged roadmap item is `S5a` - handwriting research acceptance
+criteria, merged in PR #43. At this point `hocrsyngen` can generate and
+validate deterministic candidate synthetic Hebrew OCR/HTR batches through
+public CLI surfaces:
 
 - `hocrsyngen templates --format json`
 - `hocrsyngen templates --format json --catalog-version v2`
@@ -20,9 +20,10 @@ surfaces:
 
 The generator has governed templates including the S3f `ledger` family, stronger
 degradation variants, style bundles, condition bundles, manifest v1 validation,
-installed-package contract fixtures, and Hebrew RTL/NFC rendering tests. A valid
-generated directory is still a candidate synthetic input, not a release-ready
-dataset artifact.
+installed-package contract fixtures, Hebrew RTL/NFC rendering tests, and S5a
+acceptance criteria for future handwriting research. A valid generated
+directory is still a candidate synthetic input, not a release-ready dataset
+artifact.
 
 ## Crucial Missing Pieces
 
@@ -47,7 +48,7 @@ produce large quality or operational gains.
 | Rendering coverage report artifact | `S2e` | Makes Hebrew feature, template, degradation, style, and condition coverage inspectable outside manifest v1. |
 | Richer template/catalog metadata | `S3e` | Lets downstream tools filter by document family, page regions, annotations, identifiers, density, and base family through a stable public boundary. |
 | Additional governed document families | `S3f` | Done in PR #42; expands visual diversity beyond the earlier families and should help reduce overfitting to narrow synthetic layouts. |
-| Handwriting realism research | `S5a` through `S5d` | Biggest expected visual-realism lift for handwritten-like OCR/HTR samples. |
+| Handwriting realism research | `S5a` through `S5d` | Biggest expected visual-realism lift for handwritten-like OCR/HTR samples. S5a is done in PR #43; S5b is the active deterministic allograph and character-level planning item. |
 | Downstream utility measurement | `S6b` | Proves whether synthetic batches improve CER/WER or expose model weaknesses against real references. |
 | Diversity and domain-shift metrics | `S6c` | Helps detect synthetic over-representation, repeated artifacts, and gaps versus real Hebrew document distributions. |
 

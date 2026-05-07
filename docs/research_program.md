@@ -15,6 +15,13 @@ define experiment boundaries, reproducibility requirements, licensing
 constraints, forbidden claims, manifest v1 compatibility, visual review gates,
 downstream evaluation gates, and stop/reject conditions.
 
+The first follow-up S5 direction is planned in
+[allograph_character_prototype_plan.md](allograph_character_prototype_plan.md).
+It keeps S5b docs-first and defines the prototype location boundary, bounded
+sampling plan, deterministic allograph controls, Hebrew-specific cases, asset
+provenance rules, visual evidence plan, and criteria for proceeding, holding, or
+rejecting the direction.
+
 ## Research Tracks
 
 1. Deterministic typography and document simulation baseline.

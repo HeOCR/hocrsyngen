@@ -30,6 +30,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Roadmap](docs/roadmap.md)
 - [Research program](docs/research_program.md)
 - [Handwriting research acceptance criteria](docs/handwriting_research_acceptance_criteria.md)
+- [Allograph and character-level prototype plan](docs/allograph_character_prototype_plan.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -94,10 +95,12 @@ catalog metadata without importing private recipe internals. Manifest v1 remains
 unchanged. The v2 catalog is JSON-only; `--catalog-version v2` must be used with
 `--format json`.
 
-After S3f, `hocrsyngen` is ready to generate validated candidate synthetic
-batches with the current governed document families. Readiness for public
-dataset use still depends on downstream `hocrgen` import governance, review,
-caps, dedupe, release assembly, export, and publication policy.
+The current `hocrsyngen` baseline is ready to generate validated candidate
+synthetic batches with the governed document families added through S3f, while
+S5 planning now defines acceptance gates for future handwriting research.
+Readiness for public dataset use still depends on downstream `hocrgen` import
+governance, review, caps, dedupe, release assembly, export, and publication
+policy.
 
 Text output remains the default generation behavior for human-facing CLI use;
 successful generation does not print a report unless requested.

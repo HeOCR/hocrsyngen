@@ -193,10 +193,11 @@ validation.
 
 ## Production Readiness Dependencies
 
-After S3f, `hocrsyngen` can generate and validate deterministic candidate
-batches with the current governed document families, but `hocrgen` still needs
-explicit downstream work before those candidates can participate in governed
-dataset flows:
+The current `hocrsyngen` baseline can generate and validate deterministic
+candidate batches with the governed document families added through S3f, and S5
+planning defines acceptance gates for future handwriting research. `hocrgen`
+still needs explicit downstream work before those candidates can participate in
+governed dataset flows:
 
 - installed-CLI import adapter and dry-run ingestion;
 - release profiles, synthetic caps, and source-composition policy;
