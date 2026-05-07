@@ -126,6 +126,14 @@ benchmark experiments, holds, and release rejection after generator-quality
 inspection has passed. It is not automated test coverage and does not create a
 CI gate, manifest field, sidecar, release cap, or review workflow in this repo.
 
+S6 downstream utility measurement guidance is documented in
+[downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md).
+It requires downstream real references, governed ground truth, split/leakage
+controls, metric definitions, OCR/HTR run records, and synthetic-to-real
+comparison before CER/WER or other utility claims are made. It is not automated
+test coverage in this repo and does not add a benchmark runner, manifest field,
+sidecar, dependency, release cap, adapter code, or CI gate to `hocrsyngen`.
+
 ## Environmental Requirement
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
@@ -172,7 +180,7 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 - Additional synthetic persona/style/condition consistency reports governed by
   [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
   automated S4 style consistency checks now covered in the test suite.
-- `hocrgen`-side utility measurement.
+- `hocrgen`-side utility measurement based on the S6b contract.
 - `hocrgen`-side downstream realism acceptance workflow based on the S6a rubric.
 
 ## Handling Test Failures

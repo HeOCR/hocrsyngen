@@ -240,8 +240,9 @@ The following can remain in `hocrsyngen`:
 This rubric intentionally leaves implementation and machine-readable review
 contracts to later S6 items:
 
-- `S6b` should define downstream utility measurement contracts for CER/WER only
-  when real references exist.
+- `S6b` defines downstream utility measurement contracts for CER/WER only when
+  real references exist in
+  [downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md).
 - `S6c` should define diversity and domain-shift metrics that detect repeated
   synthetic patterns and synthetic-to-real gaps.
 - `S6d` should define release cap handoff policy without moving governance into
