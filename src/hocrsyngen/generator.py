@@ -28,6 +28,7 @@ DEFAULT_TEMPLATE_IDS = ["printed_letter", "handwritten_note"]
 GOVERNED_TEMPLATE_IDS = [
     *DEFAULT_TEMPLATE_IDS,
     "archive_card",
+    "ledger",
     "printed_letter_heavy_scan",
     "handwritten_note_heavy_wear",
     "archive_card_faded_scan",
@@ -36,6 +37,7 @@ GOVERNED_TEMPLATE_IDS = [
 PRINTED_TITLES = ["מכתב מנהלי", "דו\"ח קבלה", "רישום ארכיוני"]
 HANDWRITTEN_TITLES = ["פנקס הערות", "רישום קצר", "הודעה פנימית"]
 ARCHIVE_CARD_TITLES = ["כרטיס ארכיון", "רישום כרטסת", "תיק מסווג"]
+LEDGER_TITLES = ["פנקס חשבונות", "רישום תנועות", "יומן גבייה"]
 FOOTER_LABELS = ["סימן", "רישום", "עמוד"]
 
 
@@ -133,6 +135,14 @@ class ConditionBundle:
 
 @dataclass(frozen=True)
 class ArchiveCardRender:
+    image: Image.Image
+    rendered_body_lines: list[str]
+    footer_text: str
+    logical_lines: list[str]
+
+
+@dataclass(frozen=True)
+class LedgerRender:
     image: Image.Image
     rendered_body_lines: list[str]
     footer_text: str
@@ -429,6 +439,25 @@ ARCHIVE_CARD_CAPABILITY = TemplateCapabilityMetadata(
         "has_visible_stamp",
     ),
 )
+LEDGER_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="ledger",
+    base_family="ledger",
+    page_regions=(
+        "title",
+        "body",
+        "footer",
+        "table_cells",
+        "identifier_area",
+    ),
+    annotation_types=("tick", "correction"),
+    identifier_types=("ledger_id", "date", "page_number", "footer_label"),
+    layout_density="dense",
+    review_features=(
+        "has_stable_regions",
+        "has_visible_identifier",
+        "has_reviewable_table",
+    ),
+)
 
 
 def _condition_bundle(condition: str | None) -> ConditionBundle:
@@ -521,6 +550,18 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             paper_tone="printed",
             line_count=3,
             capability_metadata=ARCHIVE_CARD_CAPABILITY,
+        )
+    if template_id == "ledger":
+        return SyntheticRecipe(
+            template_id=template_id,
+            render_template_id="ledger",
+            recipe_id="ledger_table_v1",
+            layout_style="tabular",
+            font_style="printed",
+            degradation_preset="office_scan_soft",
+            paper_tone="printed",
+            line_count=5,
+            capability_metadata=LEDGER_CAPABILITY,
         )
     if template_id == "printed_letter_heavy_scan":
         return SyntheticRecipe(
@@ -828,6 +869,146 @@ def _draw_archive_card(
     )
 
 
+def _draw_ledger_tick(
+    draw: ImageDraw.ImageDraw,
+    x: int,
+    y: int,
+    color: tuple[int, int, int, int],
+) -> None:
+    draw.line((x - 22, y + 18, x - 8, y + 32), fill=color, width=3)
+    draw.line((x - 8, y + 32, x + 26, y - 4), fill=color, width=3)
+
+
+def _draw_ledger(
+    randomizer: random.Random,
+    title: str,
+    body_lines: list[str],
+    footer: str,
+    font_path: Path,
+    template_id: str,
+    style_bundle: StyleBundle,
+    condition_bundle: ConditionBundle,
+) -> LedgerRender:
+    recipe = _recipe_for_template(template_id)
+    background = (246, 241, 230)
+    image = _paper_background(randomizer, CANVAS_SIZE, recipe.paper_tone).convert("RGBA")
+    draw = ImageDraw.Draw(image)
+
+    title_font = _load_font(font_path, 56)
+    label_font = _load_font(font_path, 28)
+    body_font = _load_font(font_path, 30)
+    footer_font = _load_font(font_path, 26)
+    _draw_paper_frame(draw, randomizer, handwritten=False)
+    _draw_creased_paper(draw, randomizer, handwritten=False)
+
+    table_left = PAPER_MARGIN + 62 + randomizer.randint(-6, 6)
+    table_top = PAPER_MARGIN + 245 + randomizer.randint(-6, 6)
+    table_right = CANVAS_SIZE[0] - PAPER_MARGIN - 62 + randomizer.randint(-6, 6)
+    table_bottom = CANVAS_SIZE[1] - PAPER_MARGIN - 205 + randomizer.randint(-6, 6)
+    edge = (157, 146, 126, 255)
+    faint = (211, 201, 181, 255)
+    ink = (33, 29, 24, 255)
+    label_ink = (88, 76, 60, 255)
+    correction_ink = (124, 45, 39, 255)
+
+    title_y = PAPER_MARGIN + 72 + randomizer.randint(-3, 3)
+    _draw_rtl_text(draw, (CANVAS_SIZE[0] - PAPER_MARGIN - 48, title_y), title, font=title_font, fill=ink)
+
+    ledger_id = f"פנקס {randomizer.randint(200, 980)}-{randomizer.randint(10, 99)}"
+    ledger_date = f"{randomizer.randint(1, 28):02d}/{randomizer.randint(1, 12):02d}/{randomizer.randint(1948, 1985)}"
+    _draw_rtl_text(draw, (CANVAS_SIZE[0] - PAPER_MARGIN - 52, title_y + 82), ledger_id, font=label_font, fill=label_ink)
+    _draw_rtl_text(draw, (PAPER_MARGIN + 300, title_y + 82), ledger_date, font=label_font, fill=label_ink)
+
+    draw.rectangle((table_left, table_top, table_right, table_bottom), outline=edge, width=3)
+    header_bottom = table_top + 70
+    draw.line((table_left, header_bottom, table_right, header_bottom), fill=edge, width=3)
+    column_widths = [150, 170, 180, 310, table_right - table_left - 150 - 170 - 180 - 310]
+    column_edges = [table_left]
+    for width in column_widths:
+        column_edges.append(column_edges[-1] + width)
+    for x in column_edges[1:-1]:
+        draw.line((x, table_top, x + randomizer.randint(-1, 1), table_bottom), fill=faint, width=2)
+
+    row_height = 86
+    row_count = 10
+    for row in range(1, row_count + 1):
+        y = header_bottom + row * row_height + randomizer.randint(-2, 2)
+        if y < table_bottom:
+            draw.line((table_left, y, table_right, y), fill=faint, width=2)
+
+    headers = ["מס'", "תאריך", "סכום", "פרטים", "יתרה"]
+    header_anchors = [
+        column_edges[1] - 22,
+        column_edges[2] - 22,
+        column_edges[3] - 22,
+        column_edges[4] - 22,
+        column_edges[5] - 22,
+    ]
+    for x, header in zip(header_anchors, headers, strict=True):
+        _draw_rtl_text(draw, (x, table_top + 22), header, font=label_font, fill=label_ink)
+
+    wrapped_lines: list[str] = []
+    detail_width = column_widths[3] - 28
+    for line in body_lines:
+        wrapped_lines.extend(_wrap_hebrew_text(draw, line, body_font, detail_width))
+    rendered_body_lines = wrapped_lines[:row_count]
+
+    logical_rows: list[str] = []
+    standard = STYLE_BUNDLES["style_standard_v1"]
+    for index, line in enumerate(rendered_body_lines):
+        y_offset = _map_jitter(
+            randomizer.randint(*standard.printed_y_jitter),
+            standard.printed_y_jitter,
+            style_bundle.printed_y_jitter,
+        )
+        x_offset = _map_jitter(
+            randomizer.randint(0, standard.printed_x_jitter),
+            (0, standard.printed_x_jitter),
+            (0, style_bundle.printed_x_jitter),
+        )
+        y = header_bottom + 24 + index * row_height + y_offset
+        amount = f"{randomizer.randint(12, 980):,}"
+        balance = f"{randomizer.randint(100, 4980):,}"
+        row_date = f"{randomizer.randint(1, 28):02d}/{randomizer.randint(1, 12):02d}"
+        row_number = f"{index + 1:02d}"
+        fill_value = max(18, min(78, 33 + style_bundle.ink_delta + condition_bundle.ink_delta))
+        row_ink = (fill_value, max(16, fill_value - 4), max(12, fill_value - 9), 255)
+        values = [row_number, row_date, amount, line, balance]
+        for x, value in zip(header_anchors, values, strict=True):
+            _draw_rtl_text(draw, (x - x_offset, y), value, font=body_font, fill=row_ink)
+        if index in {1, 6}:
+            mark_x = column_edges[1] - 96
+            _draw_ledger_tick(draw, mark_x, y + 2, correction_ink)
+        if index == 3:
+            draw.line(
+                (column_edges[3] + 16, y + 36, column_edges[4] - 26, y + 30),
+                fill=correction_ink,
+                width=2,
+            )
+        logical_rows.append(" | ".join(values))
+
+    footer_text = f"{footer} - {ledger_id}"
+    _draw_rtl_text(draw, (table_right - 8, table_bottom + 42), footer_text, font=footer_font, fill=label_ink)
+    _draw_rtl_text(draw, (PAPER_MARGIN + 260, table_bottom + 42), "עמוד 1", font=footer_font, fill=label_ink)
+    _draw_stains(image, randomizer, handwritten=False)
+
+    logical_lines = [
+        title,
+        ledger_id,
+        ledger_date,
+        *headers,
+        *logical_rows,
+        footer_text,
+        "עמוד 1",
+    ]
+    return LedgerRender(
+        image=_degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle),
+        rendered_body_lines=rendered_body_lines,
+        footer_text=footer_text,
+        logical_lines=logical_lines,
+    )
+
+
 def _draw_document(
     randomizer: random.Random,
     title: str,
@@ -931,6 +1112,8 @@ def _select_title(template_id: str, index: int) -> str:
         titles = HANDWRITTEN_TITLES
     elif render_template_id == "archive_card":
         titles = ARCHIVE_CARD_TITLES
+    elif render_template_id == "ledger":
+        titles = LEDGER_TITLES
     else:
         titles = PRINTED_TITLES
     return titles[index % len(titles)]
@@ -1012,6 +1195,21 @@ def generate_documents(
             logical_text = unicodedata.normalize("NFC", "\n".join(archive_render.logical_lines))
             document_body = "\n".join(archive_render.rendered_body_lines)
             document_footer = archive_render.footer_text
+        elif recipe.render_template_id == "ledger":
+            ledger_render = _draw_ledger(
+                randomizer,
+                title,
+                body_lines,
+                footer,
+                font_path,
+                template_id,
+                style_bundle,
+                condition_bundle,
+            )
+            image = ledger_render.image
+            logical_text = unicodedata.normalize("NFC", "\n".join(ledger_render.logical_lines))
+            document_body = "\n".join(ledger_render.rendered_body_lines)
+            document_footer = ledger_render.footer_text
         else:
             image = _draw_document(
                 randomizer,

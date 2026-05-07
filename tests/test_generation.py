@@ -112,6 +112,7 @@ PACKAGED_FONT_AUDIT_CASES = [
     ("printed_letter", 42),
     ("handwritten_note", 46),
     ("archive_card", 42),
+    ("ledger", 42),
 ]
 DEGRADATION_VARIANT_CASES = [
     (
@@ -1455,6 +1456,84 @@ def test_archive_card_manifest_text_matches_rendered_body_overflow(tmp_path: Pat
     assert logical_lines[-6:] == ["מקור", "תאריך", "מספר", "הערה", "ארכיון", document.footer]
 
 
+def test_ledger_generation_preserves_v1_provenance_and_hebrew_text(tmp_path: Path) -> None:
+    first = generate_batch(
+        count=1,
+        seed=53,
+        output_dir=tmp_path / "ledger-first",
+        template_ids=["ledger"],
+    ).to_dict()
+    second = generate_batch(
+        count=1,
+        seed=53,
+        output_dir=tmp_path / "ledger-second",
+        template_ids=["ledger"],
+    ).to_dict()
+
+    assert first == second
+    [sample] = first["samples"]
+    assert sample["recipe_id"] == "ledger_table_v1"
+    assert sample["provenance"] == {
+        "seed": 53,
+        "sample_index": 0,
+        "template_id": "ledger",
+        "recipe_id": "ledger_table_v1",
+        "degradation_preset": "office_scan_soft",
+        "font_id": "alef-regular",
+        "source_corpus": "packaged:synthetic/texts/hebrew_lines.txt",
+    }
+    assert sample["text"]["direction"] == "rtl"
+    assert sample["text"]["unicode_normalization"] == "NFC"
+    logical_lines = sample["text"]["logical_order"].splitlines()
+    assert logical_lines[0] == "פנקס חשבונות"
+    assert logical_lines[1].startswith("פנקס ")
+    assert logical_lines[3:8] == ["מס'", "תאריך", "סכום", "פרטים", "יתרה"]
+    assert any(" | " in line for line in logical_lines)
+    assert " - פנקס " in logical_lines[-2]
+    assert logical_lines[-1] == "עמוד 1"
+    assert "וי" not in logical_lines
+    assert sample["text"]["logical_order"] == unicodedata.normalize(
+        "NFC", sample["text"]["logical_order"]
+    )
+
+
+@pytest.mark.parametrize("persona", NON_DEFAULT_STYLE_BUNDLE_IDS)
+def test_ledger_style_bundles_change_rendering_without_contract_drift(
+    tmp_path: Path,
+    persona: str,
+) -> None:
+    default_dir = tmp_path / f"{persona}-ledger-default"
+    styled_dir = tmp_path / f"{persona}-ledger-styled"
+    default = generate_batch(
+        count=1,
+        seed=53,
+        output_dir=default_dir,
+        template_ids=["ledger"],
+    ).to_dict()
+    styled = generate_batch(
+        count=1,
+        seed=53,
+        output_dir=styled_dir,
+        template_ids=["ledger"],
+        persona=persona,
+    ).to_dict()
+
+    [default_sample] = default["samples"]
+    [styled_sample] = styled["samples"]
+    default_page = default_sample["pages"][0]
+    styled_page = styled_sample["pages"][0]
+    assert styled_sample["controls"] == {"persona": persona, "condition": None}
+    assert default_sample["text"] == styled_sample["text"]
+    assert default_sample["provenance"] == styled_sample["provenance"]
+    assert styled_page["asset_path"] == default_page["asset_path"]
+    assert styled_page["sha256"] != default_page["sha256"]
+
+    with Image.open(default_dir / default_page["asset_path"]).convert("RGB") as default_image:
+        with Image.open(styled_dir / styled_page["asset_path"]).convert("RGB") as styled_image:
+            assert default_image.size == styled_image.size == CANVAS_SIZE
+            assert _changed_pixel_count(default_image, styled_image) > 20_000
+
+
 @pytest.mark.parametrize(
     ("base_template_id", "variant_template_id", "recipe_id", "degradation_preset", "font_id"),
     DEGRADATION_VARIANT_CASES,
@@ -1612,6 +1691,11 @@ def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
     assert catalog["archive_card_faded_scan"].degradation_preset == "archive_scan_faded"
     assert catalog["archive_card_faded_scan"].font_style == "printed"
     assert catalog["archive_card_faded_scan"].font_id == "alef-regular"
+    assert catalog["ledger"].recipe_id == "ledger_table_v1"
+    assert catalog["ledger"].layout_style == "tabular"
+    assert catalog["ledger"].degradation_preset == "office_scan_soft"
+    assert catalog["ledger"].font_style == "printed"
+    assert catalog["ledger"].font_id == "alef-regular"
 
 
 def test_rich_template_catalog_exposes_stable_join_metadata() -> None:
@@ -1619,6 +1703,7 @@ def test_rich_template_catalog_exposes_stable_join_metadata() -> None:
     printed_letter = catalog["printed_letter"].capability_metadata
     handwritten_note = catalog["handwritten_note"].capability_metadata
     archive_card = catalog["archive_card"].capability_metadata
+    ledger = catalog["ledger"].capability_metadata
 
     assert catalog["printed_letter"].recipe_id == "printed_letter_form_v1"
     assert printed_letter.document_family == "letter"
@@ -1650,6 +1735,13 @@ def test_rich_template_catalog_exposes_stable_join_metadata() -> None:
     assert catalog["archive_card_faded_scan"].capability_metadata.base_family == "archive_card"
     assert archive_card.identifier_types == ("archive_id", "date", "footer_label")
     assert archive_card.layout_density == "dense"
+    assert ledger.document_family == "ledger"
+    assert ledger.base_family == "ledger"
+    assert ledger.page_regions == ("title", "body", "footer", "table_cells", "identifier_area")
+    assert ledger.annotation_types == ("tick", "correction")
+    assert ledger.identifier_types == ("ledger_id", "date", "page_number", "footer_label")
+    assert ledger.layout_density == "dense"
+    assert "has_reviewable_table" in ledger.review_features
 
 
 def test_template_catalog_rejects_malformed_or_missing_style_font_manifest(tmp_path: Path) -> None:
@@ -1690,9 +1782,9 @@ def test_template_catalog_rejects_malformed_or_missing_style_font_manifest(tmp_p
 
 def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) -> None:
     documents = generate_documents(
-        count=3,
+        count=4,
         seed=31,
-        template_ids=["printed_letter", "handwritten_note", "archive_card"],
+        template_ids=["printed_letter", "handwritten_note", "archive_card", "ledger"],
         font_manifest_path=default_font_manifest_path(),
         text_corpus_path=default_text_corpus_path(),
         output_dir=tmp_path / "synthetic",
@@ -1722,6 +1814,17 @@ def test_synthetic_visual_recipes_render_expected_page_features(tmp_path: Path) 
         assert red_stamp_pixels > 350
         assert ruled_pixels > 10_000
         assert dark_ink_pixels > 4_000
+
+    with Image.open(by_template["ledger"].path).convert("RGB") as ledger:
+        table_region = ledger.crop((140, 330, 1060, 1260))
+        assert _ruled_pixel_count(table_region) > 40_000
+        assert _dark_ink_pixel_count(table_region) > 8_000
+        assert _red_stamp_pixel_count(table_region) > 20
+        row_band_ink = [
+            _dark_ink_pixel_count(table_region.crop((0, 86 + (row * 86), 920, 136 + (row * 86))))
+            for row in range(5)
+        ]
+        assert sum(ink > 500 for ink in row_band_ink) >= 4
 
 
 def test_synthetic_generation_rejects_invalid_inputs(tmp_path: Path) -> None:

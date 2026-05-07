@@ -29,6 +29,7 @@ variants, especially:
 - `printed_letter`
 - `handwritten_note`
 - `archive_card`
+- `ledger`
 - `printed_letter_heavy_scan`
 - `handwritten_note_heavy_wear`
 - `archive_card_faded_scan`
@@ -129,6 +130,17 @@ For `archive_card` and `archive_card_faded_scan`, reviewers should confirm:
 - Faded scan degradation looks like age, light scan loss, or contrast fading
   without destroying the card structure.
 - Borders and sections remain coherent after skew, blur, fading, or grain.
+
+For `ledger`, reviewers should confirm:
+
+- The page reads as a tabular Hebrew ledger with a title, identifier/date area,
+  column headers, repeated rows, and footer/page numbering.
+- Ruled table lines remain locatable and do not cut through the main Hebrew row
+  text in a way that makes entries unreadable.
+- Synthetic row identifiers, dates, amounts, and ledger id remain inspectable
+  where present.
+- Tick and correction marks read as small synthetic annotations and do not hide
+  the primary row content.
 
 ## Rejection Criteria
 

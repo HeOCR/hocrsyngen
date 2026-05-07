@@ -24,7 +24,7 @@ For `hocrsyngen templates --format json`, assert:
 - `templates` is a list.
 - Each template has `template_id`, `recipe_id`, `layout_style`, `font_style`, `font_id`, and `degradation_preset`.
 - The current packaged catalog includes `printed_letter`, `handwritten_note`,
-  `archive_card`, and the stronger degradation variants
+  `archive_card`, `ledger`, and the stronger degradation variants
   `printed_letter_heavy_scan`, `handwritten_note_heavy_wear`, and
   `archive_card_faded_scan`.
 
@@ -40,7 +40,8 @@ For `hocrsyngen templates --format json --catalog-version v2`, assert:
 - The current packaged catalog maps stronger variants to their base families:
   `printed_letter_heavy_scan -> printed_letter`,
   `handwritten_note_heavy_wear -> handwritten_note`, and
-  `archive_card_faded_scan -> archive_card`.
+  `archive_card_faded_scan -> archive_card`; `ledger` maps to base family
+  `ledger`.
 - Validated manifest sample provenance can be joined to v2 catalog entries by
   `(template_id, recipe_id)` without importing private Python internals.
 
@@ -130,6 +131,7 @@ base-template field. Downstream grouping can now use `template_catalog.v2`
 | `printed_letter` | `printed_letter`, `printed_letter_heavy_scan` |
 | `handwritten_note` | `handwritten_note`, `handwritten_note_heavy_wear` |
 | `archive_card` | `archive_card`, `archive_card_faded_scan` |
+| `ledger` | `ledger` |
 
 ## Persona, Style, And Condition Boundaries
 

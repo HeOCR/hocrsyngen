@@ -62,6 +62,7 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
         "printed_letter",
         "handwritten_note",
         "archive_card",
+        "ledger",
         "printed_letter_heavy_scan",
         "handwritten_note_heavy_wear",
         "archive_card_faded_scan",
@@ -97,6 +98,9 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
     assert rich_catalog[
         ("archive_card", "archive_card_identifier_v1")
     ]["identifier_types"] == ["archive_id", "date", "footer_label"]
+    assert rich_catalog[
+        ("ledger", "ledger_table_v1")
+    ]["identifier_types"] == ["ledger_id", "date", "page_number", "footer_label"]
     for entry in rich_catalog.values():
         assert {
             "document_family",
@@ -227,6 +231,7 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
             "printed_letter",
             "handwritten_note",
             "archive_card",
+            "ledger",
         }
         assert rich_entry["document_family"]
 

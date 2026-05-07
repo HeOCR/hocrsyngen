@@ -86,6 +86,10 @@ it.
   identifier types, layout density, review features, schema validation,
   installed-package CLI behavior, JSON-only v2 output, and downstream joins
   from validated manifest template/recipe ids.
+- S3f governed document-family coverage for the `ledger` template, including
+  deterministic generation, manifest v1 provenance, validation acceptance, v1
+  and v2 catalog exposure, downstream catalog joins, and visual smoke checks
+  for table structure, ink, and synthetic correction marks.
 - Deterministic S4c condition bundle coverage for `condition_standard_v1`,
   `condition_low_contrast_v1`, and `condition_dense_spacing_v1` through the
   existing `--condition` control slot, including repeatability,

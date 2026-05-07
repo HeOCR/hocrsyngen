@@ -160,7 +160,7 @@ Risks/dependencies:
 
 ## Phase S3 — Document-Layout Realism
 
-Current status: `done`.
+Current status: `active`.
 
 Objective: make synthetic samples resemble believable Hebrew document families while keeping deterministic generation and manifest contracts intact.
 
@@ -180,11 +180,11 @@ Planned PR breakdown:
 - `S3e` — Richer template catalog metadata: add a versioned public catalog
   surface for document family, base family, page regions, annotation types,
   identifier types, layout density, and review features before any downstream
-  code relies on private recipe internals. Status: active in this PR.
+  code relies on private recipe internals. Status: done in PR #41.
 - `S3f` — Additional governed document families: add the next set of realistic
   Hebrew document families, such as ledgers, classroom-like notes, receipts, or
   mixed printed/handwritten overlays, through governed template ids and tests.
-  Status: future.
+  Status: active in this PR.
 
 Deliverables:
 

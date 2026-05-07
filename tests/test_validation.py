@@ -83,6 +83,21 @@ def test_validate_accepts_explicit_archive_card_template(tmp_path: Path) -> None
     assert result.page_count == 1
 
 
+def test_validate_accepts_explicit_ledger_template(tmp_path: Path) -> None:
+    batch_dir = tmp_path / "ledger-batch"
+    generate_batch(
+        count=1,
+        seed=53,
+        output_dir=batch_dir,
+        template_ids=["ledger"],
+    )
+
+    result = validate_batch(batch_dir)
+
+    assert result.sample_count == 1
+    assert result.page_count == 1
+
+
 @pytest.mark.parametrize(
     "template_id",
     [

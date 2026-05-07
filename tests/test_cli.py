@@ -133,6 +133,14 @@ EXPECTED_TEMPLATE_LINES = [
         "degradation_preset=office_scan_soft"
     ),
     (
+        "template_id=ledger "
+        "recipe_id=ledger_table_v1 "
+        "layout_style=tabular "
+        "font_style=printed "
+        "font_id=alef-regular "
+        "degradation_preset=office_scan_soft"
+    ),
+    (
         "template_id=printed_letter_heavy_scan "
         "recipe_id=printed_letter_form_heavy_scan_v1 "
         "layout_style=printed_form "
@@ -180,6 +188,14 @@ EXPECTED_TEMPLATE_CATALOG_JSON = {
             "template_id": "archive_card",
             "recipe_id": "archive_card_identifier_v1",
             "layout_style": "multi_region_page",
+            "font_style": "printed",
+            "font_id": "alef-regular",
+            "degradation_preset": "office_scan_soft",
+        },
+        {
+            "template_id": "ledger",
+            "recipe_id": "ledger_table_v1",
+            "layout_style": "tabular",
             "font_style": "printed",
             "font_id": "alef-regular",
             "degradation_preset": "office_scan_soft",
@@ -887,6 +903,13 @@ def test_templates_cli_json_v2_outputs_richer_catalog_metadata(
     assert {"archive_id", "date", "footer_label"} <= set(
         catalog["archive_card"]["identifier_types"]
     )
+    assert catalog["ledger"]["document_family"] == "ledger"
+    assert catalog["ledger"]["base_family"] == "ledger"
+    assert catalog["ledger"]["layout_style"] == "tabular"
+    assert {"ledger_id", "date", "page_number", "footer_label"} <= set(
+        catalog["ledger"]["identifier_types"]
+    )
+    assert "has_reviewable_table" in catalog["ledger"]["review_features"]
     for entry in catalog.values():
         assert {
             "document_family",

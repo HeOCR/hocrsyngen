@@ -16,10 +16,10 @@ manifest v1 provenance:
 - `font_id`
 - `degradation_preset`
 
-The `archive_card` template id is the stable v1 join key for downstream tools
-that need to treat archive-card samples as a document family. Richer capability
-fields such as `document_family`, `page_regions`, `annotation_types`,
-`identifier_types`, and `layout_density` are exposed through
+The `archive_card` and `ledger` template ids are stable v1 join keys for
+downstream tools that need to treat those samples as document families. Richer
+capability fields such as `document_family`, `page_regions`,
+`annotation_types`, `identifier_types`, and `layout_density` are exposed through
 `hocrsyngen templates --format json --catalog-version v2`. They must not be
 added as undocumented manifest v1 fields.
 
@@ -48,6 +48,38 @@ authorship, identity, or archive-origin claims.
 
 ```bash
 PYTHONPATH=src python -m hocrsyngen.cli generate --count 1 --seed 37 --template-id archive_card --output out/archive-card
+```
+
+The default two-sample fixture regeneration command continues to cycle only the
+existing `printed_letter` and `handwritten_note` templates so the packaged
+manifest v1 contract fixture remains stable.
+
+## S3f Ledger
+
+The S3f governed recipe is:
+
+| Field | Value |
+| --- | --- |
+| Template id | `ledger` |
+| Recipe id | `ledger_table_v1` |
+| Layout style | `tabular` |
+| Font style | `printed` |
+| Font id | `alef-regular` |
+| Degradation preset | `office_scan_soft` |
+
+The recipe renders a ledger-like Hebrew page using only existing packaged
+fonts, text corpus lines, degradation presets, and manifest v1 provenance. It
+includes a printed title, synthetic ledger identifier, date-like label, ruled
+table grid, column headers, deterministic row numbers/dates/amounts, small
+synthetic tick/correction marks, footer identifier, and page number. These are
+generator controls and visual features only. They are not real accounting
+records, real-source provenance, release eligibility, authorship, identity, or
+institutional claims.
+
+`ledger` is available for explicit generation:
+
+```bash
+PYTHONPATH=src python -m hocrsyngen.cli generate --count 1 --seed 53 --template-id ledger --output out/ledger
 ```
 
 The default two-sample fixture regeneration command continues to cycle only the
@@ -96,11 +128,11 @@ hocrsyngen templates --format json
 
 After generation, `hocrgen` can filter validated manifest v1 samples by
 `provenance.template_id` and confirm the matching governed recipe/provenance
-fields. To group S3c variants with their base families under manifest v1,
-`hocrgen` should join the validated `(template_id, recipe_id)` pair to
+fields. To group S3c variants and S3f families under manifest v1, `hocrgen`
+should join the validated `(template_id, recipe_id)` pair to
 `template_catalog.v2`, where `printed_letter_heavy_scan` has base family
 `printed_letter`, `handwritten_note_heavy_wear` has base family
-`handwritten_note`, and `archive_card_faded_scan` has base family
-`archive_card`. Any richer durable per-sample metadata still requires a future
-manifest/schema update or review sidecar as described in
-[layout_metadata_design.md](layout_metadata_design.md).
+`handwritten_note`, `archive_card_faded_scan` has base family `archive_card`,
+and `ledger` has base family `ledger`. Any richer durable per-sample metadata
+still requires a future manifest/schema update or review sidecar as described
+in [layout_metadata_design.md](layout_metadata_design.md).
