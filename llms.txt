@@ -31,6 +31,8 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 
 - `hocrsyngen templates`
 - `template_catalog.v2` via `hocrsyngen templates --format json --catalog-version v2`
+- Governed template ids include `printed_letter`, `handwritten_note`,
+  `archive_card`, `ledger`, and stronger degradation variants.
 - `hocrsyngen contracts`
 - `hocrsyngen contracts export`
 - `hocrsyngen generate`

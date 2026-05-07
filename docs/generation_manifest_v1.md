@@ -108,6 +108,7 @@ The governed template contract currently requires:
 | `printed_letter` | `printed_letter_form_v1` | `office_scan_soft` | `alef-regular` |
 | `handwritten_note` | `handwritten_note_marginalia_v1` | `notebook_scan_worn` | `gveret-levin-regular` |
 | `archive_card` | `archive_card_identifier_v1` | `office_scan_soft` | `alef-regular` |
+| `ledger` | `ledger_table_v1` | `office_scan_soft` | `alef-regular` |
 | `printed_letter_heavy_scan` | `printed_letter_form_heavy_scan_v1` | `office_scan_heavy` | `alef-regular` |
 | `handwritten_note_heavy_wear` | `handwritten_note_marginalia_heavy_wear_v1` | `notebook_scan_heavy_wear` | `gveret-levin-regular` |
 | `archive_card_faded_scan` | `archive_card_identifier_faded_scan_v1` | `archive_scan_faded` | `alef-regular` |

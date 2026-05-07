@@ -215,6 +215,7 @@ The governed template contract currently packaged with `hocrsyngen` is:
 | `printed_letter` | `printed_letter_form_v1` | `office_scan_soft` | `printed` | `alef-regular` |
 | `handwritten_note` | `handwritten_note_marginalia_v1` | `notebook_scan_worn` | `handwritten_like` | `gveret-levin-regular` |
 | `archive_card` | `archive_card_identifier_v1` | `office_scan_soft` | `printed` | `alef-regular` |
+| `ledger` | `ledger_table_v1` | `office_scan_soft` | `printed` | `alef-regular` |
 | `printed_letter_heavy_scan` | `printed_letter_form_heavy_scan_v1` | `office_scan_heavy` | `printed` | `alef-regular` |
 | `handwritten_note_heavy_wear` | `handwritten_note_marginalia_heavy_wear_v1` | `notebook_scan_heavy_wear` | `handwritten_like` | `gveret-levin-regular` |
 | `archive_card_faded_scan` | `archive_card_identifier_faded_scan_v1` | `archive_scan_faded` | `printed` | `alef-regular` |

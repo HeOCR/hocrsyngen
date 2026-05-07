@@ -54,8 +54,9 @@ def test_rendering_coverage_report_matches_v1_schema_for_generated_batch(
     tmp_path: Path,
 ) -> None:
     output_dir = tmp_path / "coverage-batch"
+    sample_count = len(GOVERNED_TEMPLATE_IDS)
     manifest = generate_batch(
-        count=6,
+        count=sample_count,
         seed=17,
         output_dir=output_dir,
         template_ids=GOVERNED_TEMPLATE_IDS,
@@ -69,8 +70,8 @@ def test_rendering_coverage_report_matches_v1_schema_for_generated_batch(
     assert report["generator_version"] == GENERATOR_VERSION
     assert report["batch"] == {
         "manifest_path": "generation_manifest.json",
-        "sample_count": 6,
-        "page_count": 6,
+        "sample_count": sample_count,
+        "page_count": sample_count,
     }
     assert report["environment"]["pillow_raqm"] is True
     assert set(report["coverage"]) == {

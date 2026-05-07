@@ -45,7 +45,7 @@
           "minLength": 1
         },
         "layout_style": {
-          "enum": ["printed_form", "handwritten_note", "multi_region_page"]
+          "enum": ["printed_form", "handwritten_note", "multi_region_page", "tabular"]
         },
         "font_style": {
           "enum": ["printed", "handwritten_like"]
@@ -59,10 +59,10 @@
           "minLength": 1
         },
         "document_family": {
-          "enum": ["letter", "notebook_note", "archive_card"]
+          "enum": ["letter", "notebook_note", "archive_card", "ledger"]
         },
         "base_family": {
-          "enum": ["printed_letter", "handwritten_note", "archive_card"]
+          "enum": ["printed_letter", "handwritten_note", "archive_card", "ledger"]
         },
         "page_regions": {
           "$ref": "#/$defs/string_id_array"
