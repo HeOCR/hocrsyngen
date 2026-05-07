@@ -32,9 +32,10 @@ input, not a release-ready dataset artifact.
 
 S6a adds downstream realism acceptance categories, calibrated example classes,
 visual evidence expectations, rejection reasons, and release-eligibility
-boundaries for `hocrgen`/HeOCR. S6b is the active planning item for utility
-measurement. Until S6b is complete and downstream real-reference evaluations are
-run, no CER/WER or OCR/HTR utility claim is established by this repository.
+boundaries for `hocrgen`/HeOCR. S6b documents the utility measurement evidence
+contract, but no CER/WER or OCR/HTR utility claim is established by this
+repository until downstream governed real-reference evaluations are actually
+run.
 
 ## Crucial Missing Pieces
 

@@ -85,9 +85,10 @@ utility claim is made.
 
 ## CER/WER Boundaries
 
-CER/WER is valid for a utility claim only when OCR/HTR predictions are compared
-against governed real ground truth or a clearly labeled synthetic-only diagnostic
-target that is not represented as real-world utility.
+CER/WER is valid for a downstream OCR/HTR utility claim only when predictions
+are compared against governed real ground truth. Synthetic-only CER/WER may be
+recorded as diagnostic smoke evidence, but it must not be described as measured
+real-world utility.
 
 Invalid CER/WER claims include:
 
