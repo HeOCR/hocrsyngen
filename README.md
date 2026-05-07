@@ -37,6 +37,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Downstream utility measurement contract](docs/downstream_utility_measurement_contract.md)
 - [Synthetic diversity and domain-shift metrics](docs/synthetic_diversity_domain_shift_metrics.md)
 - [Release cap handoff policy](docs/release_cap_handoff_policy.md)
+- [Review evidence sidecar contract](docs/review_evidence_sidecar_contract.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -115,7 +116,10 @@ over-representation, and downstream synthetic-to-real comparison gaps. S6d
 defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence support
 downstream release cap decisions without moving caps, source composition,
 release eligibility, export, publication, or governance enforcement into this
-repository.
+repository. S6e defines a portable optional downstream review evidence sidecar
+for reviewed sample/page ids, reviewer observations, visual evidence references,
+S6a category references, S6c warning references, S6d cap decision references,
+limitations, and unreviewed strata outside `generation_manifest.json` v1.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.

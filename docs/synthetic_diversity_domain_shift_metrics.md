@@ -357,8 +357,10 @@ Later S6 work should use this contract without moving downstream governance into
 - `S6d` defines release cap handoff policy so diversity and domain-shift
   evidence cannot override source-composition limits in
   [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
-- `S6e` should define review evidence sidecars for durable reviewed ids,
-  rejection reasons, and visual evidence outside manifest v1.
+- `S6e` defines review evidence sidecars for durable reviewed ids, rejection
+  reasons, visual evidence, S6a category references, S6c warning references,
+  and S6d cap decision references outside manifest v1 in
+  [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
 - `S6f` should define candidate batch profiles and mix handoff so diversity
   summaries can be compared against an intended requested mix.
 - `S6g` should document the external `hocrgen` adapter checklist for installed

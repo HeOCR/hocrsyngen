@@ -138,6 +138,13 @@ The governed template contract currently requires:
   public provenance fields, controls, `template_catalog.v2`, optional rendering
   coverage, and downstream evidence packet ids, but those decisions must be
   stored in `hocrgen`/HeOCR governance records or future downstream contracts.
+- Downstream review evidence sidecars remain outside manifest v1. S6e review
+  sidecars may cite manifest sample/page ids, public provenance fields,
+  controls, `template_catalog.v2`, optional rendering coverage, S6a categories,
+  S6c warnings, and S6d cap decision references, but review workflow state,
+  visual evidence storage, reviewer notes, approvals, holds, rejections,
+  release eligibility, export, publication, and governance enforcement must be
+  stored downstream in `hocrgen`/HeOCR records or future downstream contracts.
 
 ## Example Shape
 

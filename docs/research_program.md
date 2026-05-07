@@ -107,6 +107,8 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
   S6d release cap handoff boundaries are documented in
   [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
+  S6e review evidence sidecar boundaries are documented in
+  [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
 - OCR/HTR utility only once downstream benchmark references, governed ground
   truth, split/leakage controls, metric definitions, and synthetic-to-real
   comparison evidence exist.
@@ -148,3 +150,6 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 - Which release profile should first record S6d cap decisions with explicit
   synthetic percentage, absolute, family, style, condition, review, leakage,
   and limitation fields downstream?
+- Which downstream `hocrgen` review workflow should first store S6e sidecars
+  with reviewed sample/page ids, visual evidence references, S6a category
+  references, S6c warning references, and S6d cap decision references?
