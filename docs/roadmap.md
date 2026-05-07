@@ -4,32 +4,32 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S5a as the latest merged roadmap state for handwriting research
-   governance, with S3f and S4d remaining the completed capability milestones
-   for governed document families and style/condition readiness. Together these
+1. Treat S5b as the latest merged roadmap state for handwriting research
+   planning, with S3f and S4d remaining the completed capability milestones for
+   governed document families and style/condition readiness. Together these
    leave deterministic document families, style, condition, degradation,
-   manifest, validation, installed-package CLI contracts, and S5 research gates
-   ready for candidate synthetic batch generation and docs-first prototype
-   planning.
+   manifest, validation, installed-package CLI contracts, S5 research gates, and
+   allograph planning ready for candidate synthetic batch generation and
+   docs-first prototype planning.
 2. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
 3. Make production-readiness gaps explicit in this roadmap or in a named
    external `hocrgen` dependency. Do not leave required release, review, or
    quality gates only in conversation notes.
-4. Make S5b the active high-lift quality item: explore deterministic allograph
-   and character-level variation as a docs-first prototype plan before any code
-   enters baseline package behavior.
+4. Make S5c the active high-lift quality item: plan deterministic word and line
+   assembly realism before any code enters baseline package behavior.
 5. Keep optional ML-backed synthesis separate from baseline dependencies.
 
-## Current Baseline After S5a
+## Current Baseline After S5b
 
-`S5a` - handwriting research acceptance criteria - is merged in PR #43. The
-current baseline can generate and validate deterministic candidate batches
-through public CLI JSON surfaces, and S5 handwriting research now has explicit
-boundaries for reproducibility, provenance, licensing, forbidden claims,
-manifest v1 compatibility, visual review, and stop/reject gates. This readiness
-does not make any generated batch release-ready.
+`S5b` - deterministic allograph and character-level prototype planning - is
+merged in PR #44. The current baseline can generate and validate deterministic
+candidate batches through public CLI JSON surfaces, and S5 handwriting research
+now has explicit boundaries for reproducibility, provenance, licensing,
+forbidden claims, manifest v1 compatibility, visual review, allograph planning,
+and stop/reject gates. This readiness does not make any generated batch
+release-ready.
 `hocrgen` remains the owner of dataset import, release profiles, review, dedupe,
 privacy, caps, benchmark handling, release export, and publication.
 
@@ -269,10 +269,13 @@ Planned PR breakdown:
   boundaries, reproducibility requirements, licensing constraints, and
   evaluation gates. Status: done in PR #43.
 - `S5b` — Allograph and character-level prototype: explore deterministic
-  allograph variation outside heavyweight model dependencies. Status: active in
-  this PR; plan tracked in
+  allograph variation outside heavyweight model dependencies. Status: done in
+  PR #44; plan tracked in
   [allograph_character_prototype_plan.md](allograph_character_prototype_plan.md).
-- `S5c` — Word/line assembly prototype: test geometric perturbation and line assembly realism while preserving logical-order ground truth.
+- `S5c` — Word/line assembly prototype: test geometric perturbation and line
+  assembly realism while preserving logical-order ground truth. Status: active
+  in this PR; plan tracked in
+  [word_line_assembly_prototype_plan.md](word_line_assembly_prototype_plan.md).
 - `S5d` — Optional learned-generation packaging design: design extras/subpackages/experiments for ML-backed generation without contaminating baseline dependencies.
 
 Deliverables:

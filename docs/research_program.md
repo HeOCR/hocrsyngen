@@ -22,6 +22,13 @@ sampling plan, deterministic allograph controls, Hebrew-specific cases, asset
 provenance rules, visual evidence plan, and criteria for proceeding, holding, or
 rejecting the direction.
 
+The active S5c follow-up is planned in
+[word_line_assembly_prototype_plan.md](word_line_assembly_prototype_plan.md).
+It keeps word and line assembly docs-first and defines deterministic spacing,
+wrapping, baseline drift, slant, per-line perturbation, Hebrew-specific review
+cases, S5b allograph interaction, manifest v1 boundaries, visual evidence, and
+proceed/hold/stop gates.
+
 ## Research Tracks
 
 1. Deterministic typography and document simulation baseline.
