@@ -119,6 +119,13 @@ This guidance is not automated test coverage and is not a CI gate. It is a
 manual review aid for generator-quality spot checks until any future review
 sidecar or downstream acceptance workflow is explicitly designed.
 
+S6 downstream realism acceptance guidance is documented in
+[downstream_realism_acceptance_rubric.md](downstream_realism_acceptance_rubric.md).
+It classifies candidate batches for downstream `hocrgen`/HeOCR dry runs,
+benchmark experiments, holds, and release rejection after generator-quality
+inspection has passed. It is not automated test coverage and does not create a
+CI gate, manifest field, sidecar, release cap, or review workflow in this repo.
+
 ## Environmental Requirement
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
@@ -166,6 +173,7 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
   [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
   automated S4 style consistency checks now covered in the test suite.
 - `hocrgen`-side utility measurement.
+- `hocrgen`-side downstream realism acceptance workflow based on the S6a rubric.
 
 ## Handling Test Failures
 

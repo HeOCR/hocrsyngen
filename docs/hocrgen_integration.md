@@ -105,6 +105,13 @@ After receiving a valid `hocrsyngen` batch, `hocrgen` remains responsible for:
 - Release export.
 - Publication.
 
+Downstream realism acceptance guidance is documented in
+[downstream_realism_acceptance_rubric.md](downstream_realism_acceptance_rubric.md).
+It builds on the generator-quality visual inspection checklist but remains a
+downstream governance rubric. It does not add manifest v1 fields, review
+workflow state, release eligibility metadata, caps, export behavior, or adapter
+code to `hocrsyngen`.
+
 ## Layout Filtering Boundaries
 
 Current layout filtering should use only stable CLI and manifest surfaces.
@@ -220,6 +227,7 @@ governed dataset flows:
 - installed-CLI import adapter and dry-run ingestion;
 - release profiles, synthetic caps, and source-composition policy;
 - review workflow and any future review evidence sidecar consumption;
+- downstream realism acceptance decisions using the S6a rubric;
 - dedupe, leakage, benchmark/reference, release export, and publication gates;
 - downstream utility and domain-shift measurement when real references exist.
 

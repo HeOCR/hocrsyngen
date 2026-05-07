@@ -33,6 +33,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Allograph and character-level prototype plan](docs/allograph_character_prototype_plan.md)
 - [Word and line assembly prototype plan](docs/word_line_assembly_prototype_plan.md)
 - [Learned generation packaging boundary](docs/learned_generation_packaging_boundary.md)
+- [Downstream realism acceptance rubric](docs/downstream_realism_acceptance_rubric.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -99,9 +100,10 @@ unchanged. The v2 catalog is JSON-only; `--catalog-version v2` must be used with
 
 The current `hocrsyngen` baseline is ready to generate validated candidate
 synthetic batches with the governed document families added through S3f, while
-S5 planning now defines acceptance gates plus docs-first allograph, word/line
-assembly, and learned-generation packaging boundaries for future handwriting
-research.
+S5 closed by deferral after defining acceptance gates plus docs-first allograph,
+word/line assembly, and learned-generation packaging boundaries for future
+handwriting research. S6 now defines downstream evaluation and acceptance gates,
+starting with the downstream realism acceptance rubric.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.
