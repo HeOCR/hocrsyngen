@@ -5,7 +5,7 @@
 - `assets.py`: resolves packaged font, text, schema, and contract fixture resources.
 - `io.py`: reads simple packaged manifests and computes file hashes.
 - `manifest.py`: defines manifest constants and dataclasses for text metadata, page assets, provenance, controls, samples, and manifests.
-- `generator.py`: loads governed fonts/text, resolves templates, renders deterministic page images, applies degradation, writes JPEGs, and assembles manifests.
+- `generator.py`: loads governed fonts/text, resolves templates and catalog metadata, renders deterministic page images, applies degradation, writes JPEGs, and assembles manifests.
 - `validation.py`: validates generated batch directories, manifest schema, constants, text metadata, relative paths, SHA-256 hashes, and JPEG integrity.
 - `cli.py`: exposes public commands and deterministic text/JSON reports.
 - `schemas/`: contains `generation_manifest.schema.json`.
@@ -27,6 +27,8 @@
 ## Current Public Surfaces
 
 - CLI commands: `hocrsyngen templates`, `hocrsyngen contracts`, `hocrsyngen contracts export`, `hocrsyngen generate`, and `hocrsyngen validate`.
+- `template_catalog.v1` through `hocrsyngen templates --format json`.
+- `template_catalog.v2` through `hocrsyngen templates --format json --catalog-version v2`.
 - `generation_manifest.json` v1.
 - Packaged contract fixture `generation_manifest_v1_fixture_batch`.
 

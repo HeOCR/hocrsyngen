@@ -11,6 +11,7 @@ The last merged roadmap item is `S4d` - style consistency checks. At this point
 OCR/HTR batches through public CLI surfaces:
 
 - `hocrsyngen templates --format json`
+- `hocrsyngen templates --format json --catalog-version v2`
 - `hocrsyngen contracts --format json`
 - `hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch --output PATH --format json`
 - `hocrsyngen generate --count N --seed S --output PATH --format json`

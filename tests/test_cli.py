@@ -14,15 +14,22 @@ from hocrsyngen.cli import (
     CONTRACT_FIXTURE_CATALOG_SCHEMA_VERSION,
     CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION,
     GENERATION_REPORT_SCHEMA_VERSION,
+    RICH_TEMPLATE_CATALOG_SCHEMA_VERSION,
     TEMPLATE_CATALOG_SCHEMA_VERSION,
     VALIDATION_REPORT_SCHEMA_VERSION,
     _format_contract_fixture_catalog_json,
     _format_generation_report_json,
+    _format_rich_template_catalog_json,
     _format_template_catalog_entry,
     _format_template_catalog_json,
     main,
 )
-from hocrsyngen.generator import SUPPORTED_CONDITION_BUNDLE_IDS, SUPPORTED_STYLE_BUNDLE_IDS, TemplateCatalogEntry
+from hocrsyngen.generator import (
+    RichTemplateCatalogEntry,
+    SUPPORTED_CONDITION_BUNDLE_IDS,
+    SUPPORTED_STYLE_BUNDLE_IDS,
+    TemplateCatalogEntry,
+)
 from hocrsyngen.rendering_coverage import RENDERING_COVERAGE_REPORT_FILENAME
 from hocrsyngen.validation import validate_batch
 from hocrsyngen.validation import BatchValidationError, ValidationResult
@@ -746,6 +753,71 @@ def test_format_template_catalog_json_uses_public_schema_only() -> None:
     }
 
 
+def test_format_rich_template_catalog_json_uses_v2_public_schema() -> None:
+    output = _format_rich_template_catalog_json(
+        [
+            RichTemplateCatalogEntry(
+                template_id="archive_card",
+                recipe_id="archive_card_identifier_v1",
+                layout_style="multi_region_page",
+                font_style="printed",
+                font_id="alef-regular",
+                degradation_preset="office_scan_soft",
+                document_family="archive_card",
+                base_family="archive_card",
+                page_regions=(
+                    "title",
+                    "body",
+                    "footer",
+                    "table_cells",
+                    "stamp_area",
+                    "identifier_area",
+                ),
+                annotation_types=("synthetic_stamp",),
+                identifier_types=("archive_id", "date"),
+                layout_density="dense",
+                review_features=(
+                    "has_stable_regions",
+                    "has_visible_identifier",
+                    "has_visible_stamp",
+                ),
+            )
+        ]
+    )
+
+    assert json.loads(output) == {
+        "schema_version": RICH_TEMPLATE_CATALOG_SCHEMA_VERSION,
+        "templates": [
+            {
+                "template_id": "archive_card",
+                "recipe_id": "archive_card_identifier_v1",
+                "layout_style": "multi_region_page",
+                "font_style": "printed",
+                "font_id": "alef-regular",
+                "degradation_preset": "office_scan_soft",
+                "document_family": "archive_card",
+                "base_family": "archive_card",
+                "page_regions": [
+                    "title",
+                    "body",
+                    "footer",
+                    "table_cells",
+                    "stamp_area",
+                    "identifier_area",
+                ],
+                "annotation_types": ["synthetic_stamp"],
+                "identifier_types": ["archive_id", "date"],
+                "layout_density": "dense",
+                "review_features": [
+                    "has_stable_regions",
+                    "has_visible_identifier",
+                    "has_visible_stamp",
+                ],
+            }
+        ],
+    }
+
+
 def test_templates_cli_smoke_outputs_stable_catalog_lines(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
@@ -770,6 +842,39 @@ def test_templates_cli_json_outputs_deterministic_catalog(
     stdout = capsys.readouterr().out
     assert stdout == f"{EXPECTED_TEMPLATE_CATALOG_JSON_TEXT}\n"
     assert json.loads(stdout) == EXPECTED_TEMPLATE_CATALOG_JSON
+
+
+def test_templates_cli_json_v2_outputs_richer_catalog_metadata(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["templates", "--format", "json", "--catalog-version", "v2"]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["schema_version"] == RICH_TEMPLATE_CATALOG_SCHEMA_VERSION
+    catalog = {entry["template_id"]: entry for entry in payload["templates"]}
+    assert catalog["printed_letter"]["document_family"] == "letter"
+    assert catalog["printed_letter"]["base_family"] == "printed_letter"
+    assert catalog["printed_letter_heavy_scan"]["base_family"] == "printed_letter"
+    assert "form_rows" in catalog["printed_letter"]["page_regions"]
+    assert catalog["handwritten_note"]["document_family"] == "notebook_note"
+    assert "marginal_note" in catalog["handwritten_note"]["annotation_types"]
+    assert catalog["archive_card"]["document_family"] == "archive_card"
+    assert catalog["archive_card_faded_scan"]["base_family"] == "archive_card"
+    assert {"archive_id", "date"} <= set(catalog["archive_card"]["identifier_types"])
+    for entry in catalog.values():
+        assert {
+            "document_family",
+            "base_family",
+            "page_regions",
+            "annotation_types",
+            "identifier_types",
+            "layout_density",
+            "review_features",
+        } <= set(entry)
+        assert isinstance(entry["page_regions"], list)
+        assert isinstance(entry["annotation_types"], list)
+        assert isinstance(entry["identifier_types"], list)
+        assert isinstance(entry["review_features"], list)
 
 
 def test_templates_cli_reports_invalid_packaged_resource_cleanly(

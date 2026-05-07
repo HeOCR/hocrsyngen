@@ -11,10 +11,12 @@ from pathlib import Path
 
 from hocrsyngen.generator import (
     GOVERNED_TEMPLATE_IDS,
+    RichTemplateCatalogEntry,
     SUPPORTED_CONDITION_BUNDLE_IDS,
     SUPPORTED_STYLE_BUNDLE_IDS,
     TemplateCatalogEntry,
     generate_batch,
+    rich_template_catalog,
     template_catalog,
 )
 from hocrsyngen.rendering_coverage import write_rendering_coverage_report
@@ -25,6 +27,7 @@ CONTRACT_FIXTURE_CATALOG_SCHEMA_VERSION = "contract_fixture_catalog.v1"
 CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION = "contract_fixture_export.v1"
 GENERATION_REPORT_SCHEMA_VERSION = "generation_report.v1"
 TEMPLATE_CATALOG_SCHEMA_VERSION = "template_catalog.v1"
+RICH_TEMPLATE_CATALOG_SCHEMA_VERSION = "template_catalog.v2"
 VALIDATION_REPORT_SCHEMA_VERSION = "validation_report.v1"
 CONTRACT_FIXTURE_ID = "generation_manifest_v1_fixture_batch"
 CONTRACT_FIXTURE_CONTRACT = "generation_manifest.v1"
@@ -76,6 +79,44 @@ def _format_template_catalog_json(catalog: list[TemplateCatalogEntry]) -> str:
                 "font_style": entry.font_style,
                 "font_id": entry.font_id,
                 "degradation_preset": entry.degradation_preset,
+            }
+            for entry in catalog
+        ],
+    }
+    return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def _format_rich_template_catalog_entry(entry: RichTemplateCatalogEntry) -> str:
+    return (
+        f"{_format_template_catalog_entry(entry)} "
+        f"document_family={entry.document_family} "
+        f"base_family={entry.base_family} "
+        f"page_regions={','.join(entry.page_regions)} "
+        f"annotation_types={','.join(entry.annotation_types)} "
+        f"identifier_types={','.join(entry.identifier_types)} "
+        f"layout_density={entry.layout_density} "
+        f"review_features={','.join(entry.review_features)}"
+    )
+
+
+def _format_rich_template_catalog_json(catalog: list[RichTemplateCatalogEntry]) -> str:
+    payload = {
+        "schema_version": RICH_TEMPLATE_CATALOG_SCHEMA_VERSION,
+        "templates": [
+            {
+                "template_id": entry.template_id,
+                "recipe_id": entry.recipe_id,
+                "layout_style": entry.layout_style,
+                "font_style": entry.font_style,
+                "font_id": entry.font_id,
+                "degradation_preset": entry.degradation_preset,
+                "document_family": entry.document_family,
+                "base_family": entry.base_family,
+                "page_regions": list(entry.page_regions),
+                "annotation_types": list(entry.annotation_types),
+                "identifier_types": list(entry.identifier_types),
+                "layout_density": entry.layout_density,
+                "review_features": list(entry.review_features),
             }
             for entry in catalog
         ],
@@ -293,6 +334,15 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format for the packaged template catalog.",
     )
+    templates.add_argument(
+        "--catalog-version",
+        choices=("v1", "v2"),
+        default="v1",
+        help=(
+            "Template catalog contract version. v1 preserves the original "
+            "catalog shape; v2 adds richer layout metadata."
+        ),
+    )
     generate = subparsers.add_parser(
         "generate", help="Generate a deterministic synthetic fixture batch."
     )
@@ -402,7 +452,11 @@ def main(argv: list[str] | None = None) -> int:
         raise AssertionError(f"Unhandled contracts command: {args.contract_command}")
     if args.command == "templates":
         try:
-            catalog = template_catalog()
+            catalog = (
+                rich_template_catalog()
+                if args.catalog_version == "v2"
+                else template_catalog()
+            )
         except FileNotFoundError as exc:
             parser.error(
                 f"templates: required packaged resource is missing: {exc.filename or exc}"
@@ -410,10 +464,16 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as exc:
             parser.error(f"templates: {exc}")
         if args.format == "json":
-            print(_format_template_catalog_json(catalog))
+            if args.catalog_version == "v2":
+                print(_format_rich_template_catalog_json(catalog))
+            else:
+                print(_format_template_catalog_json(catalog))
         else:
             for entry in catalog:
-                print(_format_template_catalog_entry(entry))
+                if args.catalog_version == "v2":
+                    print(_format_rich_template_catalog_entry(entry))
+                else:
+                    print(_format_template_catalog_entry(entry))
         return 0
     if args.command == "generate":
         if args.output.exists() and not args.output.is_dir():

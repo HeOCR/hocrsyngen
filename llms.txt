@@ -14,7 +14,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 ## Critical File Map
 
 - `src/hocrsyngen/cli.py`: public CLI commands and machine-readable reports.
-- `src/hocrsyngen/generator.py`: deterministic rendering, templates, degradation, font/text selection.
+- `src/hocrsyngen/generator.py`: deterministic rendering, templates, richer template catalog metadata, degradation, font/text selection.
 - `src/hocrsyngen/manifest.py`: manifest dataclasses and constants.
 - `src/hocrsyngen/rendering_coverage.py`: opt-in rendering coverage report builder and sidecar writer.
 - `src/hocrsyngen/validation.py`: batch validation, schema validation, asset integrity checks.
@@ -29,6 +29,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 ## Public Contracts
 
 - `hocrsyngen templates`
+- `template_catalog.v2` via `hocrsyngen templates --format json --catalog-version v2`
 - `hocrsyngen contracts`
 - `hocrsyngen contracts export`
 - `hocrsyngen generate`

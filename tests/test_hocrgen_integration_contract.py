@@ -76,6 +76,38 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
             "degradation_preset",
         } <= set(entry)
 
+    rich_templates = _json_output(
+        _run(
+            [executable, "templates", "--format", "json", "--catalog-version", "v2"],
+            cwd=isolated_cwd,
+            env=env,
+        )
+    )
+    assert rich_templates["schema_version"] == "template_catalog.v2"
+    rich_catalog = {
+        (entry["template_id"], entry["recipe_id"]): entry
+        for entry in rich_templates["templates"]
+    }
+    assert rich_catalog[
+        ("printed_letter", "printed_letter_form_v1")
+    ]["document_family"] == "letter"
+    assert rich_catalog[
+        ("handwritten_note", "handwritten_note_marginalia_v1")
+    ]["document_family"] == "notebook_note"
+    assert rich_catalog[
+        ("archive_card", "archive_card_identifier_v1")
+    ]["identifier_types"] == ["archive_id", "date"]
+    for entry in rich_catalog.values():
+        assert {
+            "document_family",
+            "base_family",
+            "page_regions",
+            "annotation_types",
+            "identifier_types",
+            "layout_density",
+            "review_features",
+        } <= set(entry)
+
     contracts = _json_output(
         _run([executable, "contracts", "--format", "json"], cwd=isolated_cwd, env=env)
     )
@@ -182,6 +214,21 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
         sample_count=2,
         page_count=generation["page_count"],
     )
+    generated_manifest_path = generated_dir / "generation_manifest.json"
+    generated_manifest = json.loads(generated_manifest_path.read_text(encoding="utf-8"))
+    for sample in generated_manifest["samples"]:
+        provenance = sample["provenance"]
+        rich_entry = rich_catalog[
+            (provenance["template_id"], provenance["recipe_id"])
+        ]
+        assert rich_entry["font_id"] == provenance["font_id"]
+        assert rich_entry["degradation_preset"] == provenance["degradation_preset"]
+        assert rich_entry["base_family"] in {
+            "printed_letter",
+            "handwritten_note",
+            "archive_card",
+        }
+        assert rich_entry["document_family"]
 
 
 def test_hocrgen_adapter_contract_invalid_validation_reports_json_nonzero(

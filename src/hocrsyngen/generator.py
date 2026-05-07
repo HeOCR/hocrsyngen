@@ -80,6 +80,34 @@ class TemplateCatalogEntry:
 
 
 @dataclass(frozen=True)
+class RichTemplateCatalogEntry:
+    template_id: str
+    recipe_id: str
+    layout_style: str
+    font_style: str
+    font_id: str
+    degradation_preset: str
+    document_family: str
+    base_family: str
+    page_regions: tuple[str, ...]
+    annotation_types: tuple[str, ...]
+    identifier_types: tuple[str, ...]
+    layout_density: str
+    review_features: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class TemplateCapabilityMetadata:
+    document_family: str
+    base_family: str
+    page_regions: tuple[str, ...]
+    annotation_types: tuple[str, ...]
+    identifier_types: tuple[str, ...]
+    layout_density: str
+    review_features: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class DegradationPreset:
     angle_range: float
     blur_range: tuple[float, float]
@@ -526,6 +554,95 @@ def template_catalog(
             )
         )
     return catalog
+
+
+def _catalog_metadata_for_template(template_id: str) -> TemplateCapabilityMetadata:
+    if template_id in {"printed_letter", "printed_letter_heavy_scan"}:
+        return TemplateCapabilityMetadata(
+            document_family="letter",
+            base_family="printed_letter",
+            page_regions=(
+                "title",
+                "body",
+                "footer",
+                "form_rows",
+                "stamp_area",
+                "signature_area",
+            ),
+            annotation_types=("synthetic_stamp",),
+            identifier_types=("page_number",),
+            layout_density="moderate",
+            review_features=(
+                "has_stable_regions",
+                "has_visible_stamp",
+                "has_signature_lines",
+            ),
+        )
+    if template_id in {"handwritten_note", "handwritten_note_heavy_wear"}:
+        return TemplateCapabilityMetadata(
+            document_family="notebook_note",
+            base_family="handwritten_note",
+            page_regions=("title", "body", "footer", "margin"),
+            annotation_types=("marginal_note", "underline", "correction"),
+            identifier_types=("page_number",),
+            layout_density="sparse",
+            review_features=(
+                "has_reviewable_annotations",
+                "has_ruled_guides",
+                "has_margin_marks",
+            ),
+        )
+    if template_id in {"archive_card", "archive_card_faded_scan"}:
+        return TemplateCapabilityMetadata(
+            document_family="archive_card",
+            base_family="archive_card",
+            page_regions=(
+                "title",
+                "body",
+                "footer",
+                "table_cells",
+                "stamp_area",
+                "identifier_area",
+            ),
+            annotation_types=("synthetic_stamp",),
+            identifier_types=("archive_id", "date"),
+            layout_density="dense",
+            review_features=(
+                "has_stable_regions",
+                "has_visible_identifier",
+                "has_visible_stamp",
+            ),
+        )
+    raise ValueError(f"Unsupported synthetic template_id: {template_id}")
+
+
+def rich_template_catalog(
+    template_ids: list[str] | None = None,
+    *,
+    font_manifest_path: Path | None = None,
+) -> list[RichTemplateCatalogEntry]:
+    catalog = template_catalog(template_ids, font_manifest_path=font_manifest_path)
+    rich_catalog: list[RichTemplateCatalogEntry] = []
+    for entry in catalog:
+        metadata = _catalog_metadata_for_template(entry.template_id)
+        rich_catalog.append(
+            RichTemplateCatalogEntry(
+                template_id=entry.template_id,
+                recipe_id=entry.recipe_id,
+                layout_style=entry.layout_style,
+                font_style=entry.font_style,
+                font_id=entry.font_id,
+                degradation_preset=entry.degradation_preset,
+                document_family=metadata.document_family,
+                base_family=metadata.base_family,
+                page_regions=metadata.page_regions,
+                annotation_types=metadata.annotation_types,
+                identifier_types=metadata.identifier_types,
+                layout_density=metadata.layout_density,
+                review_features=metadata.review_features,
+            )
+        )
+    return rich_catalog
 
 
 def _draw_paper_frame(draw: ImageDraw.ImageDraw, randomizer: random.Random, handwritten: bool) -> None:

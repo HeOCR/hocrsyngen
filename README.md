@@ -36,6 +36,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 ```bash
 hocrsyngen templates
 hocrsyngen templates --format json
+hocrsyngen templates --format json --catalog-version v2
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --format json
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --rendering-coverage-report
@@ -80,6 +81,14 @@ machine-readable catalog:
 The JSON catalog is package metadata only. It does not change manifest v1 and
 does not assemble, validate, export, or publish release payloads; those remain
 `hocrgen` responsibilities.
+
+`hocrsyngen templates --format json --catalog-version v2` emits the versioned
+`template_catalog.v2` surface. It preserves the v1 join keys and adds
+`document_family`, `base_family`, `page_regions`, `annotation_types`,
+`identifier_types`, `layout_density`, and `review_features` so downstream tools
+can join validated manifest `template_id` and `recipe_id` provenance to richer
+catalog metadata without importing private recipe internals. Manifest v1 remains
+unchanged.
 
 After S4d, `hocrsyngen` is ready to generate validated candidate synthetic
 batches. Readiness for public dataset use still depends on downstream

@@ -121,6 +121,10 @@ The governed template contract currently requires:
 - Richer persona, style, or condition metadata requires a documented catalog,
   sidecar, or manifest/schema update before it becomes a public machine
   contract.
+- Richer S3e template metadata is exposed through `template_catalog.v2`, not
+  through new manifest v1 fields. Consumers can join validated
+  `provenance.template_id` and `provenance.recipe_id` to
+  `hocrsyngen templates --format json --catalog-version v2`.
 
 ## Example Shape
 
