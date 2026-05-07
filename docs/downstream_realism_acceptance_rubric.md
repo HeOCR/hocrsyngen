@@ -8,10 +8,13 @@ fields, schemas, sidecars, fixture changes, dependencies, `hocrgen` adapter
 code, review workflow state, release caps, export behavior, or publication
 behavior.
 
-The rubric is a handoff contract for `hocrgen`/HeOCR governance. It explains how
+The rubric is handoff guidance for `hocrgen`/HeOCR governance. It explains how
 downstream reviewers can classify generated candidate batches, what evidence
 should support those decisions, and which rejection reasons belong in downstream
-release governance rather than in `hocrsyngen` outputs.
+release governance rather than in `hocrsyngen` outputs. It is not a versioned
+machine contract, and the category and reason names below remain provisional
+until a future `hocrgen` workflow or S6e review evidence sidecar makes them
+stable.
 
 ## Relationship To Visual Inspection
 
@@ -44,15 +47,18 @@ each reviewed sample or page, into one of these categories.
 | Category | Meaning | Allowed downstream use |
 | --- | --- | --- |
 | `accept_for_dry_run` | The batch is valid, visually coherent, and realistic enough for a non-public import, review, cap, dedupe, and utility rehearsal. | `hocrgen` dry-run adapter and governance rehearsal only. |
-| `accept_for_benchmark_experiment` | The batch is realistic enough for controlled OCR/HTR utility experiments when paired with explicit benchmark references and synthetic disclosure. | Internal CER/WER or domain-shift experiments when references exist. |
+| `eligible_for_utility_evaluation` | The batch is realistic enough to be considered for controlled OCR/HTR utility evaluation, but only after S6b or downstream benchmark rules define reference handling, metrics, and claim boundaries. | Candidate input for later utility-evaluation planning; not approval for CER/WER claims or benchmark inclusion by itself. |
 | `hold_for_calibration` | The batch is promising but lacks enough comparison evidence, reviewer agreement, target-domain alignment, or cap context. | Keep out of release assembly until evidence is added. |
 | `reject_for_downstream_release` | The batch may be technically valid but should not enter governed release candidates because it fails downstream realism, diversity, evidence, cap, or policy expectations. | Do not use in public release payloads. |
 | `send_back_to_generator_quality` | The batch shows rendering, layout, artifact, clipping, Hebrew readability, catalog, or asset problems covered by the S3 rubric. | Track as `hocrsyngen` generator-quality follow-up, not release governance. |
 
-These categories are downstream governance labels. They must not be written into
-`generation_manifest.json` v1. A future S6e review evidence sidecar may define a
-portable machine-readable place for reviewed sample ids, reviewer notes, and
-rejection reasons, but this S6a document does not create that sidecar.
+These categories are provisional downstream governance vocabulary. They must not
+be written into `generation_manifest.json` v1, and downstream tools should not
+treat their spelling as stable API until a future `hocrgen` workflow or S6e
+review evidence sidecar versions them. A future S6e review evidence sidecar may
+define a portable machine-readable place for reviewed sample ids, reviewer
+notes, and rejection reasons, but this S6a document does not create that
+sidecar.
 
 ## Calibrated Example Classes
 
@@ -62,10 +68,12 @@ profiles.
 
 ### Strong Accept Class
 
-A strong accept class is suitable for `accept_for_dry_run` and may be suitable
-for benchmark experiments if real references exist downstream.
+A strong accept class is suitable for `accept_for_dry_run` and may make the
+batch eligible for later utility-evaluation planning if real references exist
+downstream. It does not approve benchmark use or utility claims by itself.
 
-- Several reviewed pages pass the S3 visual inspection rubric.
+- Reviewed pages pass the S3 visual inspection rubric across the stated
+  downstream review strata.
 - The document family is recognizable without manifest lookup.
 - Hebrew text is readable enough to support OCR/HTR task design.
 - Degradation is visible but does not dominate the sample.
@@ -145,17 +153,25 @@ Recommended evidence fields:
   system, not in `generation_manifest.json` v1;
 - reviewer decision category and date inside `hocrgen`/HeOCR governance.
 
-For a small dry-run batch, review at least one page from each template id present
-and any non-default style or condition slice. For larger batches, downstream
-review should stratify by document family, base family, degradation preset,
-style/persona control, condition control, and seed range before release
-eligibility is considered.
+For a small dry-run batch, one reviewed page from each template id present, plus
+any non-default style or condition slice, is only a smoke-triage minimum. It can
+support `hold_for_calibration` or a narrow dry-run rehearsal note, but it is not
+enough by itself to support release eligibility, utility-evaluation eligibility,
+or a claim that repeated synthetic patterns have been ruled out.
+
+Before a downstream acceptance decision is recorded, the review packet should
+state the sampling strata used for the decision. At minimum, stratify reviewed
+pages by document family or base family, degradation preset, style/persona
+control, condition control, and seed range whenever those dimensions are present
+in the candidate batch. If a stratum is not reviewed because the batch is too
+small, record that limitation and use `hold_for_calibration` rather than an
+acceptance category that implies broader evidence.
 
 ## Rejection Reasons
 
-Use stable rejection reason names so downstream review can be audited. These
+Use consistent rejection reason names so downstream review can be audited. These
 reason names are planning guidance only until a future sidecar or `hocrgen`
-workflow makes them machine-readable.
+workflow makes them machine-readable and versioned.
 
 | Reason | Use when | Owner |
 | --- | --- | --- |
