@@ -142,6 +142,15 @@ coverage in this repo and does not add a metrics runner, manifest field,
 sidecar, dependency, release cap, adapter code, benchmark runner, export
 behavior, or CI gate to `hocrsyngen`.
 
+S6 release cap handoff guidance is documented in
+[release_cap_handoff_policy.md](release_cap_handoff_policy.md). It defines how
+public `hocrsyngen` metadata and S6a/S6b/S6c evidence can support downstream cap
+records while keeping cap decisions, source composition, release eligibility,
+export, publication, and governance enforcement in `hocrgen`/HeOCR. It is not
+automated test coverage in this repo and does not add cap enforcement, release
+profiles, manifest fields, sidecars, dependencies, adapter code, export
+behavior, publication behavior, or CI gates to `hocrsyngen`.
+
 ## Environmental Requirement
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
@@ -191,6 +200,8 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 - `hocrgen`-side utility measurement based on the S6b contract.
 - `hocrgen`-side diversity and domain-shift evidence based on the S6c contract.
 - `hocrgen`-side downstream realism acceptance workflow based on the S6a rubric.
+- `hocrgen`-side release cap records and enforcement based on the S6d handoff
+  policy.
 
 ## Handling Test Failures
 

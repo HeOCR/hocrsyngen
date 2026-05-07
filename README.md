@@ -36,6 +36,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Downstream realism acceptance rubric](docs/downstream_realism_acceptance_rubric.md)
 - [Downstream utility measurement contract](docs/downstream_utility_measurement_contract.md)
 - [Synthetic diversity and domain-shift metrics](docs/synthetic_diversity_domain_shift_metrics.md)
+- [Release cap handoff policy](docs/release_cap_handoff_policy.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -110,7 +111,11 @@ downstream utility measurement contract that keeps CER/WER claims gated on real
 references, ground truth, split/leakage controls, and synthetic-to-real
 comparison in `hocrgen`/HeOCR. S6c defines synthetic diversity and domain-shift
 metric boundaries for detecting repeated candidate-batch patterns,
-over-representation, and downstream synthetic-to-real comparison gaps.
+over-representation, and downstream synthetic-to-real comparison gaps. S6d
+defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence support
+downstream release cap decisions without moving caps, source composition,
+release eligibility, export, publication, or governance enforcement into this
+repository.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.

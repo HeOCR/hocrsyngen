@@ -4,15 +4,15 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S6b as the latest merged roadmap state for downstream evaluation
+1. Treat S6c as the latest merged roadmap state for downstream evaluation
    planning, with S5e closing handwriting research by deferral and S3f/S4d
    remaining the completed capability milestones for governed document families
    and style/condition readiness. Together these leave deterministic document
    families, style, condition, degradation, manifest, validation,
    installed-package CLI contracts, S5 research gates, allograph plus word/line
    assembly planning, optional learned-generation packaging boundaries, and the
-   S6a downstream realism acceptance rubric plus S6b downstream utility
-   measurement contract documented.
+   S6a downstream realism acceptance rubric, S6b downstream utility measurement
+   contract, and S6c diversity/domain-shift metrics documented.
 2. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -23,16 +23,21 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    gates and boundaries, but no accepted prototype or downstream evaluation
    evidence. Remaining S5 prototype/evaluation work is deferred to a future S5
    follow-up or external `hocrgen`/HeOCR work.
-5. Keep S6 active with `S6c` synthetic diversity and domain-shift metrics as
+5. Keep S6 active with `S6d` release cap handoff policy as
    the current planning PR. S6a is complete in PR #48 and defines downstream
    realism acceptance; S6b is complete in PR #49 and defines what evidence is
-   required before any CER/WER or other OCR/HTR utility claim is made; S6c now
-   defines how to detect repeated synthetic patterns, over-representation, and
-   synthetic-to-real comparison gaps before downstream dry-runs, utility
-   evaluations, or release planning.
+   required before any CER/WER or other OCR/HTR utility claim is made; S6c is
+   complete in PR #50 and defines how to detect repeated synthetic patterns,
+   over-representation, and synthetic-to-real comparison gaps before downstream
+   dry-runs, utility evaluations, or release planning. S6d now
+   defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence feed
+   downstream release cap decisions without moving cap ownership, source
+   composition, release eligibility, export, publication, or governance
+   enforcement into this repository.
 
-## Current Baseline After S6b
+## Current Baseline After S6c
 
+`S6c` - synthetic diversity and domain-shift metrics - is merged in PR #50.
 `S6b` - downstream utility measurement contract - is merged in PR #49. `S6a` -
 downstream realism acceptance rubric - is merged in PR #48. `S5e` - close S5
 planning and activate S6 evaluation gates - is merged in PR #47.
@@ -51,7 +56,10 @@ claims, benchmark/reference inclusion, release caps, or publication. S6b adds
 the downstream utility measurement evidence contract for real-reference
 prerequisites, CER/WER boundaries, split and leakage controls, evidence packets,
 and `hocrgen`/HeOCR ownership. It does not establish any OCR/HTR utility claim
-from this repository.
+from this repository. S6c adds candidate-batch diversity summaries,
+repeated-pattern warnings, and synthetic-to-real domain-shift evidence
+boundaries. It does not establish domain match, cap compliance, release
+eligibility, or publication readiness.
 
 Phase S5 closes by deferral rather than evidence: the repository does not
 contain accepted S5 prototype/evaluation evidence, ablation results, or
@@ -367,9 +375,15 @@ Planned PR breakdown:
 - `S6c` — Synthetic diversity and domain-shift metrics: define measurable
   candidate-batch diversity, repeated synthetic pattern warnings,
   over-representation signals, and synthetic-to-real gap tracking boundaries.
-  Status: active; documented in
+  Status: done in PR #50; documented in
   [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
-- `S6d` — Release cap handoff policy: document how hocrsyngen metadata supports hocrgen release profiles without moving governance into this repo.
+- `S6d` — Release cap handoff policy: document how public `hocrsyngen`
+  metadata, S6a reviewed realism evidence, S6b utility packet ids, and S6c
+  diversity/domain-shift packet ids support downstream `hocrgen`/HeOCR release
+  cap decisions without moving caps, balancing, source composition, release
+  eligibility, export, publication, or governance enforcement into this repo.
+  Status: active; documented in
+  [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
 - `S6e` — Review evidence sidecar contract: define a portable optional sidecar
   for reviewed sample ids, page ids, rejection reasons, visual inspection
   evidence, and reviewer workflow boundaries without changing manifest v1.

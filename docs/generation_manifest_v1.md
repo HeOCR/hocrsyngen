@@ -132,6 +132,12 @@ The governed template contract currently requires:
   approved. Manifest v1 must not gain model, weights, dataset, evaluation,
   review, release, writer, identity, authorship, or provenance claims as a side
   effect of learned-generation research.
+- Downstream release cap policy, source composition, reviewer state, release
+  eligibility, export, publication, and governance enforcement remain outside
+  manifest v1. S6d release cap decisions may cite manifest sample/page ids,
+  public provenance fields, controls, `template_catalog.v2`, optional rendering
+  coverage, and downstream evidence packet ids, but those decisions must be
+  stored in `hocrgen`/HeOCR governance records or future downstream contracts.
 
 ## Example Shape
 

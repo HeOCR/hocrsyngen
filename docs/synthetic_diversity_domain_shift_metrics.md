@@ -354,8 +354,9 @@ These may remain in `hocrsyngen`:
 Later S6 work should use this contract without moving downstream governance into
 `hocrsyngen`:
 
-- `S6d` should define release cap handoff policy so diversity and domain-shift
-  evidence cannot override source-composition limits.
+- `S6d` defines release cap handoff policy so diversity and domain-shift
+  evidence cannot override source-composition limits in
+  [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
 - `S6e` should define review evidence sidecars for durable reviewed ids,
   rejection reasons, and visual evidence outside manifest v1.
 - `S6f` should define candidate batch profiles and mix handoff so diversity
