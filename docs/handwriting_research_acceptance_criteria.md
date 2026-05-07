@@ -30,6 +30,28 @@ Research work is not acceptable when it adds release governance, review
 workflow, synthetic caps, dedupe, export, publication, network collection,
 scraping, or `hocrgen` adapter implementation to this repository.
 
+Use this location boundary for future S5 PRs:
+
+| Location | S5a acceptance | Notes |
+| --- | --- | --- |
+| `docs/` | Allowed for research plans, acceptance criteria, experiment reports, evaluation notes, and prototype findings. | This is the default home for S5 planning and evidence. |
+| `.agent-plan.md`, `docs/roadmap.md`, `llms.txt`, README/docs indexes | Allowed for concise state, roadmap, and navigation updates. | Keep these surfaces short; do not duplicate full experiment reports. |
+| `src/hocrsyngen/` | Not allowed for exploratory prototype code. | Code may move here only in a later implementation PR that explicitly promotes the method, preserves baseline dependency policy, updates tests/docs, and keeps public contracts compatible. |
+| `src/hocrsyngen/data/` | Not allowed for unapproved research assets or reference handwriting. | Bundled assets require documented provenance, license, redistribution permission, and an intentional package-data decision. |
+| `tests/` | Allowed only for contract, docs-consistency, or promoted implementation coverage. | Do not add tests that require private data, network access, heavyweight models, or exploratory assets. |
+| `experiments/`, `prototypes/`, or optional extras | Allowed only after the PR defines the directory/package boundary and excludes it from baseline install assumptions. | These paths do not exist today; creating one requires an explicit plan for dependencies, artifacts, and cleanup. |
+
+Prototype code is acceptable only when the PR answers all of these questions:
+
+- Where does the prototype live, and why is that location outside baseline
+  package behavior?
+- Which public contract, if any, can observe it?
+- Which commands reproduce it from a clean checkout?
+- Which dependencies are needed, and are they absent from baseline runtime and
+  test requirements?
+- Which generated artifacts are disposable, and which are intended to become
+  documented evidence?
+
 ## Baseline Package Boundary
 
 S5 research must protect the lightweight baseline package described in
@@ -174,30 +196,49 @@ repetitive, visibly reversed, clipped, dominated by artifacts, inconsistent
 with Hebrew layout expectations, or likely to be mistaken for real-writer
 imitation.
 
-## Downstream Utility And Evaluation Gates
+## Evaluation Dossier And Downstream Utility Gates
 
 S5 work may report generator-quality evidence in this repository, but
 downstream dataset acceptance and OCR/HTR utility remain `hocrgen`/HeOCR
 responsibilities.
 
-Before a research direction can be considered for implementation beyond docs,
-it should define:
+Before a research direction can proceed beyond docs-only planning, the PR must
+include a minimum evaluation dossier:
 
-- The intended evaluation question, such as visual realism, Hebrew readability,
-  OCR/HTR utility, diversity, domain-shift reduction, or robustness to
-  degradation.
-- The evaluation corpus or reference boundary, including whether real Hebrew
-  handwriting references exist and how they are licensed.
-- The metrics to inspect. CER/WER utility is valid only when downstream ground
-  truth references exist.
-- The comparison baseline, such as current `handwritten_note`, style bundles,
-  condition bundles, or a no-perturbation ablation.
-- Failure thresholds or rejection reasons that keep weak results from becoming
-  generator behavior.
+- Evaluation question: state whether the work targets visual realism, Hebrew
+  readability, OCR/HTR utility, diversity, domain-shift reduction, or robustness
+  to degradation.
+- Reproduction packet: list commands, seeds, control ids or parameters, input
+  assets, environment assumptions, and output artifact locations.
+- Comparison baseline: compare against current `handwritten_note`, style
+  bundles, condition bundles, or a no-perturbation ablation.
+- Sample coverage: include enough seed/template/control coverage to expose the
+  changed behavior and at least one failure case or rejection example when one
+  is found.
+- Visual review evidence: record reviewed sample ids, page ids, template ids,
+  review notes, and rejection reasons outside `generation_manifest.json` v1.
+- Licensing/provenance evidence: cite every font, text, image, handwriting
+  reference, model, or generated intermediate used by the experiment.
+- Claim boundary: state which claims are supported and which are explicitly not
+  supported, especially when real references or downstream ground truth are
+  unavailable.
+
+CER/WER utility is valid only when downstream ground truth references exist.
+
+Use this decision gate for S5b/S5c/S5d follow-up:
+
+| Decision | Required evidence |
+| --- | --- |
+| Proceed to a prototype PR | Reproduction packet, dependency boundary, asset provenance, comparison baseline, and visual review plan are complete. |
+| Proceed from prototype toward baseline implementation | Prototype evidence is reproducible, visually acceptable, contract-compatible, dependency-compatible, and improves or clarifies the comparison baseline without forbidden claims. |
+| Hold as docs-only research | Evidence is useful but lacks real-reference evaluation, sufficient visual review, stable asset provenance, or a clear public-contract path. |
+| Reject or stop | Results are unreproducible, visually unacceptable, licensing is unclear, dependency isolation fails, manifest v1 would be broken, or the work implies forbidden identity/authorship/sensitive claims. |
 
 When real references are unavailable, research can still proceed as prototype
 work using visual review, deterministic smoke checks, and ablations, but it
-must not claim measured downstream utility.
+must not claim measured downstream utility. In that case the PR must explicitly
+say: "No downstream utility claim is made because no governed real-reference
+evaluation was run."
 
 ## Criteria For S5b And S5c
 

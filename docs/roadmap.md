@@ -4,10 +4,11 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S3f and Phase S3 as the last merged roadmap milestone state: governed
-   document families, deterministic style, condition, degradation, manifest,
-   validation, and installed-package CLI contracts are ready for candidate
-   synthetic batch generation.
+1. Treat S3f and Phase S3 as the latest merged roadmap state for governed
+   document-family coverage, while S4d remains the merged style/condition
+   readiness milestone. Together these leave deterministic document families,
+   style, condition, degradation, manifest, validation, and installed-package
+   CLI contracts ready for candidate synthetic batch generation.
 2. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
