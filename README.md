@@ -35,6 +35,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Learned generation packaging boundary](docs/learned_generation_packaging_boundary.md)
 - [Downstream realism acceptance rubric](docs/downstream_realism_acceptance_rubric.md)
 - [Downstream utility measurement contract](docs/downstream_utility_measurement_contract.md)
+- [Synthetic diversity and domain-shift metrics](docs/synthetic_diversity_domain_shift_metrics.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -107,7 +108,9 @@ handwriting research. S6 now defines downstream evaluation and acceptance gates:
 S6a documents the downstream realism acceptance rubric, and S6b defines the
 downstream utility measurement contract that keeps CER/WER claims gated on real
 references, ground truth, split/leakage controls, and synthetic-to-real
-comparison in `hocrgen`/HeOCR.
+comparison in `hocrgen`/HeOCR. S6c defines synthetic diversity and domain-shift
+metric boundaries for detecting repeated candidate-batch patterns,
+over-representation, and downstream synthetic-to-real comparison gaps.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.

@@ -4,11 +4,12 @@ This document makes the current readiness state explicit. It records what is
 ready in `hocrsyngen`, what remains before generated batches can become
 governed dataset inputs, and which roadmap items should carry the work.
 
-## Current State After S6a
+## Current State After S6b
 
-The last merged roadmap item is `S6a` - downstream realism acceptance rubric,
-squash-merged in PR #48. `S5e` - close S5 planning and activate S6 evaluation
-gates - was squash-merged in PR #47. At this point
+The last merged roadmap item is `S6b` - downstream utility measurement
+contract, squash-merged in PR #49. `S6a` - downstream realism acceptance
+rubric - was squash-merged in PR #48. `S5e` - close S5 planning and activate
+S6 evaluation gates - was squash-merged in PR #47. At this point
 `hocrsyngen` can generate and validate deterministic candidate synthetic Hebrew
 OCR/HTR batches through public CLI surfaces:
 
@@ -35,7 +36,10 @@ visual evidence expectations, rejection reasons, and release-eligibility
 boundaries for `hocrgen`/HeOCR. S6b documents the utility measurement evidence
 contract, but no CER/WER or OCR/HTR utility claim is established by this
 repository until downstream governed real-reference evaluations are actually
-run.
+run. S6c is now the active planning item for diversity and domain-shift metrics:
+it should define generator-batch diversity summaries, repeated-pattern warnings,
+and downstream synthetic-to-real comparison requirements without adding
+generator behavior or moving governance into this repository.
 
 ## Crucial Missing Pieces
 
@@ -48,7 +52,7 @@ governed dataset flow.
 | Release profiles and synthetic caps | `hocrgen` | External dependency `H1b`; hocrsyngen tracks handoff policy in `S6d` | Caps, balancing, review state, release assembly, export, and publication must stay out of `hocrsyngen`. |
 | Review evidence sidecar | Shared contract, downstream use in `hocrgen` | `S6e` | Needed for durable reviewed sample ids, rejection reasons, and inspection evidence without changing manifest v1. |
 | Candidate batch profile and mix handoff | Shared contract, orchestration in `hocrgen` | `S6f` | Defines how template/style/condition/seed mixes are requested, recorded, capped, and audited. |
-| Downstream acceptance and utility gates | `hocrgen`/HeOCR with `hocrsyngen` metadata support | `S6a`, `S6b`, `S6c`, `S6d` | `S6a` documents downstream realism acceptance categories, evidence expectations, rejection reasons, and the distinction between generator-quality review and release eligibility. `S6b` defines the utility measurement evidence contract and keeps CER/WER claims gated on real references downstream. |
+| Downstream acceptance and utility gates | `hocrgen`/HeOCR with `hocrsyngen` metadata support | `S6a`, `S6b`, `S6c`, `S6d` | `S6a` documents downstream realism acceptance categories, evidence expectations, rejection reasons, and the distinction between generator-quality review and release eligibility. `S6b` defines the utility measurement evidence contract and keeps CER/WER claims gated on real references downstream. `S6c` defines diversity and domain-shift evidence boundaries so repeated synthetic patterns and target-domain gaps are visible before dry-runs, utility evaluations, or release planning. |
 
 ## High-Lift Quality Work
 
@@ -62,8 +66,8 @@ produce large quality or operational gains.
 | Additional governed document families | `S3f` | Done in PR #42; expands visual diversity beyond the earlier families and should help reduce overfitting to narrow synthetic layouts. |
 | Handwriting realism research | `S5a` through `S5e`, future S5 follow-up, or external `hocrgen`/HeOCR work | Biggest expected visual-realism lift for handwritten-like OCR/HTR samples, but S5 produced planning gates and boundaries only. S5a is done in PR #43, S5b is done in PR #44, S5c is done in PR #45, S5d is done in PR #46, and S5e closes S5 by deferring remaining prototype/evaluation evidence out of the baseline package. |
 | Downstream realism acceptance rubric | `S6a` | Done in PR #48; gives `hocrgen`/HeOCR reviewers a shared acceptance vocabulary for generated candidate batches before utility, caps, and review sidecar contracts are implemented. |
-| Downstream utility measurement | `S6b` | Defines how `hocrgen`/HeOCR must prove whether synthetic batches improve CER/WER or expose model weaknesses against real references before any utility claim is made. |
-| Diversity and domain-shift metrics | `S6c` | Helps detect synthetic over-representation, repeated artifacts, and gaps versus real Hebrew document distributions. |
+| Downstream utility measurement | `S6b` | Done in PR #49; defines how `hocrgen`/HeOCR must prove whether synthetic batches improve CER/WER or expose model weaknesses against real references before any utility claim is made. |
+| Diversity and domain-shift metrics | `S6c` | Active; helps detect synthetic over-representation, repeated artifacts, and gaps versus real Hebrew document distributions. |
 
 ## External hocrgen Dependency Labels
 
@@ -101,9 +105,14 @@ Use a dry-run flow before any real dataset release decision:
    references, ground truth, split/leakage controls, metric definitions, and
    synthetic-to-real comparison before any CER/WER or OCR/HTR utility claim is
    made.
-7. Record which missing metadata, utility evidence, review evidence, caps, or
-   mix controls would have changed the decision. Feed those gaps into `S2e`,
-   `S3e`, `S6b`, `S6e`, and `S6f` before scaling batch size.
+7. If diversity or domain shift is being rehearsed, apply
+   `docs/synthetic_diversity_domain_shift_metrics.md`: summarize candidate
+   diversity from public manifest/catalog/coverage surfaces, record
+   repeated-pattern warnings, and require governed real-reference comparison
+   before any synthetic-to-real domain-shift claim is made.
+8. Record which missing metadata, diversity evidence, utility evidence, review
+   evidence, caps, or mix controls would have changed the decision. Feed those
+   gaps into `S2e`, `S3e`, `S6c`, `S6e`, and `S6f` before scaling batch size.
 
 This rehearsal should prove integration behavior and expose review gaps. It
 should not publish or export release-ready dataset payloads.

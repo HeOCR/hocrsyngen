@@ -103,6 +103,8 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   [downstream_realism_acceptance_rubric.md](downstream_realism_acceptance_rubric.md),
   and S6b utility-evidence boundaries are documented in
   [downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md).
+  S6c diversity and domain-shift boundaries are documented in
+  [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
 - OCR/HTR utility only once downstream benchmark references, governed ground
   truth, split/leakage controls, metric definitions, and synthetic-to-real
   comparison evidence exist.
@@ -138,3 +140,6 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 - Which governed real-reference benchmark should first carry the S6b utility
   measurement packet, and how should synthetic diagnostic runs stay separated
   from real CER/WER claims?
+- Which real-reference metadata should first support S6c synthetic-to-real
+  domain-shift comparisons without leaking benchmark text or private source
+  details into synthetic batch planning?

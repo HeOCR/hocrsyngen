@@ -25,6 +25,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [visual_inspection_rubric.md](visual_inspection_rubric.md): human review criteria for S3 layout realism, Hebrew readability, artifacts, and candidate rejection.
 - [downstream_realism_acceptance_rubric.md](downstream_realism_acceptance_rubric.md): S6a downstream `hocrgen`/HeOCR acceptance categories, calibrated example classes, visual evidence expectations, rejection reasons, and release-eligibility boundaries.
 - [downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md): S6b downstream utility measurement contract for real-reference prerequisites, CER/WER boundaries, leakage controls, evidence packets, and `hocrgen`/HeOCR ownership.
+- [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md): S6c synthetic diversity and domain-shift metrics for candidate-batch summaries, repeated-pattern warnings, synthetic-to-real comparison requirements, leakage boundaries, and downstream ownership.
 - [roadmap.md](roadmap.md): hocrsyngen-specific phases from planning foundation through Hebrew rendering, realism, research, evaluation, and future script abstraction.
 - [research_program.md](research_program.md): planning track for believable synthetic Hebrew handwriting and document generation.
 - [handwriting_research_acceptance_criteria.md](handwriting_research_acceptance_criteria.md): S5a boundaries, reproducibility, licensing, visual review, downstream evaluation, and stop/reject gates for handwriting research.
