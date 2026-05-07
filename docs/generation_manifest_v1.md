@@ -126,6 +126,12 @@ The governed template contract currently requires:
   through new manifest v1 fields. Consumers can join validated
   `provenance.template_id` and `provenance.recipe_id` to
   `hocrsyngen templates --format json --catalog-version v2`.
+- Optional learned-generation metadata, if ever explored, must stay outside
+  manifest v1 in an explicitly designed experiment packet, sidecar, catalog,
+  optional package, or separate repository until a versioned contract update is
+  approved. Manifest v1 must not gain model, weights, dataset, evaluation,
+  review, release, writer, identity, authorship, or provenance claims as a side
+  effect of learned-generation research.
 
 ## Example Shape
 
