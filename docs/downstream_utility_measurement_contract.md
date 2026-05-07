@@ -228,5 +228,6 @@ Later S6 work should build on this boundary:
 - `S6f` defines candidate batch profiles and mix handoff so utility packets can
   state what template/style/condition/seed mix was requested in
   [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
-- `S6g` should document the external `hocrgen` adapter checklist for installed
-  CLI import, validation, governance, and dry-run rehearsal.
+- `S6g` documents the external `hocrgen` adapter checklist for installed CLI
+  import, validation, governance, and dry-run rehearsal in
+  [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).

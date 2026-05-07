@@ -111,6 +111,8 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
   S6f candidate batch profile and mix handoff boundaries are documented in
   [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
+  S6g external adapter handoff boundaries are documented in
+  [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
 - OCR/HTR utility only once downstream benchmark references, governed ground
   truth, split/leakage controls, metric definitions, and synthetic-to-real
   comparison evidence exist.
@@ -158,3 +160,7 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 - Which downstream `hocrgen` dry-run or release rehearsal should first record
   an S6f candidate batch profile with requested, generated/observed, reviewed,
   capped/admitted, and released mix layers?
+- Which downstream `hocrgen` adapter implementation should first exercise the
+  S6g checklist for installed CLI import, manifest validation,
+  `template_catalog.v2` joins, source batch boundaries, and S6a-S6f evidence
+  retention?

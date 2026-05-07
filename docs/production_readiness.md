@@ -4,9 +4,10 @@ This document makes the current readiness state explicit. It records what is
 ready in `hocrsyngen`, what remains before generated batches can become
 governed dataset inputs, and which roadmap items should carry the work.
 
-## Current State After S6e
+## Current State After S6f
 
-The last merged roadmap item is `S6e` - review evidence sidecar contract,
+The last merged roadmap item is `S6f` - candidate batch profile and mix
+handoff, squash-merged in PR #53. `S6e` - review evidence sidecar contract was
 squash-merged in PR #52. `S6d` - release cap handoff policy was squash-merged
 in PR #51. `S6c` - synthetic diversity and domain-shift
 metrics - was squash-merged in PR #50. `S6b` - downstream utility measurement
@@ -21,6 +22,7 @@ OCR/HTR batches through public CLI surfaces:
 - `hocrsyngen contracts --format json`
 - `hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch --output PATH --format json`
 - `hocrsyngen generate --count N --seed S --output PATH --format json`
+- `hocrsyngen generate --count N --seed S --output PATH --rendering-coverage-report --format json`
 - `hocrsyngen validate PATH --format json`
 
 The generator has governed templates including the S3f `ledger` family, stronger
@@ -48,8 +50,10 @@ composition, release eligibility, export, publication, or governance enforcement
 in this repository. S6e documents a portable optional review evidence sidecar
 contract for retaining reviewed sample/page ids, visual evidence, reviewer
 observations, decision categories, reason codes, and S6a/S6c/S6d references
-outside `generation_manifest.json` v1. S6f is now the active planning item for a
-candidate batch profile and mix handoff contract outside manifest v1.
+outside `generation_manifest.json` v1. S6f documents a candidate batch profile
+and mix handoff contract for requested, generated/observed, reviewed,
+capped/admitted, and released mix layers outside manifest v1. S6g is now the
+active planning item for the external `hocrgen` adapter handoff checklist.
 
 ## Crucial Missing Pieces
 
@@ -58,10 +62,11 @@ governed dataset flow.
 
 | Item | Owner | Roadmap tracking | Notes |
 | --- | --- | --- | --- |
-| `hocrgen` import/governance adapter | `hocrgen` | External dependency `H1a`; hocrsyngen supports it through S6 handoff docs | The adapter should consume installed CLI JSON and validated manifests, not private Python internals. |
+| `hocrgen` import/governance adapter | `hocrgen` | External dependency `H1a`; hocrsyngen supports it through S6 handoff docs; `S6g` active | The adapter should consume installed CLI JSON and validated manifests, not private Python internals. |
 | Release profiles and synthetic caps | `hocrgen` | External dependency `H1b`; hocrsyngen tracks handoff policy in `S6d` | Caps, balancing, source composition, review state, release eligibility, release assembly, export, and publication must stay out of `hocrsyngen`. |
 | Review evidence sidecar | Shared contract, downstream use in `hocrgen` | `S6e` | Done in PR #52; defines durable reviewed sample/page ids, reviewer notes, visual evidence references, S6a category references, S6c warning references, and S6d cap decision references without changing manifest v1. |
-| Candidate batch profile and mix handoff | Shared contract, orchestration in `hocrgen` | `S6f` | Active; defines how template/style/condition/seed mixes are requested, observed, reviewed, capped, and audited outside manifest v1. |
+| Candidate batch profile and mix handoff | Shared contract, orchestration in `hocrgen` | `S6f` | Done in PR #53; defines how template/style/condition/seed mixes are requested, observed, reviewed, capped, and audited outside manifest v1. |
+| `hocrgen` adapter handoff checklist | Shared checklist, implementation in `hocrgen` | `S6g` | Active; documents installed CLI import, validation, public JSON assertions, catalog joins, id retention, optional evidence links, failure handling, and downstream-only governance responsibilities. |
 | Downstream acceptance, utility, diversity, and cap gates | `hocrgen`/HeOCR with `hocrsyngen` metadata support | `S6a`, `S6b`, `S6c`, `S6d` | `S6a` documents downstream realism acceptance categories, evidence expectations, rejection reasons, and the distinction between generator-quality review and release eligibility. `S6b` defines the utility measurement evidence contract and keeps CER/WER claims gated on real references downstream. `S6c` defines diversity and domain-shift evidence boundaries so repeated synthetic patterns and target-domain gaps are visible before dry-runs, utility evaluations, or release planning. `S6d` defines how those evidence packets feed cap decisions without overriding source-composition policy. |
 
 ## High-Lift Quality Work
@@ -80,7 +85,8 @@ produce large quality or operational gains.
 | Diversity and domain-shift metrics | `S6c` | Done in PR #50; helps detect synthetic over-representation, repeated artifacts, and gaps versus real Hebrew document distributions. |
 | Release cap handoff policy | `S6d` | Done in PR #51; defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence support downstream cap decisions while keeping cap ownership, balancing, source composition, release eligibility, export, publication, and governance enforcement in `hocrgen`/HeOCR. |
 | Review evidence sidecar contract | `S6e` | Done in PR #52; defines a portable optional downstream evidence packet for reviewed ids, decision categories, reason codes, visual references, limitations, and links to S6a/S6c/S6d evidence without creating review workflow state in this repo. |
-| Candidate batch profile and mix handoff | `S6f` | Active; defines a portable optional downstream planning record for requested, generated/observed, reviewed, capped/admitted, and released candidate mixes without creating generator behavior, release profiles, or governance state in this repo. |
+| Candidate batch profile and mix handoff | `S6f` | Done in PR #53; defines a portable optional downstream planning record for requested, generated/observed, reviewed, capped/admitted, and released candidate mixes without creating generator behavior, release profiles, or governance state in this repo. |
+| `hocrgen` adapter handoff checklist | `S6g` | Active; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
 
 ## External hocrgen Dependency Labels
 
@@ -142,7 +148,13 @@ Use a dry-run flow before any real dataset release decision:
    separately; cite public `hocrsyngen` dimensions and S6a/S6c/S6d/S6e evidence
    references; and keep profile ownership, balancing, caps, release profiles,
    and governance in `hocrgen`/HeOCR.
-11. Record which missing metadata, diversity evidence, utility evidence, review
+11. Apply `docs/hocrgen_adapter_handoff_checklist.md` when implementing or
+   rehearsing the external `hocrgen` adapter: assert public JSON boundaries,
+   retain canonical manifest ids and relative asset paths, join
+   `(template_id, recipe_id)` to `template_catalog.v2`, preserve source batch
+   boundaries for S6f profiles, and fail closed on missing validation, assets,
+   hashes, catalog joins, or required S6 evidence.
+12. Record which missing metadata, diversity evidence, utility evidence, review
    evidence, caps, or mix controls would have changed the decision. Feed those
    gaps into `S2e`, `S3e`, `S6e`, `S6f`, and `S6g` before scaling batch size.
 

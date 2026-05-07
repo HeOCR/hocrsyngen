@@ -161,6 +161,13 @@ contract, release profile, cap enforcement mechanism, utility claim, or release
 approval. `hocrgen`/HeOCR own orchestration, balancing, caps, review state,
 release profiles, release eligibility, export, publication, and governance.
 
+The external adapter handoff checklist is documented in
+[hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
+It describes how a downstream `hocrgen` adapter should consume installed CLI
+commands, manifest v1, public JSON reports, `template_catalog.v2`, optional
+rendering coverage, and S6a-S6f evidence links. It is a checklist for
+downstream implementation, not adapter code or a new `hocrsyngen` schema.
+
 ## Layout Filtering Boundaries
 
 Current layout filtering should use only stable CLI and manifest surfaces.
@@ -292,6 +299,10 @@ governed dataset flows:
 - candidate batch profile and mix records using the S6f contract, with
   requested, generated/observed, reviewed, capped/admitted, and released layers
   retained separately downstream;
+- adapter import and dry-run records using the S6g checklist, with installed
+  CLI JSON boundary assertions, canonical id retention, catalog joins, source
+  batch boundaries, optional evidence links, and failure handling retained
+  downstream;
 - dedupe, leakage, benchmark/reference, release export, and publication gates;
 - downstream utility and domain-shift measurement when real references exist.
 
@@ -315,7 +326,8 @@ release behavior must be implemented in `hocrgen`, not in this repository.
 - `hocrgen` adapter tests should avoid assumptions about private Python dataclass names or package resource paths.
 - Any future manifest field needed by `hocrgen` must be added through schema, docs, and tests, with versioning when required.
 - Release profile rules and synthetic caps belong in `hocrgen`, not in `hocrsyngen`.
-- Richer layout filtering and batch mix orchestration require future public
-  contracts before downstream tools rely on them; S6e documents review evidence
-  sidecar boundaries and S6f documents candidate batch profile/mix handoff
+- Richer layout filtering and batch mix orchestration require public contracts
+  before downstream tools rely on them; S6e documents review evidence sidecar
+  boundaries, S6f documents candidate batch profile/mix handoff, and S6g
+  documents the external adapter checklist without adding adapter code here.
   boundaries without implementing downstream workflow or orchestration.

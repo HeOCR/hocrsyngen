@@ -253,4 +253,5 @@ contracts to later S6 items:
   [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
 - `S6f` defines candidate batch profile and mix handoff in
   [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
-- `S6g` should document the external `hocrgen` adapter implementation checklist.
+- `S6g` documents the external `hocrgen` adapter implementation checklist in
+  [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).

@@ -36,6 +36,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `docs/release_cap_handoff_policy.md`: S6d release cap handoff policy for public hocrsyngen metadata, evidence packet ids, downstream cap records, source-composition boundaries, and hocrgen/HeOCR governance ownership.
 - `docs/review_evidence_sidecar_contract.md`: S6e review evidence sidecar contract for reviewed sample/page ids, reviewer state, decision categories, reason codes, visual evidence references, S6a category references, S6c warning references, S6d cap decision references, limitations, and downstream governance ownership.
 - `docs/candidate_batch_profile_mix_handoff.md`: S6f candidate batch profile and mix handoff contract for requested, generated/observed, reviewed, capped/admitted, and released mix layers, gap reason codes, and downstream ownership boundaries.
+- `docs/hocrgen_adapter_handoff_checklist.md`: S6g external hocrgen adapter handoff checklist for installed CLI import, public JSON assertions, manifest id/path retention, template_catalog.v2 joins, S6a-S6f evidence links, failure handling, and downstream governance boundaries.
 
 ## Public Contracts
 
@@ -51,6 +52,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - Optional `rendering_coverage_report.json` sidecar with report version `rendering_coverage_report.v1`
 - Optional downstream review evidence sidecar contract documented as `review_evidence_sidecar.v1`; it is not emitted or validated by `hocrsyngen`
 - Optional downstream candidate batch profile/mix contract documented as `candidate_batch_profile_mix.v1`; it is not emitted or validated by `hocrsyngen`
+- External downstream adapter checklist documented in `docs/hocrgen_adapter_handoff_checklist.md`; it is not emitted or validated by `hocrsyngen`
 - Packaged contract fixture id `generation_manifest_v1_fixture_batch`
 
 ## Non-Goals And Boundaries

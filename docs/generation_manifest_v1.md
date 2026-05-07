@@ -153,6 +153,13 @@ The governed template contract currently requires:
   ownership, balancing, orchestration, caps, release profiles, release
   eligibility, export, publication, and governance enforcement must be stored
   downstream in `hocrgen`/HeOCR records or future downstream contracts.
+- Downstream adapter import state remains outside manifest v1. S6g adapter
+  checklists may require `hocrgen` to retain canonical manifest sample/page ids,
+  relative asset paths, validation reports, generation reports, fixture export
+  reports, `template_catalog.v2` joins, optional rendering coverage, and S6a-S6f
+  evidence links, but import ids, dry-run ids, adapter workflow state, storage,
+  review, caps, export, publication, and governance enforcement must be stored
+  downstream.
 
 ## Example Shape
 

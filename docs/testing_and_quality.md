@@ -171,6 +171,15 @@ manifest fields, schemas, dependencies, adapter code, orchestration, cap
 enforcement, release profiles, export behavior, publication behavior, release
 eligibility, or CI gates to `hocrsyngen`.
 
+S6 external `hocrgen` adapter handoff guidance is documented in
+[hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
+It defines installed CLI commands, public JSON boundary assertions, import-flow
+checks, evidence links, failure handling, and downstream-only responsibilities.
+It is not automated test coverage in this repo and does not add adapter code,
+manifest fields, schemas, dependencies, orchestration, review workflow, release
+profiles, cap enforcement, export behavior, publication behavior, release
+eligibility, or CI gates to `hocrsyngen`.
+
 ## Environmental Requirement
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
@@ -214,6 +223,10 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 - Candidate batch profile and mix records should follow the S6f contract and
   keep requested, generated/observed, reviewed, capped/admitted, and released
   layers separate outside `generation_manifest.json` v1.
+- External `hocrgen` adapter tests should follow the S6g checklist and assert
+  installed CLI JSON reports, manifest validation, relative path retention,
+  `template_catalog.v2` joins, optional rendering coverage, and S6a-S6f
+  evidence links at downstream boundaries.
 - Additional synthetic persona/style/condition consistency reports governed by
   [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
   automated S4 style consistency checks now covered in the test suite.
