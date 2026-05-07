@@ -218,8 +218,9 @@ Later S6 work should build on this boundary:
 - `S6c` defines diversity and domain-shift metrics that explain whether
   synthetic candidates cover or distort real-reference distributions in
   [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
-- `S6d` should define release cap handoff policy so utility evidence does not
-  override source composition and synthetic cap decisions.
+- `S6d` defines release cap handoff policy so utility evidence does not override
+  source composition and synthetic cap decisions in
+  [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
 - `S6e` should define review evidence sidecars for durable reviewed ids and
   rejection reasons outside manifest v1.
 - `S6f` should define candidate batch profiles and mix handoff so utility

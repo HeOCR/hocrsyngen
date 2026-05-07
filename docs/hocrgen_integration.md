@@ -130,6 +130,16 @@ governed real-reference metadata, split/leakage controls, and separate
 real-only, synthetic-only, and mixed strata in `hocrgen`/HeOCR. They cannot be
 inferred from generator variety alone.
 
+Release cap handoff guidance is documented in
+[release_cap_handoff_policy.md](release_cap_handoff_policy.md). It defines how
+public `hocrsyngen` identifiers, manifest provenance, `template_catalog.v2`,
+optional rendering coverage, S6a reviewed realism evidence, S6b utility packet
+ids, and S6c diversity/domain-shift packet ids can support downstream cap
+decisions. Caps, balancing, source composition, release eligibility, reviewer
+state, leakage controls, release assembly, export, publication, and governance
+enforcement remain `hocrgen`/HeOCR responsibilities and must not be inferred
+from `hocrsyngen` validation or metadata alone.
+
 ## Layout Filtering Boundaries
 
 Current layout filtering should use only stable CLI and manifest surfaces.
@@ -251,13 +261,16 @@ governed dataset flows:
 - diversity and domain-shift measurement using the S6c contract, with
   synthetic-to-real claims gated on governed real-reference comparison and
   leakage controls;
+- release cap decisions using the S6d handoff policy, with source composition,
+  synthetic percentage and absolute limits, per-family/style/condition caps,
+  reviewer state, reason codes, and limitations retained downstream;
 - dedupe, leakage, benchmark/reference, release export, and publication gates;
 - downstream utility and domain-shift measurement when real references exist.
 
 `hocrsyngen` tracks supporting contract and documentation work in
 [production_readiness.md](production_readiness.md) and [roadmap.md](roadmap.md).
-The actual adapter, governance, caps, review workflow, and release behavior must
-be implemented in `hocrgen`, not in this repository.
+The actual adapter, governance, caps, cap enforcement, review workflow, and
+release behavior must be implemented in `hocrgen`, not in this repository.
 
 ## Fixture Expectations For hocrgen Adapter Tests
 

@@ -105,6 +105,8 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   [downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md).
   S6c diversity and domain-shift boundaries are documented in
   [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
+  S6d release cap handoff boundaries are documented in
+  [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
 - OCR/HTR utility only once downstream benchmark references, governed ground
   truth, split/leakage controls, metric definitions, and synthetic-to-real
   comparison evidence exist.
@@ -143,3 +145,6 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 - Which real-reference metadata should first support S6c synthetic-to-real
   domain-shift comparisons without leaking benchmark text or private source
   details into synthetic batch planning?
+- Which release profile should first record S6d cap decisions with explicit
+  synthetic percentage, absolute, family, style, condition, review, leakage,
+  and limitation fields downstream?

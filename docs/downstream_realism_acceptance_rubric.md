@@ -246,8 +246,8 @@ contracts to later S6 items:
 - `S6c` defines diversity and domain-shift metrics that detect repeated
   synthetic patterns and synthetic-to-real gaps in
   [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
-- `S6d` should define release cap handoff policy without moving governance into
-  this repository.
+- `S6d` defines release cap handoff policy without moving governance into this
+  repository in [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
 - `S6e` should define any review evidence sidecar outside
   `generation_manifest.json` v1.
 - `S6f` should define candidate batch profile and mix handoff.
