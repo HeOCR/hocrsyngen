@@ -27,6 +27,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [research_program.md](research_program.md): planning track for believable synthetic Hebrew handwriting and document generation.
 - [handwriting_research_acceptance_criteria.md](handwriting_research_acceptance_criteria.md): S5a boundaries, reproducibility, licensing, visual review, downstream evaluation, and stop/reject gates for handwriting research.
 - [allograph_character_prototype_plan.md](allograph_character_prototype_plan.md): S5b deterministic allograph and character-level prototype boundary, bounded sampling plan, Hebrew cases, evidence plan, and proceed/stop gates.
+- [word_line_assembly_prototype_plan.md](word_line_assembly_prototype_plan.md): S5c deterministic word and line assembly prototype boundary, spacing/wrapping controls, Hebrew cases, S5b interaction, evidence plan, and proceed/stop gates.
 - [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.
 - [decisions/](decisions/): accepted ADR-style design decisions, including persona/style/condition semantics.
 - [decisions/0005-persona-style-condition-semantics.md](decisions/0005-persona-style-condition-semantics.md): normative semantics and forbidden-claim boundaries for synthetic persona, style, and condition controls.
