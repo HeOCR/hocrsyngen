@@ -4,10 +4,10 @@ This document makes the current readiness state explicit. It records what is
 ready in `hocrsyngen`, what remains before generated batches can become
 governed dataset inputs, and which roadmap items should carry the work.
 
-## Current State After S5d
+## Current State After S5e
 
-The last merged roadmap item is `S5d` - optional learned-generation packaging
-boundary, squash-merged in PR #46. At this point
+The last merged roadmap item is `S5e` - close S5 planning and activate S6
+evaluation gates, squash-merged in PR #47. At this point
 `hocrsyngen` can generate and validate deterministic candidate synthetic Hebrew
 OCR/HTR batches through public CLI surfaces:
 
@@ -40,7 +40,7 @@ governed dataset flow.
 | Release profiles and synthetic caps | `hocrgen` | External dependency `H1b`; hocrsyngen tracks handoff policy in `S6d` | Caps, balancing, review state, release assembly, export, and publication must stay out of `hocrsyngen`. |
 | Review evidence sidecar | Shared contract, downstream use in `hocrgen` | `S6e` | Needed for durable reviewed sample ids, rejection reasons, and inspection evidence without changing manifest v1. |
 | Candidate batch profile and mix handoff | Shared contract, orchestration in `hocrgen` | `S6f` | Defines how template/style/condition/seed mixes are requested, recorded, capped, and audited. |
-| Downstream acceptance and utility gates | `hocrgen`/HeOCR with `hocrsyngen` metadata support | `S6a`, `S6b`, `S6c`, `S6d` | Needed to separate valid generation from release eligibility and measured OCR/HTR utility. |
+| Downstream acceptance and utility gates | `hocrgen`/HeOCR with `hocrsyngen` metadata support | `S6a`, `S6b`, `S6c`, `S6d` | `S6a` starts this by documenting downstream realism acceptance categories, evidence expectations, rejection reasons, and the distinction between generator-quality review and release eligibility. |
 
 ## High-Lift Quality Work
 
@@ -53,6 +53,7 @@ produce large quality or operational gains.
 | Richer template/catalog metadata | `S3e` | Lets downstream tools filter by document family, page regions, annotations, identifiers, density, and base family through a stable public boundary. |
 | Additional governed document families | `S3f` | Done in PR #42; expands visual diversity beyond the earlier families and should help reduce overfitting to narrow synthetic layouts. |
 | Handwriting realism research | `S5a` through `S5e`, future S5 follow-up, or external `hocrgen`/HeOCR work | Biggest expected visual-realism lift for handwritten-like OCR/HTR samples, but S5 produced planning gates and boundaries only. S5a is done in PR #43, S5b is done in PR #44, S5c is done in PR #45, S5d is done in PR #46, and S5e closes S5 by deferring remaining prototype/evaluation evidence out of the baseline package. |
+| Downstream realism acceptance rubric | `S6a` | Gives `hocrgen`/HeOCR reviewers a shared acceptance vocabulary for generated candidate batches before utility, caps, and review sidecar contracts are implemented. |
 | Downstream utility measurement | `S6b` | Proves whether synthetic batches improve CER/WER or expose model weaknesses against real references. |
 | Diversity and domain-shift metrics | `S6c` | Helps detect synthetic over-representation, repeated artifacts, and gaps versus real Hebrew document distributions. |
 
@@ -83,8 +84,10 @@ Use a dry-run flow before any real dataset release decision:
 3. Validate the batch with `hocrsyngen validate PATH --format json`.
 4. Import the validated batch into a `hocrgen` dry-run adapter using only the
    manifest and public CLI reports.
-5. Apply manual review using `docs/visual_inspection_rubric.md`, recording notes
-   outside `generation_manifest.json` v1.
+5. Apply manual generator-quality review using
+   `docs/visual_inspection_rubric.md`, then apply downstream realism acceptance
+   using `docs/downstream_realism_acceptance_rubric.md`, recording notes outside
+   `generation_manifest.json` v1.
 6. Record which missing metadata, review evidence, caps, or mix controls would
    have changed the decision. Feed those gaps into `S2e`, `S3e`, `S6e`, and
    `S6f` before scaling batch size.

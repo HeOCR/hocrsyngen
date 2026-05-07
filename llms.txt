@@ -30,6 +30,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `docs/allograph_character_prototype_plan.md`: S5b deterministic allograph and character-level prototype boundary, bounded sampling plan, Hebrew cases, evidence plan, and proceed/stop gates.
 - `docs/word_line_assembly_prototype_plan.md`: S5c deterministic word and line assembly prototype boundary, spacing/wrapping controls, Hebrew cases, S5b interaction, evidence plan, and proceed/stop gates.
 - `docs/learned_generation_packaging_boundary.md`: S5d optional learned-generation packaging boundary for experiments, extras, separate packages, model/data provenance, reproducibility, sidecars, and stop/refuse gates.
+- `docs/downstream_realism_acceptance_rubric.md`: S6a downstream realism acceptance categories, calibrated example classes, visual evidence expectations, rejection reasons, and hocrgen/HeOCR release-eligibility boundaries.
 
 ## Public Contracts
 

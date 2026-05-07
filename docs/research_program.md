@@ -99,7 +99,8 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   line assembly research. Remaining prototype/evaluation evidence is deferred
   unless a future follow-up satisfies the documented S5 gates.
 - S6 downstream realism acceptance, review evidence, utility, diversity,
-  domain-shift, and cap handoff gates, starting with `S6a`.
+  domain-shift, and cap handoff gates, starting with `S6a`
+  [downstream_realism_acceptance_rubric.md](downstream_realism_acceptance_rubric.md).
 - OCR/HTR utility once downstream benchmark references exist.
 - Diversity metrics across templates, fonts, text, degradation, styles, and layout families.
 - Ablation tests for style controls, degradation, and layout changes.
@@ -128,3 +129,5 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   follow-up rather than stay external to `hocrsyngen`?
 - Which style controls are useful to downstream OCR/HTR evaluation rather than merely visually varied?
 - How should `hocrgen` cap or stratify synthetic persona/style groups in release profiles?
+- Which calibrated downstream realism examples should be retained as reference
+  review evidence once `hocrgen` has a review workflow?
