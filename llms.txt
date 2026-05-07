@@ -25,7 +25,8 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `src/hocrsyngen/data/synthetic/fonts/manifest.yaml`: governed packaged font registry.
 - `src/hocrsyngen/data/synthetic/texts/hebrew_lines.txt`: packaged Hebrew text corpus.
 - `tests/`: contract, generation, validation, installation, and wheel packaging tests.
-- `docs/production_readiness.md`: post-S4d readiness state, explicit missing production pieces, high-lift quality work, and external hocrgen dependencies.
+- `docs/production_readiness.md`: current readiness state, explicit missing production pieces, high-lift quality work, and external hocrgen dependencies.
+- `docs/handwriting_research_acceptance_criteria.md`: S5a handwriting research boundaries, reproducibility, licensing, review, evaluation, and stop/reject gates.
 
 ## Public Contracts
 

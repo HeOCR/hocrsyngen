@@ -8,6 +8,13 @@ This is a planning document only. It does not introduce research code or new gen
 
 The research program should improve realism and utility without weakening the baseline contract: deterministic candidate batches, explicit provenance, synthetic disclosure, and no heavyweight baseline dependencies.
 
+S5 handwriting research must satisfy
+[handwriting_research_acceptance_criteria.md](handwriting_research_acceptance_criteria.md)
+before moving from planning into prototypes or implementation. Those criteria
+define experiment boundaries, reproducibility requirements, licensing
+constraints, forbidden claims, manifest v1 compatibility, visual review gates,
+downstream evaluation gates, and stop/reject conditions.
+
 ## Research Tracks
 
 1. Deterministic typography and document simulation baseline.
@@ -59,6 +66,8 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 
 - Contract validation for manifest, assets, hashes, JPEG dimensions, and text metadata.
 - Visual inspection rubric for Hebrew text plausibility, layout believability, and artifact control.
+- S5 handwriting-specific acceptance gates for allograph, character, word, and
+  line assembly research.
 - OCR/HTR utility once downstream benchmark references exist.
 - Diversity metrics across templates, fonts, text, degradation, styles, and layout families.
 - Ablation tests for style controls, degradation, and layout changes.
@@ -73,6 +82,8 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   provenance claims from persona/style/condition controls.
 - Asset licenses must be tracked.
 - Generated data does not bypass `hocrgen` release governance.
+- Research directions must stop when licensing, provenance, reproducibility,
+  forbidden-claim, manifest-compatibility, or review-gate criteria are not met.
 
 ## Open Questions
 

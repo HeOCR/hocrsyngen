@@ -26,9 +26,10 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Architecture](docs/architecture.md)
 - [generation_manifest.json v1](docs/generation_manifest_v1.md)
 - [hocrgen integration](docs/hocrgen_integration.md)
-- [Post-S4d production readiness](docs/production_readiness.md)
+- [Production readiness](docs/production_readiness.md)
 - [Roadmap](docs/roadmap.md)
 - [Research program](docs/research_program.md)
+- [Handwriting research acceptance criteria](docs/handwriting_research_acceptance_criteria.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -93,10 +94,10 @@ catalog metadata without importing private recipe internals. Manifest v1 remains
 unchanged. The v2 catalog is JSON-only; `--catalog-version v2` must be used with
 `--format json`.
 
-After S4d, `hocrsyngen` is ready to generate validated candidate synthetic
-batches. Readiness for public dataset use still depends on downstream
-`hocrgen` import governance, review, caps, dedupe, release assembly, export, and
-publication policy.
+After S3f, `hocrsyngen` is ready to generate validated candidate synthetic
+batches with the current governed document families. Readiness for public
+dataset use still depends on downstream `hocrgen` import governance, review,
+caps, dedupe, release assembly, export, and publication policy.
 
 Text output remains the default generation behavior for human-facing CLI use;
 successful generation does not print a report unless requested.

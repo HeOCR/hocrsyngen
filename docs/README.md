@@ -16,7 +16,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [architecture.md](architecture.md): current module map, data flow, public surfaces, dependencies, failure modes, and extension points.
 - [generation_manifest_v1.md](generation_manifest_v1.md): serialized `generation_manifest.json` v1 contract and validation expectations.
 - [hocrgen_integration.md](hocrgen_integration.md): stable downstream integration contract for `hocrgen`.
-- [production_readiness.md](production_readiness.md): post-S4d readiness state,
+- [production_readiness.md](production_readiness.md): current production-readiness state,
   crucial missing pieces, high-lift quality work, and external `hocrgen`
   dependencies before candidate batches become governed dataset inputs.
 - [rendering_coverage_reporting.md](rendering_coverage_reporting.md): design and implemented contract for opt-in Hebrew rendering coverage reports outside manifest v1.
@@ -25,6 +25,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [visual_inspection_rubric.md](visual_inspection_rubric.md): human review criteria for S3 layout realism, Hebrew readability, artifacts, and candidate rejection.
 - [roadmap.md](roadmap.md): hocrsyngen-specific phases from planning foundation through Hebrew rendering, realism, research, evaluation, and future script abstraction.
 - [research_program.md](research_program.md): planning track for believable synthetic Hebrew handwriting and document generation.
+- [handwriting_research_acceptance_criteria.md](handwriting_research_acceptance_criteria.md): S5a boundaries, reproducibility, licensing, visual review, downstream evaluation, and stop/reject gates for handwriting research.
 - [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.
 - [decisions/](decisions/): accepted ADR-style design decisions, including persona/style/condition semantics.
 - [decisions/0005-persona-style-condition-semantics.md](decisions/0005-persona-style-condition-semantics.md): normative semantics and forbidden-claim boundaries for synthetic persona, style, and condition controls.
