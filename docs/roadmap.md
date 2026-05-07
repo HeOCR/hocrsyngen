@@ -4,36 +4,48 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S5c as the latest merged roadmap state for handwriting research
+1. Treat S5d as the latest merged roadmap state for handwriting research
    planning, with S3f and S4d remaining the completed capability milestones for
    governed document families and style/condition readiness. Together these
    leave deterministic document families, style, condition, degradation,
-   manifest, validation, installed-package CLI contracts, S5 research gates, and
-   allograph plus word/line assembly planning ready for candidate synthetic
-   batch generation and docs-first prototype planning.
+   manifest, validation, installed-package CLI contracts, S5 research gates,
+   allograph plus word/line assembly planning, and optional learned-generation
+   packaging boundaries ready for candidate synthetic batch generation and
+   docs-first future prototype planning.
 2. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
 3. Make production-readiness gaps explicit in this roadmap or in a named
    external `hocrgen` dependency. Do not leave required release, review, or
    quality gates only in conversation notes.
-4. Make S5d the active high-lift quality item: design optional
-   learned-generation packaging boundaries before any ML-backed experiment,
-   extra, subpackage, or separate package is introduced.
-5. Keep optional ML-backed synthesis separate from baseline dependencies,
-   manifest v1, packaged fixtures, and default CLI/test behavior.
+4. Close S5 through the deferral path recorded by S5d: this repo has planning
+   gates and boundaries, but no accepted prototype or downstream evaluation
+   evidence. Remaining S5 prototype/evaluation work is deferred to a future S5
+   follow-up or external `hocrgen`/HeOCR work.
+5. Make S6 active, starting with `S6a` downstream realism acceptance rubric, so
+   evaluation, review evidence, utility, caps, and release-gate boundaries are
+   explicit before any candidate batch is considered release-eligible.
 
-## Current Baseline After S5c
+## Current Baseline After S5d
 
-`S5c` - deterministic word and line assembly prototype planning - is merged in
-PR #45. The current baseline can generate and validate deterministic candidate
-batches through public CLI JSON surfaces, and S5 handwriting research now has
+`S5d` - optional learned-generation packaging boundary - is merged in PR #46.
+The current baseline can generate and validate deterministic candidate batches
+through public CLI JSON surfaces, and S5 handwriting research now has
 explicit boundaries for reproducibility, provenance, licensing, forbidden
 claims, manifest v1 compatibility, visual review, allograph planning,
-word/line assembly planning, and stop/reject gates. This readiness does not
-make any generated batch release-ready.
+word/line assembly planning, learned-generation packaging, and stop/reject
+gates. This readiness does not make any generated batch release-ready.
 `hocrgen` remains the owner of dataset import, release profiles, review, dedupe,
 privacy, caps, benchmark handling, release export, and publication.
+
+Phase S5 closes by deferral rather than evidence: the repository does not
+contain accepted S5 prototype/evaluation evidence, ablation results, or
+downstream utility measurements. Remaining S5 prototype/evaluation deliverables
+are intentionally deferred out of the baseline `hocrsyngen` package. They may
+return as a future S5 follow-up only if their dependency, provenance,
+reproducibility, visual-evidence, and manifest-boundary gates are satisfied, or
+they may be handled externally in `hocrgen`/HeOCR when governed references and
+release workflows exist.
 
 The production-readiness plan is tracked in
 [production_readiness.md](production_readiness.md). Any future planning update
@@ -252,7 +264,7 @@ Risks/dependencies:
 
 ## Phase S5 — Handwriting Research Program
 
-Current status: `active`.
+Current status: `done`.
 
 Objective: explore higher-quality Hebrew handwriting synthesis while protecting the lightweight baseline package.
 
@@ -280,8 +292,12 @@ Planned PR breakdown:
   [word_line_assembly_prototype_plan.md](word_line_assembly_prototype_plan.md).
 - `S5d` — Optional learned-generation packaging design: design
   extras/subpackages/experiments for ML-backed generation without contaminating
-  baseline dependencies. Status: active in this PR; design tracked in
+  baseline dependencies. Status: done in PR #46; design tracked in
   [learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md).
+- `S5e` — Close S5 planning and activate S6 evaluation gates: close S5 by
+  explicitly deferring remaining prototype/evaluation evidence work out of the
+  baseline package, record the post-S5 planning state, and make S6 active.
+  Status: done in PR #47.
 
 Deliverables:
 
@@ -294,7 +310,8 @@ Exit criteria:
 - Research paths remain isolated from baseline installs.
 - Useful methods have reproducibility, provenance, and evaluation evidence, or
   unresolved prototype/evaluation work is explicitly deferred with a recorded
-  reason and follow-up owner before Phase S5 closes.
+  reason and follow-up owner. S5 closed by the deferral path because no accepted
+  prototype/evaluation evidence exists in this repo.
 - Downstream utility can be measured through `hocrgen` when references exist.
 
 Risks/dependencies:
@@ -304,7 +321,7 @@ Risks/dependencies:
 
 ## Phase S6 — Evaluation And Acceptance Gates
 
-Current status: `future`.
+Current status: `active`.
 
 Objective: define downstream acceptance, caps, inspection evidence, and utility
 measurement before any synthetic batch is considered for release.
@@ -320,7 +337,7 @@ Scope:
 
 Planned PR breakdown:
 
-- `S6a` — Downstream realism acceptance rubric: define hocrgen/HeOCR acceptance categories, calibrated examples, review evidence, and release-gate rejection reasons that build on the S3 generator-quality visual inspection checklist.
+- `S6a` — Downstream realism acceptance rubric: define hocrgen/HeOCR acceptance categories, calibrated examples, review evidence, and release-gate rejection reasons that build on the S3 generator-quality visual inspection checklist. Status: next recommended PR.
 - `S6b` — Downstream utility measurement contract: document how `hocrgen`/HeOCR benchmarks should consume hocrsyngen outputs for CER/WER only when references exist.
 - `S6c` — Synthetic diversity and domain-shift metrics: define measurable diversity and synthetic-to-real gap tracking.
 - `S6d` — Release cap handoff policy: document how hocrsyngen metadata supports hocrgen release profiles without moving governance into this repo.

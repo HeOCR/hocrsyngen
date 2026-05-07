@@ -29,12 +29,20 @@ wrapping, baseline drift, slant, per-line perturbation, Hebrew-specific review
 cases, S5b allograph interaction, manifest v1 boundaries, visual evidence, and
 proceed/hold/stop gates.
 
-The active S5d follow-up is planned in
+The S5d follow-up is planned in
 [learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md).
 It keeps optional learned-generation work docs-first and defines experiment,
 extra, subpackage, and separate-package boundaries for ML-backed methods without
 contaminating baseline dependencies, manifest v1, packaged fixtures, or default
 CLI/test behavior.
+
+S5 is closed by deferral, not by accepted prototype or evaluation evidence. The
+S5a through S5d documents define acceptance gates, prototype plans, and
+packaging boundaries, but this repository does not contain accepted S5
+prototype/evaluation evidence, ablation results, or downstream utility
+measurements. Remaining handwriting prototype/evaluation work is intentionally
+deferred to a future S5 follow-up or external `hocrgen`/HeOCR work; it should
+not be treated as baseline `hocrsyngen` generator behavior.
 
 ## Research Tracks
 
@@ -88,7 +96,10 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 - Contract validation for manifest, assets, hashes, JPEG dimensions, and text metadata.
 - Visual inspection rubric for Hebrew text plausibility, layout believability, and artifact control.
 - S5 handwriting-specific acceptance gates for allograph, character, word, and
-  line assembly research.
+  line assembly research. Remaining prototype/evaluation evidence is deferred
+  unless a future follow-up satisfies the documented S5 gates.
+- S6 downstream realism acceptance, review evidence, utility, diversity,
+  domain-shift, and cap handoff gates, starting with `S6a`.
 - OCR/HTR utility once downstream benchmark references exist.
 - Diversity metrics across templates, fonts, text, degradation, styles, and layout families.
 - Ablation tests for style controls, degradation, and layout changes.
@@ -113,8 +124,7 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 
 - What minimal metadata is needed before schema v2?
 - How should Hebrew handwriting realism be evaluated without enough real reference data?
-- Which optional learned-generation prototype, if any, can satisfy the S5d
-  packaging boundary without baseline dependency, manifest, fixture, or
-  provenance contamination?
+- Which deferred handwriting prototype, if any, should return as a future S5
+  follow-up rather than stay external to `hocrsyngen`?
 - Which style controls are useful to downstream OCR/HTR evaluation rather than merely visually varied?
 - How should `hocrgen` cap or stratify synthetic persona/style groups in release profiles?
