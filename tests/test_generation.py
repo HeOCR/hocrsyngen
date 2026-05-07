@@ -1616,11 +1616,14 @@ def test_template_catalog_resolves_packaged_fonts_by_style() -> None:
 
 def test_rich_template_catalog_exposes_stable_join_metadata() -> None:
     catalog = {entry.template_id: entry for entry in rich_template_catalog()}
+    printed_letter = catalog["printed_letter"].capability_metadata
+    handwritten_note = catalog["handwritten_note"].capability_metadata
+    archive_card = catalog["archive_card"].capability_metadata
 
     assert catalog["printed_letter"].recipe_id == "printed_letter_form_v1"
-    assert catalog["printed_letter"].document_family == "letter"
-    assert catalog["printed_letter"].base_family == "printed_letter"
-    assert catalog["printed_letter"].page_regions == (
+    assert printed_letter.document_family == "letter"
+    assert printed_letter.base_family == "printed_letter"
+    assert printed_letter.page_regions == (
         "title",
         "body",
         "footer",
@@ -1628,19 +1631,25 @@ def test_rich_template_catalog_exposes_stable_join_metadata() -> None:
         "stamp_area",
         "signature_area",
     )
-    assert catalog["printed_letter"].annotation_types == ("synthetic_stamp",)
-    assert catalog["printed_letter"].identifier_types == ("page_number",)
-    assert catalog["printed_letter"].layout_density == "moderate"
-    assert "has_stable_regions" in catalog["printed_letter"].review_features
+    assert printed_letter.annotation_types == ("synthetic_stamp",)
+    assert printed_letter.identifier_types == ("footer_label",)
+    assert printed_letter.layout_density == "moderate"
+    assert "has_stable_regions" in printed_letter.review_features
 
-    assert catalog["printed_letter_heavy_scan"].base_family == "printed_letter"
-    assert catalog["handwritten_note"].document_family == "notebook_note"
-    assert catalog["handwritten_note_heavy_wear"].base_family == "handwritten_note"
-    assert "marginal_note" in catalog["handwritten_note"].annotation_types
-    assert catalog["archive_card"].document_family == "archive_card"
-    assert catalog["archive_card_faded_scan"].base_family == "archive_card"
-    assert catalog["archive_card"].identifier_types == ("archive_id", "date")
-    assert catalog["archive_card"].layout_density == "dense"
+    assert (
+        catalog["printed_letter_heavy_scan"].capability_metadata.base_family
+        == "printed_letter"
+    )
+    assert handwritten_note.document_family == "notebook_note"
+    assert (
+        catalog["handwritten_note_heavy_wear"].capability_metadata.base_family
+        == "handwritten_note"
+    )
+    assert "marginal_note" in handwritten_note.annotation_types
+    assert archive_card.document_family == "archive_card"
+    assert catalog["archive_card_faded_scan"].capability_metadata.base_family == "archive_card"
+    assert archive_card.identifier_types == ("archive_id", "date", "footer_label")
+    assert archive_card.layout_density == "dense"
 
 
 def test_template_catalog_rejects_malformed_or_missing_style_font_manifest(tmp_path: Path) -> None:

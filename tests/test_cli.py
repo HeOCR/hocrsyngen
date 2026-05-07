@@ -8,6 +8,7 @@ import tomllib
 from importlib import resources
 from pathlib import Path, PurePosixPath
 
+import jsonschema
 import pytest
 
 from hocrsyngen.cli import (
@@ -28,6 +29,7 @@ from hocrsyngen.generator import (
     RichTemplateCatalogEntry,
     SUPPORTED_CONDITION_BUNDLE_IDS,
     SUPPORTED_STYLE_BUNDLE_IDS,
+    TemplateCapabilityMetadata,
     TemplateCatalogEntry,
 )
 from hocrsyngen.rendering_coverage import RENDERING_COVERAGE_REPORT_FILENAME
@@ -36,6 +38,9 @@ from hocrsyngen.validation import BatchValidationError, ValidationResult
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+TEMPLATE_CATALOG_SCHEMA_PATH = (
+    PROJECT_ROOT / "src" / "hocrsyngen" / "schemas" / "template_catalog.schema.json"
+)
 
 
 def _project_version() -> str:
@@ -248,6 +253,7 @@ REQUIRED_CONTRACT_FIXTURE_RESOURCE_PATHS = [
 INSTALLED_CLI_SMOKE_CASES = [
     "templates-text",
     "templates-json",
+    "templates-json-v2",
     "contracts-text",
     "contracts-json",
     "contracts-export",
@@ -408,6 +414,19 @@ def _assert_installed_cli_smoke_case(
             )
         )
         assert templates_json == EXPECTED_TEMPLATE_CATALOG_JSON
+        return
+
+    if cli_case == "templates-json-v2":
+        templates_json = _json_from_successful_cli(
+            _run_installed_cli(
+                command + ["templates", "--format", "json", "--catalog-version", "v2"],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        schema = json.loads(TEMPLATE_CATALOG_SCHEMA_PATH.read_text(encoding="utf-8"))
+        jsonschema.validate(templates_json, schema)
+        assert templates_json["schema_version"] == RICH_TEMPLATE_CATALOG_SCHEMA_VERSION
         return
 
     if cli_case == "contracts-text":
@@ -763,23 +782,25 @@ def test_format_rich_template_catalog_json_uses_v2_public_schema() -> None:
                 font_style="printed",
                 font_id="alef-regular",
                 degradation_preset="office_scan_soft",
-                document_family="archive_card",
-                base_family="archive_card",
-                page_regions=(
-                    "title",
-                    "body",
-                    "footer",
-                    "table_cells",
-                    "stamp_area",
-                    "identifier_area",
-                ),
-                annotation_types=("synthetic_stamp",),
-                identifier_types=("archive_id", "date"),
-                layout_density="dense",
-                review_features=(
-                    "has_stable_regions",
-                    "has_visible_identifier",
-                    "has_visible_stamp",
+                capability_metadata=TemplateCapabilityMetadata(
+                    document_family="archive_card",
+                    base_family="archive_card",
+                    page_regions=(
+                        "title",
+                        "body",
+                        "footer",
+                        "table_cells",
+                        "stamp_area",
+                        "identifier_area",
+                    ),
+                    annotation_types=("synthetic_stamp",),
+                    identifier_types=("archive_id", "date", "footer_label"),
+                    layout_density="dense",
+                    review_features=(
+                        "has_stable_regions",
+                        "has_visible_identifier",
+                        "has_visible_stamp",
+                    ),
                 ),
             )
         ]
@@ -806,7 +827,7 @@ def test_format_rich_template_catalog_json_uses_v2_public_schema() -> None:
                     "identifier_area",
                 ],
                 "annotation_types": ["synthetic_stamp"],
-                "identifier_types": ["archive_id", "date"],
+                "identifier_types": ["archive_id", "date", "footer_label"],
                 "layout_density": "dense",
                 "review_features": [
                     "has_stable_regions",
@@ -850,6 +871,9 @@ def test_templates_cli_json_v2_outputs_richer_catalog_metadata(
     assert main(["templates", "--format", "json", "--catalog-version", "v2"]) == 0
 
     payload = json.loads(capsys.readouterr().out)
+    schema = json.loads(TEMPLATE_CATALOG_SCHEMA_PATH.read_text(encoding="utf-8"))
+    jsonschema.Draft202012Validator.check_schema(schema)
+    jsonschema.validate(payload, schema)
     assert payload["schema_version"] == RICH_TEMPLATE_CATALOG_SCHEMA_VERSION
     catalog = {entry["template_id"]: entry for entry in payload["templates"]}
     assert catalog["printed_letter"]["document_family"] == "letter"
@@ -860,7 +884,9 @@ def test_templates_cli_json_v2_outputs_richer_catalog_metadata(
     assert "marginal_note" in catalog["handwritten_note"]["annotation_types"]
     assert catalog["archive_card"]["document_family"] == "archive_card"
     assert catalog["archive_card_faded_scan"]["base_family"] == "archive_card"
-    assert {"archive_id", "date"} <= set(catalog["archive_card"]["identifier_types"])
+    assert {"archive_id", "date", "footer_label"} <= set(
+        catalog["archive_card"]["identifier_types"]
+    )
     for entry in catalog.values():
         assert {
             "document_family",
@@ -875,6 +901,17 @@ def test_templates_cli_json_v2_outputs_richer_catalog_metadata(
         assert isinstance(entry["annotation_types"], list)
         assert isinstance(entry["identifier_types"], list)
         assert isinstance(entry["review_features"], list)
+
+
+def test_templates_cli_v2_rejects_text_output(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc_info:
+        main(["templates", "--catalog-version", "v2"])
+
+    assert exc_info.value.code == 2
+    stderr = capsys.readouterr().err
+    assert "templates: --catalog-version v2 requires --format json" in stderr
 
 
 def test_templates_cli_reports_invalid_packaged_resource_cleanly(
@@ -1456,6 +1493,7 @@ def test_installed_package_console_entry_point_and_packaged_resources(
         "from importlib import resources\n"
         "required = [\n"
         "    'schemas/generation_manifest.schema.json',\n"
+        "    'schemas/template_catalog.schema.json',\n"
         "    'data/synthetic/fonts/manifest.yaml',\n"
         "    'data/synthetic/fonts/Alef-Regular.ttf',\n"
         "    'data/synthetic/fonts/GveretLevin-Regular.ttf',\n"

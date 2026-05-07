@@ -83,12 +83,15 @@ does not assemble, validate, export, or publish release payloads; those remain
 `hocrgen` responsibilities.
 
 `hocrsyngen templates --format json --catalog-version v2` emits the versioned
-`template_catalog.v2` surface. It preserves the v1 join keys and adds
+`template_catalog.v2` surface. The normative schema is
+`src/hocrsyngen/schemas/template_catalog.schema.json`. The v2 catalog preserves
+the v1 join keys and adds
 `document_family`, `base_family`, `page_regions`, `annotation_types`,
 `identifier_types`, `layout_density`, and `review_features` so downstream tools
 can join validated manifest `template_id` and `recipe_id` provenance to richer
 catalog metadata without importing private recipe internals. Manifest v1 remains
-unchanged.
+unchanged. The v2 catalog is JSON-only; `--catalog-version v2` must be used with
+`--format json`.
 
 After S4d, `hocrsyngen` is ready to generate validated candidate synthetic
 batches. Readiness for public dataset use still depends on downstream

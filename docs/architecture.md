@@ -8,7 +8,9 @@
 - `generator.py`: loads governed fonts/text, resolves templates and catalog metadata, renders deterministic page images, applies degradation, writes JPEGs, and assembles manifests.
 - `validation.py`: validates generated batch directories, manifest schema, constants, text metadata, relative paths, SHA-256 hashes, and JPEG integrity.
 - `cli.py`: exposes public commands and deterministic text/JSON reports.
-- `schemas/`: contains `generation_manifest.schema.json`.
+- `schemas/`: contains JSON schemas for serialized contracts, including
+  `generation_manifest.schema.json`, `rendering_coverage_report.schema.json`,
+  and `template_catalog.schema.json`.
 - `data/synthetic/`: contains governed fonts, font licenses, font manifest, and Hebrew text corpus.
 - `data/contracts/`: contains packaged contract fixture batches for downstream integration tests.
 - `tests/`: covers CLI contracts, generation behavior, validation behavior, installed-package resources, and wheel packaging resources.
@@ -28,7 +30,7 @@
 
 - CLI commands: `hocrsyngen templates`, `hocrsyngen contracts`, `hocrsyngen contracts export`, `hocrsyngen generate`, and `hocrsyngen validate`.
 - `template_catalog.v1` through `hocrsyngen templates --format json`.
-- `template_catalog.v2` through `hocrsyngen templates --format json --catalog-version v2`.
+- `template_catalog.v2` through `hocrsyngen templates --format json --catalog-version v2`, with schema `src/hocrsyngen/schemas/template_catalog.schema.json`.
 - `generation_manifest.json` v1.
 - Packaged contract fixture `generation_manifest_v1_fixture_batch`.
 

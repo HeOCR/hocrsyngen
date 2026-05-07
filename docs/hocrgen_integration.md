@@ -31,6 +31,8 @@ For `hocrsyngen templates --format json`, assert:
 For `hocrsyngen templates --format json --catalog-version v2`, assert:
 
 - `schema_version == "template_catalog.v2"`.
+- The payload validates against
+  `src/hocrsyngen/schemas/template_catalog.schema.json`.
 - Each v1 template entry field remains present.
 - Each template also has `document_family`, `base_family`, `page_regions`,
   `annotation_types`, `identifier_types`, `layout_density`, and
@@ -120,8 +122,8 @@ private Python recipe, document, or drawing helpers.
 
 The S3c stronger degradation variants are exposed as separate `template_id`
 values because manifest v1 does not have a separate preset-selection field or
-base-template field. Downstream grouping should use this documented public
-mapping until a future catalog/schema exposes base-family metadata:
+base-template field. Downstream grouping can now use `template_catalog.v2`
+`base_family` metadata; the mapping is:
 
 | Base family | Template ids |
 | --- | --- |

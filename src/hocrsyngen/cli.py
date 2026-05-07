@@ -86,19 +86,6 @@ def _format_template_catalog_json(catalog: list[TemplateCatalogEntry]) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-def _format_rich_template_catalog_entry(entry: RichTemplateCatalogEntry) -> str:
-    return (
-        f"{_format_template_catalog_entry(entry)} "
-        f"document_family={entry.document_family} "
-        f"base_family={entry.base_family} "
-        f"page_regions={','.join(entry.page_regions)} "
-        f"annotation_types={','.join(entry.annotation_types)} "
-        f"identifier_types={','.join(entry.identifier_types)} "
-        f"layout_density={entry.layout_density} "
-        f"review_features={','.join(entry.review_features)}"
-    )
-
-
 def _format_rich_template_catalog_json(catalog: list[RichTemplateCatalogEntry]) -> str:
     payload = {
         "schema_version": RICH_TEMPLATE_CATALOG_SCHEMA_VERSION,
@@ -110,13 +97,13 @@ def _format_rich_template_catalog_json(catalog: list[RichTemplateCatalogEntry]) 
                 "font_style": entry.font_style,
                 "font_id": entry.font_id,
                 "degradation_preset": entry.degradation_preset,
-                "document_family": entry.document_family,
-                "base_family": entry.base_family,
-                "page_regions": list(entry.page_regions),
-                "annotation_types": list(entry.annotation_types),
-                "identifier_types": list(entry.identifier_types),
-                "layout_density": entry.layout_density,
-                "review_features": list(entry.review_features),
+                "document_family": entry.capability_metadata.document_family,
+                "base_family": entry.capability_metadata.base_family,
+                "page_regions": list(entry.capability_metadata.page_regions),
+                "annotation_types": list(entry.capability_metadata.annotation_types),
+                "identifier_types": list(entry.capability_metadata.identifier_types),
+                "layout_density": entry.capability_metadata.layout_density,
+                "review_features": list(entry.capability_metadata.review_features),
             }
             for entry in catalog
         ],
@@ -416,6 +403,12 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if (
+        args.command == "templates"
+        and args.catalog_version == "v2"
+        and args.format != "json"
+    ):
+        parser.error("templates: --catalog-version v2 requires --format json")
     if args.command == "contracts":
         if args.contract_command is None:
             try:
@@ -470,10 +463,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(_format_template_catalog_json(catalog))
         else:
             for entry in catalog:
-                if args.catalog_version == "v2":
-                    print(_format_rich_template_catalog_entry(entry))
-                else:
-                    print(_format_template_catalog_entry(entry))
+                print(_format_template_catalog_entry(entry))
         return 0
     if args.command == "generate":
         if args.output.exists() and not args.output.is_dir():

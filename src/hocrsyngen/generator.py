@@ -40,6 +40,17 @@ FOOTER_LABELS = ["סימן", "רישום", "עמוד"]
 
 
 @dataclass(frozen=True)
+class TemplateCapabilityMetadata:
+    document_family: str
+    base_family: str
+    page_regions: tuple[str, ...]
+    annotation_types: tuple[str, ...]
+    identifier_types: tuple[str, ...]
+    layout_density: str
+    review_features: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class SyntheticRecipe:
     template_id: str
     render_template_id: str
@@ -49,6 +60,7 @@ class SyntheticRecipe:
     degradation_preset: str
     paper_tone: str
     line_count: int
+    capability_metadata: TemplateCapabilityMetadata
 
 
 @dataclass(frozen=True)
@@ -80,31 +92,8 @@ class TemplateCatalogEntry:
 
 
 @dataclass(frozen=True)
-class RichTemplateCatalogEntry:
-    template_id: str
-    recipe_id: str
-    layout_style: str
-    font_style: str
-    font_id: str
-    degradation_preset: str
-    document_family: str
-    base_family: str
-    page_regions: tuple[str, ...]
-    annotation_types: tuple[str, ...]
-    identifier_types: tuple[str, ...]
-    layout_density: str
-    review_features: tuple[str, ...]
-
-
-@dataclass(frozen=True)
-class TemplateCapabilityMetadata:
-    document_family: str
-    base_family: str
-    page_regions: tuple[str, ...]
-    annotation_types: tuple[str, ...]
-    identifier_types: tuple[str, ...]
-    layout_density: str
-    review_features: tuple[str, ...]
+class RichTemplateCatalogEntry(TemplateCatalogEntry):
+    capability_metadata: TemplateCapabilityMetadata
 
 
 @dataclass(frozen=True)
@@ -387,6 +376,61 @@ CONDITION_BUNDLES: dict[str, ConditionBundle] = {
 SUPPORTED_CONDITION_BUNDLE_IDS = tuple(CONDITION_BUNDLES)
 
 
+PRINTED_LETTER_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="letter",
+    base_family="printed_letter",
+    page_regions=(
+        "title",
+        "body",
+        "footer",
+        "form_rows",
+        "stamp_area",
+        "signature_area",
+    ),
+    annotation_types=("synthetic_stamp",),
+    identifier_types=("footer_label",),
+    layout_density="moderate",
+    review_features=(
+        "has_stable_regions",
+        "has_visible_stamp",
+        "has_signature_lines",
+    ),
+)
+HANDWRITTEN_NOTE_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="notebook_note",
+    base_family="handwritten_note",
+    page_regions=("title", "body", "footer", "margin"),
+    annotation_types=("marginal_note", "underline", "correction"),
+    identifier_types=("footer_label",),
+    layout_density="sparse",
+    review_features=(
+        "has_reviewable_annotations",
+        "has_ruled_guides",
+        "has_margin_marks",
+    ),
+)
+ARCHIVE_CARD_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="archive_card",
+    base_family="archive_card",
+    page_regions=(
+        "title",
+        "body",
+        "footer",
+        "table_cells",
+        "stamp_area",
+        "identifier_area",
+    ),
+    annotation_types=("synthetic_stamp",),
+    identifier_types=("archive_id", "date", "footer_label"),
+    layout_density="dense",
+    review_features=(
+        "has_stable_regions",
+        "has_visible_identifier",
+        "has_visible_stamp",
+    ),
+)
+
+
 def _condition_bundle(condition: str | None) -> ConditionBundle:
     if condition is None:
         return CONDITION_BUNDLES["condition_standard_v1"]
@@ -452,6 +496,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             degradation_preset="office_scan_soft",
             paper_tone="printed",
             line_count=4,
+            capability_metadata=PRINTED_LETTER_CAPABILITY,
         )
     if template_id == "handwritten_note":
         return SyntheticRecipe(
@@ -463,6 +508,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             degradation_preset="notebook_scan_worn",
             paper_tone="handwritten",
             line_count=3,
+            capability_metadata=HANDWRITTEN_NOTE_CAPABILITY,
         )
     if template_id == "archive_card":
         return SyntheticRecipe(
@@ -474,6 +520,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             degradation_preset="office_scan_soft",
             paper_tone="printed",
             line_count=3,
+            capability_metadata=ARCHIVE_CARD_CAPABILITY,
         )
     if template_id == "printed_letter_heavy_scan":
         return SyntheticRecipe(
@@ -485,6 +532,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             degradation_preset="office_scan_heavy",
             paper_tone="printed",
             line_count=4,
+            capability_metadata=PRINTED_LETTER_CAPABILITY,
         )
     if template_id == "handwritten_note_heavy_wear":
         return SyntheticRecipe(
@@ -496,6 +544,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             degradation_preset="notebook_scan_heavy_wear",
             paper_tone="handwritten",
             line_count=3,
+            capability_metadata=HANDWRITTEN_NOTE_CAPABILITY,
         )
     if template_id == "archive_card_faded_scan":
         return SyntheticRecipe(
@@ -507,6 +556,7 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             degradation_preset="archive_scan_faded",
             paper_tone="printed",
             line_count=3,
+            capability_metadata=ARCHIVE_CARD_CAPABILITY,
         )
     raise ValueError(f"Unsupported synthetic template_id: {template_id}")
 
@@ -556,75 +606,16 @@ def template_catalog(
     return catalog
 
 
-def _catalog_metadata_for_template(template_id: str) -> TemplateCapabilityMetadata:
-    if template_id in {"printed_letter", "printed_letter_heavy_scan"}:
-        return TemplateCapabilityMetadata(
-            document_family="letter",
-            base_family="printed_letter",
-            page_regions=(
-                "title",
-                "body",
-                "footer",
-                "form_rows",
-                "stamp_area",
-                "signature_area",
-            ),
-            annotation_types=("synthetic_stamp",),
-            identifier_types=("page_number",),
-            layout_density="moderate",
-            review_features=(
-                "has_stable_regions",
-                "has_visible_stamp",
-                "has_signature_lines",
-            ),
-        )
-    if template_id in {"handwritten_note", "handwritten_note_heavy_wear"}:
-        return TemplateCapabilityMetadata(
-            document_family="notebook_note",
-            base_family="handwritten_note",
-            page_regions=("title", "body", "footer", "margin"),
-            annotation_types=("marginal_note", "underline", "correction"),
-            identifier_types=("page_number",),
-            layout_density="sparse",
-            review_features=(
-                "has_reviewable_annotations",
-                "has_ruled_guides",
-                "has_margin_marks",
-            ),
-        )
-    if template_id in {"archive_card", "archive_card_faded_scan"}:
-        return TemplateCapabilityMetadata(
-            document_family="archive_card",
-            base_family="archive_card",
-            page_regions=(
-                "title",
-                "body",
-                "footer",
-                "table_cells",
-                "stamp_area",
-                "identifier_area",
-            ),
-            annotation_types=("synthetic_stamp",),
-            identifier_types=("archive_id", "date"),
-            layout_density="dense",
-            review_features=(
-                "has_stable_regions",
-                "has_visible_identifier",
-                "has_visible_stamp",
-            ),
-        )
-    raise ValueError(f"Unsupported synthetic template_id: {template_id}")
-
-
 def rich_template_catalog(
     template_ids: list[str] | None = None,
     *,
     font_manifest_path: Path | None = None,
 ) -> list[RichTemplateCatalogEntry]:
+    template_ids = GOVERNED_TEMPLATE_IDS if template_ids is None else template_ids
     catalog = template_catalog(template_ids, font_manifest_path=font_manifest_path)
+    recipes = recipe_catalog(template_ids)
     rich_catalog: list[RichTemplateCatalogEntry] = []
     for entry in catalog:
-        metadata = _catalog_metadata_for_template(entry.template_id)
         rich_catalog.append(
             RichTemplateCatalogEntry(
                 template_id=entry.template_id,
@@ -633,13 +624,7 @@ def rich_template_catalog(
                 font_style=entry.font_style,
                 font_id=entry.font_id,
                 degradation_preset=entry.degradation_preset,
-                document_family=metadata.document_family,
-                base_family=metadata.base_family,
-                page_regions=metadata.page_regions,
-                annotation_types=metadata.annotation_types,
-                identifier_types=metadata.identifier_types,
-                layout_density=metadata.layout_density,
-                review_features=metadata.review_features,
+                capability_metadata=recipes[entry.template_id].capability_metadata,
             )
         )
     return rich_catalog

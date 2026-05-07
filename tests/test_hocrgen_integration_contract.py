@@ -96,7 +96,7 @@ def test_hocrgen_adapter_contract_uses_public_installed_cli_json_boundary(
     ]["document_family"] == "notebook_note"
     assert rich_catalog[
         ("archive_card", "archive_card_identifier_v1")
-    ]["identifier_types"] == ["archive_id", "date"]
+    ]["identifier_types"] == ["archive_id", "date", "footer_label"]
     for entry in rich_catalog.values():
         assert {
             "document_family",
