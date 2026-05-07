@@ -27,6 +27,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `tests/`: contract, generation, validation, installation, and wheel packaging tests.
 - `docs/production_readiness.md`: current readiness state, explicit missing production pieces, high-lift quality work, and external hocrgen dependencies.
 - `docs/handwriting_research_acceptance_criteria.md`: S5a handwriting research boundaries, reproducibility, licensing, review, evaluation, and stop/reject gates.
+- `docs/allograph_character_prototype_plan.md`: S5b deterministic allograph and character-level prototype boundary, bounded sampling plan, Hebrew cases, evidence plan, and proceed/stop gates.
 
 ## Public Contracts
 
