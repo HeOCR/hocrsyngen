@@ -64,18 +64,20 @@ Required top-level fields:
 | `review_decision` | Required | Reviewer state, decision category, reason codes, and limitations. |
 | `limitations` | Required | Unreviewed strata, sparse evidence, missing sidecars, unresolved governance dependencies, and claim boundaries. |
 
-Conditionally required fields:
+Conditionally required fields use explicit paths. Implementations should not
+move these fields between top-level and nested objects without versioning the
+sidecar contract.
 
-| Field | Required when |
+| Field path | Required when |
 | --- | --- |
 | `visual_evidence` | Any decision beyond `not_reviewed` or `diagnostic_only` cites visual review. |
-| `reviewer_notes` | A hold, rejection, send-back, or cap-affecting decision is recorded. |
-| `s6a_acceptance_refs` | The decision uses S6a downstream realism categories or rejection reasons. |
-| `s6c_warning_refs` | The decision cites diversity, domain-shift, repeated-pattern, or unreviewed-stratum warnings. |
-| `s6d_cap_decision_refs` | The evidence is used by, or attached to, a downstream cap decision record. |
-| `rendering_coverage_refs` | The review purpose claims coverage evidence from `rendering_coverage_report.v1`. |
-| `hold_owner` and `unblock_condition` | The reviewer state or decision category is `hold`. |
-| `rejection_reason_codes` | The decision category is `reject_for_downstream_release` or `send_back_to_generator_quality`. |
+| `review_decision.reviewer_notes` | A hold, rejection, send-back, or cap-affecting decision is recorded. |
+| `review_decision.s6a_acceptance_refs` | The decision uses S6a downstream realism categories or rejection reasons. |
+| `review_decision.s6c_warning_refs` | The decision cites diversity, domain-shift, repeated-pattern, or unreviewed-stratum warnings. |
+| `review_decision.s6d_cap_decision_refs` | The evidence is used by, or attached to, a downstream cap decision record. |
+| `hocrsyngen_evidence.rendering_coverage_report` | The review purpose claims coverage evidence from `rendering_coverage_report.v1`. |
+| `review_decision.hold_owner` and `review_decision.unblock_condition` | `review_decision.decision_category` is `hold_for_calibration`. |
+| `review_decision.rejection_reason_codes` | The decision category is `reject_for_downstream_release`, `send_back_to_generator_quality`, or `hold_for_calibration`. |
 
 Optional fields:
 
@@ -93,6 +95,13 @@ The sidecar must cite only public `hocrsyngen` identifiers and reports. It must
 not inspect private Python recipes, drawing helpers, local filenames,
 implementation dataclasses, private package resources, or generated image
 layout details that are not exposed through a public contract.
+
+Page references must use manifest v1 page ids exactly as serialized in each
+sample's `pages[].page_id`. Current page ids include the sample id prefix, for
+example `hocrsyngen-s00000017-000000-page-0001`. Do not shorten them to
+`page_0001`, and do not invent compound forms such as
+`sample_id/page_0001`. If downstream storage needs a display key, store it as a
+separate display field and keep the canonical manifest page id for joins.
 
 Permitted evidence fields:
 
@@ -210,7 +219,7 @@ candidate_batch_id: hocrgen-import:hocrsyngen-batch-17
 review_purpose: cap_rehearsal_visual_review
 hocrsyngen_evidence:
   hocrsyngen_version: 0.1.0
-  generation_command: hocrsyngen generate --count 40 --seed 17 --output out/s6e-dry-run --format json
+  generation_command: hocrsyngen generate --count 2 --seed 17 --output out/s6e-dry-run --format json
   validation_report:
     status: valid
     path: reports/hocrsyngen-batch-17-validation.json
@@ -218,11 +227,12 @@ hocrsyngen_evidence:
     path: reports/hocrsyngen-batch-17-rendering-coverage.json
   public_ids:
     - sample_id: hocrsyngen-s00000017-000000
-      page_id: page_0001
-      template_id: ledger
-      recipe_id: ledger_table_v1
-      document_family: ledger
-      base_family: ledger
+      page_id: hocrsyngen-s00000017-000000-page-0001
+      asset_path: assets/hocrsyngen-s00000017-000000/page_0001.jpg
+      template_id: printed_letter
+      recipe_id: printed_letter_form_v1
+      document_family: printed_letter
+      base_family: printed_letter
       degradation_preset: office_scan_soft
       font_id: alef-regular
       seed: 17
@@ -234,20 +244,20 @@ review_scope:
   reviewed_sample_ids:
     - hocrsyngen-s00000017-000000
   reviewed_page_ids:
-    - hocrsyngen-s00000017-000000/page_0001
+    - hocrsyngen-s00000017-000000-page-0001
   reviewed_strata:
     base_family:
-      - ledger
+      - printed_letter
     persona:
       - style_standard_v1
     condition:
       - condition_standard_v1
   unreviewed_strata:
-    - archive_card base family not present in reviewed slice
+    - handwritten_note base family not present in reviewed slice
 visual_evidence:
   - evidence_id: review-thumb-0004-0001
     sample_id: hocrsyngen-s00000017-000000
-    page_id: page_0001
+    page_id: hocrsyngen-s00000017-000000-page-0001
     evidence_type: full_page_thumbnail
     downstream_object: hocrgen-review-store:review-thumb-0004-0001.jpg
     observation_tags:
@@ -258,8 +268,10 @@ review_decision:
   decision_category: hold_for_calibration
   rejection_reason_codes:
     - insufficient_visual_evidence
+  hold_owner: hocrgen-review-team
+  unblock_condition: review at least one page from each imported base family
   reviewer_notes:
-    - ledger structure is readable, but only one base family was reviewed
+    - printed letter layout is readable, but only one base family was reviewed
   s6a_acceptance_refs:
     - downstream_realism_acceptance_rubric.md#acceptance-categories
   s6c_warning_refs:
