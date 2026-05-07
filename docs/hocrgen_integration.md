@@ -112,6 +112,15 @@ downstream governance rubric. It does not add manifest v1 fields, review
 workflow state, release eligibility metadata, caps, export behavior, or adapter
 code to `hocrsyngen`.
 
+Downstream utility measurement guidance is documented in
+[downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md).
+It defines the evidence `hocrgen`/HeOCR must retain before making CER/WER or
+other OCR/HTR utility claims. Utility claims require governed real references,
+ground truth, split and leakage controls, metric definitions, OCR/HTR run
+records, and synthetic-to-real comparison. They cannot be inferred from
+`hocrsyngen validate`, visual review, S6a realism acceptance, or rendering
+coverage alone.
+
 ## Layout Filtering Boundaries
 
 Current layout filtering should use only stable CLI and manifest surfaces.
@@ -228,6 +237,8 @@ governed dataset flows:
 - release profiles, synthetic caps, and source-composition policy;
 - review workflow and any future review evidence sidecar consumption;
 - downstream realism acceptance decisions using the S6a rubric;
+- downstream utility measurement using the S6b contract, with CER/WER claims
+  gated on governed real references and ground truth;
 - dedupe, leakage, benchmark/reference, release export, and publication gates;
 - downstream utility and domain-shift measurement when real references exist.
 

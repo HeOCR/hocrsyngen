@@ -99,9 +99,13 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   line assembly research. Remaining prototype/evaluation evidence is deferred
   unless a future follow-up satisfies the documented S5 gates.
 - S6 downstream realism acceptance, review evidence, utility, diversity,
-  domain-shift, and cap handoff gates, starting with `S6a`
-  [downstream_realism_acceptance_rubric.md](downstream_realism_acceptance_rubric.md).
-- OCR/HTR utility once downstream benchmark references exist.
+  domain-shift, and cap handoff gates. S6a is documented in
+  [downstream_realism_acceptance_rubric.md](downstream_realism_acceptance_rubric.md),
+  and S6b utility-evidence boundaries are documented in
+  [downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md).
+- OCR/HTR utility only once downstream benchmark references, governed ground
+  truth, split/leakage controls, metric definitions, and synthetic-to-real
+  comparison evidence exist.
 - Diversity metrics across templates, fonts, text, degradation, styles, and layout families.
 - Ablation tests for style controls, degradation, and layout changes.
 - Synthetic-to-real gap tracking through `hocrgen`/HeOCR benchmarks when available.
@@ -131,3 +135,6 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 - How should `hocrgen` cap or stratify synthetic persona/style groups in release profiles?
 - Which calibrated downstream realism examples should be retained as reference
   review evidence once `hocrgen` has a review workflow?
+- Which governed real-reference benchmark should first carry the S6b utility
+  measurement packet, and how should synthetic diagnostic runs stay separated
+  from real CER/WER claims?
