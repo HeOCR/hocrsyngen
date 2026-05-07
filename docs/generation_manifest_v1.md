@@ -164,6 +164,11 @@ The governed template contract currently requires:
   evidence links, but import ids, dry-run ids, adapter workflow state, storage,
   review, caps, export, publication, and governance enforcement must be stored
   downstream.
+- S7 script abstraction planning must treat manifest v1 as Hebrew-first and
+  compatibility-preserving. Future script design can document possible
+  extension points, but it must not broaden current Hebrew validation semantics,
+  change logical-order UTF-8/NFC requirements, or add Arabic support through
+  manifest v1.
 
 ## Example Shape
 

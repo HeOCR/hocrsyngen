@@ -227,6 +227,10 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
   installed CLI JSON reports, manifest validation, relative path retention,
   `template_catalog.v2` joins, optional rendering coverage, and S6a-S6f
   evidence links at downstream boundaries.
+- S7a script abstraction planning should define Hebrew regression expectations
+  before implementation work starts. Future script abstraction tests must not
+  weaken logical-order UTF-8 Hebrew, NFC normalization, RTL metadata, manifest
+  v1 compatibility, or current validation semantics.
 - Additional synthetic persona/style/condition consistency reports governed by
   [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
   automated S4 style consistency checks now covered in the test suite.

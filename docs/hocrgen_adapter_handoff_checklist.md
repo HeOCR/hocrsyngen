@@ -311,7 +311,7 @@ state, that schema belongs in `hocrgen` or in a future explicitly scoped
 versioned contract. It should not be added opportunistically to manifest v1 or
 to the baseline generator package.
 
-S7 script-abstraction work should start only after S6 is closed or a specific
-S6 carry-forward is explicitly recorded. Adapter gaps found during S6g should be
-tracked as downstream `hocrgen` dependencies unless they require a public
-`hocrsyngen` contract change.
+S7 script-abstraction work should start only after S6 is closed, or after a
+specific S6 carry-forward is explicitly recorded. Adapter gaps found during S6g
+should be tracked as downstream `hocrgen` dependencies unless they require a
+public `hocrsyngen` contract change.
