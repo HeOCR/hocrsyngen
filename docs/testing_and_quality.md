@@ -134,6 +134,14 @@ comparison before CER/WER or other utility claims are made. It is not automated
 test coverage in this repo and does not add a benchmark runner, manifest field,
 sidecar, dependency, release cap, adapter code, or CI gate to `hocrsyngen`.
 
+S6 synthetic diversity and domain-shift guidance is documented in
+[synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
+It defines descriptive diversity summaries, repeated-pattern warnings, and
+downstream real-reference comparison requirements. It is not automated test
+coverage in this repo and does not add a metrics runner, manifest field,
+sidecar, dependency, release cap, adapter code, benchmark runner, export
+behavior, or CI gate to `hocrsyngen`.
+
 ## Environmental Requirement
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
@@ -181,6 +189,7 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
   [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
   automated S4 style consistency checks now covered in the test suite.
 - `hocrgen`-side utility measurement based on the S6b contract.
+- `hocrgen`-side diversity and domain-shift evidence based on the S6c contract.
 - `hocrgen`-side downstream realism acceptance workflow based on the S6a rubric.
 
 ## Handling Test Failures

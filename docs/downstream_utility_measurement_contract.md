@@ -215,8 +215,9 @@ approve release eligibility by itself.
 
 Later S6 work should build on this boundary:
 
-- `S6c` should define diversity and domain-shift metrics that explain whether
-  synthetic candidates cover or distort real-reference distributions.
+- `S6c` defines diversity and domain-shift metrics that explain whether
+  synthetic candidates cover or distort real-reference distributions in
+  [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
 - `S6d` should define release cap handoff policy so utility evidence does not
   override source composition and synthetic cap decisions.
 - `S6e` should define review evidence sidecars for durable reviewed ids and

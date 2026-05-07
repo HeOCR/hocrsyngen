@@ -4,14 +4,15 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S6a as the latest merged roadmap state for downstream evaluation
+1. Treat S6b as the latest merged roadmap state for downstream evaluation
    planning, with S5e closing handwriting research by deferral and S3f/S4d
    remaining the completed capability milestones for governed document families
    and style/condition readiness. Together these leave deterministic document
    families, style, condition, degradation, manifest, validation,
    installed-package CLI contracts, S5 research gates, allograph plus word/line
    assembly planning, optional learned-generation packaging boundaries, and the
-   S6a downstream realism acceptance rubric documented.
+   S6a downstream realism acceptance rubric plus S6b downstream utility
+   measurement contract documented.
 2. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -22,15 +23,19 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    gates and boundaries, but no accepted prototype or downstream evaluation
    evidence. Remaining S5 prototype/evaluation work is deferred to a future S5
    follow-up or external `hocrgen`/HeOCR work.
-5. Keep S6 active with `S6b` downstream utility measurement contract as the
-   current planning PR. S6a is complete in PR #48 and defines downstream realism
-   acceptance; S6b now defines what evidence is required before any CER/WER or
-   other OCR/HTR utility claim is made.
+5. Keep S6 active with `S6c` synthetic diversity and domain-shift metrics as
+   the current planning PR. S6a is complete in PR #48 and defines downstream
+   realism acceptance; S6b is complete in PR #49 and defines what evidence is
+   required before any CER/WER or other OCR/HTR utility claim is made; S6c now
+   defines how to detect repeated synthetic patterns, over-representation, and
+   synthetic-to-real comparison gaps before downstream dry-runs, utility
+   evaluations, or release planning.
 
-## Current Baseline After S6a
+## Current Baseline After S6b
 
-`S6a` - downstream realism acceptance rubric - is merged in PR #48. `S5e` -
-close S5 planning and activate S6 evaluation gates - is merged in PR #47.
+`S6b` - downstream utility measurement contract - is merged in PR #49. `S6a` -
+downstream realism acceptance rubric - is merged in PR #48. `S5e` - close S5
+planning and activate S6 evaluation gates - is merged in PR #47.
 The current baseline can generate and validate deterministic candidate batches
 through public CLI JSON surfaces, and S5 handwriting research now has
 explicit boundaries for reproducibility, provenance, licensing, forbidden
@@ -42,7 +47,11 @@ privacy, caps, benchmark handling, release export, and publication.
 S6a adds downstream realism acceptance categories, calibrated example classes,
 visual evidence expectations, rejection reasons, and the boundary between
 generator-quality review and release eligibility. It does not approve utility
-claims, benchmark/reference inclusion, release caps, or publication.
+claims, benchmark/reference inclusion, release caps, or publication. S6b adds
+the downstream utility measurement evidence contract for real-reference
+prerequisites, CER/WER boundaries, split and leakage controls, evidence packets,
+and `hocrgen`/HeOCR ownership. It does not establish any OCR/HTR utility claim
+from this repository.
 
 Phase S5 closes by deferral rather than evidence: the repository does not
 contain accepted S5 prototype/evaluation evidence, ablation results, or
@@ -353,9 +362,13 @@ Planned PR breakdown:
   only when references exist, how to separate generator validity, realism
   acceptance, benchmark/reference eligibility, utility measurements, and release
   eligibility, and which evidence packet fields are required before utility
-  claims. Status: active; documented in
+  claims. Status: done in PR #49; documented in
   [downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md).
-- `S6c` — Synthetic diversity and domain-shift metrics: define measurable diversity and synthetic-to-real gap tracking.
+- `S6c` — Synthetic diversity and domain-shift metrics: define measurable
+  candidate-batch diversity, repeated synthetic pattern warnings,
+  over-representation signals, and synthetic-to-real gap tracking boundaries.
+  Status: active; documented in
+  [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
 - `S6d` — Release cap handoff policy: document how hocrsyngen metadata supports hocrgen release profiles without moving governance into this repo.
 - `S6e` — Review evidence sidecar contract: define a portable optional sidecar
   for reviewed sample ids, page ids, rejection reasons, visual inspection

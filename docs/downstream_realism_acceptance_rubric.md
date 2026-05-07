@@ -243,8 +243,9 @@ contracts to later S6 items:
 - `S6b` defines downstream utility measurement contracts for CER/WER only when
   real references exist in
   [downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md).
-- `S6c` should define diversity and domain-shift metrics that detect repeated
-  synthetic patterns and synthetic-to-real gaps.
+- `S6c` defines diversity and domain-shift metrics that detect repeated
+  synthetic patterns and synthetic-to-real gaps in
+  [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
 - `S6d` should define release cap handoff policy without moving governance into
   this repository.
 - `S6e` should define any review evidence sidecar outside

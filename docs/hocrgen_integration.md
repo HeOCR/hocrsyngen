@@ -121,6 +121,15 @@ records, and synthetic-to-real comparison. They cannot be inferred from
 `hocrsyngen validate`, visual review, S6a realism acceptance, or rendering
 coverage alone.
 
+Synthetic diversity and domain-shift guidance is documented in
+[synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
+It defines candidate-batch diversity summaries that can be computed from public
+manifest, template catalog, and rendering coverage surfaces, plus downstream
+requirements for synthetic-to-real comparison. Domain-shift claims require
+governed real-reference metadata, split/leakage controls, and separate
+real-only, synthetic-only, and mixed strata in `hocrgen`/HeOCR. They cannot be
+inferred from generator variety alone.
+
 ## Layout Filtering Boundaries
 
 Current layout filtering should use only stable CLI and manifest surfaces.
@@ -239,6 +248,9 @@ governed dataset flows:
 - downstream realism acceptance decisions using the S6a rubric;
 - downstream utility measurement using the S6b contract, with CER/WER claims
   gated on governed real references and ground truth;
+- diversity and domain-shift measurement using the S6c contract, with
+  synthetic-to-real claims gated on governed real-reference comparison and
+  leakage controls;
 - dedupe, leakage, benchmark/reference, release export, and publication gates;
 - downstream utility and domain-shift measurement when real references exist.
 
