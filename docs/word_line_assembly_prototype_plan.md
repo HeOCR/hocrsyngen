@@ -101,20 +101,31 @@ questions well enough to proceed, hold, or stop.
 
 Required minimum sample table:
 
-| Run id | Batch seed | Template | Style control | Condition control | Allograph set | Assembly profile | Text case | Purpose |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `baseline-standard` | `17` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_none_v1` | final forms | Current no-assembly baseline. |
-| `spacing-conservative` | `17` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_spacing_conservative_v1` | final forms | Isolate word spacing and wrapping without character variation. |
-| `spacing-repeat` | `17` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_spacing_conservative_v1` | final forms | Repeatability check for structured choices. |
-| `line-drift` | `101` | `handwritten_note` | `style_open_drift_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_line_drift_v1` | punctuation | Baseline drift and per-line geometry without allographs. |
-| `dense-niqqud-wrap` | `101` | `handwritten_note` | `style_compact_steady_v1` | `condition_dense_spacing_v1` | `allograph_none_v1` | `assembly_dense_wrap_v1` | niqqud | Tight spacing, combining marks, and wrapping stress. |
-| `mixed-direction` | `4096` | `handwritten_note` | `style_standard_v1` | `condition_low_contrast_v1` | `allograph_none_v1` | `assembly_spacing_conservative_v1` | mixed direction | Bidi fragments under non-default condition. |
-| `heavy-wear-drift` | `4096` | `handwritten_note_heavy_wear` | `style_open_drift_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_line_drift_v1` | wrapping | Interaction with stronger wear and line structure. |
-| `allograph-composed` | `4096` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_simple_v1` | `assembly_spacing_conservative_v1` | final forms | Interaction with planned S5b allograph choices. |
+| Pair id | Run id | Batch seed | Template | Style control | Condition control | Allograph set | Assembly profile | Text case | Purpose |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `final-spacing` | `baseline-final-spacing` | `17` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_none_v1` | final forms | Paired no-assembly baseline. |
+| `final-spacing` | `spacing-conservative` | `17` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_spacing_conservative_v1` | final forms | Isolate word spacing and wrapping without character variation. |
+| `final-spacing` | `spacing-repeat` | `17` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_spacing_conservative_v1` | final forms | Repeatability check for structured choices; should match `spacing-conservative`. |
+| `punctuation-drift` | `baseline-punctuation-drift` | `101` | `handwritten_note` | `style_open_drift_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_none_v1` | punctuation | Paired no-assembly baseline. |
+| `punctuation-drift` | `line-drift` | `101` | `handwritten_note` | `style_open_drift_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_line_drift_v1` | punctuation | Baseline drift and per-line geometry without allographs. |
+| `dense-niqqud` | `baseline-dense-niqqud` | `101` | `handwritten_note` | `style_compact_steady_v1` | `condition_dense_spacing_v1` | `allograph_none_v1` | `assembly_none_v1` | niqqud | Paired no-assembly baseline. |
+| `dense-niqqud` | `dense-niqqud-wrap` | `101` | `handwritten_note` | `style_compact_steady_v1` | `condition_dense_spacing_v1` | `allograph_none_v1` | `assembly_dense_wrap_v1` | niqqud | Tight spacing, combining marks, and wrapping stress. |
+| `mixed-direction` | `baseline-mixed-direction` | `4096` | `handwritten_note` | `style_standard_v1` | `condition_low_contrast_v1` | `allograph_none_v1` | `assembly_none_v1` | mixed direction | Paired no-assembly baseline. |
+| `mixed-direction` | `mixed-direction-spacing` | `4096` | `handwritten_note` | `style_standard_v1` | `condition_low_contrast_v1` | `allograph_none_v1` | `assembly_spacing_conservative_v1` | mixed direction | Bidi fragments under non-default condition. |
+| `heavy-wear` | `baseline-heavy-wear` | `4096` | `handwritten_note_heavy_wear` | `style_open_drift_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_none_v1` | wrapping | Paired no-assembly baseline. |
+| `heavy-wear` | `heavy-wear-drift` | `4096` | `handwritten_note_heavy_wear` | `style_open_drift_v1` | `condition_standard_v1` | `allograph_none_v1` | `assembly_line_drift_v1` | wrapping | Interaction with stronger wear and line structure. |
+| `allograph-composition` | `baseline-allograph-composition` | `4096` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_simple_v1` | `assembly_none_v1` | final forms | Paired allograph-only baseline. |
+| `allograph-composition` | `allograph-composed` | `4096` | `handwritten_note` | `style_standard_v1` | `condition_standard_v1` | `allograph_simple_v1` | `assembly_spacing_conservative_v1` | final forms | Interaction with planned S5b allograph choices. |
 
 The evidence packet may add extra rows only when each row answers a named review
 question. It should not expand into a full pairwise or cross-product matrix
 until the small table above has produced useful, reproducible evidence.
+
+Every non-default assembly row must have a paired `assembly_none_v1` row with
+the same seed, template, style control, condition control, allograph set, and
+text case. The paired rows are the comparison unit for visual review and
+structured metrics. A non-default row without its pair is not acceptable
+prototype evidence.
 
 For the repeated rows, prove deterministic equality for structured prototype
 choices such as line assignments, gap widths, line offsets, rotation, slant
@@ -182,6 +193,78 @@ Initial transform bounds should be conservative:
 
 Stress bounds should appear only in named rows and should be reviewed as likely
 rejection candidates, not as defaults.
+
+Prototype assembly profiles should be explicit records, not just ids. The first
+prototype should define these records exactly:
+
+| Field | `assembly_none_v1` | `assembly_spacing_conservative_v1` | `assembly_line_drift_v1` | `assembly_dense_wrap_v1` |
+| --- | --- | --- | --- | --- |
+| `word_gap_multiplier_range` | `1.00..1.00` | `0.90..1.15` | `0.92..1.12` | `0.82..1.05` |
+| `line_compression_range` | `1.00..1.00` | `0.98..1.01` | `0.98..1.02` | `0.94..1.00` |
+| `min_gap_px` | existing renderer default | `0.75 * measured_space_px` | `0.75 * measured_space_px` | `0.60 * measured_space_px` |
+| `max_gap_px` | existing renderer default | `1.35 * measured_space_px` | `1.30 * measured_space_px` | `1.15 * measured_space_px` |
+| `line_y_offset_px_range` | `0..0` | `-1..1` | `-2..2` | `-1..1` |
+| `baseline_drift_px_range` | `0..0` | `-1..1` | `-2..2` | `-1..1` |
+| `line_rotation_deg_range` | `0..0` | `-0.4..0.4` | `-1.0..1.0` | `-0.3..0.3` |
+| `slant_proxy_deg_range` | `0..0` | `-1.5..1.5` | `-3.0..3.0` | `-1.0..1.0` |
+| `line_width_scale_range` | `1.00..1.00` | `0.99..1.01` | `0.98..1.02` | `0.96..1.00` |
+| `raggedness_policy` | existing renderer behavior | deterministic end-gap variation only | deterministic end-gap plus x-offset variation | prefer tighter line fitting before overflow |
+| `overflow_policy` | existing renderer behavior | reject line if any unbreakable unit exceeds box width after compression | reject line if any transformed line collides or exceeds box width | reject line if compression cannot fit without violating minimum gap |
+| `intended_question` | Baseline comparison. | Does conservative spacing/wrapping improve line realism? | Does per-line drift help or create collisions? | Does dense layout remain readable with niqqud? |
+
+The profile values above are initial prototype constraints. A later prototype PR
+may tune them only by recording the changed profile id, the reason for the
+change, and paired evidence against the original values.
+
+## Deterministic Wrapping Algorithm
+
+The first prototype should use a deterministic logical-token wrapping algorithm
+before any rendering or visual-order operation. The algorithm should be simple
+enough to implement with Python standard-library Unicode data and existing
+Pillow/libraqm measurement.
+
+Required steps:
+
+1. Normalize source text to NFC and preserve that exact string as
+   `text.logical_order`.
+2. Split only explicit newline characters into hard paragraph breaks. Newlines
+   may choose a new line box; they must not be serialized as visual-order
+   fragments in manifest v1.
+3. Scan each paragraph left-to-right in logical order and form Unicode
+   character clusters. A cluster is one base codepoint plus following combining
+   marks. Combining marks with Unicode category `Mn` or `Mc`, including niqqud,
+   must attach to the previous base cluster. A leading combining mark is a
+   deterministic rejection case for the text case.
+4. Classify clusters into token runs:
+   Hebrew letter runs, Latin letter runs, digit runs, mixed identifier runs,
+   whitespace runs, punctuation runs, and other-symbol runs.
+5. Treat whitespace runs as break opportunities and gap candidates. Multiple
+   logical spaces may be collapsed for visual gap placement only when the
+   evidence packet records both the logical span and the rendered gap count.
+   The source text itself must not be rewritten.
+6. Keep mixed identifiers, dates, decimal numbers, and alphanumeric ids
+   unbreakable. Examples include `A12`, `2026-05-07`, `12/4`, and `AB-17`.
+7. Attach opening punctuation such as `(`, `[`, `{`, and opening quotes to the
+   following non-whitespace token when possible. Attach closing punctuation,
+   sentence punctuation, Hebrew geresh/gershayim, commas, colons, semicolons,
+   and final quote marks to the previous non-whitespace token when possible.
+   If both sides are plausible, choose the attachment that avoids a line start
+   with closing punctuation or a line end with opening punctuation.
+8. Treat Hebrew maqaf or hyphen inside a Hebrew or identifier run as
+   non-breaking for the first prototype. If this causes overflow, record the
+   overflow instead of splitting the token.
+9. Pack tokens into each line box in logical order using measured shaped width
+   plus profile gap multipliers. Choose the earliest break that keeps the line
+   within the target box while avoiding single-token orphan lines when another
+   valid break exists.
+10. Reject the sample or record an explicit failure row when any unbreakable
+    token exceeds the available line width after the profile's allowed
+    compression. Do not clip, squeeze beyond the profile bounds, or mutate the
+    source text.
+
+The evidence packet should record the token list and line assignment so a
+reviewer can explain wrapping decisions without reverse-engineering raster
+output.
 
 ## Interaction With S5b Allograph Choices
 
@@ -314,10 +397,81 @@ Record for each reviewed page:
   impossible punctuation, broken combining marks, excessive raggedness,
   overflow, or forbidden implication.
 
-At least one ablation should compare the same text, seed, template, style,
-condition, and allograph set with `assembly_none_v1` versus the proposed
-assembly profile. Reviewers should not infer release eligibility from this
-evidence.
+The prototype should write an experimental evidence packet outside manifest v1.
+The recommended path is
+`out/word-line-assembly-evidence/<run_id>/assembly_evidence.json` for local
+prototype output, or `docs/reports/s5c/<run_id>/assembly_evidence.json` only if
+a later PR intentionally commits reviewed evidence. Do not package this path as
+baseline data.
+
+Minimum experimental JSON shape:
+
+```json
+{
+  "evidence_version": "word_line_assembly_evidence.v0",
+  "run_id": "spacing-conservative",
+  "pair_id": "final-spacing",
+  "batch_seed": 17,
+  "sample_index": 0,
+  "template_id": "handwritten_note",
+  "style_control_id": "style_standard_v1",
+  "condition_control_id": "condition_standard_v1",
+  "allograph_set_id": "allograph_none_v1",
+  "assembly_profile_id": "assembly_spacing_conservative_v1",
+  "text_case_id": "final_forms",
+  "source_text_sha256": "<sha256-of-logical-text>",
+  "asset_provenance": [],
+  "tokens": [
+    {
+      "token_index": 0,
+      "logical_start": 0,
+      "logical_end": 4,
+      "token_class": "hebrew_run",
+      "break_before": false,
+      "break_after": true
+    }
+  ],
+  "lines": [
+    {
+      "line_index": 0,
+      "logical_start": 0,
+      "logical_end": 24,
+      "line_box": {"x": 120, "y": 260, "width": 820, "height": 48},
+      "token_indices": [0, 1, 2],
+      "gap_multipliers": [1.03, 0.97],
+      "line_y_offset_px": 1,
+      "baseline_drift_px": -1,
+      "rotation_deg": 0.2,
+      "slant_proxy_deg": -0.8,
+      "line_width_scale": 1.0,
+      "wrap_reason": "width_limit",
+      "overflow_result": "accepted"
+    }
+  ],
+  "comparison": {
+    "paired_run_id": "baseline-final-spacing",
+    "paired_assembly_profile_id": "assembly_none_v1"
+  },
+  "visual_review": {
+    "review_status": "unreviewed",
+    "notes": []
+  },
+  "claim_boundary": "No downstream utility claim is made because no governed real-reference evaluation was run."
+}
+```
+
+Required evidence constraints:
+
+- `logical_start` and `logical_end` are Python string indices into the NFC
+  logical source text, not visual glyph indices.
+- `line_box` values are local rendered-page coordinates for review only and are
+  not manifest fields.
+- `asset_provenance` uses the provenance table from this document.
+- `visual_review.review_status` is limited to `unreviewed`, `accepted_for_plan`,
+  `rejected_for_plan`, or `needs_follow_up`; it is not release review state.
+- Every non-default assembly evidence packet must name its paired
+  `assembly_none_v1` packet in `comparison`.
+- Reviewers should not infer release eligibility from this evidence.
 
 ## Claim Boundary
 
