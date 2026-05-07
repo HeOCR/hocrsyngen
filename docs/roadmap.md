@@ -292,7 +292,9 @@ Deliverables:
 Exit criteria:
 
 - Research paths remain isolated from baseline installs.
-- Useful methods have reproducibility, provenance, and evaluation evidence.
+- Useful methods have reproducibility, provenance, and evaluation evidence, or
+  unresolved prototype/evaluation work is explicitly deferred with a recorded
+  reason and follow-up owner before Phase S5 closes.
 - Downstream utility can be measured through `hocrgen` when references exist.
 
 Risks/dependencies:

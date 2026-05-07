@@ -40,7 +40,7 @@ Non-goals:
   medical condition, psychological condition, disability, sensitive attribute,
   source provenance, or living-person imitation.
 
-## Location Options
+## Code And Evidence Locations
 
 Future optional learned-generation work may use one of these locations only
 after the PR defines the dependency, artifact, cleanup, and contract boundary:
@@ -48,10 +48,9 @@ after the PR defines the dependency, artifact, cleanup, and contract boundary:
 | Location | Allowed use | Requirements |
 | --- | --- | --- |
 | `docs/` | Design notes, experiment plans, evaluation reports, and reviewed findings. | Always allowed for S5d planning and evidence. |
-| `experiments/learned_generation_v0/` | Local exploratory scripts, config templates, and non-packaged evidence helpers. | Must be excluded from baseline install assumptions, must not be imported by `src/hocrsyngen/`, and must document setup, cleanup, dependencies, assets, and outputs. |
-| Future package extra such as `hocrsyngen[learned-experiments]` | Optional local experimentation using explicitly declared extra dependencies. | Requires a later ADR or design update, pinned optional dependencies, no baseline test dependency leakage, and skip-safe tests that do not require private data, model downloads, network, or GPU. |
+| `experiments/learned_generation_v0/` | Local exploratory scripts, config templates, and non-packaged evidence helpers. | Must be excluded from baseline install assumptions, must not be imported by `src/hocrsyngen/`, must not be included in package data, and must document setup, cleanup, dependencies, assets, outputs, and CI behavior. |
 | Separate package or repository | Heavier model runtime, training, benchmark orchestration, or artifact management. | Preferred when dependencies, model weights, datasets, compute, or governance needs exceed a small optional local experiment. |
-| Versioned sidecar or catalog design | Public metadata for optional learned outputs or experiment evidence. | Must be explicitly designed, documented, schema-tested, and kept outside manifest v1 unless a future manifest version is approved. |
+| Versioned sidecar or catalog design | Public metadata for optional learned outputs or experiment evidence. | Must be explicitly designed, documented, schema-tested, and kept outside manifest v1 by default. Manifest changes require the exceptional path in the manifest and sidecar boundary below. |
 
 Learned-generation code does not belong in `src/hocrsyngen/` while it is
 exploratory because that package is the baseline public generator. Code in
@@ -61,6 +60,30 @@ fixtures, and manifest v1 validation. Optional learned methods need evidence
 that they are reproducible, dependency-isolated, provenance-safe,
 contract-compatible, and useful before the baseline package should own any part
 of them.
+
+## Dependency Exposure Options
+
+Optional dependency exposure is separate from code location. A future package
+extra such as `hocrsyngen[learned-experiments]` may be proposed only after a
+later ADR or design update. The proposal must state which code path uses the
+extra, why a separate package is not a better boundary, and how the baseline
+package remains clean.
+
+Rules for any optional extra:
+
+- optional dependencies must be declared only under a named optional dependency
+  group, never as baseline runtime or test dependencies;
+- baseline modules under `src/hocrsyngen/` must not import optional ML packages,
+  even behind lazy imports, unless a later implementation PR explicitly promotes
+  a small dependency-compatible adapter;
+- default CLI commands must not expose learned-generation behavior or fail when
+  optional dependencies are absent;
+- baseline tests and CI must pass without installing the optional extra;
+- optional tests must be skip-safe and must not require private data, model
+  downloads, network access, remote services, or GPU hardware;
+- dependency-audit coverage must prove that core package metadata, source
+  imports, test extras, and packaged data remain free of optional ML/runtime
+  dependencies and artifacts.
 
 ## Dependency Policy
 
@@ -98,6 +121,31 @@ packaged fixtures:
   local files;
 - dependency declarations that make baseline tests skip or fail unless optional
   learned-generation tooling is installed.
+
+## Experiment Artifact And Packaging Constraints
+
+Future experiment paths are not free-form dumping grounds. A later prototype PR
+that adds `experiments/`, `docs/reports/s5d/`, optional packaging metadata, or
+separate-package handoff notes must prove these constraints:
+
+- no model weights, training datasets, evaluation datasets, private references,
+  downloaded artifacts, generated bulk images, caches, or heavyweight binary
+  artifacts are committed to the repository unless a later PR explicitly
+  approves a small reviewed evidence artifact with provenance and license notes;
+- no generated experiment output is included in `sdist`, wheel package data, or
+  installed package resources;
+- no experiment script is invoked by default CI, default tests, package build,
+  import-time code, or public CLI commands;
+- no experiment dependency appears in baseline `dependencies`, baseline
+  `[project.optional-dependencies].test`, lockstep CI setup, or docs that users
+  are told to run for baseline installation;
+- no experiment code imports `hocrgen` or implements downstream governance,
+  review, caps, dedupe, release assembly, export, or publication behavior;
+- every committed reviewed evidence artifact has a bounded size, a stated
+  purpose, source/provenance records, and a cleanup or retention decision;
+- wheel and source distribution metadata must be inspected when packaging
+  metadata changes, so optional learned-generation files and dependencies do
+  not leak into baseline artifacts.
 
 ## Model, Data, And Asset Provenance
 
@@ -152,6 +200,8 @@ packet with:
 - environment assumptions, including CPU/GPU use, expected runtime, and
   platform-sensitive behavior;
 - generated artifact paths and cleanup policy;
+- required isolation checks, including baseline install/test commands, import
+  scans, package metadata checks, and artifact-size checks when applicable;
 - visual review evidence and at least one comparison against the current
   deterministic handwritten-like baseline, S5b allograph plan, or S5c word/line
   assembly plan.
@@ -212,7 +262,9 @@ Optional learned-generation metadata belongs in one of these future surfaces:
 - a versioned public sidecar such as `learned_generation_evidence.v0` after a
   schema and compatibility design;
 - a future catalog surface for optional model capabilities before generation;
-- a future manifest/schema version only after a roadmap item approves that
+- a future manifest/schema version only as an exceptional path after a roadmap
+  item, ADR, `hocrgen` compatibility plan, schema migration, validation update,
+  fixture strategy, and downstream consumer impact analysis approve that
   contract change.
 
 Any sidecar must keep paths portable, use stable ids, name model/data checksums,
@@ -264,6 +316,12 @@ these are true:
 - no GPU is required for baseline commands;
 - commands, seeds, controls, checksums, output paths, and cleanup policy are
   documented;
+- required isolation checks are documented and run, including:
+  baseline install and test commands without optional extras; import scan
+  proving `src/hocrsyngen/` has no learned-generation imports; package metadata
+  inspection when packaging files change; package-data inspection when artifact
+  paths change; and explicit confirmation that no model weights, datasets,
+  caches, or bulk generated outputs were committed;
 - generated outputs remain candidate synthetic inputs only;
 - manifest v1 remains unchanged and optional metadata stays in a sidecar or
   local evidence packet;
@@ -294,9 +352,20 @@ Stop or refuse learned-generation work when any of these apply:
 - the work starts implementing `hocrgen` governance, review, caps, export,
   publication, or adapter behavior in this repository.
 
-## Criteria For Closing S5
+## Criteria For Closing Or Deferring S5
 
-Phase S5 can close and move to S6 when:
+S5d closes the learned-generation packaging-boundary design, but it does not by
+itself prove the broader S5 research deliverables. Phase S5 can close and move
+to S6 only through one of these explicit decisions:
+
+1. Evidence path: S5 has produced accepted prototype/evaluation evidence that
+   satisfies the roadmap deliverables for research prototypes, evaluation
+   notes, and ablation results.
+2. Deferral path: the roadmap is updated to say that remaining S5 prototype or
+   evaluation work is intentionally deferred, out of scope, or moved to S6 or
+   external `hocrgen`/HeOCR work, with the reason recorded.
+
+Either path also requires:
 
 - S5a acceptance criteria, S5b allograph planning, S5c word/line assembly
   planning, and this S5d learned-generation packaging boundary are merged;
@@ -305,7 +374,7 @@ Phase S5 can close and move to S6 when:
 - baseline dependency, manifest v1, fixture, CLI, and `hocrgen` boundaries are
   protected;
 - future prototype gates are explicit enough to decide proceed, hold, or stop
-  without adding new planning PRs;
-- unresolved release governance, downstream utility, review evidence,
-  synthetic caps, and domain-shift measurement are tracked as S6 or external
-  `hocrgen` responsibilities.
+  without adding new packaging-boundary planning PRs;
+- unresolved release governance, downstream utility, review evidence, synthetic
+  caps, domain-shift measurement, and any deferred prototype/evaluation work are
+  tracked as S6, future S5 follow-up, or external `hocrgen` responsibilities.
