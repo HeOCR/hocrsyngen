@@ -34,7 +34,11 @@ Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for h
 
 ## Page Fields
 
-- `page_id`: non-empty page id within the sample, currently `page_0001`.
+- `page_id`: non-empty canonical page id exactly as serialized in the
+  manifest. Current generated page ids include the sample id prefix, for
+  example `hocrsyngen-s00000017-000000-page-0001`. Consumers must not derive
+  canonical page ids from asset filenames such as `page_0001.jpg`, and should
+  treat any display key or storage key as separate downstream metadata.
 - `asset_path`: relative portable POSIX path under the batch directory. The schema pattern is `^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._/-]+$`; validation also rejects paths that resolve outside the batch directory.
 - `media_type`: must be `image/jpeg`.
 - `sha256`: lowercase hex SHA-256 hash of the asset bytes matching `^[0-9a-f]{64}$`.
@@ -174,7 +178,7 @@ The governed template contract currently requires:
       "sample_id": "hocrsyngen-s00000017-000000",
       "pages": [
         {
-          "page_id": "page_0001",
+          "page_id": "hocrsyngen-s00000017-000000-page-0001",
           "asset_path": "assets/hocrsyngen-s00000017-000000/page_0001.jpg",
           "media_type": "image/jpeg",
           "sha256": "0000000000000000000000000000000000000000000000000000000000000000",

@@ -164,10 +164,63 @@ Use this sequence for the first `hocrgen` adapter dry-run:
 15. Apply S6a-S6f evidence contracts as downstream evidence, not as
     `hocrsyngen` manifest extensions.
 
+Minimum adapter audit record fields:
+
+| Field | Requirement | Meaning |
+| --- | --- | --- |
+| `adapter_import_id` | Required | Durable downstream id assigned by `hocrgen` for this import attempt. |
+| `dry_run_id` | Required for dry-runs | Downstream dry-run or rehearsal id, separate from manifest sample/page ids. |
+| `source_batch_boundary_id` | Required | Stable downstream id for the single exported fixture or generated batch before any cross-batch aggregation. |
+| `source_batch_root` | Required | Batch root path, URI, object prefix, or import location used when resolving relative manifest asset paths. |
+| `hocrsyngen_generator_version` | Required | Generator version read from manifest samples, or an explicit limitation if mixed or unavailable. |
+| `generation_or_export_command` | Required when known | Exact installed CLI command used to generate or export the source batch; otherwise record `unknown_source_command`. |
+| `generation_or_export_report_ref` | Required when available | Stored generation or fixture export JSON report reference and checksum when retained. |
+| `manifest_path` | Required | Path to `generation_manifest.json` within the validated source batch. |
+| `manifest_sha256` | Required | SHA-256 of the imported manifest bytes as observed by `hocrgen`. |
+| `validation_report_ref` | Required | Stored `hocrsyngen validate PATH --format json` report reference and checksum. |
+| `template_catalog_version` | Required | Catalog version used for joins, normally `template_catalog.v2`. |
+| `template_catalog_ref` | Required when catalog-derived fields are used | Stored catalog JSON reference and checksum, or explicit reason it was not retained. |
+| `sample_ids` | Required | Manifest sample ids retained exactly as serialized. |
+| `page_ids` | Required | Manifest page ids retained exactly as serialized. |
+| `asset_path_policy` | Required | Statement that relative POSIX asset paths were resolved only under `source_batch_root`. |
+| `asset_hash_policy` | Required | Whether hashes were recomputed, trusted after validation, or both, plus any skipped-hash limitation. |
+| `control_id_policy` | Required | How persona/style and condition ids were interpreted, allowlisted, or recorded as limitations. |
+| `rendering_coverage_report_ref` | Required when generated or cited | Stored optional coverage report reference and checksum, or explicit absence. |
+| `s6_evidence_refs` | Required when cited | S6a, S6b, S6c, S6d, S6e, and S6f downstream evidence ids linked to this import. |
+| `limitations` | Required | Unknown commands, missing reports, sparse source boundaries, unknown controls, missing joins, or missing downstream evidence. |
+
 When S6f profile/mix evidence is needed, use
 [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md)
 for the requested, generated/observed, reviewed, capped/admitted, and released
 layers. Do not define alternate profile semantics in the adapter.
+
+## Control Compatibility Handling
+
+Current public manifest v1 represents persona/style and condition controls only
+as `string|null` fields. The installed generator CLI rejects unsupported
+controls at generation time, and the public docs list the currently supported
+ids, but there is no machine-readable installed CLI surface that enumerates
+supported persona/style or condition ids for adapter validation.
+
+Until a future public control catalog, versioned schema, or downstream
+`hocrgen` allowlist exists, the adapter should not reject a validated manifest
+solely because `controls.persona` or `controls.condition` is unfamiliar to the
+adapter. Instead, it should:
+
+- retain the exact control ids from the manifest;
+- treat unfamiliar non-null controls as downstream limitations such as
+  `unknown_persona_control` or `unknown_condition_control`;
+- block only downstream purposes that require an explicit control allowlist,
+  cap, profile, or review stratum;
+- cite the installed `hocrsyngen` version, generation command, validation
+  report, and relevant docs used to interpret the control;
+- avoid inferring real identity, authorship, medical, psychological,
+  disability, demographic, sensitive-attribute, or real-source provenance
+  meaning from the control id.
+
+If `hocrgen` needs strict machine validation of supported control ids, that
+requires a downstream-owned allowlist or a future explicitly scoped public
+`hocrsyngen` contract. It should not be inferred from private Python constants.
 
 ## Evidence Links
 
@@ -196,9 +249,14 @@ downstream purpose when these conditions appear:
 - manifest asset paths are absolute, contain backslashes, contain drive
   prefixes, escape the batch root, or contain `..`;
 - required manifest fields are absent or unknown under manifest v1 validation;
-- template, recipe, degradation preset, font id, source corpus, persona/style,
-  or condition controls are unknown to the installed `hocrsyngen` public
-  surfaces;
+- template, recipe, degradation preset, font id, or source corpus values are
+  unknown to the installed `hocrsyngen` public surfaces needed for the stated
+  downstream purpose;
+- persona/style or condition controls are unfamiliar and the stated downstream
+  purpose requires an explicit downstream allowlist, cap, profile, or review
+  stratum. If no such downstream policy exists, retain the ids as limitations
+  instead of rejecting the import solely because there is no machine-readable
+  public control catalog;
 - `(template_id, recipe_id)` cannot be joined to `template_catalog.v2` when
   downstream logic needs document family, base family, layout density, or
   review features;
