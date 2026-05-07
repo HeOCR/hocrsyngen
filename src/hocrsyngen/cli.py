@@ -17,6 +17,7 @@ from hocrsyngen.generator import (
     generate_batch,
     template_catalog,
 )
+from hocrsyngen.rendering_coverage import write_rendering_coverage_report
 from hocrsyngen.validation import BatchValidationError, validate_batch
 
 
@@ -134,7 +135,11 @@ def _format_contract_fixture_catalog_json(
 
 
 def _format_generation_report_json(
-    output_path: Path, *, sample_count: int, page_count: int
+    output_path: Path,
+    *,
+    sample_count: int,
+    page_count: int,
+    rendering_coverage_report_path: Path | None = None,
 ) -> str:
     payload: dict[str, object] = {
         "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
@@ -143,6 +148,10 @@ def _format_generation_report_json(
         "output_path": str(output_path),
         "manifest_path": str(output_path / "generation_manifest.json"),
     }
+    if rendering_coverage_report_path is not None:
+        payload["rendering_coverage_report_path"] = str(
+            rendering_coverage_report_path
+        )
     return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
@@ -331,6 +340,14 @@ def build_parser() -> argparse.ArgumentParser:
             "not a real condition claim."
         ),
     )
+    generate.add_argument(
+        "--rendering-coverage-report",
+        action="store_true",
+        help=(
+            "Write an opt-in rendering_coverage_report.v1 sidecar beside the "
+            "manifest without changing generation_manifest.json v1."
+        ),
+    )
     validate = subparsers.add_parser(
         "validate", help="Validate a generated hocrsyngen fixture batch."
     )
@@ -412,6 +429,11 @@ def main(argv: list[str] | None = None) -> int:
                 persona=args.persona,
                 condition=args.condition,
             )
+            rendering_coverage_report_path = (
+                write_rendering_coverage_report(manifest, args.output)
+                if args.rendering_coverage_report
+                else None
+            )
         except FileNotFoundError as exc:
             parser.error(
                 f"generate: required packaged resource is missing: {exc.filename or exc}"
@@ -424,6 +446,7 @@ def main(argv: list[str] | None = None) -> int:
                     args.output,
                     sample_count=len(manifest.samples),
                     page_count=sum(len(sample.pages) for sample in manifest.samples),
+                    rendering_coverage_report_path=rendering_coverage_report_path,
                 )
             )
         return 0

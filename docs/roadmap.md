@@ -139,7 +139,7 @@ Planned PR breakdown:
 - `S2e` — Rendering coverage report artifact: implement a separate
   `rendering_coverage_report.v1` batch artifact, outside manifest v1, that
   summarizes covered and missing Hebrew rendering dimensions for generated
-  candidate batches. Status: future.
+  candidate batches. Status: active in this PR.
 
 Deliverables:
 
