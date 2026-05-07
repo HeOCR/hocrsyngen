@@ -38,6 +38,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Synthetic diversity and domain-shift metrics](docs/synthetic_diversity_domain_shift_metrics.md)
 - [Release cap handoff policy](docs/release_cap_handoff_policy.md)
 - [Review evidence sidecar contract](docs/review_evidence_sidecar_contract.md)
+- [Candidate batch profile and mix handoff](docs/candidate_batch_profile_mix_handoff.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -120,6 +121,9 @@ repository. S6e defines a portable optional downstream review evidence sidecar
 for reviewed sample/page ids, reviewer observations, visual evidence references,
 S6a category references, S6c warning references, S6d cap decision references,
 limitations, and unreviewed strata outside `generation_manifest.json` v1.
+S6f defines an optional downstream candidate batch profile and mix handoff for
+requested, generated/observed, reviewed, capped/admitted, and released candidate
+mix layers outside manifest v1.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.

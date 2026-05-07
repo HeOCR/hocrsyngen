@@ -225,7 +225,8 @@ Later S6 work should build on this boundary:
   reasons, visual evidence, S6a category references, S6c warning references,
   and S6d cap decision references outside manifest v1 in
   [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
-- `S6f` should define candidate batch profiles and mix handoff so utility
-  packets can state what template/style/condition/seed mix was requested.
+- `S6f` defines candidate batch profiles and mix handoff so utility packets can
+  state what template/style/condition/seed mix was requested in
+  [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
 - `S6g` should document the external `hocrgen` adapter checklist for installed
   CLI import, validation, governance, and dry-run rehearsal.

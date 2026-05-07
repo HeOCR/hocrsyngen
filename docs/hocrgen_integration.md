@@ -150,6 +150,17 @@ outside `generation_manifest.json` v1. `hocrgen`/HeOCR own review workflow
 state, reviewer assignment, evidence storage, approval, rejection, holds,
 release governance, export, and publication.
 
+Candidate batch profile and mix handoff guidance is documented in
+[candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
+It defines a portable optional downstream planning record for requested,
+generated/observed, reviewed, capped/admitted, and released candidate mixes
+using public `hocrsyngen` ids, manifest provenance, `template_catalog.v2`,
+optional rendering coverage, and S6a/S6c/S6d/S6e evidence references. The
+profile stays outside `generation_manifest.json` v1 and is not a generator
+contract, release profile, cap enforcement mechanism, utility claim, or release
+approval. `hocrgen`/HeOCR own orchestration, balancing, caps, review state,
+release profiles, release eligibility, export, publication, and governance.
+
 ## Layout Filtering Boundaries
 
 Current layout filtering should use only stable CLI and manifest surfaces.
@@ -278,6 +289,9 @@ governed dataset flows:
   sample/page ids, visual evidence references, reviewer notes, decision
   categories, reason codes, S6a/S6c/S6d references, limitations, and unreviewed
   strata retained downstream;
+- candidate batch profile and mix records using the S6f contract, with
+  requested, generated/observed, reviewed, capped/admitted, and released layers
+  retained separately downstream;
 - dedupe, leakage, benchmark/reference, release export, and publication gates;
 - downstream utility and domain-shift measurement when real references exist.
 
@@ -302,5 +316,6 @@ release behavior must be implemented in `hocrgen`, not in this repository.
 - Any future manifest field needed by `hocrgen` must be added through schema, docs, and tests, with versioning when required.
 - Release profile rules and synthetic caps belong in `hocrgen`, not in `hocrsyngen`.
 - Richer layout filtering and batch mix orchestration require future public
-  contracts before downstream tools rely on them; S6e now documents review
-  evidence sidecar boundaries without implementing the downstream workflow.
+  contracts before downstream tools rely on them; S6e documents review evidence
+  sidecar boundaries and S6f documents candidate batch profile/mix handoff
+  boundaries without implementing downstream workflow or orchestration.

@@ -157,10 +157,9 @@ planning.
 ## Repetition And Over-Representation Warnings
 
 Warn on patterns that can bias downstream dry-runs, utility measurements, or
-release planning. S6f may later define requested mixes for a particular
-candidate-batch profile, but S6c packets should still use these default advisory
-severity bands unless a downstream packet states a stricter project-specific
-threshold.
+release planning. S6f defines requested mixes for a particular candidate-batch
+profile, but S6c packets should still use these default advisory severity bands
+unless a downstream packet states a stricter project-specific threshold.
 
 Severity labels:
 
@@ -361,8 +360,9 @@ Later S6 work should use this contract without moving downstream governance into
   reasons, visual evidence, S6a category references, S6c warning references,
   and S6d cap decision references outside manifest v1 in
   [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
-- `S6f` should define candidate batch profiles and mix handoff so diversity
-  summaries can be compared against an intended requested mix.
+- `S6f` defines candidate batch profiles and mix handoff so diversity summaries
+  can be compared against an intended requested mix in
+  [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
 - `S6g` should document the external `hocrgen` adapter checklist for installed
   CLI import, validation, governance, dry-run rehearsal, and evidence-packet
   retention.

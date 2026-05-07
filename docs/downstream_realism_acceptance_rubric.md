@@ -251,5 +251,6 @@ contracts to later S6 items:
 - `S6e` defines the optional review evidence sidecar outside
   `generation_manifest.json` v1 in
   [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
-- `S6f` should define candidate batch profile and mix handoff.
+- `S6f` defines candidate batch profile and mix handoff in
+  [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
 - `S6g` should document the external `hocrgen` adapter implementation checklist.

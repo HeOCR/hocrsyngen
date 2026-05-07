@@ -161,6 +161,16 @@ test coverage in this repo and does not add review workflow state, manifest
 fields, schemas, dependencies, adapter code, export behavior, publication
 behavior, release eligibility, or CI gates to `hocrsyngen`.
 
+S6 candidate batch profile and mix handoff guidance is documented in
+[candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
+It defines optional downstream planning records for requested,
+generated/observed, reviewed, capped/admitted, and released candidate mixes,
+including required/preferred/excluded strata and mix gap reason codes. It is not
+automated test coverage in this repo and does not add generator behavior,
+manifest fields, schemas, dependencies, adapter code, orchestration, cap
+enforcement, release profiles, export behavior, publication behavior, release
+eligibility, or CI gates to `hocrsyngen`.
+
 ## Environmental Requirement
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
@@ -201,9 +211,9 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 - Review sidecar artifacts for visual inspection evidence should follow the S6e
   contract and remain downstream optional evidence outside
   `generation_manifest.json` v1 unless a versioned schema update is designed.
-- Candidate batch profile and mix handoff should define how generated batches
-  cover template, style, condition, and seed dimensions before large-scale
-  dataset rehearsals. The roadmap now tracks this as `S6f`.
+- Candidate batch profile and mix records should follow the S6f contract and
+  keep requested, generated/observed, reviewed, capped/admitted, and released
+  layers separate outside `generation_manifest.json` v1.
 - Additional synthetic persona/style/condition consistency reports governed by
   [ADR 0005](decisions/0005-persona-style-condition-semantics.md), beyond the
   automated S4 style consistency checks now covered in the test suite.
