@@ -140,6 +140,16 @@ state, leakage controls, release assembly, export, publication, and governance
 enforcement remain `hocrgen`/HeOCR responsibilities and must not be inferred
 from `hocrsyngen` validation or metadata alone.
 
+Review evidence sidecar guidance is documented in
+[review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md). It
+defines a portable optional downstream packet for reviewed sample/page ids,
+reviewer state, decision categories, reason codes, visual evidence references,
+reviewer notes, S6a category references, S6c warning references, S6d cap
+decision references, limitations, and unreviewed strata. The sidecar stays
+outside `generation_manifest.json` v1. `hocrgen`/HeOCR own review workflow
+state, reviewer assignment, evidence storage, approval, rejection, holds,
+release governance, export, and publication.
+
 ## Layout Filtering Boundaries
 
 Current layout filtering should use only stable CLI and manifest surfaces.
@@ -254,7 +264,7 @@ governed dataset flows:
 
 - installed-CLI import adapter and dry-run ingestion;
 - release profiles, synthetic caps, and source-composition policy;
-- review workflow and any future review evidence sidecar consumption;
+- review workflow and S6e review evidence sidecar consumption;
 - downstream realism acceptance decisions using the S6a rubric;
 - downstream utility measurement using the S6b contract, with CER/WER claims
   gated on governed real references and ground truth;
@@ -264,6 +274,10 @@ governed dataset flows:
 - release cap decisions using the S6d handoff policy, with source composition,
   synthetic percentage and absolute limits, per-family/style/condition caps,
   reviewer state, reason codes, and limitations retained downstream;
+- review evidence sidecar records using the S6e contract, with reviewed
+  sample/page ids, visual evidence references, reviewer notes, decision
+  categories, reason codes, S6a/S6c/S6d references, limitations, and unreviewed
+  strata retained downstream;
 - dedupe, leakage, benchmark/reference, release export, and publication gates;
 - downstream utility and domain-shift measurement when real references exist.
 
@@ -287,5 +301,6 @@ release behavior must be implemented in `hocrgen`, not in this repository.
 - `hocrgen` adapter tests should avoid assumptions about private Python dataclass names or package resource paths.
 - Any future manifest field needed by `hocrgen` must be added through schema, docs, and tests, with versioning when required.
 - Release profile rules and synthetic caps belong in `hocrgen`, not in `hocrsyngen`.
-- Richer layout filtering, review evidence, and batch mix orchestration require
-  future public contracts before downstream tools rely on them.
+- Richer layout filtering and batch mix orchestration require future public
+  contracts before downstream tools rely on them; S6e now documents review
+  evidence sidecar boundaries without implementing the downstream workflow.

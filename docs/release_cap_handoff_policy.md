@@ -309,8 +309,10 @@ leakage, export, publication, or HeOCR public-release governance.
 
 Later S6 items should build on this policy without changing ownership:
 
-- `S6e` review evidence sidecar should provide durable reviewed sample/page ids,
-  rejection reasons, and visual evidence references that cap decisions can cite.
+- `S6e` review evidence sidecar provides durable reviewed sample/page ids,
+  rejection reasons, visual evidence references, S6a category references, S6c
+  warning references, and S6d cap decision references that cap decisions can
+  cite.
 - `S6f` candidate batch profile and mix handoff should define how requested
   template/style/condition/seed mixes are recorded before caps are applied.
 - `S6g` external `hocrgen` adapter checklist should document how `hocrgen`

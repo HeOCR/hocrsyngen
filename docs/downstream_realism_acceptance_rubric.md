@@ -12,9 +12,10 @@ The rubric is handoff guidance for `hocrgen`/HeOCR governance. It explains how
 downstream reviewers can classify generated candidate batches, what evidence
 should support those decisions, and which rejection reasons belong in downstream
 release governance rather than in `hocrsyngen` outputs. It is not a versioned
-machine contract, and the category and reason names below remain provisional
-until a future `hocrgen` workflow or S6e review evidence sidecar makes them
-stable.
+machine contract. S6e now documents an optional downstream review evidence
+sidecar place to retain reviewed ids, categories, reason codes, visual evidence,
+and limitations outside manifest v1, but `hocrgen`/HeOCR still own any concrete
+workflow or stable API.
 
 ## Relationship To Visual Inspection
 
@@ -54,11 +55,10 @@ each reviewed sample or page, into one of these categories.
 
 These categories are provisional downstream governance vocabulary. They must not
 be written into `generation_manifest.json` v1, and downstream tools should not
-treat their spelling as stable API until a future `hocrgen` workflow or S6e
-review evidence sidecar versions them. A future S6e review evidence sidecar may
-define a portable machine-readable place for reviewed sample ids, reviewer
-notes, and rejection reasons, but this S6a document does not create that
-sidecar.
+treat their spelling as stable API until a downstream `hocrgen` workflow
+versions them. The S6e review evidence sidecar documents a portable optional
+place for reviewed sample ids, reviewer notes, visual evidence references, and
+rejection reasons, but this S6a document does not create workflow state.
 
 ## Calibrated Example Classes
 
@@ -248,7 +248,8 @@ contracts to later S6 items:
   [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md).
 - `S6d` defines release cap handoff policy without moving governance into this
   repository in [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
-- `S6e` should define any review evidence sidecar outside
-  `generation_manifest.json` v1.
+- `S6e` defines the optional review evidence sidecar outside
+  `generation_manifest.json` v1 in
+  [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
 - `S6f` should define candidate batch profile and mix handoff.
 - `S6g` should document the external `hocrgen` adapter implementation checklist.

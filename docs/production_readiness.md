@@ -4,10 +4,11 @@ This document makes the current readiness state explicit. It records what is
 ready in `hocrsyngen`, what remains before generated batches can become
 governed dataset inputs, and which roadmap items should carry the work.
 
-## Current State After S6c
+## Current State After S6d
 
-The last merged roadmap item is `S6c` - synthetic diversity and domain-shift
-metrics, squash-merged in PR #50. `S6b` - downstream utility measurement
+The last merged roadmap item is `S6d` - release cap handoff policy,
+squash-merged in PR #51. `S6c` - synthetic diversity and domain-shift
+metrics - was squash-merged in PR #50. `S6b` - downstream utility measurement
 contract - was squash-merged in PR #49. `S6a` - downstream realism acceptance
 rubric - was squash-merged in PR #48. `S5e` - close S5 planning and activate
 S6 evaluation gates - was squash-merged in PR #47. At this point
@@ -39,12 +40,12 @@ contract, but no CER/WER or OCR/HTR utility claim is established by this
 repository until downstream governed real-reference evaluations are actually run.
 S6c documents generator-batch diversity summaries, repeated-pattern warnings,
 and downstream synthetic-to-real comparison requirements without adding
-generator behavior or moving governance into this repository. S6d is now the
-active planning item for release cap handoff policy: it should define how public
-`hocrsyngen` metadata and S6a/S6b/S6c evidence support downstream
+generator behavior or moving governance into this repository. S6d documents how
+public `hocrsyngen` metadata and S6a/S6b/S6c evidence support downstream
 `hocrgen`/HeOCR cap decisions without implementing caps, balancing, source
 composition, release eligibility, export, publication, or governance enforcement
-in this repository.
+in this repository. S6e is now the active planning item for a portable optional
+review evidence sidecar contract outside `generation_manifest.json` v1.
 
 ## Crucial Missing Pieces
 
@@ -55,7 +56,7 @@ governed dataset flow.
 | --- | --- | --- | --- |
 | `hocrgen` import/governance adapter | `hocrgen` | External dependency `H1a`; hocrsyngen supports it through S6 handoff docs | The adapter should consume installed CLI JSON and validated manifests, not private Python internals. |
 | Release profiles and synthetic caps | `hocrgen` | External dependency `H1b`; hocrsyngen tracks handoff policy in `S6d` | Caps, balancing, source composition, review state, release eligibility, release assembly, export, and publication must stay out of `hocrsyngen`. |
-| Review evidence sidecar | Shared contract, downstream use in `hocrgen` | `S6e` | Needed for durable reviewed sample ids, rejection reasons, and inspection evidence without changing manifest v1. |
+| Review evidence sidecar | Shared contract, downstream use in `hocrgen` | `S6e` | Active; defines durable reviewed sample/page ids, reviewer notes, visual evidence references, S6a category references, S6c warning references, and S6d cap decision references without changing manifest v1. |
 | Candidate batch profile and mix handoff | Shared contract, orchestration in `hocrgen` | `S6f` | Defines how template/style/condition/seed mixes are requested, recorded, capped, and audited. |
 | Downstream acceptance, utility, diversity, and cap gates | `hocrgen`/HeOCR with `hocrsyngen` metadata support | `S6a`, `S6b`, `S6c`, `S6d` | `S6a` documents downstream realism acceptance categories, evidence expectations, rejection reasons, and the distinction between generator-quality review and release eligibility. `S6b` defines the utility measurement evidence contract and keeps CER/WER claims gated on real references downstream. `S6c` defines diversity and domain-shift evidence boundaries so repeated synthetic patterns and target-domain gaps are visible before dry-runs, utility evaluations, or release planning. `S6d` defines how those evidence packets feed cap decisions without overriding source-composition policy. |
 
@@ -73,7 +74,8 @@ produce large quality or operational gains.
 | Downstream realism acceptance rubric | `S6a` | Done in PR #48; gives `hocrgen`/HeOCR reviewers a shared acceptance vocabulary for generated candidate batches before utility, caps, and review sidecar contracts are implemented. |
 | Downstream utility measurement | `S6b` | Done in PR #49; defines how `hocrgen`/HeOCR must prove whether synthetic batches improve CER/WER or expose model weaknesses against real references before any utility claim is made. |
 | Diversity and domain-shift metrics | `S6c` | Done in PR #50; helps detect synthetic over-representation, repeated artifacts, and gaps versus real Hebrew document distributions. |
-| Release cap handoff policy | `S6d` | Active; defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence support downstream cap decisions while keeping cap ownership, balancing, source composition, release eligibility, export, publication, and governance enforcement in `hocrgen`/HeOCR. |
+| Release cap handoff policy | `S6d` | Done in PR #51; defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence support downstream cap decisions while keeping cap ownership, balancing, source composition, release eligibility, export, publication, and governance enforcement in `hocrgen`/HeOCR. |
+| Review evidence sidecar contract | `S6e` | Active; defines a portable optional downstream evidence packet for reviewed ids, decision categories, reason codes, visual references, limitations, and links to S6a/S6c/S6d evidence without creating review workflow state in this repo. |
 
 ## External hocrgen Dependency Labels
 
@@ -84,7 +86,7 @@ planning:
 - `H1a` - Implement `hocrsyngen` installed-CLI import adapter in `hocrgen`.
 - `H1b` - Define `hocrgen` release profiles, synthetic caps, and balancing rules.
 - `H1c` - Add `hocrgen` review workflow support for candidate synthetic batches
-  and any future review sidecar.
+  and S6e review evidence sidecar records.
 - `H1d` - Run downstream utility and domain-shift evaluations against real
   references when references are available.
 
@@ -123,7 +125,13 @@ Use a dry-run flow before any real dataset release decision:
    `generation_manifest.json` v1. Only a non-release infrastructure smoke test
    may omit cap rehearsal, and it should record `diagnostic_only` plus an
    explicit limitation that release caps were not evaluated.
-9. Record which missing metadata, diversity evidence, utility evidence, review
+9. Apply `docs/review_evidence_sidecar_contract.md` when visual review evidence
+   is retained: cite reviewed sample/page ids, public provenance/catalog fields,
+   reviewer state, decision category, rejection or hold reason codes, visual
+   evidence references, S6a category references, S6c warning references, S6d cap
+   decision references, limitations, and unreviewed strata outside
+   `generation_manifest.json` v1.
+10. Record which missing metadata, diversity evidence, utility evidence, review
    evidence, caps, or mix controls would have changed the decision. Feed those
    gaps into `S2e`, `S3e`, `S6e`, and `S6f` before scaling batch size.
 

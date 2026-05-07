@@ -151,6 +151,16 @@ automated test coverage in this repo and does not add cap enforcement, release
 profiles, manifest fields, sidecars, dependencies, adapter code, export
 behavior, publication behavior, or CI gates to `hocrsyngen`.
 
+S6 review evidence sidecar guidance is documented in
+[review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md). It
+defines optional downstream evidence packets for reviewed sample/page ids,
+reviewer state, decision categories, reason codes, visual evidence references,
+reviewer notes, S6a category references, S6c warning references, S6d cap
+decision references, limitations, and unreviewed strata. It is not automated
+test coverage in this repo and does not add review workflow state, manifest
+fields, schemas, dependencies, adapter code, export behavior, publication
+behavior, release eligibility, or CI gates to `hocrsyngen`.
+
 ## Environmental Requirement
 
 Pillow with libraqm support is required for Hebrew RTL rendering. If tests fail because libraqm is missing, report that exact environmental blocker and do not weaken tests.
@@ -188,9 +198,9 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 
 ## Future Quality Gates
 
-- Review sidecar artifacts for visual inspection evidence remain future work and
-  must stay outside `generation_manifest.json` v1 unless a versioned schema
-  update is designed. The roadmap now tracks this as `S6e`.
+- Review sidecar artifacts for visual inspection evidence should follow the S6e
+  contract and remain downstream optional evidence outside
+  `generation_manifest.json` v1 unless a versioned schema update is designed.
 - Candidate batch profile and mix handoff should define how generated batches
   cover template, style, condition, and seed dimensions before large-scale
   dataset rehearsals. The roadmap now tracks this as `S6f`.

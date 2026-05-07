@@ -221,8 +221,10 @@ Later S6 work should build on this boundary:
 - `S6d` defines release cap handoff policy so utility evidence does not override
   source composition and synthetic cap decisions in
   [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
-- `S6e` should define review evidence sidecars for durable reviewed ids and
-  rejection reasons outside manifest v1.
+- `S6e` defines review evidence sidecars for durable reviewed ids, rejection
+  reasons, visual evidence, S6a category references, S6c warning references,
+  and S6d cap decision references outside manifest v1 in
+  [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
 - `S6f` should define candidate batch profiles and mix handoff so utility
   packets can state what template/style/condition/seed mix was requested.
 - `S6g` should document the external `hocrgen` adapter checklist for installed

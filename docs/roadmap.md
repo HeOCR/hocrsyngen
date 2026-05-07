@@ -4,7 +4,7 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S6c as the latest merged roadmap state for downstream evaluation
+1. Treat S6d as the latest merged roadmap state for downstream evaluation
    planning, with S5e closing handwriting research by deferral and S3f/S4d
    remaining the completed capability milestones for governed document families
    and style/condition readiness. Together these leave deterministic document
@@ -12,7 +12,8 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    installed-package CLI contracts, S5 research gates, allograph plus word/line
    assembly planning, optional learned-generation packaging boundaries, and the
    S6a downstream realism acceptance rubric, S6b downstream utility measurement
-   contract, and S6c diversity/domain-shift metrics documented.
+   contract, S6c diversity/domain-shift metrics, and S6d release cap handoff
+   policy documented.
 2. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -23,21 +24,25 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    gates and boundaries, but no accepted prototype or downstream evaluation
    evidence. Remaining S5 prototype/evaluation work is deferred to a future S5
    follow-up or external `hocrgen`/HeOCR work.
-5. Keep S6 active with `S6d` release cap handoff policy as
+5. Keep S6 active with `S6e` review evidence sidecar contract as
    the current planning PR. S6a is complete in PR #48 and defines downstream
    realism acceptance; S6b is complete in PR #49 and defines what evidence is
    required before any CER/WER or other OCR/HTR utility claim is made; S6c is
    complete in PR #50 and defines how to detect repeated synthetic patterns,
    over-representation, and synthetic-to-real comparison gaps before downstream
-   dry-runs, utility evaluations, or release planning. S6d now
-   defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence feed
+   dry-runs, utility evaluations, or release planning. S6d is complete in PR
+   #51 and defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence feed
    downstream release cap decisions without moving cap ownership, source
    composition, release eligibility, export, publication, or governance
-   enforcement into this repository.
+   enforcement into this repository. S6e now defines an optional downstream
+   review evidence sidecar for retaining reviewed sample/page ids, reviewer
+   notes, visual evidence references, S6a category references, S6c warning
+   references, and S6d cap decision references outside manifest v1.
 
-## Current Baseline After S6c
+## Current Baseline After S6d
 
-`S6c` - synthetic diversity and domain-shift metrics - is merged in PR #50.
+`S6d` - release cap handoff policy - is merged in PR #51. `S6c` - synthetic
+diversity and domain-shift metrics - is merged in PR #50.
 `S6b` - downstream utility measurement contract - is merged in PR #49. `S6a` -
 downstream realism acceptance rubric - is merged in PR #48. `S5e` - close S5
 planning and activate S6 evaluation gates - is merged in PR #47.
@@ -59,7 +64,11 @@ and `hocrgen`/HeOCR ownership. It does not establish any OCR/HTR utility claim
 from this repository. S6c adds candidate-batch diversity summaries,
 repeated-pattern warnings, and synthetic-to-real domain-shift evidence
 boundaries. It does not establish domain match, cap compliance, release
-eligibility, or publication readiness.
+eligibility, or publication readiness. S6d adds release cap handoff policy for
+how public `hocrsyngen` metadata and S6a/S6b/S6c evidence can support downstream
+cap records. It does not add cap enforcement, release profiles, source
+composition, release eligibility, export, publication, or governance behavior to
+this repository.
 
 Phase S5 closes by deferral rather than evidence: the repository does not
 contain accepted S5 prototype/evaluation evidence, ablation results, or
@@ -382,11 +391,14 @@ Planned PR breakdown:
   diversity/domain-shift packet ids support downstream `hocrgen`/HeOCR release
   cap decisions without moving caps, balancing, source composition, release
   eligibility, export, publication, or governance enforcement into this repo.
-  Status: active; documented in
+  Status: done in PR #51; documented in
   [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
 - `S6e` — Review evidence sidecar contract: define a portable optional sidecar
   for reviewed sample ids, page ids, rejection reasons, visual inspection
-  evidence, and reviewer workflow boundaries without changing manifest v1.
+  evidence, S6a category references, S6c warning references, S6d cap decision
+  references, and reviewer workflow boundaries without changing manifest v1.
+  Status: active; documented in
+  [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
 - `S6f` — Candidate batch profile and mix handoff: define how `hocrgen` should
   request or record template/style/condition/seed mixes, synthetic caps, and
   dry-run audit summaries using public `hocrsyngen` metadata.
