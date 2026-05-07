@@ -97,7 +97,7 @@ Required top-level fields:
 | `owner_repository` | Required | Repository or system that owns the profile, usually `hocrgen` or HeOCR. |
 | `created_at` | Required | Date or timestamp when the profile was recorded. |
 | `intended_downstream_purpose` | Required | Purpose such as import dry-run, visual review planning, cap rehearsal, utility planning, domain-shift rehearsal, release-profile planning, or public-release planning. |
-| `candidate_batch_ref` | Required | Requested or observed batch id, downstream import id, path, generation command, or explicit limitation when unknown. |
+| `candidate_batch_refs` | Required | One or more requested or observed source batch records with downstream import ids, paths, generation/export commands, validation reports, and explicit limitations when any source detail is unknown. |
 | `target_counts` | Required | Target sample and page counts, or explicit diagnostic/smoke-test scope. |
 | `requested_mix` | Required | Required, preferred, and excluded strata for the intended purpose. |
 | `observed_mix` | Required when a batch exists | Counts from validated manifest/catalog/report evidence. |
@@ -110,8 +110,8 @@ Conditionally required fields:
 | Field path | Required when |
 | --- | --- |
 | `hocrsyngen_evidence` | Any observed/generated mix is recorded from `hocrsyngen` outputs. |
-| `hocrsyngen_evidence.validation_report` | A concrete generated/imported batch is cited. |
-| `hocrsyngen_evidence.template_catalog_v2_join` | Document family or base family mix is cited. |
+| `hocrsyngen_evidence.validation_report` or `candidate_batch_refs[].validation_report` | A concrete generated/imported batch is cited. Multi-source profiles should prefer per-source validation report references. |
+| `hocrsyngen_evidence.template_catalog_v2_join` | Document family, base family, or any catalog-derived view is cited. This is effectively required for S6f profiles that compare requested or observed family/base-family mixes. |
 | `hocrsyngen_evidence.rendering_coverage_report` | Coverage evidence, missing coverage, or rendering-coverage dimensions are cited. |
 | `review_expectation` | The purpose is review planning, cap rehearsal, utility planning, domain-shift comparison, or release planning. |
 | `reviewed_mix` | S6e review sidecars or reviewer coverage are cited. |
@@ -125,6 +125,9 @@ Optional fields:
 
 - owner team, review project, dashboard, or issue/PR references;
 - profile supersedes/superseded-by links;
+- `candidate_batch_ref` as a singular convenience field only for a narrow
+  profile that cites exactly one source batch and does not aggregate across
+  multiple generated/imported sources;
 - expected split role for synthetic candidates, such as dry-run import,
   calibration, development, utility evaluation, review, release rehearsal, or
   public release;
@@ -163,6 +166,38 @@ Permitted `hocrsyngen` evidence includes:
 These fields identify and summarize candidate synthetic evidence. They do not
 prove realism, utility, domain match, cap compliance, release eligibility, or
 publication approval.
+
+## Source Batch References
+
+S6f profiles should treat each generated or imported source batch as its own
+auditable input. This matters because current public `hocrsyngen generate`
+supports one batch-wide persona/style control and one batch-wide condition
+control per invocation. A profile that aggregates multiple persona, condition,
+template, or seed strata must therefore cite multiple public source batches or a
+downstream import record that preserves those source batch boundaries. Do not
+represent an aggregate multi-style or multi-condition profile as if it came from
+one public generation command unless a future public CLI explicitly supports
+that orchestration.
+
+Each `candidate_batch_refs[]` entry should retain:
+
+- source batch id or downstream import id;
+- public generation or export command, when known;
+- output path or downstream import path;
+- validation report status and path;
+- sample and page counts for that source;
+- requested template ids or observed template ids;
+- persona/style control used by that source, or `null`;
+- condition control used by that source, or `null`;
+- seed and sample-index range for that source;
+- optional rendering coverage report path for that source;
+- limitations such as `unknown_source_command` or
+  `source_batch_boundaries_missing`.
+
+Downstream systems may still compute one aggregate `observed_mix`, but that
+aggregate must be traceable back to the individual source batch refs. If source
+batch boundaries are unavailable, record a `source_batch_boundaries_missing`
+limitation and avoid claims that depend on cross-source balancing.
 
 ## Requested Mix
 
@@ -205,20 +240,29 @@ candidate batches. It should be derived from public manifests, public catalog
 joins, CLI reports, optional rendering coverage reports, and downstream import
 ids.
 
-Required observed mix views:
+Minimum manifest-derived observed mix views:
 
 - sample and page counts by `template_id`;
 - sample and page counts by `recipe_id`;
-- sample and page counts by `document_family` and `base_family` through
-  `template_catalog.v2`;
 - sample and page counts by `degradation_preset`;
 - sample and page counts by `font_id`;
 - sample and page counts by source corpus;
 - sample and page counts by persona/style control;
 - sample and page counts by condition control;
 - seed span and sample-index range;
-- cross-strata counts for base family x degradation, base family x style,
-  base family x condition, font x degradation, and seed range x template;
+- cross-strata counts for template id x degradation, template id x style,
+  template id x condition, font x degradation, and seed range x template;
+
+Catalog-derived observed mix views require a `template_catalog.v2` join:
+
+- sample and page counts by `document_family` and `base_family`;
+- cross-strata counts for base family x degradation, base family x style, and
+  base family x condition;
+- any family/base-family gap records or requested-vs-observed family
+  comparisons;
+
+Additional optional observed views:
+
 - optional rendering coverage covered/missing summary when a coverage report is
   present;
 - optional S6c warnings when a diversity/domain-shift packet exists.
@@ -321,10 +365,49 @@ profile_version: candidate_batch_profile_mix.v1
 owner_repository: hocrgen
 created_at: 2026-05-08
 intended_downstream_purpose: cap_rehearsal_and_review_planning
-candidate_batch_ref:
-  requested_batch_id: hocrgen-plan:s6f-dryrun-small
-  observed_import_id: hocrgen-import:hocrsyngen-batch-17
-  generation_command: hocrsyngen generate --count 40 --seed 17 --output out/s6f-dry-run --format json
+candidate_batch_refs:
+  - requested_batch_id: hocrgen-plan:s6f-dryrun-small
+    observed_import_id: hocrgen-import:hocrsyngen-batch-17-standard
+    generation_command: hocrsyngen generate --count 16 --seed 17 --template-id printed_letter --template-id handwritten_note --template-id archive_card --template-id ledger --persona style_standard_v1 --condition condition_standard_v1 --output out/s6f-standard --format json
+    validation_report:
+      status: valid
+      path: reports/s6f-standard-validation.json
+    sample_count: 16
+    page_count: 16
+    persona: style_standard_v1
+    condition: condition_standard_v1
+    seed_span:
+      min_seed: 17
+      max_seed: 17
+      sample_index_range: 0-15
+  - requested_batch_id: hocrgen-plan:s6f-dryrun-small
+    observed_import_id: hocrgen-import:hocrsyngen-batch-18-open-drift
+    generation_command: hocrsyngen generate --count 12 --seed 18 --template-id printed_letter --template-id handwritten_note --template-id archive_card --template-id ledger --persona style_open_drift_v1 --condition condition_low_contrast_v1 --output out/s6f-open-drift --format json
+    validation_report:
+      status: valid
+      path: reports/s6f-open-drift-validation.json
+    sample_count: 12
+    page_count: 12
+    persona: style_open_drift_v1
+    condition: condition_low_contrast_v1
+    seed_span:
+      min_seed: 18
+      max_seed: 18
+      sample_index_range: 0-11
+  - requested_batch_id: hocrgen-plan:s6f-dryrun-small
+    observed_import_id: hocrgen-import:hocrsyngen-batch-19-compact
+    generation_command: hocrsyngen generate --count 12 --seed 19 --template-id printed_letter --template-id handwritten_note --template-id archive_card --template-id ledger --persona style_compact_steady_v1 --condition condition_dense_spacing_v1 --output out/s6f-compact --format json
+    validation_report:
+      status: valid
+      path: reports/s6f-compact-validation.json
+    sample_count: 12
+    page_count: 12
+    persona: style_compact_steady_v1
+    condition: condition_dense_spacing_v1
+    seed_span:
+      min_seed: 19
+      max_seed: 19
+      sample_index_range: 0-11
 target_counts:
   requested_samples: 40
   requested_pages: 40
@@ -349,12 +432,7 @@ requested_mix:
   excluded:
     release_publication: true
 hocrsyngen_evidence:
-  validation_report:
-    status: valid
-    path: reports/hocrsyngen-batch-17-validation.json
   template_catalog_v2_join: true
-  rendering_coverage_report:
-    path: reports/hocrsyngen-batch-17-rendering-coverage.json
 observed_mix:
   sample_count: 40
   page_count: 40
@@ -364,13 +442,13 @@ observed_mix:
     archive_card: 10
     ledger: 10
   persona_counts:
-    style_standard_v1: 20
-    style_open_drift_v1: 10
-    style_compact_steady_v1: 10
+    style_standard_v1: 16
+    style_open_drift_v1: 12
+    style_compact_steady_v1: 12
   condition_counts:
-    condition_standard_v1: 20
-    condition_low_contrast_v1: 10
-    condition_dense_spacing_v1: 10
+    condition_standard_v1: 16
+    condition_low_contrast_v1: 12
+    condition_dense_spacing_v1: 12
   seed_span:
     min_seed: 17
     max_seed: 20
