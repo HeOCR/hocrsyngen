@@ -328,10 +328,11 @@ These may remain in `hocrsyngen`:
 
 ## Relationship To Future S6 Work
 
-`S6f` should define candidate batch profile and mix handoff: how `hocrgen`
-requests or records intended template, family, style, condition, degradation,
-font, source-corpus, seed, and sample-index mixes before review and cap
-decisions interpret a batch.
+`S6f` defines candidate batch profile and mix handoff in
+[candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md):
+how `hocrgen` requests or records intended template, family, style, condition,
+degradation, font, source-corpus, seed, and sample-index mixes before review
+and cap decisions interpret a batch.
 
 `S6g` should document the external `hocrgen` adapter checklist for importing
 validated candidate batches, retaining public ids, linking optional sidecars,

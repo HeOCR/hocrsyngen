@@ -145,6 +145,14 @@ The governed template contract currently requires:
   visual evidence storage, reviewer notes, approvals, holds, rejections,
   release eligibility, export, publication, and governance enforcement must be
   stored downstream in `hocrgen`/HeOCR records or future downstream contracts.
+- Downstream candidate batch profile and mix records remain outside manifest v1.
+  S6f profiles may cite manifest sample/page ids, public provenance fields,
+  controls, `template_catalog.v2`, optional rendering coverage, and
+  S6a/S6c/S6d/S6e evidence references when recording requested,
+  generated/observed, reviewed, capped/admitted, or released mix layers. Profile
+  ownership, balancing, orchestration, caps, release profiles, release
+  eligibility, export, publication, and governance enforcement must be stored
+  downstream in `hocrgen`/HeOCR records or future downstream contracts.
 
 ## Example Shape
 

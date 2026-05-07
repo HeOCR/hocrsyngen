@@ -313,8 +313,11 @@ Later S6 items should build on this policy without changing ownership:
   rejection reasons, visual evidence references, S6a category references, S6c
   warning references, and S6d cap decision references that cap decisions can
   cite.
-- `S6f` candidate batch profile and mix handoff should define how requested
-  template/style/condition/seed mixes are recorded before caps are applied.
+- `S6f` candidate batch profile and mix handoff defines how requested,
+  generated/observed, reviewed, capped/admitted, and released
+  template/style/condition/seed mixes are recorded before and after caps are
+  applied in
+  [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
 - `S6g` external `hocrgen` adapter checklist should document how `hocrgen`
   imports, validates, retains evidence, and applies governance without importing
   private `hocrsyngen` internals.

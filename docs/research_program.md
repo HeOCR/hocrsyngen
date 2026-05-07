@@ -109,6 +109,8 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   [release_cap_handoff_policy.md](release_cap_handoff_policy.md).
   S6e review evidence sidecar boundaries are documented in
   [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md).
+  S6f candidate batch profile and mix handoff boundaries are documented in
+  [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
 - OCR/HTR utility only once downstream benchmark references, governed ground
   truth, split/leakage controls, metric definitions, and synthetic-to-real
   comparison evidence exist.
@@ -153,3 +155,6 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
 - Which downstream `hocrgen` review workflow should first store S6e sidecars
   with reviewed sample/page ids, visual evidence references, S6a category
   references, S6c warning references, and S6d cap decision references?
+- Which downstream `hocrgen` dry-run or release rehearsal should first record
+  an S6f candidate batch profile with requested, generated/observed, reviewed,
+  capped/admitted, and released mix layers?
