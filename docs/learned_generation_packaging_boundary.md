@@ -125,8 +125,8 @@ packaged fixtures:
 ## Experiment Artifact And Packaging Constraints
 
 Future experiment paths are not free-form dumping grounds. A later prototype PR
-that adds `experiments/`, `docs/reports/s5d/`, optional packaging metadata, or
-separate-package handoff notes must prove these constraints:
+that adds an experiment directory, committed evidence report, optional packaging
+metadata, or separate-package handoff notes must prove these constraints:
 
 - no model weights, training datasets, evaluation datasets, private references,
   downloaded artifacts, generated bulk images, caches, or heavyweight binary
@@ -364,6 +364,15 @@ to S6 only through one of these explicit decisions:
 2. Deferral path: the roadmap is updated to say that remaining S5 prototype or
    evaluation work is intentionally deferred, out of scope, or moved to S6 or
    external `hocrgen`/HeOCR work, with the reason recorded.
+
+S5e applies the deferral path. No accepted S5 prototype/evaluation evidence,
+ablation result, or downstream utility measurement exists in this repository.
+S5 produced planning gates and boundaries only: S5a acceptance criteria, S5b
+allograph planning, S5c word/line assembly planning, and this S5d packaging
+boundary. Remaining prototype/evaluation deliverables are deferred out of the
+baseline package to a future S5 follow-up or external `hocrgen`/HeOCR work,
+depending on where governed references, evidence review, utility measurement,
+and release workflows are available.
 
 Either path also requires:
 
