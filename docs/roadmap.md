@@ -264,7 +264,7 @@ Risks/dependencies:
 
 ## Phase S5 — Handwriting Research Program
 
-Current status: `closing in S5e`.
+Current status: `done`.
 
 Objective: explore higher-quality Hebrew handwriting synthesis while protecting the lightweight baseline package.
 
@@ -297,7 +297,7 @@ Planned PR breakdown:
 - `S5e` — Close S5 planning and activate S6 evaluation gates: close S5 by
   explicitly deferring remaining prototype/evaluation evidence work out of the
   baseline package, record the post-S5 planning state, and make S6 active.
-  Status: active in this PR.
+  Status: done in PR #47.
 
 Deliverables:
 
