@@ -191,11 +191,12 @@ validation.
 4. `hocrgen` applies dataset governance.
 5. HeOCR receives only release-approved outputs.
 
-## Post-S4d Production Readiness Dependencies
+## Production Readiness Dependencies
 
-After S4d, `hocrsyngen` can generate and validate deterministic candidate
-batches, but `hocrgen` still needs explicit downstream work before those
-candidates can participate in governed dataset flows:
+After S3f, `hocrsyngen` can generate and validate deterministic candidate
+batches with the current governed document families, but `hocrgen` still needs
+explicit downstream work before those candidates can participate in governed
+dataset flows:
 
 - installed-CLI import adapter and dry-run ingestion;
 - release profiles, synthetic caps, and source-composition policy;

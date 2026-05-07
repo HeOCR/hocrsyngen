@@ -4,9 +4,11 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S4d as the last merged baseline milestone: deterministic style,
-   condition, degradation, manifest, validation, and installed-package CLI
-   contracts are ready for candidate synthetic batch generation.
+1. Treat S3f and Phase S3 as the latest merged roadmap state for governed
+   document-family coverage, while S4d remains the merged style/condition
+   readiness milestone. Together these leave deterministic document families,
+   style, condition, degradation, manifest, validation, and installed-package
+   CLI contracts ready for candidate synthetic batch generation.
 2. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -18,15 +20,16 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    realism research, and downstream utility measurement.
 5. Keep optional ML-backed synthesis separate from baseline dependencies.
 
-## Current Baseline After S4d
+## Current Baseline After S3f
 
-`S4d` - style consistency checks - is merged in PR #38. The current baseline can
-generate and validate deterministic candidate batches through public CLI JSON
-surfaces. This readiness does not make any generated batch release-ready.
+`S3f` - additional governed document families - is merged in PR #42, and Phase
+S3 is complete. The current baseline can generate and validate deterministic
+candidate batches through public CLI JSON surfaces. This readiness does not
+make any generated batch release-ready.
 `hocrgen` remains the owner of dataset import, release profiles, review, dedupe,
 privacy, caps, benchmark handling, release export, and publication.
 
-The post-S4d readiness plan is tracked in
+The production-readiness plan is tracked in
 [production_readiness.md](production_readiness.md). Any future planning update
 that identifies a crucial missing production or quality item must either add a
 roadmap notation here or record the item as an external `hocrgen` dependency in
@@ -160,7 +163,7 @@ Risks/dependencies:
 
 ## Phase S3 — Document-Layout Realism
 
-Current status: `active`.
+Current status: `done`.
 
 Objective: make synthetic samples resemble believable Hebrew document families while keeping deterministic generation and manifest contracts intact.
 
@@ -184,7 +187,7 @@ Planned PR breakdown:
 - `S3f` — Additional governed document families: add the next set of realistic
   Hebrew document families, such as ledgers, classroom-like notes, receipts, or
   mixed printed/handwritten overlays, through governed template ids and tests.
-  Status: active in this PR.
+  Status: done in PR #42.
 
 Deliverables:
 
@@ -243,7 +246,7 @@ Risks/dependencies:
 
 ## Phase S5 — Handwriting Research Program
 
-Current status: `future`.
+Current status: `active`.
 
 Objective: explore higher-quality Hebrew handwriting synthesis while protecting the lightweight baseline package.
 
@@ -258,7 +261,9 @@ Scope:
 
 Planned PR breakdown:
 
-- `S5a` — Handwriting research acceptance criteria: define experiment boundaries, reproducibility requirements, licensing constraints, and evaluation gates.
+- `S5a` — Handwriting research acceptance criteria: define experiment
+  boundaries, reproducibility requirements, licensing constraints, and
+  evaluation gates. Status: active in this PR.
 - `S5b` — Allograph and character-level prototype: explore deterministic allograph variation outside heavyweight model dependencies.
 - `S5c` — Word/line assembly prototype: test geometric perturbation and line assembly realism while preserving logical-order ground truth.
 - `S5d` — Optional learned-generation packaging design: design extras/subpackages/experiments for ML-backed generation without contaminating baseline dependencies.
