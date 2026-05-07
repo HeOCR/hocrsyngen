@@ -318,9 +318,10 @@ Later S6 items should build on this policy without changing ownership:
   template/style/condition/seed mixes are recorded before and after caps are
   applied in
   [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
-- `S6g` external `hocrgen` adapter checklist should document how `hocrgen`
+- `S6g` external `hocrgen` adapter checklist documents how `hocrgen`
   imports, validates, retains evidence, and applies governance without importing
-  private `hocrsyngen` internals.
+  private `hocrsyngen` internals in
+  [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
 
 Any future machine-readable cap decision format belongs in `hocrgen`/HeOCR or a
 shared downstream governance contract, not in `generation_manifest.json` v1.

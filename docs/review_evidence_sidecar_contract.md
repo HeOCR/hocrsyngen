@@ -334,10 +334,11 @@ how `hocrgen` requests or records intended template, family, style, condition,
 degradation, font, source-corpus, seed, and sample-index mixes before review
 and cap decisions interpret a batch.
 
-`S6g` should document the external `hocrgen` adapter checklist for importing
+`S6g` documents the external `hocrgen` adapter checklist for importing
 validated candidate batches, retaining public ids, linking optional sidecars,
 and applying downstream governance without importing private `hocrsyngen`
-internals.
+internals in
+[hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
 
 S6e does not require either future item before this contract can be cited as
 planning guidance. It simply keeps review evidence portable and outside

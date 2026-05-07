@@ -363,6 +363,7 @@ Later S6 work should use this contract without moving downstream governance into
 - `S6f` defines candidate batch profiles and mix handoff so diversity summaries
   can be compared against an intended requested mix in
   [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
-- `S6g` should document the external `hocrgen` adapter checklist for installed
-  CLI import, validation, governance, dry-run rehearsal, and evidence-packet
-  retention.
+- `S6g` documents the external `hocrgen` adapter checklist for installed CLI
+  import, validation, governance, dry-run rehearsal, and evidence-packet
+  retention in
+  [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).

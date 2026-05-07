@@ -529,15 +529,16 @@ The S6f profile is the place to say what mix was intended and how the observed,
 reviewed, capped, and released layers relate. It must not collapse those
 separate contracts into a single release decision.
 
-## Relationship To Future S6g
+## Relationship To S6g
 
-`S6g: hocrgen adapter handoff checklist` should reference this S6f profile
-contract rather than inventing new profile semantics. S6g should focus on the
+`S6g: hocrgen adapter handoff checklist` references this S6f profile contract
+rather than inventing new profile semantics. S6g focuses on the
 external `hocrgen` implementation checklist: installed CLI import, validation,
 catalog joins, id retention, optional evidence links, dry-run rehearsal,
-failure modes, and governance boundaries.
+failure modes, and governance boundaries. It is documented in
+[hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
 
-S6g should not implement adapter code in `hocrsyngen`, should not mutate
+S6g does not implement adapter code in `hocrsyngen`, does not mutate
 manifest v1, and should not redefine requested, observed, reviewed, capped, or
 released mix fields. If downstream implementation discovers that a machine
 schema is needed, that schema belongs in a versioned downstream contract or a
