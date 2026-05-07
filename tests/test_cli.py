@@ -23,6 +23,7 @@ from hocrsyngen.cli import (
     main,
 )
 from hocrsyngen.generator import SUPPORTED_CONDITION_BUNDLE_IDS, SUPPORTED_STYLE_BUNDLE_IDS, TemplateCatalogEntry
+from hocrsyngen.rendering_coverage import RENDERING_COVERAGE_REPORT_FILENAME
 from hocrsyngen.validation import validate_batch
 from hocrsyngen.validation import BatchValidationError, ValidationResult
 
@@ -245,6 +246,7 @@ INSTALLED_CLI_SMOKE_CASES = [
     "contracts-export",
     "validate-exported-fixture",
     "generate-json",
+    "generate-rendering-coverage-report",
     "validate-generated-batch",
 ]
 
@@ -458,6 +460,41 @@ def _assert_installed_cli_smoke_case(
             env=env,
             output_dir=output_root / "generated-batch",
         )
+        return
+
+    if cli_case == "generate-rendering-coverage-report":
+        generated_dir = output_root / "generated-coverage-batch"
+        generation = _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "generate",
+                    "--count",
+                    "2",
+                    "--seed",
+                    "17",
+                    "--output",
+                    str(generated_dir),
+                    "--rendering-coverage-report",
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert generation == {
+            "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+            "sample_count": 2,
+            "page_count": 2,
+            "output_path": str(generated_dir),
+            "manifest_path": str(generated_dir / "generation_manifest.json"),
+            "rendering_coverage_report_path": str(
+                generated_dir / RENDERING_COVERAGE_REPORT_FILENAME
+            ),
+        }
+        assert (generated_dir / RENDERING_COVERAGE_REPORT_FILENAME).is_file()
+        _assert_batch_assets_are_portable(generated_dir)
         return
 
     if cli_case == "validate-generated-batch":
@@ -770,6 +807,32 @@ def test_format_generation_report_json_uses_public_schema_only(tmp_path: Path) -
     }
 
 
+def test_format_generation_report_json_can_include_rendering_coverage_path(
+    tmp_path: Path,
+) -> None:
+    output_dir = tmp_path / "fixture-batch"
+
+    output = _format_generation_report_json(
+        output_dir,
+        sample_count=2,
+        page_count=2,
+        rendering_coverage_report_path=(
+            output_dir / RENDERING_COVERAGE_REPORT_FILENAME
+        ),
+    )
+
+    assert json.loads(output) == {
+        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+        "sample_count": 2,
+        "page_count": 2,
+        "output_path": str(output_dir),
+        "manifest_path": str(output_dir / "generation_manifest.json"),
+        "rendering_coverage_report_path": str(
+            output_dir / RENDERING_COVERAGE_REPORT_FILENAME
+        ),
+    }
+
+
 def test_generate_cli_smoke(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     output_dir = tmp_path / "fixture-batch"
 
@@ -793,6 +856,7 @@ def test_generate_cli_smoke(tmp_path: Path, capsys: pytest.CaptureFixture[str]) 
     }
     for sample in payload["samples"]:
         assert (output_dir / sample["pages"][0]["asset_path"]).is_file()
+    assert not (output_dir / RENDERING_COVERAGE_REPORT_FILENAME).exists()
 
 
 def test_generate_cli_accepts_explicit_archive_card_template(
@@ -872,6 +936,55 @@ def test_generate_cli_json_outputs_deterministic_report(
     )
     assert "schema_version" not in manifest
     assert len(manifest["samples"]) == 2
+    assert not (output_dir / RENDERING_COVERAGE_REPORT_FILENAME).exists()
+
+
+def test_generate_cli_writes_opt_in_rendering_coverage_report(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "coverage-batch"
+
+    assert (
+        main(
+            [
+                "generate",
+                "--count",
+                "2",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--rendering-coverage-report",
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    report = json.loads(captured.out)
+    assert report == {
+        "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
+        "sample_count": 2,
+        "page_count": 2,
+        "output_path": str(output_dir),
+        "manifest_path": str(output_dir / "generation_manifest.json"),
+        "rendering_coverage_report_path": str(
+            output_dir / RENDERING_COVERAGE_REPORT_FILENAME
+        ),
+    }
+    sidecar = json.loads(
+        (output_dir / RENDERING_COVERAGE_REPORT_FILENAME).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert sidecar["report_version"] == "rendering_coverage_report.v1"
+    assert sidecar["batch"]["manifest_path"] == "generation_manifest.json"
+    assert "report_version" not in json.loads(
+        (output_dir / "generation_manifest.json").read_text(encoding="utf-8")
+    )
 
 
 def test_generate_cli_accepts_persona_style_bundle_control(

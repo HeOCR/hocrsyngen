@@ -9,6 +9,7 @@ hocrsyngen templates --format json
 hocrsyngen contracts --format json
 hocrsyngen contracts export --fixture-id generation_manifest_v1_fixture_batch --output PATH --format json
 hocrsyngen generate --count N --seed S --output PATH --format json
+hocrsyngen generate --count N --seed S --output PATH --rendering-coverage-report --format json
 hocrsyngen validate PATH --format json
 ```
 
@@ -50,6 +51,12 @@ For `hocrsyngen generate --count N --seed S --output PATH --format json`, assert
 - `page_count >= sample_count`.
 - `output_path` echoes `PATH`.
 - `manifest_path == "PATH/generation_manifest.json"` using the CLI argument string for `PATH`.
+
+For `hocrsyngen generate --count N --seed S --output PATH --rendering-coverage-report --format json`, assert the same generation report fields plus:
+
+- `rendering_coverage_report_path == "PATH/rendering_coverage_report.json"`.
+- The sidecar has `report_version == "rendering_coverage_report.v1"`.
+- The sidecar is advisory rendering coverage evidence outside manifest v1.
 
 For `hocrsyngen validate PATH --format json`, assert on success:
 
@@ -140,6 +147,20 @@ artifact exposes richer control metadata, `hocrgen` should not infer persona,
 style, or condition semantics from private Python recipe objects, drawing
 helpers, filenames, or local implementation details. Downstream caps,
 stratification, review, and release decisions remain `hocrgen` policy.
+
+## Rendering Coverage Sidecar
+
+S2e exposes an opt-in `rendering_coverage_report.v1` artifact beside generated
+batches. It summarizes covered and missing governed fonts, templates, recipes,
+degradation presets, Hebrew text features, mixed-direction evidence, RTL
+rendering path evidence, Pillow/libraqm environment status, and page asset smoke
+checks. The report uses manifest sample ids and relative portable page asset
+paths, and it does not duplicate the manifest payload.
+
+`hocrgen` may consume this report as advisory coverage evidence after validating
+the batch manifest. It should not treat the sidecar as release governance,
+review state, dedupe state, publication approval, or a replacement for manifest
+validation.
 
 ## Candidate Lifecycle
 

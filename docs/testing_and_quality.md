@@ -77,6 +77,10 @@ it.
   profiles are reproducible across repeated generated batches and that
   supported style bundles remain visually distinguishable without manifest v1
   shape changes.
+- S2e rendering coverage report coverage for the opt-in
+  `rendering_coverage_report.v1` sidecar, including schema shape, covered and
+  missing Hebrew rendering dimensions, portable evidence paths, asset smoke
+  evidence, installed-package CLI behavior, and preservation of manifest v1.
 - Deterministic S4c condition bundle coverage for `condition_standard_v1`,
   `condition_low_contrast_v1`, and `condition_dense_spacing_v1` through the
   existing `--condition` control slot, including repeatability,
@@ -138,13 +142,11 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
   `pyproject.toml`, and dependency-policy docs.
 - GitHub Actions CI remains aligned with CI-supported Python versions, package
   metadata, required CLI smoke commands, and the Pillow libraqm requirement.
+- Rendering coverage reports remain opt-in sidecars outside
+  `generation_manifest.json` v1 and keep evidence paths portable.
 
 ## Future Quality Gates
 
-- Rendering coverage report. The S2d design in
-  [rendering_coverage_reporting.md](rendering_coverage_reporting.md) recommends
-  a future separate batch-level report artifact outside `generation_manifest.json`
-  v1. The roadmap now tracks the implementation as `S2e`.
 - Review sidecar artifacts for visual inspection evidence remain future work and
   must stay outside `generation_manifest.json` v1 unless a versioned schema
   update is designed. The roadmap now tracks this as `S6e`.

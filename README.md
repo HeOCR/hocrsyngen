@@ -38,6 +38,7 @@ hocrsyngen templates
 hocrsyngen templates --format json
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --format json
+hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --rendering-coverage-report
 hocrsyngen validate out/fixture-batch
 hocrsyngen validate out/fixture-batch --format json
 ```
@@ -104,11 +105,22 @@ report to stdout:
 The generation report is CLI output only. It does not add manifest fields or
 change manifest v1 compatibility.
 
+`hocrsyngen generate --rendering-coverage-report` writes an opt-in
+`rendering_coverage_report.json` sidecar beside the manifest. The sidecar uses
+report version `rendering_coverage_report.v1` and summarizes covered and missing
+Hebrew rendering dimensions for the generated batch, including governed fonts,
+templates, recipes, degradation presets, text features, mixed-direction
+evidence, RTL rendering path evidence, environment status, and page asset smoke
+checks. It is coverage evidence outside manifest v1, not review, release,
+export, or publication metadata. `hocrsyngen validate` does not require or
+inspect the sidecar.
+
 The command writes:
 
 ```text
 out/fixture-batch/
   generation_manifest.json
+  rendering_coverage_report.json  # only with --rendering-coverage-report
   assets/
     hocrsyngen-s00000017-000000/page_0001.jpg
     hocrsyngen-s00000017-000001/page_0001.jpg

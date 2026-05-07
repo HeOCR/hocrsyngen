@@ -19,7 +19,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [production_readiness.md](production_readiness.md): post-S4d readiness state,
   crucial missing pieces, high-lift quality work, and external `hocrgen`
   dependencies before candidate batches become governed dataset inputs.
-- [rendering_coverage_reporting.md](rendering_coverage_reporting.md): design direction for future Hebrew rendering coverage reports outside manifest v1.
+- [rendering_coverage_reporting.md](rendering_coverage_reporting.md): design and implemented contract for opt-in Hebrew rendering coverage reports outside manifest v1.
 - [layout_metadata_design.md](layout_metadata_design.md): design direction for future document-layout metadata and hocrgen filtering boundaries.
 - [document_family_recipes.md](document_family_recipes.md): governed document-family recipes and their current catalog/manifest boundaries.
 - [visual_inspection_rubric.md](visual_inspection_rubric.md): human review criteria for S3 layout realism, Hebrew readability, artifacts, and candidate rejection.
