@@ -69,6 +69,10 @@ A script profile should define:
 - text direction;
 - required Unicode normalization;
 - logical-order ground-truth rule;
+- allowed character inventory, including script-specific letters, combining
+  marks, digits, punctuation, whitespace, and control-code exclusions;
+- permitted mixed-script fragments and the cases where they are allowed, such
+  as identifiers, dates, Latin abbreviations, or numeric fields;
 - rendering/shaping requirements;
 - allowed text corpus ids;
 - allowed font ids and font license/provenance requirements;
@@ -85,6 +89,7 @@ The current implicit Hebrew profile would be equivalent to:
 | direction | `rtl` |
 | normalization | `NFC` |
 | logical-order rule | serialize logical-order Hebrew text exactly as the ground truth. |
+| character inventory | Hebrew letters and marks needed by governed Hebrew corpora, plus explicitly allowed digits, punctuation, whitespace, and mixed Hebrew/Latin/numeric fragments covered by current tests. |
 | shaping requirement | Pillow/libraqm path with RTL direction and no pre-reversal. |
 | validation profile | manifest v1 Hebrew constants and NFC checks. |
 
@@ -101,6 +106,13 @@ direction fragments. The generator should not infer support for a script merely
 because a corpus contains characters from that script.
 
 Current Hebrew text corpus behavior remains unchanged.
+
+Future implementation must not treat metadata alone as proof that text belongs
+to a script profile. The profile should make text admissibility testable before
+generation and validation are broadened: unexpected control characters,
+unplanned script mixing, unsupported combining marks, or unreviewed digit and
+punctuation behavior should either be rejected or held behind an experiment-only
+boundary until the profile and tests explicitly allow them.
 
 ### Font And Shaping Boundary
 
@@ -133,14 +145,17 @@ reusing Hebrew template ids with different semantics.
 Manifest v1 validation must keep enforcing the Hebrew constants. Future script
 support has two acceptable paths:
 
-- a new manifest version or explicitly additive public contract that documents
+- a new manifest version or successor schema that documents generated-sample
   script/language/direction semantics, validation behavior, schema constraints,
   fixture expectations, and `hocrgen` compatibility; or
-- an experiment-only sidecar/catalog that is not accepted by manifest v1
-  validation and is clearly outside stable downstream ingestion.
+- an explicitly additive catalog or sidecar that only advertises script
+  capabilities or carries experiment evidence, is not accepted by manifest v1
+  validation, and is clearly outside stable downstream ingestion.
 
 The unacceptable path is broadening manifest v1 validation to accept more
-script metadata without a versioned compatibility plan.
+script metadata without a versioned compatibility plan. A stable generated batch
+with non-`Hebr` text metadata must not be accepted as manifest v1 merely because
+a catalog or sidecar can describe another script profile.
 
 ### Public Discovery Boundary
 
