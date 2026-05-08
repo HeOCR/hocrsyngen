@@ -168,6 +168,16 @@ commands, manifest v1, public JSON reports, `template_catalog.v2`, optional
 rendering coverage, and S6a-S6f evidence links. It is a checklist for
 downstream implementation, not adapter code or a new `hocrsyngen` schema.
 
+S7a script abstraction planning is documented in
+[script_abstraction_design.md](script_abstraction_design.md). It is design-only
+and does not change the current installed CLI, manifest v1, validation,
+template catalog, fixture, adapter checklist, or downstream import behavior.
+For the current Hebrew baseline, `hocrgen` should continue to assert `Hebr`,
+`he`, `rtl`, `NFC`, logical-order Hebrew text, validation success, portable
+relative asset paths, stable sample/page ids, and public template catalog joins.
+Any future broader script support needs an explicit public contract or manifest
+versioning plan before downstream adapters accept it.
+
 ## Layout Filtering Boundaries
 
 Current layout filtering should use only stable CLI and manifest surfaces.

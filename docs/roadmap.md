@@ -12,11 +12,12 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    research gates, allograph plus word/line assembly planning, optional
    learned-generation packaging boundaries, and the S6 downstream evaluation
    and acceptance handoff stack documented.
-2. Activate Phase S7 with `S7a` script abstraction design as the current
-   planning item. `S7a` is design-only: it should identify minimal future RTL
-   script abstractions while preserving Hebrew-first behavior, Hebrew RTL/NFC
-   metadata guarantees, manifest v1 compatibility, and current validation
-   semantics.
+2. Advance Phase S7 with `S7a` script abstraction design as the current
+   planning item. `S7a` is design-only and documented in
+   [script_abstraction_design.md](script_abstraction_design.md): it identifies
+   minimal future RTL-script abstraction boundaries while preserving
+   Hebrew-first behavior, Hebrew RTL/NFC metadata guarantees, manifest v1
+   compatibility, and current validation semantics.
 3. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -480,8 +481,9 @@ Planned PR breakdown:
 - `S7a` — Script abstraction design: identify minimal abstractions needed for
   future RTL scripts while preserving Hebrew-specific validation, logical-order
   UTF-8 Hebrew, NFC normalization, RTL metadata, manifest v1 compatibility, and
-  current validation semantics. Status: active current planning item;
-  design-only and must not implement Arabic support.
+  current validation semantics. Status: active current planning item,
+  design-only in [script_abstraction_design.md](script_abstraction_design.md),
+  and must not implement Arabic support.
 - `S7b` — Hebrew regression guard: add tests that prevent future script abstraction work from weakening Hebrew RTL/NFC/manifest guarantees.
 - `S7c` — Arabic-ready feasibility note: document Arabic-specific shaping, metadata, font, and validation differences without implementing Arabic support.
 

@@ -40,6 +40,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Review evidence sidecar contract](docs/review_evidence_sidecar_contract.md)
 - [Candidate batch profile and mix handoff](docs/candidate_batch_profile_mix_handoff.md)
 - [hocrgen adapter handoff checklist](docs/hocrgen_adapter_handoff_checklist.md)
+- [Script abstraction design](docs/script_abstraction_design.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -129,9 +130,11 @@ mix layers outside manifest v1. S6g defines an external downstream `hocrgen`
 adapter checklist for installed CLI import, validation, public catalog joins,
 id retention, optional S6a-S6f evidence links, failure handling, and governance
 boundaries without adding adapter behavior to this repository.
-The next planning phase is S7, starting with design-only S7a script abstraction
-work that should preserve Hebrew-first behavior and current Hebrew RTL/NFC,
-manifest v1, and validation guarantees.
+S7a defines the minimal design-only script abstraction boundary for future
+RTL-script profiles. It preserves Hebrew-first behavior and current Hebrew
+RTL/NFC, manifest v1, and validation guarantees; it does not implement Arabic
+support or change generator, CLI, schema, fixture, validation, or integration
+behavior.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.
