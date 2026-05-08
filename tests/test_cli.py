@@ -281,6 +281,7 @@ INSTALLED_CLI_SMOKE_CASES = [
     "generate-rendering-coverage-report",
     "validate-generated-batch",
     "wet-run-smoke",
+    "wet-gallery",
     "evidence-run-json",
 ]
 
@@ -600,6 +601,51 @@ def _assert_installed_cli_smoke_case(
         _assert_batch_assets_are_portable(wet_run_dir / "batch")
         _assert_batch_assets_are_portable(
             wet_run_dir / "control_batches" / "non_default_style_condition"
+        )
+        return
+
+    if cli_case == "wet-gallery":
+        wet_run_dir = output_root / "wet-gallery-run"
+        gallery_dir = wet_run_dir / "gallery"
+        _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-run",
+                    "--profile",
+                    "smoke",
+                    "--seed",
+                    "17",
+                    "--output",
+                    str(wet_run_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        gallery = _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-gallery",
+                    str(wet_run_dir),
+                    "--output",
+                    str(gallery_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert gallery["report_version"] == "wet_gallery_report.v1"
+        assert gallery["page_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+        assert gallery["index_path"] == "gallery/index.html"
+        assert (gallery_dir / "index.html").is_file()
+        assert "../batch/assets/" in (gallery_dir / "index.html").read_text(
+            encoding="utf-8"
         )
         return
 
@@ -1383,6 +1429,110 @@ def test_wet_run_smoke_can_retain_rendering_coverage_report(
     sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
     assert sidecar["report_version"] == "rendering_coverage_report.v1"
     assert run_payload["artifact_checksums"][f"batch/{RENDERING_COVERAGE_REPORT_FILENAME}"] == sha256_file(sidecar_path)
+
+
+def test_wet_gallery_cli_writes_static_gallery_with_escaped_metadata(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-17"
+    gallery_dir = output_dir / "gallery"
+
+    assert (
+        main(
+            [
+                "wet-run",
+                "--profile",
+                "smoke",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+    manifest_path = output_dir / "batch" / "generation_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["samples"][0]["text"]["logical_order"] = '<b>שלום & "בדיקה"</b>'
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "wet-gallery",
+                str(output_dir),
+                "--output",
+                str(gallery_dir),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    report = json.loads(captured.out)
+    assert report == {
+        "report_version": "wet_gallery_report.v1",
+        "run_path": ".",
+        "index_path": "gallery/index.html",
+        "page_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        "sample_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        "batch_count": 2,
+        "scope": {
+            "generator_quality_evidence_only": True,
+            "release_ready_dataset_artifact": False,
+            "manifest_v1_changed": False,
+            "hocrgen_behavior_added": False,
+            "human_review_sidecar_included": False,
+            "llm_triage_included": False,
+            "network_required": False,
+        },
+    }
+    html_text = (gallery_dir / "index.html").read_text(encoding="utf-8")
+    assert "../batch/assets/" in html_text
+    assert "../control_batches/non_default_style_condition/assets/" in html_text
+    assert "src=\"/" not in html_text
+    assert "href=\"/" not in html_text
+    assert "&lt;b&gt;שלום &amp; &quot;בדיקה&quot;&lt;/b&gt;" in html_text
+    assert '<b>שלום & "בדיקה"</b>' not in html_text
+    for expected in [
+        "sample id",
+        "page id",
+        "template id",
+        "recipe id",
+        "style/persona",
+        "condition",
+        "degradation",
+        "font id",
+    ]:
+        assert expected in html_text
+
+
+def test_wet_gallery_rejects_reusing_existing_gallery_directory(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-17"
+    gallery_dir = output_dir / "gallery"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    gallery_dir.mkdir()
+    (gallery_dir / "index.html").write_text("existing\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["wet-gallery", str(output_dir), "--output", str(gallery_dir)])
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "wet-gallery: gallery output directory already exists and is not empty" in captured.err
 
 
 def test_wet_run_smoke_rejects_reusing_existing_run_directory(

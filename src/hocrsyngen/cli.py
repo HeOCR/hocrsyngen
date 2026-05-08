@@ -26,6 +26,7 @@ from hocrsyngen.generator import (
 from hocrsyngen.io import sha256_file
 from hocrsyngen.rendering_coverage import write_rendering_coverage_report
 from hocrsyngen.validation import BatchValidationError, validate_batch
+from hocrsyngen.wet_gallery import create_wet_gallery
 from hocrsyngen.wet_run import create_wet_test_smoke_run
 
 
@@ -794,6 +795,27 @@ def build_parser() -> argparse.ArgumentParser:
             "generated smoke batch."
         ),
     )
+    wet_gallery = subparsers.add_parser(
+        "wet-gallery",
+        help="Generate a static human-inspection gallery for a wet-test run.",
+    )
+    wet_gallery.add_argument(
+        "run_root",
+        type=Path,
+        help="Existing wet-test run directory created by hocrsyngen wet-run.",
+    )
+    wet_gallery.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Gallery output directory.",
+    )
+    wet_gallery.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the gallery summary.",
+    )
     evidence_run = subparsers.add_parser(
         "evidence-run",
         help="Generate a candidate batch with operator evidence and progress logs.",
@@ -998,6 +1020,19 @@ def main(argv: list[str] | None = None) -> int:
             f"{result.payload['validation']['sample_count']} samples and "
             f"{result.payload['validation']['page_count']} pages to {args.output}; "
             f"summary: {result.wet_test_run_path}"
+        )
+        return 0
+    if args.command == "wet-gallery":
+        try:
+            result = create_wet_gallery(run_root=args.run_root, output=args.output)
+        except (BatchValidationError, OSError, RuntimeError, ValueError) as exc:
+            parser.error(f"wet-gallery: {exc}")
+        if args.format == "json":
+            print(json.dumps(result.payload, ensure_ascii=False, indent=2))
+            return 0
+        print(
+            "Wet-test gallery wrote "
+            f"{result.payload['page_count']} pages to {result.index_path}"
         )
         return 0
     if args.command == "evidence-run":

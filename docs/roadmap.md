@@ -22,10 +22,11 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 3. Advance Phase S8 wet-testing and generator-quality evidence. `S8a` defines
    the program in [wet_testing_program_plan.md](wet_testing_program_plan.md),
    `S8b` adds the first reproducible wet-test smoke run artifact generator,
-   and `S8c` is the active implementation slice: the candidate evidence-run
-   wrapper for downstream `hocrgen` preflight evidence, without adding schemas,
-   LLM/network dependencies, hocrgen behavior, release governance, or manifest
-   v1 changes.
+   `S8c` adds the candidate evidence-run wrapper for downstream `hocrgen`
+   preflight evidence, and `S8d` is the active implementation slice: a
+   human-first static gallery over existing wet-test runs, without adding
+   schemas, warning metrics, review sidecars, LLM/network dependencies, hocrgen
+   behavior, release governance, or manifest v1 changes.
 4. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -557,11 +558,11 @@ Planned PR breakdown:
   candidate batch generation and validation, rendering coverage, checksums, and
   `candidate_evidence_run_report.v1` for downstream `hocrgen` preflight runs
   while keeping release eligibility false and governance downstream. Status:
-  active in the S8c implementation PR.
+  done in PR #59.
 - `S8d` — Human-first static gallery: generate a static HTML or Markdown review
   gallery over a wet-test run so developers and reviewers can inspect rendered
   pages, logical Hebrew text, public metadata, and later warnings without
-  reading raw JSON. Status: next after S8c is complete.
+  reading raw JSON. Status: active in the S8d implementation PR.
 - `S8e` — Deterministic warning metrics: add repeatable generator-quality
   warnings for coverage, duplicate text, blank/near-blank images, dimensions,
   ink-density ranges, catalog joins, and path/hash safety without claiming

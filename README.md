@@ -56,6 +56,7 @@ hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --rendering-c
 hocrsyngen validate out/fixture-batch
 hocrsyngen validate out/fixture-batch --format json
 hocrsyngen wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
+hocrsyngen wet-gallery out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/gallery
 hocrsyngen evidence-run --count 20 --seed 101
 ```
 
@@ -139,10 +140,11 @@ RTL/NFC, manifest v1, and validation guarantees; it does not implement Arabic
 support or change generator, CLI, schema, fixture, validation, or integration
 behavior.
 S8a defines the developer-owned wet-testing program for generator-quality
-evidence. S8b adds a deterministic wet-test smoke run artifact generator, and
-S8c adds the candidate evidence-run wrapper for downstream preflight evidence,
-without adding release governance, baseline LLM/network dependencies, schemas,
-or manifest v1 changes.
+evidence. S8b adds a deterministic wet-test smoke run artifact generator, S8c
+adds the candidate evidence-run wrapper for downstream preflight evidence, and
+S8d adds the human-first static gallery over existing wet-test runs without
+adding release governance, baseline LLM/network dependencies, schemas, warning
+metrics, review sidecars, or manifest v1 changes.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.
@@ -176,6 +178,16 @@ timestamped directory under the system temp directory; use `--output-root PATH`
 and `--run-id ID` to make the location explicit. Evidence runs remain
 candidate-only and write `release_eligible: false`; they do not add review,
 release, export, publication, or downstream governance behavior.
+
+`hocrsyngen wet-gallery RUN_ROOT --output RUN_ROOT/gallery` renders a static
+HTML gallery for an existing passed `wet-run` directory. It validates each
+referenced batch, writes `gallery/index.html`, links to generated page images
+with relative paths, and shows public metadata for sample id, page id, template
+id, recipe id, style/persona, condition, degradation, font id, asset path, and
+logical-order Hebrew manifest text. The gallery is an offline human-inspection
+aid only; it does not add warning metrics, review sidecars, LLM triage packets,
+wet-test reports, schemas, release eligibility, export, publication, or
+downstream governance behavior.
 
 `hocrsyngen generate --rendering-coverage-report` writes an opt-in
 `rendering_coverage_report.json` sidecar beside the manifest. The sidecar uses
