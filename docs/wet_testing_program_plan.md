@@ -14,10 +14,12 @@ outputs.
 
 - Document status: planning proposal.
 - Owner: `hocrsyngen` developers.
-- Current scope: documentation/planning only.
+- Current scope: Phase S8 implementation guidance. `S8b` adds the first
+  deterministic smoke run artifact generator; later gallery, metrics, human
+  review, LLM triage, reporting, schema, and CI work remains deferred.
 - Roadmap placement: Phase S8 - Wet Testing And Generator-Quality Evidence.
   `S8a` defines this program plan; `S8b` is the first actual implementation
-  slice and should add the wet-test smoke run artifact generator.
+  slice and adds the wet-test smoke run artifact generator.
 
 ## Core Principle
 
@@ -656,6 +658,71 @@ Potential command:
 
 ```bash
 PYTHONPATH=src python -m hocrsyngen.cli wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17
+```
+
+Implemented smoke command:
+
+```bash
+PYTHONPATH=src python -m hocrsyngen.cli wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
+```
+
+The initial `smoke` profile generates one page for each governed template id
+using the existing generation path, then validates the generated `batch/`
+directory through the existing validation path. The command writes retained
+public reports under `reports/`:
+
+- `generation_report.json`
+- `validation_report.json`
+- `template_catalog_v2.json`
+- `wet_test_run.json`
+- `wet_test_checksums.txt`
+
+With `--rendering-coverage-report`, the generated batch also retains
+`batch/rendering_coverage_report.json` and records it in `wet_test_run.json`.
+
+The initial `wet_test_run.json` shape is documented rather than schema-backed:
+
+```json
+{
+  "report_version": "wet_test_run.v1",
+  "profile": "smoke",
+  "command_line": ["hocrsyngen", "wet-run", "--profile", "smoke", "--seed", "17", "--output", "out/wet-tests/smoke-17", "--format", "json"],
+  "package": {"name": "hocrsyngen", "version": "0.1.0"},
+  "environment": {"python_version": "3.12.11", "python_executable": "...", "platform": "...", "pillow_raqm": true},
+  "config": {
+    "seed": 17,
+    "count": 7,
+    "template_ids": ["printed_letter", "handwritten_note", "archive_card", "ledger", "printed_letter_heavy_scan", "handwritten_note_heavy_wear", "archive_card_faded_scan"],
+    "persona": null,
+    "condition": null,
+    "rendering_coverage_report": false,
+    "output_path": ".",
+    "batch_path": "batch"
+  },
+  "reports": {
+    "generation_report_path": "reports/generation_report.json",
+    "validation_report_path": "reports/validation_report.json",
+    "template_catalog_v2_path": "reports/template_catalog_v2.json",
+    "rendering_coverage_report_path": null,
+    "checksum_path": "reports/wet_test_checksums.txt"
+  },
+  "generated_batch": {
+    "manifest_path": "batch/generation_manifest.json",
+    "sample_count": 7,
+    "page_count": 7,
+    "asset_paths": ["batch/assets/.../page_0001.jpg"]
+  },
+  "validation": {"valid": true, "sample_count": 7, "page_count": 7},
+  "checksums": {"batch/generation_manifest.json": "..."},
+  "scope": {
+    "generator_quality_evidence_only": true,
+    "release_ready_dataset_artifact": false,
+    "manifest_v1_changed": false,
+    "hocrgen_behavior_added": false,
+    "human_review_included": false,
+    "llm_triage_included": false
+  }
+}
 ```
 
 Implementation outline:

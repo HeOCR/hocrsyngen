@@ -26,12 +26,14 @@ from hocrsyngen.cli import (
     main,
 )
 from hocrsyngen.generator import (
+    GOVERNED_TEMPLATE_IDS,
     RichTemplateCatalogEntry,
     SUPPORTED_CONDITION_BUNDLE_IDS,
     SUPPORTED_STYLE_BUNDLE_IDS,
     TemplateCapabilityMetadata,
     TemplateCatalogEntry,
 )
+from hocrsyngen.io import sha256_file
 from hocrsyngen.rendering_coverage import RENDERING_COVERAGE_REPORT_FILENAME
 from hocrsyngen.validation import validate_batch
 from hocrsyngen.validation import BatchValidationError, ValidationResult
@@ -277,6 +279,7 @@ INSTALLED_CLI_SMOKE_CASES = [
     "generate-json",
     "generate-rendering-coverage-report",
     "validate-generated-batch",
+    "wet-run-smoke",
 ]
 
 
@@ -561,6 +564,38 @@ def _assert_installed_cli_smoke_case(
             "page_count": 2,
             "path": str(generated_dir),
         }
+        return
+
+    if cli_case == "wet-run-smoke":
+        wet_run_dir = output_root / "wet-smoke"
+        wet_run = _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-run",
+                    "--profile",
+                    "smoke",
+                    "--seed",
+                    "17",
+                    "--output",
+                    str(wet_run_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert wet_run["report_version"] == "wet_test_run.v1"
+        assert wet_run["profile"] == "smoke"
+        assert wet_run["validation"] == {
+            "valid": True,
+            "sample_count": len(GOVERNED_TEMPLATE_IDS),
+            "page_count": len(GOVERNED_TEMPLATE_IDS),
+        }
+        assert (wet_run_dir / "reports" / "wet_test_run.json").is_file()
+        assert (wet_run_dir / "reports" / "wet_test_checksums.txt").is_file()
+        _assert_batch_assets_are_portable(wet_run_dir / "batch")
         return
 
     raise AssertionError(f"unknown installed CLI smoke case: {cli_case}")
@@ -1150,6 +1185,139 @@ def test_generate_cli_writes_opt_in_rendering_coverage_report(
     assert "report_version" not in json.loads(
         (output_dir / "generation_manifest.json").read_text(encoding="utf-8")
     )
+
+
+def test_wet_run_smoke_cli_writes_auditable_artifacts(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-17"
+
+    assert (
+        main(
+            [
+                "wet-run",
+                "--profile",
+                "smoke",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    stdout_payload = json.loads(captured.out)
+    run_payload = json.loads(
+        (output_dir / "reports" / "wet_test_run.json").read_text(encoding="utf-8")
+    )
+    assert stdout_payload == run_payload
+    assert run_payload["report_version"] == "wet_test_run.v1"
+    assert run_payload["profile"] == "smoke"
+    assert run_payload["config"] == {
+        "seed": 17,
+        "count": len(GOVERNED_TEMPLATE_IDS),
+        "template_ids": GOVERNED_TEMPLATE_IDS,
+        "persona": None,
+        "condition": None,
+        "rendering_coverage_report": False,
+        "output_path": ".",
+        "batch_path": "batch",
+    }
+    assert run_payload["validation"] == {
+        "valid": True,
+        "sample_count": len(GOVERNED_TEMPLATE_IDS),
+        "page_count": len(GOVERNED_TEMPLATE_IDS),
+    }
+    assert run_payload["scope"]["manifest_v1_changed"] is False
+    assert run_payload["scope"]["hocrgen_behavior_added"] is False
+    assert run_payload["reports"] == {
+        "generation_report_path": "reports/generation_report.json",
+        "validation_report_path": "reports/validation_report.json",
+        "template_catalog_v2_path": "reports/template_catalog_v2.json",
+        "rendering_coverage_report_path": None,
+        "checksum_path": "reports/wet_test_checksums.txt",
+    }
+
+    manifest_path = output_dir / run_payload["generated_batch"]["manifest_path"]
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert "schema_version" not in manifest
+    assert [
+        sample["provenance"]["template_id"] for sample in manifest["samples"]
+    ] == GOVERNED_TEMPLATE_IDS
+    validate_batch(output_dir / "batch")
+
+    for relative_path in [
+        run_payload["generated_batch"]["manifest_path"],
+        *run_payload["generated_batch"]["asset_paths"],
+        *run_payload["checksums"].keys(),
+    ]:
+        path = PurePosixPath(relative_path)
+        assert not path.is_absolute()
+        assert ".." not in path.parts
+        assert (output_dir / Path(*path.parts)).is_file()
+
+    for relative_path, expected_digest in run_payload["checksums"].items():
+        assert sha256_file(output_dir / Path(*PurePosixPath(relative_path).parts)) == expected_digest
+
+    checksum_lines = (
+        output_dir / "reports" / "wet_test_checksums.txt"
+    ).read_text(encoding="utf-8").splitlines()
+    checksum_paths = {line.split("  ", 1)[1] for line in checksum_lines}
+    assert "reports/wet_test_run.json" in checksum_paths
+    assert "batch/generation_manifest.json" in checksum_paths
+
+
+def test_wet_run_smoke_can_retain_rendering_coverage_report(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-coverage"
+
+    assert (
+        main(
+            [
+                "wet-run",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--rendering-coverage-report",
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+
+    run_payload = json.loads(capsys.readouterr().out)
+    assert (
+        run_payload["reports"]["rendering_coverage_report_path"]
+        == f"batch/{RENDERING_COVERAGE_REPORT_FILENAME}"
+    )
+    sidecar_path = output_dir / run_payload["reports"]["rendering_coverage_report_path"]
+    sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    assert sidecar["report_version"] == "rendering_coverage_report.v1"
+    assert run_payload["checksums"][f"batch/{RENDERING_COVERAGE_REPORT_FILENAME}"] == sha256_file(sidecar_path)
+
+
+def test_wet_run_smoke_rejects_reusing_existing_run_directory(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-17"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["wet-run", "--seed", "17", "--output", str(output_dir)])
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "wet-run: wet-run output must not already contain batch/ or reports/" in captured.err
 
 
 def test_generate_cli_accepts_persona_style_bundle_control(
