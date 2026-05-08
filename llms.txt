@@ -17,6 +17,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `src/hocrsyngen/generator.py`: deterministic rendering, templates, richer template catalog metadata, degradation, font/text selection.
 - `src/hocrsyngen/manifest.py`: manifest dataclasses and constants.
 - `src/hocrsyngen/rendering_coverage.py`: opt-in rendering coverage report builder and sidecar writer.
+- `src/hocrsyngen/wet_run.py`: S8b deterministic wet-test smoke run artifact writer outside manifest v1.
 - `src/hocrsyngen/validation.py`: batch validation, schema validation, asset integrity checks.
 - `src/hocrsyngen/schemas/generation_manifest.schema.json`: serialized manifest contract.
 - `src/hocrsyngen/schemas/rendering_coverage_report.schema.json`: serialized rendering coverage report contract.
@@ -37,9 +38,9 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `docs/review_evidence_sidecar_contract.md`: S6e review evidence sidecar contract for reviewed sample/page ids, reviewer state, decision categories, reason codes, visual evidence references, S6a category references, S6c warning references, S6d cap decision references, limitations, and downstream governance ownership.
 - `docs/candidate_batch_profile_mix_handoff.md`: S6f candidate batch profile and mix handoff contract for requested, generated/observed, reviewed, capped/admitted, and released mix layers, gap reason codes, and downstream ownership boundaries.
 - `docs/hocrgen_adapter_handoff_checklist.md`: S6g external hocrgen adapter handoff checklist for installed CLI import, public JSON assertions, manifest id/path retention, template_catalog.v2 joins, S6a-S6f evidence links, failure handling, and downstream governance boundaries.
-- `docs/wet_testing_program_plan.md`: S8a developer-owned wet-testing sub-plan for staged code validation, human review, optional LLM triage, evidence artifacts, and regression promotion outside manifest v1 and release governance; S8b is the first implementation slice.
+- `docs/wet_testing_program_plan.md`: S8a developer-owned wet-testing sub-plan for staged code validation, human review, optional LLM triage, evidence artifacts, and regression promotion outside manifest v1 and release governance; S8b adds the first smoke run artifact generator.
 - `docs/script_abstraction_design.md`: S7a design-only script abstraction boundaries for future RTL-script profiles; preserves Hebrew-first manifest v1, logical-order UTF-8 Hebrew, NFC normalization, RTL metadata, and current validation semantics.
-- `docs/roadmap.md`: S6 is complete through S6g, S7a script abstraction design is complete, and S8 is active for wet-testing/generator-quality evidence with S8b as the next implementation slice.
+- `docs/roadmap.md`: S6 is complete through S6g, S7a script abstraction design is complete, and S8 is active for wet-testing/generator-quality evidence with S8b as the current implementation slice.
 
 ## Public Contracts
 
@@ -51,7 +52,9 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `hocrsyngen contracts export`
 - `hocrsyngen generate`
 - `hocrsyngen validate`
+- `hocrsyngen wet-run --profile smoke`
 - `generation_manifest.json` v1
+- `wet_test_run.json` via `hocrsyngen wet-run --profile smoke`, outside manifest v1
 - Optional `rendering_coverage_report.json` sidecar with report version `rendering_coverage_report.v1`
 - Optional downstream review evidence sidecar contract documented as `review_evidence_sidecar.v1`; it is not emitted or validated by `hocrsyngen`
 - Optional downstream candidate batch profile/mix contract documented as `candidate_batch_profile_mix.v1`; it is not emitted or validated by `hocrsyngen`

@@ -21,7 +21,7 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    planned but are not the current implementation track.
 3. Advance Phase S8 wet-testing and generator-quality evidence. `S8a` defines
    the program in [wet_testing_program_plan.md](wet_testing_program_plan.md),
-   and `S8b` is the next planned implementation slice: the first reproducible
+   and `S8b` is the active implementation slice: the first reproducible
    wet-test smoke run artifact generator, without adding schemas, LLM/network
    dependencies, hocrgen behavior, release governance, or manifest v1 changes.
 4. Keep generated batches classified as candidate synthetic inputs until
@@ -549,11 +549,11 @@ Planned PR breakdown:
   reuses existing generation and validation behavior, captures public reports,
   writes `wet_test_run.json`, records report checksums, and avoids schemas,
   galleries, human review sidecars, LLM packets, hocrgen behavior, and manifest
-  v1 changes.
+  v1 changes. Status: active in the S8b implementation PR.
 - `S8c` — Human-first static gallery: generate a static HTML or Markdown review
   gallery over a wet-test run so developers and reviewers can inspect rendered
   pages, logical Hebrew text, public metadata, and later warnings without
-  reading raw JSON.
+  reading raw JSON. Status: next after S8b is complete.
 - `S8d` — Deterministic warning metrics: add repeatable generator-quality
   warnings for coverage, duplicate text, blank/near-blank images, dimensions,
   ink-density ranges, catalog joins, and path/hash safety without claiming

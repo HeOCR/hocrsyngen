@@ -9,6 +9,7 @@ PYTHONPATH=src python -m hocrsyngen.cli templates
 PYTHONPATH=src python -m hocrsyngen.cli contracts --format json
 PYTHONPATH=src python -m hocrsyngen.cli generate --count 2 --seed 17 --output out/fixture-batch
 PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
+PYTHONPATH=src python -m hocrsyngen.cli wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
 ```
 
 There is no configured lint command unless one is added explicitly.
@@ -86,6 +87,11 @@ it.
   identifier types, layout density, review features, schema validation,
   installed-package CLI behavior, JSON-only v2 output, and downstream joins
   from validated manifest template/recipe ids.
+- S8b wet-test smoke run coverage for deterministic run artifact creation,
+  retained generation/validation/template-catalog reports, portable
+  `wet_test_run.json` paths, retained artifact checksums, supplemental
+  non-default style/condition batch coverage, optional rendering coverage
+  retention, structured failure reports, and preservation of manifest v1.
 - S3f governed document-family coverage for the `ledger` template, including
   deterministic generation, manifest v1 provenance, validation acceptance, v1
   and v2 catalog exposure, downstream catalog joins, and visual smoke checks

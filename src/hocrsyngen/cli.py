@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import sys
 import tempfile
 from dataclasses import dataclass
 from importlib import resources
@@ -21,6 +22,7 @@ from hocrsyngen.generator import (
 )
 from hocrsyngen.rendering_coverage import write_rendering_coverage_report
 from hocrsyngen.validation import BatchValidationError, validate_batch
+from hocrsyngen.wet_run import create_wet_test_smoke_run
 
 
 CONTRACT_FIXTURE_CATALOG_SCHEMA_VERSION = "contract_fixture_catalog.v1"
@@ -397,12 +399,45 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format for the validation report.",
     )
+    wet_run = subparsers.add_parser(
+        "wet-run", help="Run a deterministic wet-test artifact profile."
+    )
+    wet_run.add_argument(
+        "--profile",
+        choices=("smoke",),
+        default="smoke",
+        help="Wet-test profile to run.",
+    )
+    wet_run.add_argument(
+        "--seed",
+        type=_non_negative_int,
+        required=True,
+        help="Deterministic generation seed.",
+    )
+    wet_run.add_argument(
+        "--output", type=Path, required=True, help="Wet-test run output directory."
+    )
+    wet_run.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the wet-test run summary.",
+    )
+    wet_run.add_argument(
+        "--rendering-coverage-report",
+        action="store_true",
+        help=(
+            "Retain an opt-in rendering_coverage_report.v1 sidecar for the "
+            "generated smoke batch."
+        ),
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    command_line = ["hocrsyngen", *(argv if argv is not None else sys.argv[1:])]
     if (
         args.command == "templates"
         and args.catalog_version == "v2"
@@ -519,6 +554,30 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         print(
             f"Validated {result.sample_count} samples and {result.page_count} pages in {args.path}"
+        )
+        return 0
+    if args.command == "wet-run":
+        try:
+            result = create_wet_test_smoke_run(
+                output=args.output,
+                seed=args.seed,
+                command_line=command_line,
+                rendering_coverage_report=args.rendering_coverage_report,
+            )
+        except FileNotFoundError as exc:
+            parser.error(
+                f"wet-run: required packaged resource is missing: {exc.filename or exc}"
+            )
+        except (BatchValidationError, RuntimeError, ValueError) as exc:
+            parser.error(f"wet-run: {exc}")
+        if args.format == "json":
+            print(json.dumps(result.payload, ensure_ascii=False, indent=2))
+            return 0
+        print(
+            "Wet-test smoke run wrote "
+            f"{result.payload['validation']['sample_count']} samples and "
+            f"{result.payload['validation']['page_count']} pages to {args.output}; "
+            f"summary: {result.wet_test_run_path}"
         )
         return 0
     raise AssertionError(f"Unhandled command: {args.command}")

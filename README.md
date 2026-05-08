@@ -55,6 +55,7 @@ hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --format json
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --rendering-coverage-report
 hocrsyngen validate out/fixture-batch
 hocrsyngen validate out/fixture-batch --format json
+hocrsyngen wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
 ```
 
 `hocrsyngen templates` prints one deterministic catalog line per packaged
@@ -137,9 +138,9 @@ RTL/NFC, manifest v1, and validation guarantees; it does not implement Arabic
 support or change generator, CLI, schema, fixture, validation, or integration
 behavior.
 S8a defines the developer-owned wet-testing program for generator-quality
-evidence. The next implementation slice, S8b, should add a deterministic
-wet-test smoke run artifact generator without adding release governance,
-baseline LLM/network dependencies, schemas, or manifest v1 changes.
+evidence. S8b adds a deterministic wet-test smoke run artifact generator
+without adding release governance, baseline LLM/network dependencies, schemas,
+or manifest v1 changes.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.
@@ -240,6 +241,19 @@ filesystem path:
   "path": "out/fixture-batch"
 }
 ```
+
+`hocrsyngen wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17`
+creates the first S8 wet-test artifact directory for developer-owned
+generator-quality evidence. The smoke profile uses the existing generator to
+create one sample for each governed template, validates the generated `batch/`
+directory with the existing validator, and also generates one supplemental
+non-default style/condition sample under
+`control_batches/non_default_style_condition/`. It retains public reports under
+`reports/` and writes `reports/wet_test_run.json` plus
+`reports/wet_test_checksums.txt`. Successful runs are published atomically from
+a temporary sibling directory; failed runs write a structured failed
+`wet_test_run.json` when possible. The run artifact is not a release-ready
+dataset payload and does not change `generation_manifest.json` v1.
 
 Invalid batches keep the non-zero validation exit code and emit a deterministic
 JSON error report to stdout when JSON output is requested. Validation errors
