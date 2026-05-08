@@ -1457,6 +1457,9 @@ def test_wet_gallery_cli_writes_static_gallery_with_escaped_metadata(
     manifest_path = output_dir / "batch" / "generation_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["samples"][0]["text"]["logical_order"] = '<b>שלום & "בדיקה"</b>'
+    second_page = dict(manifest["samples"][0]["pages"][0])
+    second_page["page_id"] = f"{second_page['page_id']}-copy"
+    manifest["samples"][0]["pages"].append(second_page)
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -1483,7 +1486,7 @@ def test_wet_gallery_cli_writes_static_gallery_with_escaped_metadata(
         "report_version": "wet_gallery_report.v1",
         "run_path": ".",
         "index_path": "gallery/index.html",
-        "page_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        "page_count": len(GOVERNED_TEMPLATE_IDS) + 2,
         "sample_count": len(GOVERNED_TEMPLATE_IDS) + 1,
         "batch_count": 2,
         "scope": {
@@ -1503,6 +1506,7 @@ def test_wet_gallery_cli_writes_static_gallery_with_escaped_metadata(
     assert "href=\"/" not in html_text
     assert "&lt;b&gt;שלום &amp; &quot;בדיקה&quot;&lt;/b&gt;" in html_text
     assert '<b>שלום & "בדיקה"</b>' not in html_text
+    assert "white-space: pre-wrap;" in html_text
     for expected in [
         "sample id",
         "page id",
@@ -1514,6 +1518,33 @@ def test_wet_gallery_cli_writes_static_gallery_with_escaped_metadata(
         "font id",
     ]:
         assert expected in html_text
+
+
+def test_wet_gallery_rejects_stale_manifest_path(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-17"
+    gallery_dir = output_dir / "gallery"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    run_report_path = output_dir / "reports" / "wet_test_run.json"
+    run_report = json.loads(run_report_path.read_text(encoding="utf-8"))
+    run_report["generated_batch"]["manifest_path"] = "reports/template_catalog_v2.json"
+    run_report_path.write_text(
+        json.dumps(run_report, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["wet-gallery", str(output_dir), "--output", str(gallery_dir)])
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert (
+        "wet-gallery: wet-test run manifest_path must match the validated batch manifest"
+        in captured.err
+    )
 
 
 def test_wet_gallery_rejects_reusing_existing_gallery_directory(

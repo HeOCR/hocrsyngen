@@ -73,7 +73,10 @@ def create_wet_gallery(*, run_root: Path, output: Path) -> WetGalleryResult:
     for batch in batches:
         batch_dir = _resolve_run_path(run_root, batch.batch_path)
         validate_batch(batch_dir)
-        manifest_path = _resolve_run_path(run_root, batch.manifest_path)
+        manifest_path = _resolve_run_path(
+            run_root,
+            _validated_manifest_path(batch),
+        )
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         pages.extend(
             _gallery_pages(
@@ -95,7 +98,7 @@ def create_wet_gallery(*, run_root: Path, output: Path) -> WetGalleryResult:
         "run_path": ".",
         "index_path": _relative_path(run_root, index_path),
         "page_count": len(pages),
-        "sample_count": len(pages),
+        "sample_count": len({(page.batch_id, page.sample_id) for page in pages}),
         "batch_count": len(batches),
         "scope": {
             "generator_quality_evidence_only": True,
@@ -295,6 +298,7 @@ def _render_gallery_html(
     .text {{
       direction: rtl;
       unicode-bidi: plaintext;
+      white-space: pre-wrap;
       padding: 12px;
       border-top: 1px solid #d8d6cf;
       font-size: 18px;
@@ -364,6 +368,17 @@ def _resolve_run_path(run_root: Path, relative_path: str) -> Path:
     except ValueError as exc:
         raise ValueError(f"path escapes wet-test run root: {relative_path}") from exc
     return resolved
+
+
+def _validated_manifest_path(batch: GalleryBatch) -> str:
+    manifest_path = PurePosixPath(batch.manifest_path)
+    expected_manifest_path = PurePosixPath(batch.batch_path) / "generation_manifest.json"
+    if manifest_path != expected_manifest_path:
+        raise ValueError(
+            "wet-test run manifest_path must match the validated batch manifest: "
+            f"{batch.manifest_path}"
+        )
+    return manifest_path.as_posix()
 
 
 def _portable_relative_str(value: object) -> str:
