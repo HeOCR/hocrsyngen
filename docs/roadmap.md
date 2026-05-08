@@ -12,23 +12,29 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    research gates, allograph plus word/line assembly planning, optional
    learned-generation packaging boundaries, and the S6 downstream evaluation
    and acceptance handoff stack documented.
-2. Advance Phase S7 with `S7a` script abstraction design as the current
-   planning item. `S7a` is design-only and documented in
+2. Treat `S7a` script abstraction design as complete. `S7a` is design-only and
+   documented in
    [script_abstraction_design.md](script_abstraction_design.md): it identifies
    minimal future RTL-script abstraction boundaries while preserving
    Hebrew-first behavior, Hebrew RTL/NFC metadata guarantees, manifest v1
-   compatibility, and current validation semantics.
-3. Keep generated batches classified as candidate synthetic inputs until
+   compatibility, and current validation semantics. `S7b` and `S7c` remain
+   planned but are not the current implementation track.
+3. Advance Phase S8 wet-testing and generator-quality evidence. `S8a` defines
+   the program in [wet_testing_program_plan.md](wet_testing_program_plan.md),
+   and `S8b` is the next planned implementation slice: the first reproducible
+   wet-test smoke run artifact generator, without adding schemas, LLM/network
+   dependencies, hocrgen behavior, release governance, or manifest v1 changes.
+4. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
-4. Make production-readiness gaps explicit in this roadmap or in a named
+5. Make production-readiness gaps explicit in this roadmap or in a named
    external `hocrgen` dependency. Do not leave required release, review, or
    quality gates only in conversation notes.
-5. Keep S5 closed through the deferral path recorded by S5e: this repo has planning
+6. Keep S5 closed through the deferral path recorded by S5e: this repo has planning
    gates and boundaries, but no accepted prototype or downstream evaluation
    evidence. Remaining S5 prototype/evaluation work is deferred to a future S5
    follow-up or external `hocrgen`/HeOCR work.
-6. Keep S6 closed. S6a is complete in PR #48 and defines downstream realism
+7. Keep S6 closed. S6a is complete in PR #48 and defines downstream realism
    acceptance; S6b is complete in PR #49 and defines what evidence is required
    before any CER/WER or other OCR/HTR utility claim is made; S6c is complete
    in PR #50 and defines how to detect repeated synthetic patterns,
@@ -50,7 +56,10 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    boundaries. Remaining adapter implementation and governance work is an
    external `hocrgen` dependency, not active `hocrsyngen` S6 work.
 
-## Current Baseline After S6g
+## Current Baseline After S7a
+
+`S7a` - script abstraction design - is merged in PR #56. `S6h` - close S6 and
+activate S7 script abstraction - is merged in PR #55.
 
 `S6g` - `hocrgen` adapter handoff checklist - is merged in PR #54.
 `S6f` - candidate batch profile and mix handoff - is merged in PR #53.
@@ -465,7 +474,8 @@ Risks/dependencies:
 
 ## Phase S7 — Script Abstraction / Arabic-Ready Future
 
-Current status: `active`.
+Current status: `open`; `S7a` is done, and `S7b`/`S7c` are planned but not the
+current implementation track.
 
 Objective: identify abstractions that could support Arabic or other RTL scripts without prematurely generalizing the Hebrew-first implementation.
 
@@ -481,11 +491,11 @@ Planned PR breakdown:
 - `S7a` — Script abstraction design: identify minimal abstractions needed for
   future RTL scripts while preserving Hebrew-specific validation, logical-order
   UTF-8 Hebrew, NFC normalization, RTL metadata, manifest v1 compatibility, and
-  current validation semantics. Status: active current planning item,
-  design-only in [script_abstraction_design.md](script_abstraction_design.md),
-  and must not implement Arabic support.
-- `S7b` — Hebrew regression guard: add tests that prevent future script abstraction work from weakening Hebrew RTL/NFC/manifest guarantees.
-- `S7c` — Arabic-ready feasibility note: document Arabic-specific shaping, metadata, font, and validation differences without implementing Arabic support.
+  current validation semantics. Status: done in PR #56; design-only in
+  [script_abstraction_design.md](script_abstraction_design.md), and must not
+  implement Arabic support.
+- `S7b` — Hebrew regression guard: add tests that prevent future script abstraction work from weakening Hebrew RTL/NFC/manifest guarantees. Status: planned.
+- `S7c` — Arabic-ready feasibility note: document Arabic-specific shaping, metadata, font, and validation differences without implementing Arabic support. Status: planned.
 
 Deliverables:
 
@@ -503,3 +513,92 @@ Risks/dependencies:
 
 - Arabic shaping and text metadata requirements differ from Hebrew.
 - Premature generalization could weaken current Hebrew guarantees.
+
+## Phase S8 — Wet Testing And Generator-Quality Evidence
+
+Current status: `active`.
+
+Objective: build developer-owned wet-testing evidence for real generated
+Hebrew OCR/HTR candidate batches, using deterministic code validation, human
+review, optional LLM-assisted triage, and regression promotion while keeping
+release governance downstream.
+
+Scope:
+
+- Define smoke, review, and soak wet-test levels.
+- Generate reproducible wet-test evidence from existing public generator and
+  validation behavior.
+- Preserve code, human, and optional LLM evidence outside
+  `generation_manifest.json` v1.
+- Use human review as the primary qualitative signal.
+- Treat LLM triage as optional advisory evidence only.
+- Promote confirmed wet-test defects into focused automated regression tests.
+- Do not add hocrgen behavior, release governance, export, publication,
+  schemas before evidence shapes stabilize, baseline LLM/network dependencies,
+  or manifest v1 changes.
+
+Planned PR breakdown:
+
+- `S8a` — Define wet-testing program plan: integrate developer-owned wet
+  testing into the roadmap and keep detailed scope, acceptance criteria,
+  evidence roles, staged implementation slices, and non-goals in
+  [wet_testing_program_plan.md](wet_testing_program_plan.md). Status: done in
+  PR #57; documentation/planning only.
+- `S8b` — Wet-test smoke run artifact generator: add the first actual
+  implementation slice, a small deterministic smoke-run artifact generator that
+  reuses existing generation and validation behavior, captures public reports,
+  writes `wet_test_run.json`, records report checksums, and avoids schemas,
+  galleries, human review sidecars, LLM packets, hocrgen behavior, and manifest
+  v1 changes.
+- `S8c` — Human-first static gallery: generate a static HTML or Markdown review
+  gallery over a wet-test run so developers and reviewers can inspect rendered
+  pages, logical Hebrew text, public metadata, and later warnings without
+  reading raw JSON.
+- `S8d` — Deterministic warning metrics: add repeatable generator-quality
+  warnings for coverage, duplicate text, blank/near-blank images, dimensions,
+  ink-density ranges, catalog joins, and path/hash safety without claiming
+  realism, utility, or release readiness.
+- `S8e` — Human review sidecar: define and validate review worksheets or
+  sidecars for pass/hold/reject decisions, severity, reason codes, notes, and
+  regression-promotion flags outside manifest v1.
+- `S8f` — LLM triage packet export: export bounded operator-run LLM review
+  packets and prompts without adding baseline LLM clients, network calls, or
+  pass/fail authority.
+- `S8g` — Wet-test report: combine run metadata, code warnings, human review,
+  optional LLM notes, top examples, and follow-up recommendations into a
+  developer-facing generator-quality report with explicit non-release wording.
+- `S8h` — Regression promotion and schema/CI decision: promote confirmed
+  wet-test findings into small deterministic automated tests, and only then
+  decide whether wet-test artifact schemas or a CI smoke profile are stable
+  enough to adopt.
+
+Deliverables:
+
+- Developer-owned wet-test run artifact.
+- Human-inspectable generated-output gallery.
+- Deterministic warning metrics.
+- Human review sidecar or worksheet.
+- Optional LLM triage packet export.
+- Wet-test summary report.
+- Regression-promotion process and at least one promoted test.
+
+Exit criteria:
+
+- A smoke wet-test run can be generated and validated deterministically.
+- Human reviewers can inspect generated pages without reading raw JSON.
+- Code metrics identify likely quality issues without unsupported realism or
+  utility claims.
+- Human findings are recorded outside manifest v1.
+- Optional LLM triage is dependency-light and advisory only.
+- At least one real wet-test finding has been promoted into automated
+  regression coverage.
+
+Risks/dependencies:
+
+- Overbuilding wet-test infrastructure before evidence shapes stabilize can
+  freeze poor artifact contracts.
+- Visual metrics can be misleading if treated as realism gates instead of
+  warning signals.
+- LLM review can create false confidence unless it remains advisory and
+  subordinate to human review.
+- Large soak runs can become too expensive or noisy for normal CI.
