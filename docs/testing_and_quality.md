@@ -89,8 +89,9 @@ it.
   from validated manifest template/recipe ids.
 - S8b wet-test smoke run coverage for deterministic run artifact creation,
   retained generation/validation/template-catalog reports, portable
-  `wet_test_run.json` paths, retained artifact checksums, optional rendering
-  coverage retention, and preservation of manifest v1.
+  `wet_test_run.json` paths, retained artifact checksums, supplemental
+  non-default style/condition batch coverage, optional rendering coverage
+  retention, structured failure reports, and preservation of manifest v1.
 - S3f governed document-family coverage for the `ledger` template, including
   deterministic generation, manifest v1 provenance, validation acceptance, v1
   and v2 catalog exposure, downstream catalog joins, and visual smoke checks

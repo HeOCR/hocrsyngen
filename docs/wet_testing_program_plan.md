@@ -667,12 +667,15 @@ PYTHONPATH=src python -m hocrsyngen.cli wet-run --profile smoke --seed 17 --outp
 ```
 
 The initial `smoke` profile generates one page for each governed template id
-using the existing generation path, then validates the generated `batch/`
-directory through the existing validation path. The command writes retained
-public reports under `reports/`:
+using the existing generation path, then generates one supplemental non-default
+style/condition page under `control_batches/non_default_style_condition/`.
+Both batches are validated through the existing validation path. The command
+writes retained public reports under `reports/`:
 
 - `generation_report.json`
 - `validation_report.json`
+- `non_default_style_condition_generation_report.json`
+- `non_default_style_condition_validation_report.json`
 - `template_catalog_v2.json`
 - `wet_test_run.json`
 - `wet_test_checksums.txt`
@@ -686,34 +689,58 @@ The initial `wet_test_run.json` shape is documented rather than schema-backed:
 {
   "report_version": "wet_test_run.v1",
   "profile": "smoke",
+  "status": "passed",
   "command_line": ["hocrsyngen", "wet-run", "--profile", "smoke", "--seed", "17", "--output", "out/wet-tests/smoke-17", "--format", "json"],
   "package": {"name": "hocrsyngen", "version": "0.1.0"},
   "environment": {"python_version": "3.12.11", "python_executable": "...", "platform": "...", "pillow_raqm": true},
   "config": {
     "seed": 17,
-    "count": 7,
-    "template_ids": ["printed_letter", "handwritten_note", "archive_card", "ledger", "printed_letter_heavy_scan", "handwritten_note_heavy_wear", "archive_card_faded_scan"],
-    "persona": null,
-    "condition": null,
-    "rendering_coverage_report": false,
+    "total_count": 8,
+    "primary_count": 7,
+    "supplemental_count": 1,
+    "primary_template_ids": ["printed_letter", "handwritten_note", "archive_card", "ledger", "printed_letter_heavy_scan", "handwritten_note_heavy_wear", "archive_card_faded_scan"],
+    "supplemental_controls": [
+      {
+        "batch_id": "non_default_style_condition",
+        "template_ids": ["printed_letter"],
+        "persona": "style_open_drift_v1",
+        "condition": "condition_low_contrast_v1"
+      }
+    ],
+    "primary_rendering_coverage_report": false,
     "output_path": ".",
     "batch_path": "batch"
   },
   "reports": {
-    "generation_report_path": "reports/generation_report.json",
-    "validation_report_path": "reports/validation_report.json",
     "template_catalog_v2_path": "reports/template_catalog_v2.json",
-    "rendering_coverage_report_path": null,
-    "checksum_path": "reports/wet_test_checksums.txt"
+    "checksum_path": "reports/wet_test_checksums.txt",
+    "checksum_file_includes_wet_test_run": true
   },
   "generated_batch": {
+    "batch_id": "default_governed_templates",
     "manifest_path": "batch/generation_manifest.json",
     "sample_count": 7,
     "page_count": 7,
     "asset_paths": ["batch/assets/.../page_0001.jpg"]
   },
-  "validation": {"valid": true, "sample_count": 7, "page_count": 7},
-  "checksums": {"batch/generation_manifest.json": "..."},
+  "supplemental_batches": [
+    {
+      "batch_id": "non_default_style_condition",
+      "manifest_path": "control_batches/non_default_style_condition/generation_manifest.json",
+      "sample_count": 1,
+      "page_count": 1,
+      "template_ids": ["printed_letter"],
+      "persona": "style_open_drift_v1",
+      "condition": "condition_low_contrast_v1"
+    }
+  ],
+  "validation": {"valid": true, "sample_count": 8, "page_count": 8},
+  "artifact_checksums": {"batch/generation_manifest.json": "..."},
+  "checksum_contract": {
+    "algorithm": "sha256",
+    "artifact_checksums_exclude": ["reports/wet_test_run.json", "reports/wet_test_checksums.txt"],
+    "checksum_file_includes": ["batch/generation_manifest.json", "reports/wet_test_run.json"]
+  },
   "scope": {
     "generator_quality_evidence_only": true,
     "release_ready_dataset_artifact": false,
@@ -725,6 +752,12 @@ The initial `wet_test_run.json` shape is documented rather than schema-backed:
 }
 ```
 
+If generation, report writing, or validation fails before a successful run can
+be published, the command writes a failed `reports/wet_test_run.json` at the
+requested output path with `status: "failed"`, `validation.valid: false`, and
+the exception type/message. Successful runs are built in a temporary sibling
+directory and renamed into place only after all retained artifacts are written.
+
 Implementation outline:
 
 - Add a CLI subcommand only if it can stay dependency-light and deterministic.
@@ -733,7 +766,9 @@ Implementation outline:
 - Capture `template_catalog.v2`.
 - Optionally capture rendering coverage when requested.
 - Write `wet_test_run.json`.
-- Write checksums for retained JSON reports.
+- Write checksums for retained reports and artifacts. The machine-readable
+  `artifact_checksums` object intentionally excludes `wet_test_run.json`; the
+  checksum sidecar includes the final `wet_test_run.json` digest.
 
 Do not add:
 

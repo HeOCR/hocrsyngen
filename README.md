@@ -246,9 +246,13 @@ filesystem path:
 creates the first S8 wet-test artifact directory for developer-owned
 generator-quality evidence. The smoke profile uses the existing generator to
 create one sample for each governed template, validates the generated `batch/`
-directory with the existing validator, retains public reports under `reports/`,
-and writes `reports/wet_test_run.json` plus
-`reports/wet_test_checksums.txt`. The run artifact is not a release-ready
+directory with the existing validator, and also generates one supplemental
+non-default style/condition sample under
+`control_batches/non_default_style_condition/`. It retains public reports under
+`reports/` and writes `reports/wet_test_run.json` plus
+`reports/wet_test_checksums.txt`. Successful runs are published atomically from
+a temporary sibling directory; failed runs write a structured failed
+`wet_test_run.json` when possible. The run artifact is not a release-ready
 dataset payload and does not change `generation_manifest.json` v1.
 
 Invalid batches keep the non-zero validation exit code and emit a deterministic

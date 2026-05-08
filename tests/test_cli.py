@@ -588,15 +588,18 @@ def _assert_installed_cli_smoke_case(
         )
         assert wet_run["report_version"] == "wet_test_run.v1"
         assert wet_run["profile"] == "smoke"
-        assert wet_run["validation"] == {
-            "valid": True,
-            "sample_count": len(GOVERNED_TEMPLATE_IDS),
-            "page_count": len(GOVERNED_TEMPLATE_IDS),
-        }
-        assert (wet_run_dir / "reports" / "wet_test_run.json").is_file()
-        assert (wet_run_dir / "reports" / "wet_test_checksums.txt").is_file()
-        _assert_batch_assets_are_portable(wet_run_dir / "batch")
-        return
+    assert wet_run["validation"] == {
+        "valid": True,
+        "sample_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        "page_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+    }
+    assert (wet_run_dir / "reports" / "wet_test_run.json").is_file()
+    assert (wet_run_dir / "reports" / "wet_test_checksums.txt").is_file()
+    _assert_batch_assets_are_portable(wet_run_dir / "batch")
+    _assert_batch_assets_are_portable(
+        wet_run_dir / "control_batches" / "non_default_style_condition"
+    )
+    return
 
     raise AssertionError(f"unknown installed CLI smoke case: {cli_case}")
 
@@ -1218,29 +1221,36 @@ def test_wet_run_smoke_cli_writes_auditable_artifacts(
     assert stdout_payload == run_payload
     assert run_payload["report_version"] == "wet_test_run.v1"
     assert run_payload["profile"] == "smoke"
+    assert run_payload["status"] == "passed"
     assert run_payload["config"] == {
         "seed": 17,
-        "count": len(GOVERNED_TEMPLATE_IDS),
-        "template_ids": GOVERNED_TEMPLATE_IDS,
-        "persona": None,
-        "condition": None,
-        "rendering_coverage_report": False,
+        "total_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        "primary_count": len(GOVERNED_TEMPLATE_IDS),
+        "supplemental_count": 1,
+        "primary_template_ids": GOVERNED_TEMPLATE_IDS,
+        "supplemental_controls": [
+            {
+                "batch_id": "non_default_style_condition",
+                "template_ids": ["printed_letter"],
+                "persona": "style_open_drift_v1",
+                "condition": "condition_low_contrast_v1",
+            }
+        ],
+        "primary_rendering_coverage_report": False,
         "output_path": ".",
         "batch_path": "batch",
     }
     assert run_payload["validation"] == {
         "valid": True,
-        "sample_count": len(GOVERNED_TEMPLATE_IDS),
-        "page_count": len(GOVERNED_TEMPLATE_IDS),
+        "sample_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        "page_count": len(GOVERNED_TEMPLATE_IDS) + 1,
     }
     assert run_payload["scope"]["manifest_v1_changed"] is False
     assert run_payload["scope"]["hocrgen_behavior_added"] is False
     assert run_payload["reports"] == {
-        "generation_report_path": "reports/generation_report.json",
-        "validation_report_path": "reports/validation_report.json",
         "template_catalog_v2_path": "reports/template_catalog_v2.json",
-        "rendering_coverage_report_path": None,
         "checksum_path": "reports/wet_test_checksums.txt",
+        "checksum_file_includes_wet_test_run": True,
     }
 
     manifest_path = output_dir / run_payload["generated_batch"]["manifest_path"]
@@ -1250,18 +1260,34 @@ def test_wet_run_smoke_cli_writes_auditable_artifacts(
         sample["provenance"]["template_id"] for sample in manifest["samples"]
     ] == GOVERNED_TEMPLATE_IDS
     validate_batch(output_dir / "batch")
+    [supplemental_batch] = run_payload["supplemental_batches"]
+    assert supplemental_batch["batch_id"] == "non_default_style_condition"
+    assert supplemental_batch["template_ids"] == ["printed_letter"]
+    assert supplemental_batch["persona"] == "style_open_drift_v1"
+    assert supplemental_batch["condition"] == "condition_low_contrast_v1"
+    supplemental_manifest = json.loads(
+        (output_dir / supplemental_batch["manifest_path"]).read_text(encoding="utf-8")
+    )
+    [supplemental_sample] = supplemental_manifest["samples"]
+    assert supplemental_sample["controls"] == {
+        "persona": "style_open_drift_v1",
+        "condition": "condition_low_contrast_v1",
+    }
+    validate_batch(output_dir / supplemental_batch["batch_path"])
 
     for relative_path in [
         run_payload["generated_batch"]["manifest_path"],
         *run_payload["generated_batch"]["asset_paths"],
-        *run_payload["checksums"].keys(),
+        supplemental_batch["manifest_path"],
+        *supplemental_batch["asset_paths"],
+        *run_payload["artifact_checksums"].keys(),
     ]:
         path = PurePosixPath(relative_path)
         assert not path.is_absolute()
         assert ".." not in path.parts
         assert (output_dir / Path(*path.parts)).is_file()
 
-    for relative_path, expected_digest in run_payload["checksums"].items():
+    for relative_path, expected_digest in run_payload["artifact_checksums"].items():
         assert sha256_file(output_dir / Path(*PurePosixPath(relative_path).parts)) == expected_digest
 
     checksum_lines = (
@@ -1270,6 +1296,18 @@ def test_wet_run_smoke_cli_writes_auditable_artifacts(
     checksum_paths = {line.split("  ", 1)[1] for line in checksum_lines}
     assert "reports/wet_test_run.json" in checksum_paths
     assert "batch/generation_manifest.json" in checksum_paths
+    assert "reports/wet_test_run.json" not in run_payload["artifact_checksums"]
+    assert run_payload["checksum_contract"] == {
+        "algorithm": "sha256",
+        "artifact_checksums_exclude": [
+            "reports/wet_test_run.json",
+            "reports/wet_test_checksums.txt",
+        ],
+        "checksum_file_includes": [
+            *sorted(run_payload["artifact_checksums"]),
+            "reports/wet_test_run.json",
+        ],
+    }
 
 
 def test_wet_run_smoke_can_retain_rendering_coverage_report(
@@ -1295,13 +1333,15 @@ def test_wet_run_smoke_can_retain_rendering_coverage_report(
 
     run_payload = json.loads(capsys.readouterr().out)
     assert (
-        run_payload["reports"]["rendering_coverage_report_path"]
+        run_payload["generated_batch"]["rendering_coverage_report_path"]
         == f"batch/{RENDERING_COVERAGE_REPORT_FILENAME}"
     )
-    sidecar_path = output_dir / run_payload["reports"]["rendering_coverage_report_path"]
+    sidecar_path = (
+        output_dir / run_payload["generated_batch"]["rendering_coverage_report_path"]
+    )
     sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
     assert sidecar["report_version"] == "rendering_coverage_report.v1"
-    assert run_payload["checksums"][f"batch/{RENDERING_COVERAGE_REPORT_FILENAME}"] == sha256_file(sidecar_path)
+    assert run_payload["artifact_checksums"][f"batch/{RENDERING_COVERAGE_REPORT_FILENAME}"] == sha256_file(sidecar_path)
 
 
 def test_wet_run_smoke_rejects_reusing_existing_run_directory(
@@ -1317,7 +1357,35 @@ def test_wet_run_smoke_rejects_reusing_existing_run_directory(
 
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
-    assert "wet-run: wet-run output must not already contain batch/ or reports/" in captured.err
+    assert "wet-run: wet-run output directory already exists and is not empty" in captured.err
+
+
+def test_wet_run_smoke_writes_failure_report_without_partial_batch(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "failed-smoke"
+
+    def fail_generation(*args: object, **kwargs: object) -> object:
+        raise ValueError("simulated generation failure")
+
+    monkeypatch.setattr("hocrsyngen.wet_run.generate_batch", fail_generation)
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["wet-run", "--seed", "17", "--output", str(output_dir)])
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "simulated generation failure" in captured.err
+    assert not (output_dir / "batch").exists()
+    failure_report = json.loads(
+        (output_dir / "reports" / "wet_test_run.json").read_text(encoding="utf-8")
+    )
+    assert failure_report["status"] == "failed"
+    assert failure_report["validation"] == {"valid": False}
+    assert failure_report["error"] == {
+        "type": "ValueError",
+        "message": "simulated generation failure",
+    }
 
 
 def test_generate_cli_accepts_persona_style_bundle_control(
