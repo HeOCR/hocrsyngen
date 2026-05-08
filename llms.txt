@@ -37,7 +37,8 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `docs/review_evidence_sidecar_contract.md`: S6e review evidence sidecar contract for reviewed sample/page ids, reviewer state, decision categories, reason codes, visual evidence references, S6a category references, S6c warning references, S6d cap decision references, limitations, and downstream governance ownership.
 - `docs/candidate_batch_profile_mix_handoff.md`: S6f candidate batch profile and mix handoff contract for requested, generated/observed, reviewed, capped/admitted, and released mix layers, gap reason codes, and downstream ownership boundaries.
 - `docs/hocrgen_adapter_handoff_checklist.md`: S6g external hocrgen adapter handoff checklist for installed CLI import, public JSON assertions, manifest id/path retention, template_catalog.v2 joins, S6a-S6f evidence links, failure handling, and downstream governance boundaries.
-- `docs/roadmap.md`: S6 is complete through S6g; S7 is active with design-only S7a script abstraction planning that must preserve Hebrew-first manifest and validation behavior.
+- `docs/script_abstraction_design.md`: S7a design-only script abstraction boundaries for future RTL-script profiles; preserves Hebrew-first manifest v1, logical-order UTF-8 Hebrew, NFC normalization, RTL metadata, and current validation semantics.
+- `docs/roadmap.md`: S6 is complete through S6g; S7 is active with design-only S7a script abstraction planning documented in `docs/script_abstraction_design.md`.
 
 ## Public Contracts
 
@@ -54,7 +55,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - Optional downstream review evidence sidecar contract documented as `review_evidence_sidecar.v1`; it is not emitted or validated by `hocrsyngen`
 - Optional downstream candidate batch profile/mix contract documented as `candidate_batch_profile_mix.v1`; it is not emitted or validated by `hocrsyngen`
 - External downstream adapter checklist documented in `docs/hocrgen_adapter_handoff_checklist.md`; it is not emitted or validated by `hocrsyngen`
-- S7 script abstraction is planning-only at this point; Arabic support, broader validation semantics, and manifest v1 changes are not implemented.
+- S7a script abstraction is planning-only in `docs/script_abstraction_design.md`; Arabic support, broader validation semantics, and manifest v1 changes are not implemented.
 - Packaged contract fixture id `generation_manifest_v1_fixture_batch`
 
 ## Non-Goals And Boundaries

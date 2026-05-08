@@ -58,10 +58,12 @@ external `hocrgen` adapter handoff checklist for installed CLI import,
 validation, public JSON boundary assertions, catalog joins, id/path retention,
 optional S6a-S6f evidence links, failure handling, and downstream-only
 governance responsibilities. Phase S6 is complete through S6g. The current
-planning track is Phase S7, starting with design-only `S7a` script abstraction;
-that work should preserve Hebrew-first behavior and must not implement Arabic
-support, broaden validation semantics, change manifest v1, or move downstream
-governance into `hocrsyngen`.
+planning track is Phase S7, starting with design-only `S7a` script abstraction.
+`S7a` is documented in [script_abstraction_design.md](script_abstraction_design.md)
+and should preserve Hebrew-first behavior while identifying minimal future
+RTL-script profile boundaries. It must not implement Arabic support, broaden
+validation semantics, change manifest v1, or move downstream governance into
+`hocrsyngen`.
 
 ## Crucial Missing Pieces
 
@@ -100,9 +102,11 @@ produce large quality or operational gains.
 
 Phase S7 is active for planning, starting with `S7a` script abstraction design.
 This is not a production-readiness blocker or quality-lift claim for current
-Hebrew candidate generation. `S7a` should identify minimal future RTL-script
-abstraction boundaries while preserving Hebrew-first behavior, manifest v1
-compatibility, and existing Hebrew RTL/NFC validation semantics.
+Hebrew candidate generation. `S7a` identifies minimal future RTL-script
+abstraction boundaries in
+[script_abstraction_design.md](script_abstraction_design.md) while preserving
+Hebrew-first behavior, manifest v1 compatibility, and existing Hebrew RTL/NFC
+validation semantics.
 
 ## External hocrgen Dependency Labels
 

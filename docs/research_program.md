@@ -115,10 +115,12 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
   Phase S6 is complete through S6g; downstream adapter implementation and
   governance remain external `hocrgen` work.
-- S7 script abstraction design should remain design-only until a specific
-  implementation PR is planned. It must preserve Hebrew-first behavior,
-  logical-order UTF-8 Hebrew, NFC normalization, RTL metadata, manifest v1
-  compatibility, and current validation semantics.
+- S7 script abstraction design is documented in
+  [script_abstraction_design.md](script_abstraction_design.md) and should
+  remain design-only until a specific implementation PR is planned. It must
+  preserve Hebrew-first behavior, logical-order UTF-8 Hebrew, NFC
+  normalization, RTL metadata, manifest v1 compatibility, and current
+  validation semantics.
 - OCR/HTR utility only once downstream benchmark references, governed ground
   truth, split/leakage controls, metric definitions, and synthetic-to-real
   comparison evidence exist.
