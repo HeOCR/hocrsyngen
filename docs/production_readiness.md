@@ -95,7 +95,14 @@ produce large quality or operational gains.
 | Review evidence sidecar contract | `S6e` | Done in PR #52; defines a portable optional downstream evidence packet for reviewed ids, decision categories, reason codes, visual references, limitations, and links to S6a/S6c/S6d evidence without creating review workflow state in this repo. |
 | Candidate batch profile and mix handoff | `S6f` | Done in PR #53; defines a portable optional downstream planning record for requested, generated/observed, reviewed, capped/admitted, and released candidate mixes without creating generator behavior, release profiles, or governance state in this repo. |
 | `hocrgen` adapter handoff checklist | `S6g` | Done in PR #54; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
-| Script abstraction design | `S7a` | Current next planning item; design-only work to identify minimal future RTL-script abstractions while preserving Hebrew-first behavior, manifest v1 compatibility, and existing Hebrew RTL/NFC validation semantics. |
+
+## Current Planning Track
+
+Phase S7 is active for planning, starting with `S7a` script abstraction design.
+This is not a production-readiness blocker or quality-lift claim for current
+Hebrew candidate generation. `S7a` should identify minimal future RTL-script
+abstraction boundaries while preserving Hebrew-first behavior, manifest v1
+compatibility, and existing Hebrew RTL/NFC validation semantics.
 
 ## External hocrgen Dependency Labels
 

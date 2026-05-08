@@ -440,7 +440,7 @@ Planned PR breakdown:
   [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
 - `S6h` — Close S6 and activate S7 script abstraction: align planning docs so
   Phase S6 is closed after S6g and Phase S7 starts with design-only `S7a`.
-  Status: active in this PR; documentation/planning only.
+  Status: done in PR #55; documentation/planning only.
 
 Deliverables:
 
@@ -480,8 +480,8 @@ Planned PR breakdown:
 - `S7a` — Script abstraction design: identify minimal abstractions needed for
   future RTL scripts while preserving Hebrew-specific validation, logical-order
   UTF-8 Hebrew, NFC normalization, RTL metadata, manifest v1 compatibility, and
-  current validation semantics. Status: current next planned item; design-only
-  and must not implement Arabic support.
+  current validation semantics. Status: active current planning item;
+  design-only and must not implement Arabic support.
 - `S7b` — Hebrew regression guard: add tests that prevent future script abstraction work from weakening Hebrew RTL/NFC/manifest guarantees.
 - `S7c` — Arabic-ready feasibility note: document Arabic-specific shaping, metadata, font, and validation differences without implementing Arabic support.
 
