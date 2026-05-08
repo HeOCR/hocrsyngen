@@ -15,11 +15,14 @@ outputs.
 - Document status: planning proposal.
 - Owner: `hocrsyngen` developers.
 - Current scope: Phase S8 implementation guidance. `S8b` adds the first
-  deterministic smoke run artifact generator; later gallery, metrics, human
-  review, LLM triage, reporting, schema, and CI work remains deferred.
+  deterministic smoke run artifact generator; `S8c` adds the operator
+  evidence-run wrapper needed for downstream `hocrgen` preflight evidence;
+  later gallery, metrics, human review, LLM triage, reporting, schema, and CI
+  work remains deferred.
 - Roadmap placement: Phase S8 - Wet Testing And Generator-Quality Evidence.
   `S8a` defines this program plan; `S8b` is the first actual implementation
-  slice and adds the wet-test smoke run artifact generator.
+  slice and adds the wet-test smoke run artifact generator; `S8c` adds the
+  candidate evidence-run handoff wrapper.
 
 ## Core Principle
 
@@ -786,7 +789,43 @@ Tests:
 - The command does not mutate packaged fixtures.
 - The command does not change manifest v1.
 
-### S8c: Human-First Static Gallery
+### S8c: Candidate Evidence-Run Handoff
+
+Purpose:
+
+Create the single-command operator wrapper needed when another repository, such
+as `hocrgen`, needs a validated candidate batch plus enough public evidence to
+inspect it without importing `hocrsyngen` internals.
+
+Implemented command:
+
+```bash
+PYTHONPATH=src python -m hocrsyngen.cli evidence-run --count 20 --seed 101 --format json
+```
+
+The command exports and validates the packaged contract fixture, captures
+template and contract JSON reports, generates and validates a candidate batch,
+writes optional rendering coverage, records `SHA256SUMS`, writes `RUN_NOTES.md`,
+and emits `candidate_evidence_run_report.v1`. The report must keep
+`release_eligible: false`; downstream `hocrgen` remains responsible for import
+metadata, review, caps, release profiles, export, and publication governance.
+
+Do not add:
+
+- hocrgen adapter code or imports.
+- Review, cap, export, release, or publication behavior.
+- Manifest v1 fields.
+- Network, LLM, GPU, or diffusion dependencies.
+
+Tests:
+
+- Evidence run creates the expected reports, checksum inventory, notes, and
+  generated manifest.
+- Installed package and wheel CLI smoke tests cover the command.
+- Generated batch assets remain relative and portable.
+- Release eligibility remains false.
+
+### S8d: Human-First Static Gallery
 
 Purpose:
 
@@ -815,7 +854,7 @@ Tests:
 - HTML escapes text and metadata.
 - Gallery generation does not require network.
 
-### S8d: Deterministic Warning Metrics
+### S8e: Deterministic Warning Metrics
 
 Purpose:
 
@@ -851,7 +890,7 @@ Tests:
 - Metrics flag intentionally corrupted or degenerate test fixtures.
 - Metrics distinguish hard blockers from warnings.
 
-### S8e: Human Review Sidecar
+### S8f: Human Review Sidecar
 
 Purpose:
 
@@ -877,7 +916,7 @@ Tests:
 - Review validation rejects unknown decision states or reason codes.
 - Review validation does not change manifest v1.
 
-### S8f: LLM Triage Packet Export
+### S8g: LLM Triage Packet Export
 
 Purpose:
 
@@ -904,7 +943,7 @@ Tests:
 - Prompt includes no release-readiness language.
 - Prompt includes forbidden-claim constraints.
 
-### S8g: Wet-Test Report
+### S8h: Wet-Test Report
 
 Purpose:
 
@@ -937,7 +976,7 @@ Tests:
 - Report treats LLM notes as advisory.
 - Report includes non-release disclaimer.
 
-### S8h: Regression Promotion
+### S8i: Regression Promotion
 
 Purpose:
 

@@ -14,6 +14,7 @@ import pytest
 from hocrsyngen.cli import (
     CONTRACT_FIXTURE_CATALOG_SCHEMA_VERSION,
     CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION,
+    EVIDENCE_RUN_REPORT_SCHEMA_VERSION,
     GENERATION_REPORT_SCHEMA_VERSION,
     RICH_TEMPLATE_CATALOG_SCHEMA_VERSION,
     TEMPLATE_CATALOG_SCHEMA_VERSION,
@@ -280,6 +281,7 @@ INSTALLED_CLI_SMOKE_CASES = [
     "generate-rendering-coverage-report",
     "validate-generated-batch",
     "wet-run-smoke",
+    "evidence-run-json",
 ]
 
 
@@ -588,18 +590,57 @@ def _assert_installed_cli_smoke_case(
         )
         assert wet_run["report_version"] == "wet_test_run.v1"
         assert wet_run["profile"] == "smoke"
-    assert wet_run["validation"] == {
-        "valid": True,
-        "sample_count": len(GOVERNED_TEMPLATE_IDS) + 1,
-        "page_count": len(GOVERNED_TEMPLATE_IDS) + 1,
-    }
-    assert (wet_run_dir / "reports" / "wet_test_run.json").is_file()
-    assert (wet_run_dir / "reports" / "wet_test_checksums.txt").is_file()
-    _assert_batch_assets_are_portable(wet_run_dir / "batch")
-    _assert_batch_assets_are_portable(
-        wet_run_dir / "control_batches" / "non_default_style_condition"
-    )
-    return
+        assert wet_run["validation"] == {
+            "valid": True,
+            "sample_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+            "page_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        }
+        assert (wet_run_dir / "reports" / "wet_test_run.json").is_file()
+        assert (wet_run_dir / "reports" / "wet_test_checksums.txt").is_file()
+        _assert_batch_assets_are_portable(wet_run_dir / "batch")
+        _assert_batch_assets_are_portable(
+            wet_run_dir / "control_batches" / "non_default_style_condition"
+        )
+        return
+
+    if cli_case == "evidence-run-json":
+        completed = _run_installed_cli(
+            command
+            + [
+                "evidence-run",
+                "--count",
+                "1",
+                "--seed",
+                "17",
+                "--output-root",
+                str(output_root),
+                "--run-id",
+                "candidate-evidence",
+                "--format",
+                "json",
+                "--color",
+                "never",
+            ],
+            cwd=cwd,
+            env=env,
+        )
+        assert "[01] Prepare output directory" in completed.stderr
+        assert "release_eligible=false" in completed.stderr
+        payload = json.loads(completed.stdout)
+        run_dir = output_root / "candidate-evidence"
+        assert payload["schema_version"] == EVIDENCE_RUN_REPORT_SCHEMA_VERSION
+        assert payload["release_eligible"] is False
+        assert payload["count"] == 1
+        assert payload["seed"] == 17
+        assert payload["output_root"] == str(run_dir)
+        assert payload["reports"]["generated_validation"]["valid"] is True
+        assert (run_dir / "RUN_NOTES.md").is_file()
+        assert (run_dir / "SHA256SUMS").is_file()
+        assert (run_dir / "candidate_evidence_run_report.json").is_file()
+        assert (run_dir / "generated_batch" / "generation_manifest.json").is_file()
+        assert (run_dir / "reports" / "template_catalog_v2.json").is_file()
+        _assert_batch_assets_are_portable(run_dir / "generated_batch")
+        return
 
     raise AssertionError(f"unknown installed CLI smoke case: {cli_case}")
 
@@ -1716,6 +1757,65 @@ def test_validate_cli_json_reports_packaged_contract_fixture(
             "page_count": 2,
             "path": str(batch_dir),
         }
+
+
+def test_evidence_run_cli_creates_operator_evidence_with_progress(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert (
+        main(
+            [
+                "evidence-run",
+                "--count",
+                "1",
+                "--seed",
+                "17",
+                "--output-root",
+                str(tmp_path),
+                "--run-id",
+                "candidate-evidence",
+                "--format",
+                "json",
+                "--color",
+                "never",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert "\x1b[" not in captured.err
+    assert "[01] Prepare output directory" in captured.err
+    assert "[09] Validate generated candidate batch" in captured.err
+    assert "release_eligible=false" in captured.err
+
+    report = json.loads(captured.out)
+    run_dir = tmp_path / "candidate-evidence"
+    assert report["schema_version"] == EVIDENCE_RUN_REPORT_SCHEMA_VERSION
+    assert report["release_eligible"] is False
+    assert report["count"] == 1
+    assert report["seed"] == 17
+    assert report["output_root"] == str(run_dir)
+    assert report["fixture_batch_path"] == str(run_dir / "fixture_batch")
+    assert report["generated_batch_path"] == str(run_dir / "generated_batch")
+    assert report["reports"]["template_catalog_v2"]["schema_version"] == (
+        RICH_TEMPLATE_CATALOG_SCHEMA_VERSION
+    )
+    assert report["reports"]["fixture_validation"]["valid"] is True
+    assert report["reports"]["generated_validation"]["valid"] is True
+
+    report_path = run_dir / "candidate_evidence_run_report.json"
+    assert json.loads(report_path.read_text(encoding="utf-8")) == report
+    assert (run_dir / "RUN_NOTES.md").read_text(encoding="utf-8").count(
+        "release_eligible: false"
+    ) == 1
+    checksum_text = (run_dir / "SHA256SUMS").read_text(encoding="utf-8")
+    assert "candidate_evidence_run_report.json" in checksum_text
+    assert "generated_batch/generation_manifest.json" in checksum_text
+    assert "reports/generated_validation_report.json" in checksum_text
+    assert (run_dir / "reports" / "generation_report.json").is_file()
+    assert (run_dir / "reports" / "generated_validation_report.json").is_file()
+    _assert_batch_assets_are_portable(run_dir / "generated_batch")
 
 
 @pytest.mark.parametrize(

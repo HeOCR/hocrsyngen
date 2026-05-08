@@ -25,6 +25,7 @@ OCR/HTR batches through public CLI surfaces:
 - `hocrsyngen generate --count N --seed S --output PATH --format json`
 - `hocrsyngen generate --count N --seed S --output PATH --rendering-coverage-report --format json`
 - `hocrsyngen validate PATH --format json`
+- `hocrsyngen evidence-run --count N --seed S`
 
 The generator has governed templates including the S3f `ledger` family, stronger
 degradation variants, style bundles, condition bundles, manifest v1 validation,
@@ -36,6 +37,12 @@ documented deferral path: this repository has planning gates and boundaries, but
 no accepted S5 prototype/evaluation evidence, ablation result, or downstream
 utility measurement. A valid generated directory is still a candidate synthetic
 input, not a release-ready dataset artifact.
+
+For operator handoff runs, `hocrsyngen evidence-run` packages the catalog,
+fixture export, generation, validation, rendering coverage, checksum inventory,
+and candidate-only report capture into a single progress-logged command. It is
+still generator evidence only: it does not create release eligibility, review
+state, caps, export payloads, publication metadata, or downstream governance.
 
 S6a adds downstream realism acceptance categories, calibrated example classes,
 visual evidence expectations, rejection reasons, and release-eligibility
@@ -97,7 +104,7 @@ produce large quality or operational gains.
 | Review evidence sidecar contract | `S6e` | Done in PR #52; defines a portable optional downstream evidence packet for reviewed ids, decision categories, reason codes, visual references, limitations, and links to S6a/S6c/S6d evidence without creating review workflow state in this repo. |
 | Candidate batch profile and mix handoff | `S6f` | Done in PR #53; defines a portable optional downstream planning record for requested, generated/observed, reviewed, capped/admitted, and released candidate mixes without creating generator behavior, release profiles, or governance state in this repo. |
 | `hocrgen` adapter handoff checklist | `S6g` | Done in PR #54; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
-| Wet-testing and generator-quality evidence | `S8a` through `S8h` | Active S8 work; `S8a` defines developer-owned smoke/review/soak wet-test evidence, and `S8b` adds the deterministic smoke run artifact generator without creating release-governance behavior or changing manifest v1. |
+| Wet-testing and generator-quality evidence | `S8a` through `S8i` | Active S8 work; `S8a` defines developer-owned smoke/review/soak wet-test evidence, `S8b` adds the deterministic smoke run artifact generator, and `S8c` adds the candidate evidence-run wrapper without creating release-governance behavior or changing manifest v1. |
 
 ## Current Planning Track
 
@@ -105,10 +112,11 @@ produce large quality or operational gains.
 [script_abstraction_design.md](script_abstraction_design.md). Phase S8 is now
 the current implementation track for wet testing and generator-quality evidence.
 `S8a` defines the program in
-[wet_testing_program_plan.md](wet_testing_program_plan.md), and `S8b` is the
-first implementation slice: a deterministic wet-test smoke run artifact
-generator that reuses public generation and validation behavior, retains public
-reports, and writes `wet_test_run.json`. This is not a production-readiness
+[wet_testing_program_plan.md](wet_testing_program_plan.md), `S8b` is the
+first implementation slice, and `S8c` adds the downstream preflight
+evidence-run wrapper. The deterministic wet-test and evidence-run commands
+reuse public generation and validation behavior, retain public reports, and
+write operator evidence artifacts. This is not a production-readiness
 blocker or release-readiness claim for current Hebrew candidate generation;
 generated batches remain candidate synthetic inputs until downstream `hocrgen`
 governance admits them.

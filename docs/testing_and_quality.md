@@ -105,7 +105,8 @@ it.
 - Installed package and wheel resource checks.
 - Installed package and wheel public CLI smoke matrix for console-script and
   `python -m hocrsyngen.cli` entry points across `templates`, `contracts`,
-  `contracts export`, `generate`, and `validate`.
+  `contracts export`, `generate`, `validate`, and the operator-only
+  `evidence-run` wrapper.
 - Baseline dependency audit coverage for declared runtime/test dependencies,
   accidental `hocrgen` imports, network/REST imports, GPU/LLM/diffusion/Torch/
   TensorFlow/deep-learning imports, and docs-to-`pyproject.toml` policy

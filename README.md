@@ -56,6 +56,7 @@ hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --rendering-c
 hocrsyngen validate out/fixture-batch
 hocrsyngen validate out/fixture-batch --format json
 hocrsyngen wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
+hocrsyngen evidence-run --count 20 --seed 101
 ```
 
 `hocrsyngen templates` prints one deterministic catalog line per packaged
@@ -138,7 +139,8 @@ RTL/NFC, manifest v1, and validation guarantees; it does not implement Arabic
 support or change generator, CLI, schema, fixture, validation, or integration
 behavior.
 S8a defines the developer-owned wet-testing program for generator-quality
-evidence. S8b adds a deterministic wet-test smoke run artifact generator
+evidence. S8b adds a deterministic wet-test smoke run artifact generator, and
+S8c adds the candidate evidence-run wrapper for downstream preflight evidence,
 without adding release governance, baseline LLM/network dependencies, schemas,
 or manifest v1 changes.
 Readiness for public dataset use still depends on downstream `hocrgen` import
@@ -163,6 +165,17 @@ report to stdout:
 
 The generation report is CLI output only. It does not add manifest fields or
 change manifest v1 compatibility.
+
+`hocrsyngen evidence-run --count N --seed S` is the single-command operator
+wrapper for downstream preflight evidence. It prints colored progress logs to
+stderr, exports and validates the packaged contract fixture, captures template
+and contract JSON reports, generates and validates a candidate batch, writes the
+optional rendering coverage sidecar, records a checksum inventory, and emits a
+final `candidate_evidence_run_report.v1`. The default output root is a
+timestamped directory under the system temp directory; use `--output-root PATH`
+and `--run-id ID` to make the location explicit. Evidence runs remain
+candidate-only and write `release_eligible: false`; they do not add review,
+release, export, publication, or downstream governance behavior.
 
 `hocrsyngen generate --rendering-coverage-report` writes an opt-in
 `rendering_coverage_report.json` sidecar beside the manifest. The sidecar uses
