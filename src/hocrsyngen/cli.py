@@ -5,12 +5,15 @@ import json
 import shutil
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from importlib import resources
 from importlib.resources.abc import Traversable
 from pathlib import Path
 
 from hocrsyngen.generator import (
+    GENERATOR_VERSION,
     GOVERNED_TEMPLATE_IDS,
     RichTemplateCatalogEntry,
     SUPPORTED_CONDITION_BUNDLE_IDS,
@@ -20,11 +23,13 @@ from hocrsyngen.generator import (
     rich_template_catalog,
     template_catalog,
 )
+from hocrsyngen.io import sha256_file
 from hocrsyngen.rendering_coverage import write_rendering_coverage_report
 from hocrsyngen.validation import BatchValidationError, validate_batch
 from hocrsyngen.wet_run import create_wet_test_smoke_run
 
 
+EVIDENCE_RUN_REPORT_SCHEMA_VERSION = "candidate_evidence_run_report.v1"
 CONTRACT_FIXTURE_CATALOG_SCHEMA_VERSION = "contract_fixture_catalog.v1"
 CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION = "contract_fixture_export.v1"
 GENERATION_REPORT_SCHEMA_VERSION = "generation_report.v1"
@@ -283,6 +288,364 @@ def _contract_fixture_by_id(fixture_id: str) -> ContractFixtureCatalogEntry:
         raise ValueError(f"unknown contract fixture id: {fixture_id}") from exc
 
 
+class _ProgressPrinter:
+    _COLORS = {
+        "bold": "\033[1m",
+        "dim": "\033[2m",
+        "red": "\033[31m",
+        "green": "\033[32m",
+        "yellow": "\033[33m",
+        "blue": "\033[34m",
+        "magenta": "\033[35m",
+        "cyan": "\033[36m",
+        "reset": "\033[0m",
+    }
+
+    def __init__(self, color: str) -> None:
+        self._step = 0
+        self._use_color = color == "always" or (
+            color == "auto" and sys.stderr.isatty()
+        )
+
+    def step(self, message: str) -> float:
+        self._step += 1
+        self._write(
+            "blue",
+            f"\n[{self._step:02d}] {message}",
+            bold=True,
+        )
+        return time.monotonic()
+
+    def done(self, message: str, started_at: float) -> None:
+        elapsed = time.monotonic() - started_at
+        self._write("green", f"[ok] {message} ({elapsed:.1f}s)")
+
+    def note(self, label: str, value: object) -> None:
+        self._write("dim", f"  {label}: {value}")
+
+    def warn(self, message: str) -> None:
+        self._write("yellow", f"[warn] {message}")
+
+    def final(self, message: str) -> None:
+        self._write("magenta", f"\n{message}", bold=True)
+
+    def _write(self, color: str, message: str, *, bold: bool = False) -> None:
+        if not self._use_color:
+            print(message, file=sys.stderr)
+            return
+        prefix = self._COLORS[color]
+        if bold:
+            prefix = self._COLORS["bold"] + prefix
+        print(f"{prefix}{message}{self._COLORS['reset']}", file=sys.stderr)
+
+
+def _utc_now() -> datetime:
+    return datetime.now(UTC).replace(microsecond=0)
+
+
+def _format_utc(value: datetime) -> str:
+    return value.isoformat().replace("+00:00", "Z")
+
+
+def _default_evidence_run_id(*, count: int, seed: int) -> str:
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    return f"{timestamp}-seed{seed}-count{count}"
+
+
+def _write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+
+
+def _write_json_report(path: Path, text: str) -> dict[str, object]:
+    _write_text(path, text + "\n")
+    payload = json.loads(text)
+    if not isinstance(payload, dict):
+        raise ValueError(f"report payload must be a JSON object: {path}")
+    return payload
+
+
+def _write_checksum_inventory(root: Path, output_path: Path) -> None:
+    lines: list[str] = []
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or path == output_path:
+            continue
+        relative = path.relative_to(root).as_posix()
+        lines.append(f"{sha256_file(path)}  {relative}")
+    _write_text(output_path, "\n".join(lines) + ("\n" if lines else ""))
+
+
+def _write_evidence_run_notes(
+    path: Path,
+    *,
+    started_at: datetime,
+    count: int,
+    seed: int,
+    run_dir: Path,
+    include_rendering_coverage_report: bool,
+) -> None:
+    _write_text(
+        path,
+        "\n".join(
+            [
+                "# hocrsyngen candidate evidence run",
+                "",
+                "- purpose: downstream adapter preflight/import-packet evidence",
+                f"- started_utc: {_format_utc(started_at)}",
+                "- command boundary: hocrsyngen public CLI command",
+                f"- python: {sys.executable}",
+                f"- generator_version: {GENERATOR_VERSION}",
+                f"- count: {count}",
+                f"- seed: {seed}",
+                f"- rendering_coverage_report: {str(include_rendering_coverage_report).lower()}",
+                f"- output_root: {run_dir}",
+                "- release_eligible: false",
+                "- downstream release path: not used",
+                "",
+            ]
+        ),
+    )
+
+
+def _candidate_evidence_report(
+    *,
+    started_at: datetime,
+    completed_at: datetime,
+    run_dir: Path,
+    count: int,
+    seed: int,
+    reports_dir: Path,
+    fixture_batch_dir: Path,
+    generated_batch_dir: Path,
+    checksum_path: Path,
+    rendering_coverage_report_path: Path | None,
+    template_catalog_v1: dict[str, object],
+    template_catalog_v2: dict[str, object],
+    contracts: dict[str, object],
+    fixture_export: dict[str, object],
+    fixture_validation: dict[str, object],
+    generation: dict[str, object],
+    generated_validation: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "schema_version": EVIDENCE_RUN_REPORT_SCHEMA_VERSION,
+        "started_at_utc": _format_utc(started_at),
+        "completed_at_utc": _format_utc(completed_at),
+        "release_eligible": False,
+        "count": count,
+        "seed": seed,
+        "generator_version": GENERATOR_VERSION,
+        "output_root": str(run_dir),
+        "reports_dir": str(reports_dir),
+        "fixture_batch_path": str(fixture_batch_dir),
+        "generated_batch_path": str(generated_batch_dir),
+        "generated_manifest_path": str(generated_batch_dir / "generation_manifest.json"),
+        "checksums_path": str(checksum_path),
+        "rendering_coverage_report_path": (
+            str(rendering_coverage_report_path)
+            if rendering_coverage_report_path is not None
+            else None
+        ),
+        "reports": {
+            "template_catalog_v1": template_catalog_v1,
+            "template_catalog_v2": template_catalog_v2,
+            "contracts": contracts,
+            "fixture_export": fixture_export,
+            "fixture_validation": fixture_validation,
+            "generation": generation,
+            "generated_validation": generated_validation,
+        },
+    }
+
+
+def _format_evidence_run_text(report: dict[str, object]) -> str:
+    return "\n".join(
+        [
+            "hocrsyngen evidence run complete",
+            f"output_root={report['output_root']}",
+            f"generated_manifest_path={report['generated_manifest_path']}",
+            f"generated_batch_path={report['generated_batch_path']}",
+            f"checksums_path={report['checksums_path']}",
+            "release_eligible=false",
+        ]
+    )
+
+
+def _run_evidence_capture(
+    *,
+    output_root: Path,
+    run_id: str | None,
+    count: int,
+    seed: int,
+    overwrite: bool,
+    color: str,
+    include_rendering_coverage_report: bool,
+) -> dict[str, object]:
+    progress = _ProgressPrinter(color)
+    started_at = _utc_now()
+    actual_run_id = run_id or _default_evidence_run_id(count=count, seed=seed)
+    run_dir = output_root / actual_run_id
+    reports_dir = run_dir / "reports"
+    fixture_batch_dir = run_dir / "fixture_batch"
+    generated_batch_dir = run_dir / "generated_batch"
+    checksum_path = run_dir / "SHA256SUMS"
+    evidence_report_path = run_dir / "candidate_evidence_run_report.json"
+    notes_path = run_dir / "RUN_NOTES.md"
+
+    started = progress.step("Prepare output directory")
+    if run_dir.exists():
+        if not overwrite:
+            raise ValueError(
+                f"evidence run output already exists: {run_dir} "
+                "(use --overwrite to replace it)"
+            )
+        shutil.rmtree(run_dir)
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    progress.note("output_root", run_dir)
+    progress.note("reports", reports_dir)
+    progress.done("output directory ready", started)
+
+    started = progress.step("Write run notes")
+    _write_evidence_run_notes(
+        notes_path,
+        started_at=started_at,
+        count=count,
+        seed=seed,
+        run_dir=run_dir,
+        include_rendering_coverage_report=include_rendering_coverage_report,
+    )
+    progress.note("notes", notes_path)
+    progress.done("run notes written", started)
+
+    started = progress.step("Capture template catalog v1")
+    template_catalog_v1 = _write_json_report(
+        reports_dir / "template_catalog_v1.json",
+        _format_template_catalog_json(template_catalog()),
+    )
+    progress.note("template_count", len(template_catalog_v1["templates"]))
+    progress.done("template catalog v1 captured", started)
+
+    started = progress.step("Capture template catalog v2")
+    template_catalog_v2 = _write_json_report(
+        reports_dir / "template_catalog_v2.json",
+        _format_rich_template_catalog_json(rich_template_catalog()),
+    )
+    progress.note("template_count", len(template_catalog_v2["templates"]))
+    progress.done("template catalog v2 captured", started)
+
+    started = progress.step("Capture contract fixture catalog")
+    fixture_catalog = _contract_fixture_catalog()
+    contracts = _write_json_report(
+        reports_dir / "contracts.json",
+        _format_contract_fixture_catalog_json(fixture_catalog),
+    )
+    progress.note("fixture_count", len(contracts["fixtures"]))
+    progress.done("contract fixture catalog captured", started)
+
+    started = progress.step("Export packaged fixture batch")
+    entry = _contract_fixture_by_id(CONTRACT_FIXTURE_ID)
+    _export_contract_fixture(entry, fixture_batch_dir)
+    fixture_export = _write_json_report(
+        reports_dir / "fixture_export_report.json",
+        _format_contract_fixture_export_report_json(entry, fixture_batch_dir),
+    )
+    progress.note("fixture_batch", fixture_batch_dir)
+    progress.done("packaged fixture exported", started)
+
+    started = progress.step("Validate packaged fixture batch")
+    fixture_result = validate_batch(fixture_batch_dir)
+    fixture_validation = _write_json_report(
+        reports_dir / "fixture_validation_report.json",
+        _format_valid_validation_report_json(
+            fixture_batch_dir,
+            sample_count=fixture_result.sample_count,
+            page_count=fixture_result.page_count,
+        ),
+    )
+    progress.note("valid", fixture_validation["valid"])
+    progress.note("sample_count", fixture_validation["sample_count"])
+    progress.note("page_count", fixture_validation["page_count"])
+    progress.done("packaged fixture validated", started)
+
+    started = progress.step(f"Generate candidate batch count={count} seed={seed}")
+    manifest = generate_batch(count=count, seed=seed, output_dir=generated_batch_dir)
+    rendering_coverage_report_path = (
+        write_rendering_coverage_report(manifest, generated_batch_dir)
+        if include_rendering_coverage_report
+        else None
+    )
+    generation = _write_json_report(
+        reports_dir / "generation_report.json",
+        _format_generation_report_json(
+            generated_batch_dir,
+            sample_count=len(manifest.samples),
+            page_count=sum(len(sample.pages) for sample in manifest.samples),
+            rendering_coverage_report_path=rendering_coverage_report_path,
+        ),
+    )
+    progress.note("generated_batch", generated_batch_dir)
+    progress.note("sample_count", generation["sample_count"])
+    progress.note("page_count", generation["page_count"])
+    if rendering_coverage_report_path is not None:
+        progress.note("rendering_coverage_report", rendering_coverage_report_path)
+    progress.done("candidate batch generated", started)
+
+    started = progress.step("Validate generated candidate batch")
+    generated_result = validate_batch(generated_batch_dir)
+    generated_validation = _write_json_report(
+        reports_dir / "generated_validation_report.json",
+        _format_valid_validation_report_json(
+            generated_batch_dir,
+            sample_count=generated_result.sample_count,
+            page_count=generated_result.page_count,
+        ),
+    )
+    progress.note("valid", generated_validation["valid"])
+    progress.note("sample_count", generated_validation["sample_count"])
+    progress.note("page_count", generated_validation["page_count"])
+    progress.done("generated candidate batch validated", started)
+
+    completed_at = _utc_now()
+    report = _candidate_evidence_report(
+        started_at=started_at,
+        completed_at=completed_at,
+        run_dir=run_dir,
+        count=count,
+        seed=seed,
+        reports_dir=reports_dir,
+        fixture_batch_dir=fixture_batch_dir,
+        generated_batch_dir=generated_batch_dir,
+        checksum_path=checksum_path,
+        rendering_coverage_report_path=rendering_coverage_report_path,
+        template_catalog_v1=template_catalog_v1,
+        template_catalog_v2=template_catalog_v2,
+        contracts=contracts,
+        fixture_export=fixture_export,
+        fixture_validation=fixture_validation,
+        generation=generation,
+        generated_validation=generated_validation,
+    )
+
+    started = progress.step("Write candidate evidence report")
+    _write_text(
+        evidence_report_path,
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n",
+    )
+    progress.note("report", evidence_report_path)
+    progress.done("candidate evidence report written", started)
+
+    started = progress.step("Write checksum inventory")
+    _write_checksum_inventory(run_dir, checksum_path)
+    progress.note("checksums", checksum_path)
+    progress.done("checksum inventory written", started)
+
+    progress.final("Candidate evidence run complete")
+    progress.note("report", evidence_report_path)
+    progress.note("generated_manifest", generated_batch_dir / "generation_manifest.json")
+    progress.warn("release_eligible=false")
+    return report
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="hocrsyngen")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -430,6 +793,63 @@ def build_parser() -> argparse.ArgumentParser:
             "Retain an opt-in rendering_coverage_report.v1 sidecar for the "
             "generated smoke batch."
         ),
+    )
+    evidence_run = subparsers.add_parser(
+        "evidence-run",
+        help="Generate a candidate batch with operator evidence and progress logs.",
+    )
+    evidence_run.add_argument(
+        "--count",
+        type=_non_negative_int,
+        default=20,
+        help="Number of generated candidate samples. Defaults to 20.",
+    )
+    evidence_run.add_argument(
+        "--seed",
+        type=_non_negative_int,
+        default=101,
+        help="Deterministic generation seed. Defaults to 101.",
+    )
+    evidence_run.add_argument(
+        "--output-root",
+        type=Path,
+        default=Path(tempfile.gettempdir()) / "hocrsyngen-candidate-batches",
+        help=(
+            "Directory under which the timestamped evidence run directory is "
+            "created. Defaults to the system temp directory."
+        ),
+    )
+    evidence_run.add_argument(
+        "--run-id",
+        help=(
+            "Optional explicit run directory name. Defaults to "
+            "YYYYMMDDTHHMMSSZ-seedSEED-countCOUNT."
+        ),
+    )
+    evidence_run.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace an existing output-root/run-id directory.",
+    )
+    evidence_run.add_argument(
+        "--color",
+        choices=("auto", "always", "never"),
+        default="auto",
+        help="Colorize progress logs on stderr. Defaults to auto.",
+    )
+    evidence_run.add_argument(
+        "--no-rendering-coverage-report",
+        action="store_true",
+        help=(
+            "Do not write the optional rendering_coverage_report.v1 sidecar for "
+            "the generated batch."
+        ),
+    )
+    evidence_run.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the final evidence-run report on stdout.",
     )
     return parser
 
@@ -579,6 +999,32 @@ def main(argv: list[str] | None = None) -> int:
             f"{result.payload['validation']['page_count']} pages to {args.output}; "
             f"summary: {result.wet_test_run_path}"
         )
+        return 0
+    if args.command == "evidence-run":
+        try:
+            report = _run_evidence_capture(
+                output_root=args.output_root,
+                run_id=args.run_id,
+                count=args.count,
+                seed=args.seed,
+                overwrite=args.overwrite,
+                color=args.color,
+                include_rendering_coverage_report=(
+                    not args.no_rendering_coverage_report
+                ),
+            )
+        except FileNotFoundError as exc:
+            parser.exit(
+                1,
+                "hocrsyngen evidence-run: required packaged resource is missing: "
+                f"{exc.filename or exc}\n",
+            )
+        except (BatchValidationError, OSError, RuntimeError, ValueError) as exc:
+            parser.exit(1, f"hocrsyngen evidence-run: {exc}\n")
+        if args.format == "json":
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        else:
+            print(_format_evidence_run_text(report))
         return 0
     raise AssertionError(f"Unhandled command: {args.command}")
 
