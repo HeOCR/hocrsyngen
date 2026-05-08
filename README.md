@@ -41,6 +41,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [Candidate batch profile and mix handoff](docs/candidate_batch_profile_mix_handoff.md)
 - [hocrgen adapter handoff checklist](docs/hocrgen_adapter_handoff_checklist.md)
 - [Script abstraction design](docs/script_abstraction_design.md)
+- [Wet-testing program plan](docs/wet_testing_program_plan.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI
@@ -135,6 +136,10 @@ RTL-script profiles. It preserves Hebrew-first behavior and current Hebrew
 RTL/NFC, manifest v1, and validation guarantees; it does not implement Arabic
 support or change generator, CLI, schema, fixture, validation, or integration
 behavior.
+S8a defines the developer-owned wet-testing program for generator-quality
+evidence. The next implementation slice, S8b, should add a deterministic
+wet-test smoke run artifact generator without adding release governance,
+baseline LLM/network dependencies, schemas, or manifest v1 changes.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.

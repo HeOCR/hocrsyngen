@@ -97,16 +97,19 @@ produce large quality or operational gains.
 | Review evidence sidecar contract | `S6e` | Done in PR #52; defines a portable optional downstream evidence packet for reviewed ids, decision categories, reason codes, visual references, limitations, and links to S6a/S6c/S6d evidence without creating review workflow state in this repo. |
 | Candidate batch profile and mix handoff | `S6f` | Done in PR #53; defines a portable optional downstream planning record for requested, generated/observed, reviewed, capped/admitted, and released candidate mixes without creating generator behavior, release profiles, or governance state in this repo. |
 | `hocrgen` adapter handoff checklist | `S6g` | Done in PR #54; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
+| Wet-testing and generator-quality evidence | `S8a` through `S8h` | Current planning work; defines developer-owned smoke/review/soak wet-test evidence, human inspection, optional LLM triage, and regression promotion without creating release-governance behavior or changing manifest v1. |
 
 ## Current Planning Track
 
-Phase S7 is active for planning, starting with `S7a` script abstraction design.
-This is not a production-readiness blocker or quality-lift claim for current
-Hebrew candidate generation. `S7a` identifies minimal future RTL-script
-abstraction boundaries in
-[script_abstraction_design.md](script_abstraction_design.md) while preserving
-Hebrew-first behavior, manifest v1 compatibility, and existing Hebrew RTL/NFC
-validation semantics.
+`S7a` script abstraction design is complete in
+[script_abstraction_design.md](script_abstraction_design.md). Phase S8 is now
+the current implementation track for wet testing and generator-quality evidence.
+`S8a` defines the program in
+[wet_testing_program_plan.md](wet_testing_program_plan.md), and `S8b` should be
+the first implementation slice: a deterministic wet-test smoke run artifact
+generator. This is not a production-readiness blocker or release-readiness claim
+for current Hebrew candidate generation; generated batches remain candidate
+synthetic inputs until downstream `hocrgen` governance admits them.
 
 ## External hocrgen Dependency Labels
 
