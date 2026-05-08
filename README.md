@@ -108,8 +108,9 @@ The current `hocrsyngen` baseline is ready to generate validated candidate
 synthetic batches with the governed document families added through S3f, while
 S5 closed by deferral after defining acceptance gates plus docs-first allograph,
 word/line assembly, and learned-generation packaging boundaries for future
-handwriting research. S6 now defines downstream evaluation and acceptance gates:
-S6a documents the downstream realism acceptance rubric, and S6b defines the
+handwriting research. S6 is complete through downstream evaluation and
+acceptance handoff planning: S6a documents the downstream realism acceptance
+rubric, and S6b defines the
 downstream utility measurement contract that keeps CER/WER claims gated on real
 references, ground truth, split/leakage controls, and synthetic-to-real
 comparison in `hocrgen`/HeOCR. S6c defines synthetic diversity and domain-shift
@@ -128,6 +129,9 @@ mix layers outside manifest v1. S6g defines an external downstream `hocrgen`
 adapter checklist for installed CLI import, validation, public catalog joins,
 id retention, optional S6a-S6f evidence links, failure handling, and governance
 boundaries without adding adapter behavior to this repository.
+The next planning phase is S7, starting with design-only S7a script abstraction
+work that should preserve Hebrew-first behavior and current Hebrew RTL/NFC,
+manifest v1, and validation guarantees.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.

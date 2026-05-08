@@ -4,16 +4,17 @@ This document makes the current readiness state explicit. It records what is
 ready in `hocrsyngen`, what remains before generated batches can become
 governed dataset inputs, and which roadmap items should carry the work.
 
-## Current State After S6f
+## Current State After S6g
 
-The last merged roadmap item is `S6f` - candidate batch profile and mix
-handoff, squash-merged in PR #53. `S6e` - review evidence sidecar contract was
+The last merged roadmap item is `S6g` - `hocrgen` adapter handoff checklist,
+squash-merged in PR #54. `S6f` - candidate batch profile and mix handoff was
+squash-merged in PR #53. `S6e` - review evidence sidecar contract was
 squash-merged in PR #52. `S6d` - release cap handoff policy was squash-merged
-in PR #51. `S6c` - synthetic diversity and domain-shift
-metrics - was squash-merged in PR #50. `S6b` - downstream utility measurement
-contract - was squash-merged in PR #49. `S6a` - downstream realism acceptance
-rubric - was squash-merged in PR #48. `S5e` - close S5 planning and activate
-S6 evaluation gates - was squash-merged in PR #47. At this point
+in PR #51. `S6c` - synthetic diversity and domain-shift metrics - was
+squash-merged in PR #50. `S6b` - downstream utility measurement contract - was
+squash-merged in PR #49. `S6a` - downstream realism acceptance rubric - was
+squash-merged in PR #48. `S5e` - close S5 planning and activate S6 evaluation
+gates - was squash-merged in PR #47. At this point
 `hocrsyngen` can generate and validate deterministic candidate synthetic Hebrew
 OCR/HTR batches through public CLI surfaces:
 
@@ -52,8 +53,15 @@ contract for retaining reviewed sample/page ids, visual evidence, reviewer
 observations, decision categories, reason codes, and S6a/S6c/S6d references
 outside `generation_manifest.json` v1. S6f documents a candidate batch profile
 and mix handoff contract for requested, generated/observed, reviewed,
-capped/admitted, and released mix layers outside manifest v1. S6g is now the
-active planning item for the external `hocrgen` adapter handoff checklist.
+capped/admitted, and released mix layers outside manifest v1. S6g documents the
+external `hocrgen` adapter handoff checklist for installed CLI import,
+validation, public JSON boundary assertions, catalog joins, id/path retention,
+optional S6a-S6f evidence links, failure handling, and downstream-only
+governance responsibilities. Phase S6 is complete through S6g. The current
+planning track is Phase S7, starting with design-only `S7a` script abstraction;
+that work should preserve Hebrew-first behavior and must not implement Arabic
+support, broaden validation semantics, change manifest v1, or move downstream
+governance into `hocrsyngen`.
 
 ## Crucial Missing Pieces
 
@@ -62,11 +70,11 @@ governed dataset flow.
 
 | Item | Owner | Roadmap tracking | Notes |
 | --- | --- | --- | --- |
-| `hocrgen` import/governance adapter | `hocrgen` | External dependency `H1a`; hocrsyngen supports it through S6 handoff docs; `S6g` active | The adapter should consume installed CLI JSON and validated manifests, not private Python internals. |
+| `hocrgen` import/governance adapter | `hocrgen` | External dependency `H1a`; hocrsyngen supports it through completed S6 handoff docs including `S6g` | The adapter should consume installed CLI JSON and validated manifests, not private Python internals. |
 | Release profiles and synthetic caps | `hocrgen` | External dependency `H1b`; hocrsyngen tracks handoff policy in `S6d` | Caps, balancing, source composition, review state, release eligibility, release assembly, export, and publication must stay out of `hocrsyngen`. |
 | Review evidence sidecar | Shared contract, downstream use in `hocrgen` | `S6e` | Done in PR #52; defines durable reviewed sample/page ids, reviewer notes, visual evidence references, S6a category references, S6c warning references, and S6d cap decision references without changing manifest v1. |
 | Candidate batch profile and mix handoff | Shared contract, orchestration in `hocrgen` | `S6f` | Done in PR #53; defines how template/style/condition/seed mixes are requested, observed, reviewed, capped, and audited outside manifest v1. |
-| `hocrgen` adapter handoff checklist | Shared checklist, implementation in `hocrgen` | `S6g` | Active; documents installed CLI import, validation, public JSON assertions, catalog joins, id retention, optional evidence links, failure handling, and downstream-only governance responsibilities. |
+| `hocrgen` adapter handoff checklist | Shared checklist, implementation in `hocrgen` | `S6g` | Done in PR #54; documents installed CLI import, validation, public JSON assertions, catalog joins, id retention, optional evidence links, failure handling, and downstream-only governance responsibilities. |
 | Downstream acceptance, utility, diversity, and cap gates | `hocrgen`/HeOCR with `hocrsyngen` metadata support | `S6a`, `S6b`, `S6c`, `S6d` | `S6a` documents downstream realism acceptance categories, evidence expectations, rejection reasons, and the distinction between generator-quality review and release eligibility. `S6b` defines the utility measurement evidence contract and keeps CER/WER claims gated on real references downstream. `S6c` defines diversity and domain-shift evidence boundaries so repeated synthetic patterns and target-domain gaps are visible before dry-runs, utility evaluations, or release planning. `S6d` defines how those evidence packets feed cap decisions without overriding source-composition policy. |
 
 ## High-Lift Quality Work
@@ -86,7 +94,15 @@ produce large quality or operational gains.
 | Release cap handoff policy | `S6d` | Done in PR #51; defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence support downstream cap decisions while keeping cap ownership, balancing, source composition, release eligibility, export, publication, and governance enforcement in `hocrgen`/HeOCR. |
 | Review evidence sidecar contract | `S6e` | Done in PR #52; defines a portable optional downstream evidence packet for reviewed ids, decision categories, reason codes, visual references, limitations, and links to S6a/S6c/S6d evidence without creating review workflow state in this repo. |
 | Candidate batch profile and mix handoff | `S6f` | Done in PR #53; defines a portable optional downstream planning record for requested, generated/observed, reviewed, capped/admitted, and released candidate mixes without creating generator behavior, release profiles, or governance state in this repo. |
-| `hocrgen` adapter handoff checklist | `S6g` | Active; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
+| `hocrgen` adapter handoff checklist | `S6g` | Done in PR #54; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
+
+## Current Planning Track
+
+Phase S7 is active for planning, starting with `S7a` script abstraction design.
+This is not a production-readiness blocker or quality-lift claim for current
+Hebrew candidate generation. `S7a` should identify minimal future RTL-script
+abstraction boundaries while preserving Hebrew-first behavior, manifest v1
+compatibility, and existing Hebrew RTL/NFC validation semantics.
 
 ## External hocrgen Dependency Labels
 
@@ -156,7 +172,10 @@ Use a dry-run flow before any real dataset release decision:
    hashes, catalog joins, or required S6 evidence.
 12. Record which missing metadata, diversity evidence, utility evidence, review
    evidence, caps, or mix controls would have changed the decision. Feed those
-   gaps into `S2e`, `S3e`, `S6e`, `S6f`, and `S6g` before scaling batch size.
+   gaps into `S2e`, `S3e`, completed S6 handoff docs, or external `hocrgen`
+   dependencies before scaling batch size. Script-abstraction questions should
+   feed `S7a` only when they concern design boundaries rather than downstream
+   adapter implementation or governance.
 
 This rehearsal should prove integration behavior and expose review gaps. It
 should not publish or export release-ready dataset payloads.

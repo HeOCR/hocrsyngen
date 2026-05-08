@@ -4,58 +4,61 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 
 ## Current Critical Path
 
-1. Treat S6f as the latest merged roadmap state for downstream evaluation
-   planning, with S5e closing handwriting research by deferral and S3f/S4d
-   remaining the completed capability milestones for governed document families
-   and style/condition readiness. Together these leave deterministic document
-   families, style, condition, degradation, manifest, validation,
-   installed-package CLI contracts, S5 research gates, allograph plus word/line
-   assembly planning, optional learned-generation packaging boundaries, and the
-   S6a downstream realism acceptance rubric, S6b downstream utility measurement
-   contract, S6c diversity/domain-shift metrics, S6d release cap handoff
-   policy, S6e review evidence sidecar contract, and S6f candidate batch
-   profile/mix handoff documented.
-2. Keep generated batches classified as candidate synthetic inputs until
+1. Treat Phase S6 as complete through S6g, with S5e closing handwriting
+   research by deferral and S3f/S4d remaining the completed capability
+   milestones for governed document families and style/condition readiness.
+   Together these leave deterministic document families, style, condition,
+   degradation, manifest, validation, installed-package CLI contracts, S5
+   research gates, allograph plus word/line assembly planning, optional
+   learned-generation packaging boundaries, and the S6 downstream evaluation
+   and acceptance handoff stack documented.
+2. Activate Phase S7 with `S7a` script abstraction design as the current
+   planning item. `S7a` is design-only: it should identify minimal future RTL
+   script abstractions while preserving Hebrew-first behavior, Hebrew RTL/NFC
+   metadata guarantees, manifest v1 compatibility, and current validation
+   semantics.
+3. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
-3. Make production-readiness gaps explicit in this roadmap or in a named
+4. Make production-readiness gaps explicit in this roadmap or in a named
    external `hocrgen` dependency. Do not leave required release, review, or
    quality gates only in conversation notes.
-4. Keep S5 closed through the deferral path recorded by S5e: this repo has planning
+5. Keep S5 closed through the deferral path recorded by S5e: this repo has planning
    gates and boundaries, but no accepted prototype or downstream evaluation
    evidence. Remaining S5 prototype/evaluation work is deferred to a future S5
    follow-up or external `hocrgen`/HeOCR work.
-5. Keep S6 active with `S6g` `hocrgen` adapter handoff checklist as
-   the current planning PR. S6a is complete in PR #48 and defines downstream
-   realism acceptance; S6b is complete in PR #49 and defines what evidence is
-   required before any CER/WER or other OCR/HTR utility claim is made; S6c is
-   complete in PR #50 and defines how to detect repeated synthetic patterns,
+6. Keep S6 closed. S6a is complete in PR #48 and defines downstream realism
+   acceptance; S6b is complete in PR #49 and defines what evidence is required
+   before any CER/WER or other OCR/HTR utility claim is made; S6c is complete
+   in PR #50 and defines how to detect repeated synthetic patterns,
    over-representation, and synthetic-to-real comparison gaps before downstream
    dry-runs, utility evaluations, or release planning. S6d is complete in PR
-   #51 and defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence feed
-   downstream release cap decisions without moving cap ownership, source
+   #51 and defines how public `hocrsyngen` metadata and S6a/S6b/S6c evidence
+   feed downstream release cap decisions without moving cap ownership, source
    composition, release eligibility, export, publication, or governance
    enforcement into this repository. S6e is complete in PR #52 and defines an
-   optional downstream
-   review evidence sidecar for retaining reviewed sample/page ids, reviewer
-   notes, visual evidence references, S6a category references, S6c warning
-   references, and S6d cap decision references outside manifest v1. S6f is
-   complete in PR #53 and defines optional downstream profile/mix evidence for
-   requested, generated/observed, reviewed, capped/admitted, and released
-   candidate mixes outside manifest v1. S6g now documents the external
-   `hocrgen` adapter checklist for installed CLI import, validation, public
-   catalog joins, id retention, optional evidence links, dry-run failure modes,
-   and governance boundaries.
+   optional downstream review evidence sidecar for retaining reviewed
+   sample/page ids, reviewer notes, visual evidence references, S6a category
+   references, S6c warning references, and S6d cap decision references outside
+   manifest v1. S6f is complete in PR #53 and defines optional downstream
+   profile/mix evidence for requested, generated/observed, reviewed,
+   capped/admitted, and released candidate mixes outside manifest v1. S6g is
+   complete in PR #54 and documents the external `hocrgen` adapter checklist
+   for installed CLI import, validation, public catalog joins, id retention,
+   optional S6a-S6f evidence links, dry-run failure modes, and governance
+   boundaries. Remaining adapter implementation and governance work is an
+   external `hocrgen` dependency, not active `hocrsyngen` S6 work.
 
-## Current Baseline After S6f
+## Current Baseline After S6g
 
+`S6g` - `hocrgen` adapter handoff checklist - is merged in PR #54.
 `S6f` - candidate batch profile and mix handoff - is merged in PR #53.
-`S6e` - review evidence sidecar contract - is merged in PR #52. `S6d` - release
-cap handoff policy - is merged in PR #51. `S6c` - synthetic
-diversity and domain-shift metrics - is merged in PR #50.
-`S6b` - downstream utility measurement contract - is merged in PR #49. `S6a` -
-downstream realism acceptance rubric - is merged in PR #48. `S5e` - close S5
-planning and activate S6 evaluation gates - is merged in PR #47.
+`S6e` - review evidence sidecar contract - is merged in PR #52. `S6d` -
+release cap handoff policy - is merged in PR #51. `S6c` - synthetic diversity
+and domain-shift metrics - is merged in PR #50. `S6b` - downstream utility
+measurement contract - is merged in PR #49. `S6a` - downstream realism
+acceptance rubric - is merged in PR #48. `S5e` - close S5 planning and
+activate S6 evaluation gates - is merged in PR #47.
 The current baseline can generate and validate deterministic candidate batches
 through public CLI JSON surfaces, and S5 handwriting research now has
 explicit boundaries for reproducibility, provenance, licensing, forbidden
@@ -87,7 +90,13 @@ governance behavior to this repository. S6f adds an optional downstream
 candidate batch profile and mix handoff for requested, generated/observed,
 reviewed, capped/admitted, and released mix layers. It does not add generator
 behavior, release profiles, cap enforcement, orchestration, schemas, export,
-publication, or governance behavior to this repository.
+publication, or governance behavior to this repository. S6g adds an external
+`hocrgen` adapter handoff checklist for installed CLI import, validation,
+public JSON assertions, `template_catalog.v2` joins, id/path retention, optional
+S6a-S6f evidence links, failure handling, and downstream-only governance
+responsibilities. It does not add adapter code, schemas, release workflows,
+review workflows, caps, export, publication, or governance behavior to this
+repository.
 
 Phase S5 closes by deferral rather than evidence: the repository does not
 contain accepted S5 prototype/evaluation evidence, ablation results, or
@@ -372,7 +381,7 @@ Risks/dependencies:
 
 ## Phase S6 — Evaluation And Acceptance Gates
 
-Current status: `active`.
+Current status: `done`.
 
 Objective: define downstream acceptance, caps, inspection evidence, and utility
 measurement before any synthetic batch is considered for release.
@@ -427,8 +436,11 @@ Planned PR breakdown:
 - `S6g` — `hocrgen` adapter handoff checklist: document the concrete external
   `hocrgen` implementation dependency for installed CLI import, validation,
   governance, and dry-run rehearsal without adding adapter code to
-  `hocrsyngen`. Status: active; documented in
+  `hocrsyngen`. Status: done in PR #54; documented in
   [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
+- `S6h` — Close S6 and activate S7 script abstraction: align planning docs so
+  Phase S6 is closed after S6g and Phase S7 starts with design-only `S7a`.
+  Status: done in PR #55; documentation/planning only.
 
 Deliverables:
 
@@ -452,7 +464,7 @@ Risks/dependencies:
 
 ## Phase S7 — Script Abstraction / Arabic-Ready Future
 
-Current status: `future`.
+Current status: `active`.
 
 Objective: identify abstractions that could support Arabic or other RTL scripts without prematurely generalizing the Hebrew-first implementation.
 
@@ -465,7 +477,11 @@ Scope:
 
 Planned PR breakdown:
 
-- `S7a` — Script abstraction design: identify minimal abstractions needed for future RTL scripts while preserving Hebrew-specific validation.
+- `S7a` — Script abstraction design: identify minimal abstractions needed for
+  future RTL scripts while preserving Hebrew-specific validation, logical-order
+  UTF-8 Hebrew, NFC normalization, RTL metadata, manifest v1 compatibility, and
+  current validation semantics. Status: active current planning item;
+  design-only and must not implement Arabic support.
 - `S7b` — Hebrew regression guard: add tests that prevent future script abstraction work from weakening Hebrew RTL/NFC/manifest guarantees.
 - `S7c` — Arabic-ready feasibility note: document Arabic-specific shaping, metadata, font, and validation differences without implementing Arabic support.
 

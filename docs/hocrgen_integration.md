@@ -330,4 +330,7 @@ release behavior must be implemented in `hocrgen`, not in this repository.
   before downstream tools rely on them; S6e documents review evidence sidecar
   boundaries, S6f documents candidate batch profile/mix handoff, and S6g
   documents the external adapter checklist without adding adapter code here.
-  boundaries without implementing downstream workflow or orchestration.
+- Phase S6 is complete through S6g. Remaining adapter, governance, caps, review,
+  export, publication, and release behavior belongs in `hocrgen`; S7 script
+  abstraction work should only change this integration contract through an
+  explicit future contract/versioning plan.

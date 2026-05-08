@@ -113,6 +113,12 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md).
   S6g external adapter handoff boundaries are documented in
   [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md).
+  Phase S6 is complete through S6g; downstream adapter implementation and
+  governance remain external `hocrgen` work.
+- S7 script abstraction design should remain design-only until a specific
+  implementation PR is planned. It must preserve Hebrew-first behavior,
+  logical-order UTF-8 Hebrew, NFC normalization, RTL metadata, manifest v1
+  compatibility, and current validation semantics.
 - OCR/HTR utility only once downstream benchmark references, governed ground
   truth, split/leakage controls, metric definitions, and synthetic-to-real
   comparison evidence exist.
@@ -164,3 +170,6 @@ catalog, manifest, or sidecar contracts without a documented compatibility path.
   S6g checklist for installed CLI import, manifest validation,
   `template_catalog.v2` joins, source batch boundaries, and S6a-S6f evidence
   retention?
+- Which minimal script abstraction boundaries should S7a document before any
+  implementation work, and which Hebrew-specific guarantees should become
+  non-negotiable regression gates before future RTL-script expansion?
