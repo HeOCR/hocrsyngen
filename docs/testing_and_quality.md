@@ -10,6 +10,7 @@ PYTHONPATH=src python -m hocrsyngen.cli contracts --format json
 PYTHONPATH=src python -m hocrsyngen.cli generate --count 2 --seed 17 --output out/fixture-batch
 PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
 PYTHONPATH=src python -m hocrsyngen.cli wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
+PYTHONPATH=src python -m hocrsyngen.cli wet-gallery out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/gallery --format json
 ```
 
 There is no configured lint command unless one is added explicitly.
@@ -92,6 +93,10 @@ it.
   `wet_test_run.json` paths, retained artifact checksums, supplemental
   non-default style/condition batch coverage, optional rendering coverage
   retention, structured failure reports, and preservation of manifest v1.
+- S8d static gallery coverage for existing wet-test run artifacts, including
+  relative image links, escaped logical Hebrew text and metadata, public
+  sample/page/template/style/condition/degradation/font fields, installed-package
+  CLI behavior, and preservation of manifest v1.
 - S3f governed document-family coverage for the `ledger` template, including
   deterministic generation, manifest v1 provenance, validation acceptance, v1
   and v2 catalog exposure, downstream catalog joins, and visual smoke checks
@@ -106,7 +111,7 @@ it.
 - Installed package and wheel public CLI smoke matrix for console-script and
   `python -m hocrsyngen.cli` entry points across `templates`, `contracts`,
   `contracts export`, `generate`, `validate`, and the operator-only
-  `evidence-run` wrapper.
+  `wet-run`, `wet-gallery`, and `evidence-run` wrappers.
 - Baseline dependency audit coverage for declared runtime/test dependencies,
   accidental `hocrgen` imports, network/REST imports, GPU/LLM/diffusion/Torch/
   TensorFlow/deep-learning imports, and docs-to-`pyproject.toml` policy

@@ -17,12 +17,14 @@ outputs.
 - Current scope: Phase S8 implementation guidance. `S8b` adds the first
   deterministic smoke run artifact generator; `S8c` adds the operator
   evidence-run wrapper needed for downstream `hocrgen` preflight evidence;
-  later gallery, metrics, human review, LLM triage, reporting, schema, and CI
-  work remains deferred.
+  `S8d` adds the human-first static gallery over existing wet-test runs; later
+  metrics, human review, LLM triage, reporting, schema, and CI work remains
+  deferred.
 - Roadmap placement: Phase S8 - Wet Testing And Generator-Quality Evidence.
   `S8a` defines this program plan; `S8b` is the first actual implementation
   slice and adds the wet-test smoke run artifact generator; `S8c` adds the
-  candidate evidence-run handoff wrapper.
+  candidate evidence-run handoff wrapper; `S8d` adds the human-first static
+  gallery.
 
 ## Core Principle
 
@@ -829,7 +831,7 @@ Tests:
 
 Purpose:
 
-Make generated output easy to inspect.
+Make generated wet-test output easy to inspect without reading raw JSON.
 
 Potential command:
 
@@ -839,13 +841,16 @@ PYTHONPATH=src python -m hocrsyngen.cli wet-gallery out/wet-tests/smoke-17 --out
 
 Implementation outline:
 
-- Render static HTML or Markdown.
-- Show thumbnails and links to full images.
+- Render dependency-light static HTML.
+- Show page images and links to full images with relative, portable paths.
 - Show sample id, page id, template id, recipe id, style, condition,
   degradation, font id, and manifest text.
-- Group or filter by template/style/condition/degradation.
-- Display code warnings when metrics exist.
-- Include reviewer checklist guidance.
+- Escape HTML text and metadata safely, including logical-order Hebrew manifest
+  text.
+- Include warning sections only after source-backed warning metrics exist in a
+  later S8 slice.
+- Do not create human review sidecars, LLM triage packets, warning metrics,
+  wet-test reports, schemas, hocrgen behavior, or manifest v1 changes.
 
 Tests:
 
