@@ -26,6 +26,7 @@ from hocrsyngen.generator import (
 from hocrsyngen.io import sha256_file
 from hocrsyngen.rendering_coverage import write_rendering_coverage_report
 from hocrsyngen.validation import BatchValidationError, validate_batch
+from hocrsyngen.wet_analysis import analyze_wet_test_run
 from hocrsyngen.wet_gallery import create_wet_gallery
 from hocrsyngen.wet_run import create_wet_test_smoke_run
 
@@ -816,6 +817,21 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format for the gallery summary.",
     )
+    wet_analyze = subparsers.add_parser(
+        "wet-analyze",
+        help="Analyze deterministic warning metrics for a wet-test run.",
+    )
+    wet_analyze.add_argument(
+        "run_root",
+        type=Path,
+        help="Existing wet-test run directory created by hocrsyngen wet-run.",
+    )
+    wet_analyze.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the analysis summary.",
+    )
     evidence_run = subparsers.add_parser(
         "evidence-run",
         help="Generate a candidate batch with operator evidence and progress logs.",
@@ -1035,6 +1051,22 @@ def main(argv: list[str] | None = None) -> int:
             f"{result.payload['page_count']} pages to {result.index_path}"
         )
         return 0
+    if args.command == "wet-analyze":
+        try:
+            result = analyze_wet_test_run(run_root=args.run_root)
+        except (OSError, RuntimeError, ValueError) as exc:
+            parser.error(f"wet-analyze: {exc}")
+        if args.format == "json":
+            print(json.dumps(result.payload, ensure_ascii=False, indent=2))
+        else:
+            print(
+                "Wet-test analysis inspected "
+                f"{result.payload['summary']['sample_count']} samples and "
+                f"{result.payload['summary']['page_count']} pages; "
+                f"warnings={result.payload['summary']['warning_count']} "
+                f"hard_blockers={result.payload['summary']['hard_blocker_count']}"
+            )
+        return 1 if result.payload["hard_blockers"] else 0
     if args.command == "evidence-run":
         try:
             report = _run_evidence_capture(

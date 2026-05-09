@@ -57,6 +57,7 @@ hocrsyngen validate out/fixture-batch
 hocrsyngen validate out/fixture-batch --format json
 hocrsyngen wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
 hocrsyngen wet-gallery out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/gallery
+hocrsyngen wet-analyze out/wet-tests/smoke-17 --format json
 hocrsyngen evidence-run --count 20 --seed 101
 ```
 
@@ -141,10 +142,11 @@ support or change generator, CLI, schema, fixture, validation, or integration
 behavior.
 S8a defines the developer-owned wet-testing program for generator-quality
 evidence. S8b adds a deterministic wet-test smoke run artifact generator, S8c
-adds the candidate evidence-run wrapper for downstream preflight evidence, and
-S8d adds the human-first static gallery over existing wet-test runs without
-adding release governance, baseline LLM/network dependencies, schemas, warning
-metrics, review sidecars, or manifest v1 changes.
+adds the candidate evidence-run wrapper for downstream preflight evidence, S8d
+adds the human-first static gallery over existing wet-test runs, and S8e adds
+deterministic warning metrics over wet-test runs without adding release
+governance, baseline LLM/network dependencies, schemas, review sidecars, or
+manifest v1 changes.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
 policy.
@@ -185,9 +187,20 @@ referenced batch, writes `gallery/index.html`, links to generated page images
 with relative paths, and shows public metadata for sample id, page id, template
 id, recipe id, style/persona, condition, degradation, font id, asset path, and
 logical-order Hebrew manifest text. The gallery is an offline human-inspection
-aid only; it does not add warning metrics, review sidecars, LLM triage packets,
-wet-test reports, schemas, release eligibility, export, publication, or
-downstream governance behavior.
+aid only; it does not add review sidecars, LLM triage packets, wet-test
+reports, schemas, release eligibility, export, publication, or downstream
+governance behavior.
+
+`hocrsyngen wet-analyze RUN_ROOT --format json` emits deterministic
+`wet_analysis_report.v1` generator-quality metrics for an existing passed
+`wet-run` directory. It validates referenced batches, computes coverage,
+duplicate text and repeated id/hash warnings, asset dimensions, blank/near-blank
+image smoke, ink-density ranges, `template_catalog.v2` join completeness, and
+path/hash safety summaries. Hard blockers such as invalid batches, hash
+mismatches, unreadable images, or unsafe paths stay separate from warnings. The
+report is source-backed local analysis only; it does not claim realism
+acceptance, OCR/HTR utility, domain match, release readiness, export,
+publication, or downstream governance behavior.
 
 `hocrsyngen generate --rendering-coverage-report` writes an opt-in
 `rendering_coverage_report.json` sidecar beside the manifest. The sidecar uses

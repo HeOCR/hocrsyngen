@@ -17,14 +17,14 @@ outputs.
 - Current scope: Phase S8 implementation guidance. `S8b` adds the first
   deterministic smoke run artifact generator; `S8c` adds the operator
   evidence-run wrapper needed for downstream `hocrgen` preflight evidence;
-  `S8d` adds the human-first static gallery over existing wet-test runs; later
-  metrics, human review, LLM triage, reporting, schema, and CI work remains
-  deferred.
+  `S8d` adds the human-first static gallery over existing wet-test runs; `S8e`
+  adds deterministic warning metrics over an existing wet-test run; later human
+  review, LLM triage, reporting, schema, and CI work remains deferred.
 - Roadmap placement: Phase S8 - Wet Testing And Generator-Quality Evidence.
   `S8a` defines this program plan; `S8b` is the first actual implementation
   slice and adds the wet-test smoke run artifact generator; `S8c` adds the
   candidate evidence-run handoff wrapper; `S8d` adds the human-first static
-  gallery.
+  gallery; `S8e` adds deterministic warning metrics.
 
 ## Core Principle
 
@@ -881,6 +881,17 @@ Initial metrics:
 - Ink-density range.
 - Catalog join completeness.
 - Path/hash safety summary.
+
+Implementation notes:
+
+- Read an existing `wet_test_run.json`.
+- Validate referenced batches and treat validation, hash, image-readability, and
+  unsafe-path failures as hard blockers, not warning findings.
+- Join manifests to `template_catalog.v2` by `template_id` and `recipe_id`.
+- Emit a `wet_analysis_report.v1` JSON report on stdout; do not add a schema
+  until real review cycles prove the shape is stable.
+- Keep all metrics source-backed and explicitly scoped as generator-quality
+  evidence only.
 
 Do not claim:
 
