@@ -1659,6 +1659,7 @@ def test_wet_analyze_cli_reports_deterministic_warning_metrics(
     assert {warning["code"] for warning in first["warnings"]} == {
         "duplicate_text",
         "low_ink_density",
+        "repeated_page_id",
         "repeated_sample_id",
     }
     assert first["catalog_join"]["complete"] is True
@@ -1748,6 +1749,102 @@ def test_wet_analyze_distinguishes_hash_mismatch_hard_blockers(
     assert "manifest_hash_mismatch" in blocker_codes
     assert "near_blank_image" in warning_codes
     assert report["status"] == "blocked"
+
+
+def test_wet_analyze_reports_invalid_manifest_fields_as_json_blockers(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-invalid-dimensions"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    manifest_path = output_dir / "batch" / "generation_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["samples"][0]["pages"][0]["width"] = "not-an-int"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 1
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    report = json.loads(captured.out)
+    blocker_codes = {blocker["code"] for blocker in report["hard_blockers"]}
+    assert "batch_validation_failed" in blocker_codes
+    assert "page_dimension_metadata_invalid" in blocker_codes
+    assert report["status"] == "blocked"
+
+
+def test_wet_analyze_reports_stale_run_manifest_path_as_json_blocker(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-stale-manifest-path"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    run_report_path = output_dir / "reports" / "wet_test_run.json"
+    run_report = json.loads(run_report_path.read_text(encoding="utf-8"))
+    run_report["generated_batch"]["manifest_path"] = "reports/template_catalog_v2.json"
+    run_report_path.write_text(
+        json.dumps(run_report, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 1
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    report = json.loads(captured.out)
+    assert {blocker["code"] for blocker in report["hard_blockers"]} == {
+        "wet_run_path_invalid"
+    }
+    assert report["summary"]["page_count"] == 1
+    assert report["status"] == "blocked"
+
+
+def test_wet_analyze_reports_checksum_inventory_integrity_blockers(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-bad-checksums"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    checksum_path = output_dir / "reports" / "wet_test_checksums.txt"
+    lines = checksum_path.read_text(encoding="utf-8").splitlines()
+    removed_asset_line = next(line for line in lines if "batch/assets/" in line)
+    retained_lines = [
+        line
+        for line in lines
+        if line != removed_asset_line
+        and not line.endswith("  reports/template_catalog_v2.json")
+    ]
+    checksum_path.write_text(
+        "\n".join(
+            [
+                *retained_lines,
+                "malformed checksum line",
+                "0" * 64 + "  ../escape.txt",
+                retained_lines[0],
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 1
+
+    report = json.loads(capsys.readouterr().out)
+    blocker_codes = {blocker["code"] for blocker in report["hard_blockers"]}
+    assert "checksum_inventory_malformed" in blocker_codes
+    assert "checksum_inventory_unsafe_path" in blocker_codes
+    assert "checksum_inventory_duplicate_path" in blocker_codes
+    assert "checksum_inventory_missing_asset" in blocker_codes
+    assert "checksum_inventory_missing_expected_artifact" in blocker_codes
+    assert report["path_hash_safety"]["checksum_inventory_malformed_line_count"] == 1
+    assert report["path_hash_safety"]["checksum_inventory_unsafe_path_count"] == 1
+    assert report["path_hash_safety"]["checksum_inventory_duplicate_path_count"] == 1
 
 
 def test_wet_run_smoke_rejects_reusing_existing_run_directory(

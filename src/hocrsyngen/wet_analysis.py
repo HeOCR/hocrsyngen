@@ -41,12 +41,21 @@ class PageMetric:
     sample_id: str
     page_id: str
     asset_path: str
-    manifest_width: int
-    manifest_height: int
+    manifest_width: int | None
+    manifest_height: int | None
     actual_width: int | None
     actual_height: int | None
     ink_density: float | None
     sha256_matches_manifest: bool
+
+
+@dataclass(frozen=True)
+class ChecksumInventory:
+    entries: dict[str, str]
+    path_exists: bool
+    malformed_line_count: int
+    unsafe_path_count: int
+    duplicate_path_count: int
 
 
 def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
@@ -67,9 +76,10 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
             )
         )
 
-    batches = _analysis_batches(run_payload)
+    batches = _analysis_batches(run_payload, hard_blockers)
     catalog = _catalog_by_join_key()
     checksum_inventory = _load_checksum_inventory(run_root)
+    hard_blockers.extend(_checksum_inventory_blockers(checksum_inventory))
     sample_ids: Counter[str] = Counter()
     page_ids: Counter[str] = Counter()
     page_hashes: Counter[str] = Counter()
@@ -92,9 +102,21 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
     checksum_inventory_missing_count = 0
 
     for batch in batches:
-        batch_dir = _resolve_run_path(run_root, batch.batch_path)
-        manifest_path_text = _validated_manifest_path(batch)
-        manifest_path = _resolve_run_path(run_root, manifest_path_text)
+        try:
+            batch_dir = _resolve_run_path(run_root, batch.batch_path)
+            manifest_path_text = _validated_manifest_path(batch)
+            manifest_path = _resolve_run_path(run_root, manifest_path_text)
+        except ValueError as exc:
+            hard_blockers.append(
+                _finding(
+                    code="wet_run_path_invalid",
+                    severity="P0",
+                    message=str(exc),
+                    batch_id=batch.batch_id,
+                    source_path=batch.batch_path,
+                )
+            )
+            continue
         try:
             validate_batch(batch_dir)
         except BatchValidationError as exc:
@@ -125,7 +147,10 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                 _finding(
                     code="manifest_json_invalid",
                     severity="P0",
-                    message=f"Malformed manifest JSON at line {exc.lineno}, column {exc.colno}: {exc.msg}",
+                    message=(
+                        f"Malformed manifest JSON at line {exc.lineno}, "
+                        f"column {exc.colno}: {exc.msg}"
+                    ),
                     batch_id=batch.batch_id,
                     source_path=manifest_path_text,
                 )
@@ -216,7 +241,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                     )
                     continue
                 page_id = str(page.get("page_id", ""))
-                page_ids[f"{batch.batch_id}:{page_id}"] += 1
+                page_ids[page_id] += 1
                 asset_path = str(page.get("asset_path", ""))
                 portable_asset = _portable_path(asset_path)
                 if portable_asset is None:
@@ -225,7 +250,10 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                         _finding(
                             code="unsafe_asset_path",
                             severity="P0",
-                            message="Manifest asset path must be relative, portable, and stay below the batch root.",
+                            message=(
+                                "Manifest asset path must be relative, portable, "
+                                "and stay below the batch root."
+                            ),
                             batch_id=batch.batch_id,
                             sample_id=sample_id,
                             page_id=page_id,
@@ -242,12 +270,14 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                 sha_matches = actual_sha == expected_sha
                 if not sha_matches:
                     hash_mismatch_count += 1
-                inventory_sha = checksum_inventory.get(run_asset_path.as_posix())
+                inventory_sha = checksum_inventory.entries.get(
+                    run_asset_path.as_posix()
+                )
                 if inventory_sha is None:
                     checksum_inventory_missing_count += 1
                 elif inventory_sha != actual_sha:
                     checksum_inventory_mismatch_count += 1
-                page_metric, image_blocker = _page_metric(
+                page_metric, image_blocker, metric_blocker = _page_metric(
                     batch_id=batch.batch_id,
                     sample_id=sample_id,
                     page_id=page_id,
@@ -258,6 +288,8 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                 )
                 if image_blocker is not None:
                     hard_blockers.append(image_blocker)
+                if metric_blocker is not None:
+                    hard_blockers.append(metric_blocker)
                 if page_metric is not None:
                     page_metrics.append(page_metric)
 
@@ -270,7 +302,10 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
             _finding(
                 code="catalog_join_missing",
                 severity="P1",
-                message="Some manifest template/recipe pairs did not join to template_catalog.v2.",
+                message=(
+                    "Some manifest template/recipe pairs did not join to "
+                    "template_catalog.v2."
+                ),
                 count=len(catalog_missing),
             )
         )
@@ -279,7 +314,10 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
             _finding(
                 code="manifest_hash_mismatch",
                 severity="P0",
-                message="One or more page asset hashes do not match manifest sha256 values.",
+                message=(
+                    "One or more page asset hashes do not match manifest "
+                    "sha256 values."
+                ),
                 count=hash_mismatch_count,
             )
         )
@@ -288,25 +326,68 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
             _finding(
                 code="checksum_inventory_mismatch",
                 severity="P0",
-                message="One or more checksum inventory entries do not match current artifacts.",
+                message=(
+                    "One or more checksum inventory entries do not match "
+                    "current artifacts."
+                ),
                 count=checksum_inventory_mismatch_count,
                 source_path="reports/wet_test_checksums.txt",
             )
         )
     if checksum_inventory_missing_count:
-        warnings.append(
+        hard_blockers.append(
             _finding(
                 code="checksum_inventory_missing_asset",
-                severity="P2",
-                message="One or more analyzed assets are absent from the wet-run checksum inventory.",
+                severity="P0",
+                message=(
+                    "One or more analyzed assets are absent from the wet-run "
+                    "checksum inventory."
+                ),
                 count=checksum_inventory_missing_count,
                 source_path="reports/wet_test_checksums.txt",
+            )
+        )
+    expected_checksum_paths = _expected_checksum_paths(run_payload)
+    missing_expected_checksum_paths = sorted(
+        expected_checksum_paths - set(checksum_inventory.entries)
+    )
+    extra_checksum_paths = sorted(
+        set(checksum_inventory.entries) - expected_checksum_paths
+    )
+    if missing_expected_checksum_paths:
+        hard_blockers.append(
+            _finding(
+                code="checksum_inventory_missing_expected_artifact",
+                severity="P0",
+                message=(
+                    "The checksum inventory is missing expected retained "
+                    "wet-run artifacts."
+                ),
+                count=len(missing_expected_checksum_paths),
+                source_path="reports/wet_test_checksums.txt",
+                details=[{"path": path} for path in missing_expected_checksum_paths],
+            )
+        )
+    if extra_checksum_paths:
+        warnings.append(
+            _finding(
+                code="checksum_inventory_extra_artifact",
+                severity="P2",
+                message=(
+                    "The checksum inventory contains paths that are not listed "
+                    "in the wet-run artifact contract."
+                ),
+                count=len(extra_checksum_paths),
+                source_path="reports/wet_test_checksums.txt",
+                details=[{"path": path} for path in extra_checksum_paths],
             )
         )
 
     sample_count = sum(sample_ids.values())
     page_count = len(page_metrics)
-    duplicate_text_sample_count = sum(count - 1 for count in texts.values() if count > 1)
+    duplicate_text_sample_count = sum(
+        count - 1 for count in texts.values() if count > 1
+    )
     status = (
         "blocked"
         if hard_blockers
@@ -359,7 +440,21 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
             "unsafe_asset_path_count": unsafe_path_count,
             "manifest_hash_mismatch_count": hash_mismatch_count,
             "checksum_inventory_path": "reports/wet_test_checksums.txt",
+            "checksum_inventory_exists": checksum_inventory.path_exists,
+            "checksum_inventory_malformed_line_count": (
+                checksum_inventory.malformed_line_count
+            ),
+            "checksum_inventory_unsafe_path_count": (
+                checksum_inventory.unsafe_path_count
+            ),
+            "checksum_inventory_duplicate_path_count": (
+                checksum_inventory.duplicate_path_count
+            ),
             "checksum_inventory_asset_missing_count": checksum_inventory_missing_count,
+            "checksum_inventory_expected_artifact_missing_count": len(
+                missing_expected_checksum_paths
+            ),
+            "checksum_inventory_extra_artifact_count": len(extra_checksum_paths),
             "checksum_inventory_mismatch_count": checksum_inventory_mismatch_count,
         },
         "warnings": sorted(warnings, key=_finding_sort_key),
@@ -390,33 +485,91 @@ def _load_wet_test_run(run_root: Path) -> dict[str, Any]:
     return payload
 
 
-def _analysis_batches(run_payload: dict[str, Any]) -> list[AnalysisBatch]:
+def _analysis_batches(
+    run_payload: dict[str, Any],
+    hard_blockers: list[dict[str, object]],
+) -> list[AnalysisBatch]:
     generated_batch = run_payload.get("generated_batch")
     if not isinstance(generated_batch, dict):
-        raise ValueError("wet-test run report is missing generated_batch")
-    batches = [
-        AnalysisBatch(
-            batch_id=str(generated_batch.get("batch_id", "generated_batch")),
-            role=str(generated_batch.get("role", "generated_batch")),
-            batch_path=_portable_relative_str(generated_batch.get("batch_path")),
-            manifest_path=_portable_relative_str(generated_batch.get("manifest_path")),
-        )
-    ]
-    supplemental_batches = run_payload.get("supplemental_batches", [])
-    if not isinstance(supplemental_batches, list):
-        raise ValueError("wet-test run report supplemental_batches must be a list")
-    for index, raw_batch in enumerate(supplemental_batches):
-        if not isinstance(raw_batch, dict):
-            raise ValueError("wet-test run report supplemental batch must be an object")
-        batches.append(
-            AnalysisBatch(
-                batch_id=str(raw_batch.get("batch_id", f"supplemental_{index}")),
-                role=str(raw_batch.get("role", "supplemental")),
-                batch_path=_portable_relative_str(raw_batch.get("batch_path")),
-                manifest_path=_portable_relative_str(raw_batch.get("manifest_path")),
+        hard_blockers.append(
+            _finding(
+                code="wet_run_report_invalid",
+                severity="P0",
+                message="wet-test run report is missing generated_batch",
+                source_path="reports/wet_test_run.json",
             )
         )
+        return []
+    batches: list[AnalysisBatch] = []
+    generated = _analysis_batch_from_payload(
+        generated_batch,
+        fallback_batch_id="generated_batch",
+        fallback_role="generated_batch",
+        hard_blockers=hard_blockers,
+    )
+    if generated is not None:
+        batches.append(generated)
+    supplemental_batches = run_payload.get("supplemental_batches", [])
+    if not isinstance(supplemental_batches, list):
+        hard_blockers.append(
+            _finding(
+                code="wet_run_report_invalid",
+                severity="P0",
+                message="wet-test run report supplemental_batches must be a list",
+                source_path="reports/wet_test_run.json",
+            )
+        )
+        return batches
+    for index, raw_batch in enumerate(supplemental_batches):
+        if not isinstance(raw_batch, dict):
+            hard_blockers.append(
+                _finding(
+                    code="wet_run_report_invalid",
+                    severity="P0",
+                    message="wet-test run report supplemental batch must be an object",
+                    source_path="reports/wet_test_run.json",
+                )
+            )
+            continue
+        batch = _analysis_batch_from_payload(
+            raw_batch,
+            fallback_batch_id=f"supplemental_{index}",
+            fallback_role="supplemental",
+            hard_blockers=hard_blockers,
+        )
+        if batch is not None:
+            batches.append(batch)
     return batches
+
+
+def _analysis_batch_from_payload(
+    raw_batch: dict[str, Any],
+    *,
+    fallback_batch_id: str,
+    fallback_role: str,
+    hard_blockers: list[dict[str, object]],
+) -> AnalysisBatch | None:
+    batch_id = str(raw_batch.get("batch_id", fallback_batch_id))
+    try:
+        batch_path = _portable_relative_str(raw_batch.get("batch_path"))
+        manifest_path = _portable_relative_str(raw_batch.get("manifest_path"))
+    except ValueError as exc:
+        hard_blockers.append(
+            _finding(
+                code="wet_run_batch_path_invalid",
+                severity="P0",
+                message=str(exc),
+                batch_id=batch_id,
+                source_path="reports/wet_test_run.json",
+            )
+        )
+        return None
+    return AnalysisBatch(
+        batch_id=batch_id,
+        role=str(raw_batch.get("role", fallback_role)),
+        batch_path=batch_path,
+        manifest_path=manifest_path,
+    )
 
 
 def _catalog_by_join_key() -> dict[tuple[str, str], dict[str, object]]:
@@ -429,22 +582,119 @@ def _catalog_by_join_key() -> dict[tuple[str, str], dict[str, object]]:
     return entries
 
 
-def _load_checksum_inventory(run_root: Path) -> dict[str, str]:
+def _load_checksum_inventory(run_root: Path) -> ChecksumInventory:
     path = run_root / "reports" / "wet_test_checksums.txt"
     if not path.is_file():
-        return {}
+        return ChecksumInventory(
+            entries={},
+            path_exists=False,
+            malformed_line_count=0,
+            unsafe_path_count=0,
+            duplicate_path_count=0,
+        )
     entries: dict[str, str] = {}
+    malformed_line_count = 0
+    unsafe_path_count = 0
+    duplicate_path_count = 0
     for line in path.read_text(encoding="utf-8").splitlines():
+        if not line:
+            continue
         if "  " not in line:
+            malformed_line_count += 1
             continue
         digest, relative_path = line.split("  ", 1)
+        if len(digest) != 64 or any(
+            character not in "0123456789abcdef" for character in digest
+        ):
+            malformed_line_count += 1
+            continue
+        if _portable_path(relative_path) is None:
+            unsafe_path_count += 1
+            continue
+        if relative_path in entries:
+            duplicate_path_count += 1
         entries[relative_path] = digest
-    return entries
+    return ChecksumInventory(
+        entries=entries,
+        path_exists=True,
+        malformed_line_count=malformed_line_count,
+        unsafe_path_count=unsafe_path_count,
+        duplicate_path_count=duplicate_path_count,
+    )
+
+
+def _checksum_inventory_blockers(
+    checksum_inventory: ChecksumInventory,
+) -> list[dict[str, object]]:
+    blockers: list[dict[str, object]] = []
+    if not checksum_inventory.path_exists:
+        blockers.append(
+            _finding(
+                code="checksum_inventory_missing",
+                severity="P0",
+                message="Wet-test checksum inventory is missing.",
+                source_path="reports/wet_test_checksums.txt",
+            )
+        )
+    if checksum_inventory.malformed_line_count:
+        blockers.append(
+            _finding(
+                code="checksum_inventory_malformed",
+                severity="P0",
+                message="Wet-test checksum inventory contains malformed lines.",
+                count=checksum_inventory.malformed_line_count,
+                source_path="reports/wet_test_checksums.txt",
+            )
+        )
+    if checksum_inventory.unsafe_path_count:
+        blockers.append(
+            _finding(
+                code="checksum_inventory_unsafe_path",
+                severity="P0",
+                message="Wet-test checksum inventory contains unsafe paths.",
+                count=checksum_inventory.unsafe_path_count,
+                source_path="reports/wet_test_checksums.txt",
+            )
+        )
+    if checksum_inventory.duplicate_path_count:
+        blockers.append(
+            _finding(
+                code="checksum_inventory_duplicate_path",
+                severity="P0",
+                message="Wet-test checksum inventory contains duplicate paths.",
+                count=checksum_inventory.duplicate_path_count,
+                source_path="reports/wet_test_checksums.txt",
+            )
+        )
+    return blockers
+
+
+def _expected_checksum_paths(run_payload: dict[str, Any]) -> set[str]:
+    paths: set[str] = set()
+    artifact_checksums = run_payload.get("artifact_checksums", {})
+    if isinstance(artifact_checksums, dict):
+        paths.update(
+            path
+            for path in artifact_checksums
+            if isinstance(path, str) and _portable_path(path) is not None
+        )
+    checksum_contract = run_payload.get("checksum_contract", {})
+    if isinstance(checksum_contract, dict):
+        included = checksum_contract.get("checksum_file_includes", [])
+        if isinstance(included, list):
+            paths.update(
+                path
+                for path in included
+                if isinstance(path, str) and _portable_path(path) is not None
+            )
+    return paths
 
 
 def _validated_manifest_path(batch: AnalysisBatch) -> str:
     manifest_path = PurePosixPath(batch.manifest_path)
-    expected_manifest_path = PurePosixPath(batch.batch_path) / "generation_manifest.json"
+    expected_manifest_path = (
+        PurePosixPath(batch.batch_path) / "generation_manifest.json"
+    )
     if manifest_path != expected_manifest_path:
         raise ValueError(
             "wet-test run manifest_path must match the validated batch manifest: "
@@ -462,17 +712,37 @@ def _page_metric(
     asset_abs: Path,
     page: dict[str, Any],
     sha256_matches_manifest: bool,
-) -> tuple[PageMetric | None, dict[str, object] | None]:
+) -> tuple[PageMetric | None, dict[str, object] | None, dict[str, object] | None]:
     try:
         with Image.open(asset_abs) as image:
             image.load()
             width, height = image.size
             ink_density = _ink_density(image)
     except (FileNotFoundError, UnidentifiedImageError, OSError) as exc:
-        return None, _finding(
-            code="asset_unreadable",
+        return (
+            None,
+            _finding(
+                code="asset_unreadable",
+                severity="P0",
+                message=f"Could not read page asset: {exc}",
+                batch_id=batch_id,
+                sample_id=sample_id,
+                page_id=page_id,
+                source_path=asset_path,
+            ),
+            None,
+        )
+    manifest_width = _optional_int(page.get("width"))
+    manifest_height = _optional_int(page.get("height"))
+    metric_blocker = None
+    if manifest_width is None or manifest_height is None:
+        metric_blocker = _finding(
+            code="page_dimension_metadata_invalid",
             severity="P0",
-            message=f"Could not read page asset: {exc}",
+            message=(
+                "Manifest page width and height must be integers for "
+                "wet-test analysis."
+            ),
             batch_id=batch_id,
             sample_id=sample_id,
             page_id=page_id,
@@ -484,14 +754,15 @@ def _page_metric(
             sample_id=sample_id,
             page_id=page_id,
             asset_path=asset_path,
-            manifest_width=int(page.get("width", 0)),
-            manifest_height=int(page.get("height", 0)),
+            manifest_width=manifest_width,
+            manifest_height=manifest_height,
             actual_width=width,
             actual_height=height,
             ink_density=round(ink_density, 6),
             sha256_matches_manifest=sha256_matches_manifest,
         ),
         None,
+        metric_blocker,
     )
 
 
@@ -605,7 +876,7 @@ def _duplicate_warnings(
         if count > 1
     ]
     duplicate_page_ids = [
-        {"page_id_key": page_id, "count": count}
+        {"page_id": page_id, "count": count}
         for page_id, count in sorted(page_ids.items())
         if count > 1
     ]
@@ -634,7 +905,7 @@ def _duplicate_warnings(
             _finding(
                 code="repeated_page_id",
                 severity="P1",
-                message="Repeated page ids were found within a batch.",
+                message="Repeated page ids were found in the wet-test run.",
                 count=len(duplicate_page_ids),
                 details=duplicate_page_ids,
             )
@@ -687,7 +958,10 @@ def _image_warnings(page_metrics: list[PageMetric]) -> list[dict[str, object]]:
             _finding(
                 code="near_blank_image",
                 severity="P1",
-                message="One or more page assets are blank or near-blank by deterministic ink-density smoke.",
+                message=(
+                    "One or more page assets are blank or near-blank by "
+                    "deterministic ink-density smoke."
+                ),
                 count=len(near_blank_pages),
                 threshold=NEAR_BLANK_INK_DENSITY_MAX,
                 details=near_blank_pages,
@@ -749,6 +1023,10 @@ def _ratio(numerator: int, denominator: int) -> float:
     if denominator == 0:
         return 0.0
     return round(numerator / denominator, 6)
+
+
+def _optional_int(value: object) -> int | None:
+    return value if isinstance(value, int) and not isinstance(value, bool) else None
 
 
 def _portable_path(value: object) -> PurePosixPath | None:
