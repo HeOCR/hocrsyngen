@@ -11,6 +11,7 @@ PYTHONPATH=src python -m hocrsyngen.cli generate --count 2 --seed 17 --output ou
 PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
 PYTHONPATH=src python -m hocrsyngen.cli wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
 PYTHONPATH=src python -m hocrsyngen.cli wet-gallery out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/gallery --format json
+PYTHONPATH=src python -m hocrsyngen.cli wet-analyze out/wet-tests/smoke-17 --format json
 ```
 
 There is no configured lint command unless one is added explicitly.
@@ -97,6 +98,12 @@ it.
   relative image links, escaped logical Hebrew text and metadata, public
   sample/page/template/style/condition/degradation/font fields, installed-package
   CLI behavior, and preservation of manifest v1.
+- S8e deterministic warning-metrics coverage for existing wet-test run
+  artifacts, including coverage matrix output, duplicate text and repeated
+  sample/page/hash warnings, asset dimension and ink-density summaries,
+  blank/near-blank image smoke warnings, catalog join completeness, path/hash
+  safety summaries, installed-package CLI behavior, and hard-blocker separation
+  from warning findings.
 - S3f governed document-family coverage for the `ledger` template, including
   deterministic generation, manifest v1 provenance, validation acceptance, v1
   and v2 catalog exposure, downstream catalog joins, and visual smoke checks
@@ -226,6 +233,9 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
   metadata, required CLI smoke commands, and the Pillow libraqm requirement.
 - Rendering coverage reports remain opt-in sidecars outside
   `generation_manifest.json` v1 and keep evidence paths portable.
+- Wet-test analysis reports remain source-backed generator-quality evidence
+  outside `generation_manifest.json` v1 and keep hard blockers distinct from
+  warnings.
 
 ## Future Quality Gates
 

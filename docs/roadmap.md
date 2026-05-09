@@ -21,12 +21,13 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    planned but are not the current implementation track.
 3. Advance Phase S8 wet-testing and generator-quality evidence. `S8a` defines
    the program in [wet_testing_program_plan.md](wet_testing_program_plan.md),
-   `S8b` adds the first reproducible wet-test smoke run artifact generator,
-   `S8c` adds the candidate evidence-run wrapper for downstream `hocrgen`
-   preflight evidence, and `S8d` is the active implementation slice: a
-   human-first static gallery over existing wet-test runs, without adding
-   schemas, warning metrics, review sidecars, LLM/network dependencies, hocrgen
-   behavior, release governance, or manifest v1 changes.
+  `S8b` adds the first reproducible wet-test smoke run artifact generator,
+  `S8c` adds the candidate evidence-run wrapper for downstream `hocrgen`
+  preflight evidence, `S8d` adds the human-first static gallery over existing
+  wet-test runs, and `S8e` is the active implementation slice: deterministic
+  warning metrics over existing wet-test runs, without adding schemas, review
+  sidecars, LLM/network dependencies, hocrgen behavior, release governance, or
+  manifest v1 changes.
 4. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -562,11 +563,12 @@ Planned PR breakdown:
 - `S8d` — Human-first static gallery: generate a static HTML or Markdown review
   gallery over a wet-test run so developers and reviewers can inspect rendered
   pages, logical Hebrew text, public metadata, and later warnings without
-  reading raw JSON. Status: active in the S8d implementation PR.
+  reading raw JSON. Status: done in PR #60.
 - `S8e` — Deterministic warning metrics: add repeatable generator-quality
   warnings for coverage, duplicate text, blank/near-blank images, dimensions,
   ink-density ranges, catalog joins, and path/hash safety without claiming
-  realism, utility, or release readiness.
+  realism, utility, or release readiness. Status: active in the S8e
+  implementation PR.
 - `S8f` — Human review sidecar: define and validate review worksheets or
   sidecars for pass/hold/reject decisions, severity, reason codes, notes, and
   regression-promotion flags outside manifest v1.

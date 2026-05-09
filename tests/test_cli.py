@@ -10,6 +10,7 @@ from pathlib import Path, PurePosixPath
 
 import jsonschema
 import pytest
+from PIL import Image
 
 from hocrsyngen.cli import (
     CONTRACT_FIXTURE_CATALOG_SCHEMA_VERSION,
@@ -282,6 +283,7 @@ INSTALLED_CLI_SMOKE_CASES = [
     "validate-generated-batch",
     "wet-run-smoke",
     "wet-gallery",
+    "wet-analyze",
     "evidence-run-json",
 ]
 
@@ -647,6 +649,46 @@ def _assert_installed_cli_smoke_case(
         assert "../batch/assets/" in (gallery_dir / "index.html").read_text(
             encoding="utf-8"
         )
+        return
+
+    if cli_case == "wet-analyze":
+        wet_run_dir = output_root / "wet-analysis-run"
+        _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-run",
+                    "--profile",
+                    "smoke",
+                    "--seed",
+                    "17",
+                    "--output",
+                    str(wet_run_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        analysis = _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-analyze",
+                    str(wet_run_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert analysis["report_version"] == "wet_analysis_report.v1"
+        assert analysis["summary"]["page_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+        assert analysis["hard_blockers"] == []
+        assert analysis["scope"]["release_ready_dataset_artifact"] is False
+        assert analysis["scope"]["network_required"] is False
         return
 
     if cli_case == "evidence-run-json":
@@ -1564,6 +1606,245 @@ def test_wet_gallery_rejects_reusing_existing_gallery_directory(
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
     assert "wet-gallery: gallery output directory already exists and is not empty" in captured.err
+
+
+def test_wet_analyze_cli_reports_deterministic_warning_metrics(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-17"
+
+    assert (
+        main(
+            [
+                "wet-run",
+                "--profile",
+                "smoke",
+                "--seed",
+                "17",
+                "--output",
+                str(output_dir),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 0
+    first = json.loads(capsys.readouterr().out)
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 0
+    second = json.loads(capsys.readouterr().out)
+
+    assert first == second
+    assert first["report_version"] == "wet_analysis_report.v1"
+    assert first["source_report_path"] == "reports/wet_test_run.json"
+    assert first["status"] == "passed_with_warnings"
+    assert first["summary"] == {
+        "sample_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        "page_count": len(GOVERNED_TEMPLATE_IDS) + 1,
+        "batch_count": 2,
+        "warning_count": len(first["warnings"]),
+        "hard_blocker_count": 0,
+    }
+    assert first["hard_blockers"] == []
+    assert first["coverage_matrix"]["complete_requested_template_coverage"] is True
+    assert first["coverage_matrix"]["missing_requested_template_ids"] == []
+    assert first["coverage_matrix"]["observed_style_persona"] == {
+        "default": len(GOVERNED_TEMPLATE_IDS),
+        "style_open_drift_v1": 1,
+    }
+    assert first["duplicate_text"]["duplicate_text_rate"] == 0.125
+    assert first["duplicate_text"]["duplicate_text_sample_count"] == 1
+    assert {warning["code"] for warning in first["warnings"]} == {
+        "duplicate_text",
+        "low_ink_density",
+        "repeated_page_id",
+        "repeated_sample_id",
+    }
+    assert first["catalog_join"]["complete"] is True
+    assert first["path_hash_safety"]["unsafe_asset_path_count"] == 0
+    assert first["path_hash_safety"]["manifest_hash_mismatch_count"] == 0
+    assert first["path_hash_safety"]["checksum_inventory_mismatch_count"] == 0
+    assert first["scope"] == {
+        "generator_quality_evidence_only": True,
+        "release_ready_dataset_artifact": False,
+        "realism_acceptance_claimed": False,
+        "ocr_htr_utility_claimed": False,
+        "domain_match_claimed": False,
+        "manifest_v1_changed": False,
+        "hocrgen_behavior_added": False,
+        "human_review_sidecar_included": False,
+        "llm_triage_included": False,
+        "network_required": False,
+    }
+    for page in first["image_smoke"]["pages"]:
+        path = PurePosixPath(page["asset_path"])
+        assert not path.is_absolute()
+        assert ".." not in path.parts
+        assert "\\" not in page["asset_path"]
+
+
+def test_wet_analyze_flags_degenerate_images_as_warnings_not_blockers(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-blank"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    manifest_path = output_dir / "batch" / "generation_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    page = manifest["samples"][0]["pages"][0]
+    asset_path = output_dir / "batch" / Path(*PurePosixPath(page["asset_path"]).parts)
+    Image.new("RGB", (page["width"], page["height"]), "white").save(
+        asset_path,
+        format="JPEG",
+    )
+    page["sha256"] = sha256_file(asset_path)
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    checksum_path = output_dir / "reports" / "wet_test_checksums.txt"
+    checksum_lines = []
+    for line in checksum_path.read_text(encoding="utf-8").splitlines():
+        if line.endswith(f"  batch/{page['asset_path']}"):
+            checksum_lines.append(f"{page['sha256']}  batch/{page['asset_path']}")
+        else:
+            checksum_lines.append(line)
+    checksum_path.write_text("\n".join(checksum_lines) + "\n", encoding="utf-8")
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 0
+
+    report = json.loads(capsys.readouterr().out)
+    warning_codes = {warning["code"] for warning in report["warnings"]}
+    assert "near_blank_image" in warning_codes
+    assert report["hard_blockers"] == []
+    assert report["path_hash_safety"]["manifest_hash_mismatch_count"] == 0
+    assert report["path_hash_safety"]["checksum_inventory_mismatch_count"] == 0
+
+
+def test_wet_analyze_distinguishes_hash_mismatch_hard_blockers(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-hash-mismatch"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    manifest_path = output_dir / "batch" / "generation_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    page = manifest["samples"][0]["pages"][0]
+    asset_path = output_dir / "batch" / Path(*PurePosixPath(page["asset_path"]).parts)
+    Image.new("RGB", (page["width"], page["height"]), "white").save(
+        asset_path,
+        format="JPEG",
+    )
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 1
+
+    report = json.loads(capsys.readouterr().out)
+    blocker_codes = {blocker["code"] for blocker in report["hard_blockers"]}
+    warning_codes = {warning["code"] for warning in report["warnings"]}
+    assert "batch_validation_failed" in blocker_codes
+    assert "manifest_hash_mismatch" in blocker_codes
+    assert "near_blank_image" in warning_codes
+    assert report["status"] == "blocked"
+
+
+def test_wet_analyze_reports_invalid_manifest_fields_as_json_blockers(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-invalid-dimensions"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    manifest_path = output_dir / "batch" / "generation_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["samples"][0]["pages"][0]["width"] = "not-an-int"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 1
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    report = json.loads(captured.out)
+    blocker_codes = {blocker["code"] for blocker in report["hard_blockers"]}
+    assert "batch_validation_failed" in blocker_codes
+    assert "page_dimension_metadata_invalid" in blocker_codes
+    assert report["status"] == "blocked"
+
+
+def test_wet_analyze_reports_stale_run_manifest_path_as_json_blocker(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-stale-manifest-path"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    run_report_path = output_dir / "reports" / "wet_test_run.json"
+    run_report = json.loads(run_report_path.read_text(encoding="utf-8"))
+    run_report["generated_batch"]["manifest_path"] = "reports/template_catalog_v2.json"
+    run_report_path.write_text(
+        json.dumps(run_report, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 1
+
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    report = json.loads(captured.out)
+    assert {blocker["code"] for blocker in report["hard_blockers"]} == {
+        "wet_run_path_invalid"
+    }
+    assert report["summary"]["page_count"] == 1
+    assert report["status"] == "blocked"
+
+
+def test_wet_analyze_reports_checksum_inventory_integrity_blockers(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output_dir = tmp_path / "wet-tests" / "smoke-bad-checksums"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(output_dir)]) == 0
+    capsys.readouterr()
+    checksum_path = output_dir / "reports" / "wet_test_checksums.txt"
+    lines = checksum_path.read_text(encoding="utf-8").splitlines()
+    removed_asset_line = next(line for line in lines if "batch/assets/" in line)
+    retained_lines = [
+        line
+        for line in lines
+        if line != removed_asset_line
+        and not line.endswith("  reports/template_catalog_v2.json")
+    ]
+    checksum_path.write_text(
+        "\n".join(
+            [
+                *retained_lines,
+                "malformed checksum line",
+                "0" * 64 + "  ../escape.txt",
+                retained_lines[0],
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    assert main(["wet-analyze", str(output_dir), "--format", "json"]) == 1
+
+    report = json.loads(capsys.readouterr().out)
+    blocker_codes = {blocker["code"] for blocker in report["hard_blockers"]}
+    assert "checksum_inventory_malformed" in blocker_codes
+    assert "checksum_inventory_unsafe_path" in blocker_codes
+    assert "checksum_inventory_duplicate_path" in blocker_codes
+    assert "checksum_inventory_missing_asset" in blocker_codes
+    assert "checksum_inventory_missing_expected_artifact" in blocker_codes
+    assert report["path_hash_safety"]["checksum_inventory_malformed_line_count"] == 1
+    assert report["path_hash_safety"]["checksum_inventory_unsafe_path_count"] == 1
+    assert report["path_hash_safety"]["checksum_inventory_duplicate_path_count"] == 1
 
 
 def test_wet_run_smoke_rejects_reusing_existing_run_directory(

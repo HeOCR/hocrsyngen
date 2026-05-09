@@ -27,6 +27,7 @@ OCR/HTR batches through public CLI surfaces:
 - `hocrsyngen validate PATH --format json`
 - `hocrsyngen evidence-run --count N --seed S`
 - `hocrsyngen wet-gallery RUN_ROOT --output RUN_ROOT/gallery`
+- `hocrsyngen wet-analyze RUN_ROOT --format json`
 
 The generator has governed templates including the S3f `ledger` family, stronger
 degradation variants, style bundles, condition bundles, manifest v1 validation,
@@ -51,6 +52,15 @@ or links plus public manifest metadata and logical Hebrew text. It is an offline
 developer review aid only: it does not add warning metrics, human review
 sidecars, release eligibility, export payloads, publication metadata, or
 downstream governance.
+
+For deterministic code analysis of wet-test runs, `hocrsyngen wet-analyze`
+emits a `wet_analysis_report.v1` JSON report over an existing `wet-run`
+artifact. It computes source-backed coverage, duplicate text, repeated id,
+asset dimension, blank/near-blank image smoke, ink-density, catalog join, and
+path/hash safety metrics while keeping hard blockers separate from warning
+findings. It is generator-quality evidence only: it does not claim realism
+acceptance, OCR/HTR utility, domain match, release eligibility, export
+payloads, publication metadata, or downstream governance.
 
 S6a adds downstream realism acceptance categories, calibrated example classes,
 visual evidence expectations, rejection reasons, and release-eligibility
@@ -112,7 +122,7 @@ produce large quality or operational gains.
 | Review evidence sidecar contract | `S6e` | Done in PR #52; defines a portable optional downstream evidence packet for reviewed ids, decision categories, reason codes, visual references, limitations, and links to S6a/S6c/S6d evidence without creating review workflow state in this repo. |
 | Candidate batch profile and mix handoff | `S6f` | Done in PR #53; defines a portable optional downstream planning record for requested, generated/observed, reviewed, capped/admitted, and released candidate mixes without creating generator behavior, release profiles, or governance state in this repo. |
 | `hocrgen` adapter handoff checklist | `S6g` | Done in PR #54; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
-| Wet-testing and generator-quality evidence | `S8a` through `S8i` | Active S8 work; `S8a` defines developer-owned smoke/review/soak wet-test evidence, `S8b` adds the deterministic smoke run artifact generator, `S8c` adds the candidate evidence-run wrapper, and `S8d` adds the human-first static gallery without creating release-governance behavior or changing manifest v1. |
+| Wet-testing and generator-quality evidence | `S8a` through `S8i` | Active S8 work; `S8a` defines developer-owned smoke/review/soak wet-test evidence, `S8b` adds the deterministic smoke run artifact generator, `S8c` adds the candidate evidence-run wrapper, `S8d` adds the human-first static gallery, and `S8e` adds deterministic warning metrics without creating release-governance behavior or changing manifest v1. |
 
 ## Current Planning Track
 
@@ -122,10 +132,11 @@ the current implementation track for wet testing and generator-quality evidence.
 `S8a` defines the program in
 [wet_testing_program_plan.md](wet_testing_program_plan.md), `S8b` is the
 first implementation slice, `S8c` adds the downstream preflight evidence-run
-wrapper, and `S8d` adds the static gallery for human inspection of wet-test
-outputs. The deterministic wet-test, evidence-run, and gallery commands reuse
-public generation and validation behavior, retain public reports, and write
-operator evidence artifacts. This is not a production-readiness blocker or
+wrapper, `S8d` adds the static gallery for human inspection of wet-test outputs,
+and `S8e` adds deterministic warning metrics over existing wet-test runs. The
+deterministic wet-test, evidence-run, gallery, and analysis commands reuse
+public generation and validation behavior, retain public reports, and write or
+emit operator evidence artifacts. This is not a production-readiness blocker or
 release-readiness claim for current Hebrew candidate generation; generated
 batches remain candidate synthetic inputs until downstream `hocrgen` governance
 admits them.
