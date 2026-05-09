@@ -284,6 +284,8 @@ INSTALLED_CLI_SMOKE_CASES = [
     "wet-run-smoke",
     "wet-gallery",
     "wet-analyze",
+    "wet-review-template",
+    "wet-review-validate",
     "evidence-run-json",
 ]
 
@@ -689,6 +691,111 @@ def _assert_installed_cli_smoke_case(
         assert analysis["hard_blockers"] == []
         assert analysis["scope"]["release_ready_dataset_artifact"] is False
         assert analysis["scope"]["network_required"] is False
+        return
+
+    if cli_case == "wet-review-template":
+        wet_run_dir = output_root / "wet-review-template-run"
+        review_path = wet_run_dir / "review" / "human_review.csv"
+        _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-run",
+                    "--profile",
+                    "smoke",
+                    "--seed",
+                    "17",
+                    "--output",
+                    str(wet_run_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        template = _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-review-template",
+                    str(wet_run_dir),
+                    "--output",
+                    str(review_path),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert template["report_version"] == "wet_review_template.v1"
+        assert template["row_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+        assert template["review_path"] == "review/human_review.csv"
+        assert review_path.is_file()
+        assert template["scope"]["release_ready_dataset_artifact"] is False
+        assert template["scope"]["network_required"] is False
+        return
+
+    if cli_case == "wet-review-validate":
+        wet_run_dir = output_root / "wet-review-validate-run"
+        review_path = wet_run_dir / "review" / "human_review.csv"
+        _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-run",
+                    "--profile",
+                    "smoke",
+                    "--seed",
+                    "17",
+                    "--output",
+                    str(wet_run_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-review-template",
+                    str(wet_run_dir),
+                    "--output",
+                    str(review_path),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        validation = _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-review-validate",
+                    str(wet_run_dir),
+                    str(review_path),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert validation["report_version"] == "wet_review_validation.v1"
+        assert validation["valid"] is True
+        assert validation["errors"] == []
+        assert validation["summary"]["row_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+        assert validation["summary"]["expected_page_count"] == (
+            len(GOVERNED_TEMPLATE_IDS) + 1
+        )
+        assert validation["scope"]["release_ready_dataset_artifact"] is False
+        assert validation["scope"]["network_required"] is False
         return
 
     if cli_case == "evidence-run-json":
@@ -1845,6 +1952,535 @@ def test_wet_analyze_reports_checksum_inventory_integrity_blockers(
     assert report["path_hash_safety"]["checksum_inventory_malformed_line_count"] == 1
     assert report["path_hash_safety"]["checksum_inventory_unsafe_path_count"] == 1
     assert report["path_hash_safety"]["checksum_inventory_duplicate_path_count"] == 1
+
+
+def _enumerate_wet_run_pages(run_root: Path) -> list[tuple[str, str, str, str]]:
+    run_payload = json.loads(
+        (run_root / "reports" / "wet_test_run.json").read_text(encoding="utf-8")
+    )
+    batches = [run_payload["generated_batch"], *run_payload.get("supplemental_batches", [])]
+    pages: list[tuple[str, str, str, str]] = []
+    for batch in batches:
+        manifest_path = run_root / Path(*PurePosixPath(batch["manifest_path"]).parts)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for sample in manifest["samples"]:
+            for page in sample["pages"]:
+                pages.append(
+                    (
+                        batch["batch_id"],
+                        sample["sample_id"],
+                        page["page_id"],
+                        page["asset_path"],
+                    )
+                )
+    return sorted(pages)
+
+
+def _read_review_csv(review_path: Path) -> list[dict[str, str]]:
+    import csv
+
+    with review_path.open("r", encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
+def _write_review_csv(review_path: Path, rows: list[dict[str, str]]) -> None:
+    import csv
+    from hocrsyngen.wet_review import REVIEW_FIELDS
+
+    review_path.parent.mkdir(parents=True, exist_ok=True)
+    with review_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=list(REVIEW_FIELDS),
+            lineterminator="\n",
+            extrasaction="ignore",
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({field: row.get(field, "") for field in REVIEW_FIELDS})
+
+
+def test_wet_review_template_csv_includes_every_sample_and_page(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["report_version"] == "wet_review_template.v1"
+    assert payload["review_path"] == "review/human_review.csv"
+    assert payload["review_format"] == "csv"
+    assert payload["row_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+    assert payload["sample_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+    assert payload["page_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+    assert payload["decision_states"] == ["pass", "hold", "reject"]
+    assert payload["severity_levels"] == ["P0", "P1", "P2", "info"]
+    assert "invalid_manifest" in payload["reason_codes"]
+    assert payload["scope"]["release_ready_dataset_artifact"] is False
+    assert payload["scope"]["network_required"] is False
+    assert payload["scope"]["human_review_sidecar_included"] is True
+
+    template_rows = _read_review_csv(review_path)
+    expected_keys = {
+        (batch_id, sample_id, page_id)
+        for batch_id, sample_id, page_id, _ in _enumerate_wet_run_pages(run_root)
+    }
+    template_keys = {
+        (row["batch_id"], row["sample_id"], row["page_id"]) for row in template_rows
+    }
+    assert template_keys == expected_keys
+    for row in template_rows:
+        assert row["decision"] == ""
+        assert row["severity"] == ""
+        assert row["reason_codes"] == ""
+        assert row["reviewer"] == ""
+        assert row["regression_fixture_candidate"] == ""
+        asset_path = PurePosixPath(row["asset_path"])
+        assert not asset_path.is_absolute()
+        assert ".." not in asset_path.parts
+
+
+def test_wet_review_template_is_deterministic(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    first_review = run_root / "review" / "first.csv"
+    second_review = run_root / "review" / "second.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(first_review),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(second_review),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+    assert first_review.read_text(encoding="utf-8") == second_review.read_text(
+        encoding="utf-8"
+    )
+
+
+def test_wet_review_template_supports_jsonl(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.jsonl"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+                "--review-format",
+                "jsonl",
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["review_format"] == "jsonl"
+    rows = [
+        json.loads(line)
+        for line in review_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert len(rows) == len(GOVERNED_TEMPLATE_IDS) + 1
+    assert all("page_id" in row for row in rows)
+
+
+def test_wet_review_template_rejects_path_outside_run(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    outside_review = tmp_path / "outside.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(outside_review),
+            ]
+        )
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert (
+        "wet-review-template: review template output path must be inside the wet-test run"
+        in captured.err
+    )
+
+
+def test_wet_review_validate_passes_for_completed_template(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    rows = _read_review_csv(review_path)
+    for row in rows:
+        row["reviewer"] = "rv"
+        row["decision"] = "pass"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(run_root),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["report_version"] == "wet_review_validation.v1"
+    assert payload["valid"] is True
+    assert payload["errors"] == []
+    assert payload["status"] == "passed"
+    assert payload["decision_counts"]["pass"] == len(rows)
+    assert payload["decision_counts"]["unreviewed"] == 0
+    assert payload["summary"]["expected_page_count"] == len(rows)
+    assert payload["summary"]["reviewed_page_count"] == len(rows)
+
+
+def test_wet_review_validate_rejects_unknown_page_ids(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    rows = _read_review_csv(review_path)
+    rows[0]["page_id"] = "page_does_not_exist"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(run_root),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    error_codes = {error["code"] for error in payload["errors"]}
+    assert "unknown_page_id" in error_codes
+    assert "missing_page_row" in error_codes
+    assert payload["valid"] is False
+
+
+def test_wet_review_validate_rejects_unknown_decision_states(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    rows = _read_review_csv(review_path)
+    rows[0]["reviewer"] = "rv"
+    rows[0]["decision"] = "approved"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(run_root),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert {error["code"] for error in payload["errors"]} >= {"unknown_decision"}
+
+
+def test_wet_review_validate_rejects_unknown_severity_levels(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    rows = _read_review_csv(review_path)
+    rows[0]["reviewer"] = "rv"
+    rows[0]["decision"] = "hold"
+    rows[0]["severity"] = "P9"
+    rows[0]["reason_codes"] = "reviewer_uncertain"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(run_root),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    error_codes = {error["code"] for error in payload["errors"]}
+    assert "unknown_severity" in error_codes
+
+
+def test_wet_review_validate_rejects_unknown_reason_codes(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    rows = _read_review_csv(review_path)
+    rows[0]["reviewer"] = "rv"
+    rows[0]["decision"] = "reject"
+    rows[0]["severity"] = "P1"
+    rows[0]["reason_codes"] = "made_up_reason|reviewer_uncertain"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(run_root),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    unknown_reason = [
+        error
+        for error in payload["errors"]
+        if error["code"] == "unknown_reason_code"
+    ]
+    assert unknown_reason and unknown_reason[0]["value"] == "made_up_reason"
+
+
+def test_wet_review_validate_does_not_change_generation_manifest_v1(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    manifest_paths = sorted(run_root.rglob("generation_manifest.json"))
+    assert manifest_paths
+    before = {path: sha256_file(path) for path in manifest_paths}
+
+    rows = _read_review_csv(review_path)
+    rows[0]["reviewer"] = "rv"
+    rows[0]["decision"] = "hold"
+    rows[0]["severity"] = "P2"
+    rows[0]["reason_codes"] = "reviewer_uncertain"
+    rows[1]["reviewer"] = "rv"
+    rows[1]["decision"] = "reject"
+    rows[1]["severity"] = "P1"
+    rows[1]["reason_codes"] = "text_clipped|layout_implausible"
+    rows[1]["regression_fixture_candidate"] = "true"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(run_root),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    after = {path: sha256_file(path) for path in manifest_paths}
+    assert before == after
+
+
+def test_wet_review_validate_rejects_unknown_run_id(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    run_root = tmp_path / "wet-tests" / "smoke-17"
+    review_path = run_root / "review" / "human_review.csv"
+
+    assert main(["wet-run", "--seed", "17", "--output", str(run_root)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(run_root),
+                "--output",
+                str(review_path),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    rows = _read_review_csv(review_path)
+    rows[0]["run_id"] = "stale-run-name"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(run_root),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert any(error["code"] == "unknown_run_id" for error in payload["errors"])
 
 
 def test_wet_run_smoke_rejects_reusing_existing_run_directory(

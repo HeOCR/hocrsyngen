@@ -24,10 +24,11 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
   `S8b` adds the first reproducible wet-test smoke run artifact generator,
   `S8c` adds the candidate evidence-run wrapper for downstream `hocrgen`
   preflight evidence, `S8d` adds the human-first static gallery over existing
-  wet-test runs, and `S8e` is the active implementation slice: deterministic
-  warning metrics over existing wet-test runs, without adding schemas, review
-  sidecars, LLM/network dependencies, hocrgen behavior, release governance, or
-  manifest v1 changes.
+  wet-test runs, `S8e` adds deterministic warning metrics over existing
+  wet-test runs, and `S8f` is the active implementation slice: a human review
+  worksheet template generator and worksheet validator over existing wet-test
+  runs, without adding schemas, LLM/network dependencies, hocrgen behavior,
+  release governance, or manifest v1 changes.
 4. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -567,11 +568,17 @@ Planned PR breakdown:
 - `S8e` — Deterministic warning metrics: add repeatable generator-quality
   warnings for coverage, duplicate text, blank/near-blank images, dimensions,
   ink-density ranges, catalog joins, and path/hash safety without claiming
-  realism, utility, or release readiness. Status: active in the S8e
-  implementation PR.
+  realism, utility, or release readiness. Status: done in PR #61.
 - `S8f` — Human review sidecar: define and validate review worksheets or
   sidecars for pass/hold/reject decisions, severity, reason codes, notes, and
-  regression-promotion flags outside manifest v1.
+  regression-promotion flags outside manifest v1. Status: active in the S8f
+  implementation PR. The `S8f` slice generates a CSV or JSON Lines human
+  review worksheet template from an existing wet-test run, and validates a
+  completed worksheet against the run's manifest-derived sample/page ids and
+  the documented decision states, severity levels, and reason codes. It does
+  not add schemas, LLM triage packets, wet-test reports, regression promotion,
+  network/LLM/GPU dependencies, hocrgen behavior, release governance, or
+  manifest v1 changes.
 - `S8g` — LLM triage packet export: export bounded operator-run LLM review
   packets and prompts without adding baseline LLM clients, network calls, or
   pass/fail authority.

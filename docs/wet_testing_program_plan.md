@@ -18,13 +18,15 @@ outputs.
   deterministic smoke run artifact generator; `S8c` adds the operator
   evidence-run wrapper needed for downstream `hocrgen` preflight evidence;
   `S8d` adds the human-first static gallery over existing wet-test runs; `S8e`
-  adds deterministic warning metrics over an existing wet-test run; later human
-  review, LLM triage, reporting, schema, and CI work remains deferred.
+  adds deterministic warning metrics over an existing wet-test run; `S8f` adds
+  the human review worksheet template and validator over an existing wet-test
+  run; later LLM triage, reporting, schema, and CI work remains deferred.
 - Roadmap placement: Phase S8 - Wet Testing And Generator-Quality Evidence.
   `S8a` defines this program plan; `S8b` is the first actual implementation
   slice and adds the wet-test smoke run artifact generator; `S8c` adds the
   candidate evidence-run handoff wrapper; `S8d` adds the human-first static
-  gallery; `S8e` adds deterministic warning metrics.
+  gallery; `S8e` adds deterministic warning metrics; `S8f` adds the human
+  review worksheet template and validator.
 
 ## Core Principle
 
@@ -912,25 +914,59 @@ Purpose:
 
 Record human qualitative judgments without changing manifest v1.
 
-Potential command:
+Implemented commands:
 
 ```bash
-PYTHONPATH=src python -m hocrsyngen.cli wet-review-template out/wet-tests/review-101 --output out/wet-tests/review-101/review/human_review.csv
+PYTHONPATH=src python -m hocrsyngen.cli wet-review-template out/wet-tests/review-101 --output out/wet-tests/review-101/review/human_review.csv --format json
+PYTHONPATH=src python -m hocrsyngen.cli wet-review-validate out/wet-tests/review-101 out/wet-tests/review-101/review/human_review.csv --format json
 ```
 
-Implementation outline:
+`wet-review-template` reads an existing passed `wet_test_run.v1` artifact,
+enumerates every sample/page from the validated batches, and writes a
+deterministic review worksheet to a path inside the run directory. CSV is the
+default to keep human editing simple; JSON Lines is also supported via
+`--review-format jsonl`. The command emits a `wet_review_template.v1` summary
+on stdout.
 
-- Generate CSV or JSON Lines template from manifest and gallery metadata.
-- Use the decision states, severity levels, and reason codes from this document.
-- Validate completed review files for required fields and known reason codes.
-- Summarize pass/hold/reject counts.
+The worksheet columns are: `run_id`, `batch_id`, `sample_id`, `page_id`,
+`template_id`, `recipe_id`, `persona`, `condition`, `degradation`, `font_id`,
+`asset_path`, `reviewer`, `decision`, `severity`, `reason_codes`, `notes`, and
+`regression_fixture_candidate`. The first eleven columns are pre-filled from
+the wet-test run; reviewers fill the remaining columns. `reason_codes` is a
+pipe-separated list of values from the documented reason-code set, and
+`regression_fixture_candidate` accepts `true`/`false` (or `yes`/`no`/`1`/`0`).
+
+`wet-review-validate` reads a completed CSV/JSONL worksheet and emits a
+`wet_review_validation.v1` summary. It checks that:
+
+- Every (`batch_id`, `sample_id`, `page_id`) row matches a manifest-derived
+  page from the run.
+- Every reviewed row uses a known decision state from `pass`/`hold`/`reject`.
+- Every populated severity uses a known level from `P0`/`P1`/`P2`/`info`.
+- Every populated reason code is one of the documented reason codes.
+- Every reviewed `hold` or `reject` row carries severity and reason codes.
+- Every reviewed row carries a reviewer identifier or initials.
+- Every populated `run_id` matches the run directory's name.
+- The run's expected sample/page set is fully covered.
+
+The validator returns a non-zero exit code when any error is reported, but
+does not modify any wet-run artifact. The summary includes deterministic
+counts per decision state, severity level, and reason code, plus a
+`regression_fixture_candidate` count.
+
+Both commands keep all paths relative and portable, do not change manifest v1,
+do not promote artifacts to schemas, do not add LLM/network/GPU dependencies,
+do not implement adapter, governance, release, export, or publication
+behavior, and do not claim realism, OCR/HTR utility, domain match, or release
+readiness.
 
 Tests:
 
 - Template includes all required sample/page ids.
 - Review validation rejects unknown page ids.
-- Review validation rejects unknown decision states or reason codes.
-- Review validation does not change manifest v1.
+- Review validation rejects unknown decision states, severities, or reason
+  codes.
+- Review validation does not change `generation_manifest.json` v1.
 
 ### S8g: LLM Triage Packet Export
 

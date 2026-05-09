@@ -12,6 +12,8 @@ PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
 PYTHONPATH=src python -m hocrsyngen.cli wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
 PYTHONPATH=src python -m hocrsyngen.cli wet-gallery out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/gallery --format json
 PYTHONPATH=src python -m hocrsyngen.cli wet-analyze out/wet-tests/smoke-17 --format json
+PYTHONPATH=src python -m hocrsyngen.cli wet-review-template out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/review/human_review.csv --format json
+PYTHONPATH=src python -m hocrsyngen.cli wet-review-validate out/wet-tests/smoke-17 out/wet-tests/smoke-17/review/human_review.csv --format json
 ```
 
 There is no configured lint command unless one is added explicitly.
@@ -104,6 +106,13 @@ it.
   blank/near-blank image smoke warnings, catalog join completeness, path/hash
   safety summaries, installed-package CLI behavior, and hard-blocker separation
   from warning findings.
+- S8f human review worksheet coverage for existing wet-test run artifacts,
+  including deterministic CSV/JSONL template generation over manifest-derived
+  sample/page ids, completed-worksheet validation against documented decision
+  states, severity levels, and reason codes, rejection of unknown
+  page/decision/severity/reason-code values, preservation of
+  `generation_manifest.json` v1, and installed-package CLI behavior for both
+  the template generator and the worksheet validator.
 - S3f governed document-family coverage for the `ledger` template, including
   deterministic generation, manifest v1 provenance, validation acceptance, v1
   and v2 catalog exposure, downstream catalog joins, and visual smoke checks
@@ -118,7 +127,8 @@ it.
 - Installed package and wheel public CLI smoke matrix for console-script and
   `python -m hocrsyngen.cli` entry points across `templates`, `contracts`,
   `contracts export`, `generate`, `validate`, and the operator-only
-  `wet-run`, `wet-gallery`, and `evidence-run` wrappers.
+  `wet-run`, `wet-gallery`, `wet-analyze`, `wet-review-template`,
+  `wet-review-validate`, and `evidence-run` wrappers.
 - Baseline dependency audit coverage for declared runtime/test dependencies,
   accidental `hocrgen` imports, network/REST imports, GPU/LLM/diffusion/Torch/
   TensorFlow/deep-learning imports, and docs-to-`pyproject.toml` policy
@@ -236,6 +246,10 @@ Pillow, FreeType, libraqm, Harfbuzz, FriBiDi, and platform font stacks.
 - Wet-test analysis reports remain source-backed generator-quality evidence
   outside `generation_manifest.json` v1 and keep hard blockers distinct from
   warnings.
+- Wet-test human review templates and validators remain source-backed
+  generator-quality evidence outside `generation_manifest.json` v1, keep paths
+  relative and portable, do not promote artifacts to schemas, and reject
+  unknown page ids, decision states, severity levels, or reason codes.
 
 ## Future Quality Gates
 

@@ -28,6 +28,8 @@ OCR/HTR batches through public CLI surfaces:
 - `hocrsyngen evidence-run --count N --seed S`
 - `hocrsyngen wet-gallery RUN_ROOT --output RUN_ROOT/gallery`
 - `hocrsyngen wet-analyze RUN_ROOT --format json`
+- `hocrsyngen wet-review-template RUN_ROOT --output RUN_ROOT/review/human_review.csv --format json`
+- `hocrsyngen wet-review-validate RUN_ROOT REVIEW_PATH --format json`
 
 The generator has governed templates including the S3f `ledger` family, stronger
 degradation variants, style bundles, condition bundles, manifest v1 validation,
@@ -61,6 +63,16 @@ path/hash safety metrics while keeping hard blockers separate from warning
 findings. It is generator-quality evidence only: it does not claim realism
 acceptance, OCR/HTR utility, domain match, release eligibility, export
 payloads, publication metadata, or downstream governance.
+
+For human review of wet-test runs, `hocrsyngen wet-review-template` writes a
+deterministic CSV or JSON Lines worksheet that lists every sample/page id from
+the validated batches plus the documented review fields, decision states,
+severity levels, and reason codes. `hocrsyngen wet-review-validate` then
+validates a completed worksheet against the run's manifest-derived sample/page
+ids and the known decision/severity/reason-code vocabulary. Both commands are
+human-evidence aids only: they do not add review workflow state, schemas, LLM
+triage, release eligibility, export payloads, publication metadata, or
+downstream governance, and they do not change `generation_manifest.json` v1.
 
 S6a adds downstream realism acceptance categories, calibrated example classes,
 visual evidence expectations, rejection reasons, and release-eligibility
@@ -122,7 +134,7 @@ produce large quality or operational gains.
 | Review evidence sidecar contract | `S6e` | Done in PR #52; defines a portable optional downstream evidence packet for reviewed ids, decision categories, reason codes, visual references, limitations, and links to S6a/S6c/S6d evidence without creating review workflow state in this repo. |
 | Candidate batch profile and mix handoff | `S6f` | Done in PR #53; defines a portable optional downstream planning record for requested, generated/observed, reviewed, capped/admitted, and released candidate mixes without creating generator behavior, release profiles, or governance state in this repo. |
 | `hocrgen` adapter handoff checklist | `S6g` | Done in PR #54; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
-| Wet-testing and generator-quality evidence | `S8a` through `S8i` | Active S8 work; `S8a` defines developer-owned smoke/review/soak wet-test evidence, `S8b` adds the deterministic smoke run artifact generator, `S8c` adds the candidate evidence-run wrapper, `S8d` adds the human-first static gallery, and `S8e` adds deterministic warning metrics without creating release-governance behavior or changing manifest v1. |
+| Wet-testing and generator-quality evidence | `S8a` through `S8i` | Active S8 work; `S8a` defines developer-owned smoke/review/soak wet-test evidence, `S8b` adds the deterministic smoke run artifact generator, `S8c` adds the candidate evidence-run wrapper, `S8d` adds the human-first static gallery, `S8e` adds deterministic warning metrics, and `S8f` adds the human review worksheet template and validator without creating release-governance behavior or changing manifest v1. |
 
 ## Current Planning Track
 
@@ -132,14 +144,15 @@ the current implementation track for wet testing and generator-quality evidence.
 `S8a` defines the program in
 [wet_testing_program_plan.md](wet_testing_program_plan.md), `S8b` is the
 first implementation slice, `S8c` adds the downstream preflight evidence-run
-wrapper, `S8d` adds the static gallery for human inspection of wet-test outputs,
-and `S8e` adds deterministic warning metrics over existing wet-test runs. The
-deterministic wet-test, evidence-run, gallery, and analysis commands reuse
-public generation and validation behavior, retain public reports, and write or
-emit operator evidence artifacts. This is not a production-readiness blocker or
-release-readiness claim for current Hebrew candidate generation; generated
-batches remain candidate synthetic inputs until downstream `hocrgen` governance
-admits them.
+wrapper, `S8d` adds the static gallery for human inspection of wet-test
+outputs, `S8e` adds deterministic warning metrics over existing wet-test runs,
+and `S8f` adds the human review worksheet template and validator over existing
+wet-test runs. The deterministic wet-test, evidence-run, gallery, analysis,
+and review commands reuse public generation and validation behavior, retain
+public reports, and write or emit operator evidence artifacts. This is not a
+production-readiness blocker or release-readiness claim for current Hebrew
+candidate generation; generated batches remain candidate synthetic inputs
+until downstream `hocrgen` governance admits them.
 
 ## External hocrgen Dependency Labels
 

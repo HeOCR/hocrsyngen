@@ -28,6 +28,11 @@ from hocrsyngen.rendering_coverage import write_rendering_coverage_report
 from hocrsyngen.validation import BatchValidationError, validate_batch
 from hocrsyngen.wet_analysis import analyze_wet_test_run
 from hocrsyngen.wet_gallery import create_wet_gallery
+from hocrsyngen.wet_review import (
+    REVIEW_FORMATS,
+    build_wet_review_template,
+    validate_wet_review,
+)
 from hocrsyngen.wet_run import create_wet_test_smoke_run
 
 
@@ -832,6 +837,62 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format for the analysis summary.",
     )
+    wet_review_template = subparsers.add_parser(
+        "wet-review-template",
+        help=(
+            "Generate a human-review worksheet template for an existing wet-test "
+            "run."
+        ),
+    )
+    wet_review_template.add_argument(
+        "run_root",
+        type=Path,
+        help="Existing wet-test run directory created by hocrsyngen wet-run.",
+    )
+    wet_review_template.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help=(
+            "Output review template path. Must be inside the wet-test run "
+            "directory and use a .csv, .jsonl, or .ndjson extension."
+        ),
+    )
+    wet_review_template.add_argument(
+        "--review-format",
+        choices=REVIEW_FORMATS,
+        default="csv",
+        help="Review worksheet format. Defaults to csv.",
+    )
+    wet_review_template.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the template summary.",
+    )
+    wet_review_validate = subparsers.add_parser(
+        "wet-review-validate",
+        help=(
+            "Validate a completed human-review worksheet for an existing "
+            "wet-test run."
+        ),
+    )
+    wet_review_validate.add_argument(
+        "run_root",
+        type=Path,
+        help="Existing wet-test run directory created by hocrsyngen wet-run.",
+    )
+    wet_review_validate.add_argument(
+        "review_path",
+        type=Path,
+        help="Completed review worksheet (.csv, .jsonl, or .ndjson).",
+    )
+    wet_review_validate.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the validation summary.",
+    )
     evidence_run = subparsers.add_parser(
         "evidence-run",
         help="Generate a candidate batch with operator evidence and progress logs.",
@@ -1067,6 +1128,48 @@ def main(argv: list[str] | None = None) -> int:
                 f"hard_blockers={result.payload['summary']['hard_blocker_count']}"
             )
         return 1 if result.payload["hard_blockers"] else 0
+    if args.command == "wet-review-template":
+        try:
+            template_result = build_wet_review_template(
+                run_root=args.run_root,
+                output=args.output,
+                review_format=args.review_format,
+            )
+        except (OSError, RuntimeError, ValueError) as exc:
+            parser.error(f"wet-review-template: {exc}")
+        if args.format == "json":
+            print(json.dumps(template_result.payload, ensure_ascii=False, indent=2))
+        else:
+            print(
+                "Wet-review template wrote "
+                f"{template_result.payload['row_count']} rows to "
+                f"{template_result.output} ({template_result.payload['review_format']})"
+            )
+        return 0
+    if args.command == "wet-review-validate":
+        try:
+            validation_result = validate_wet_review(
+                run_root=args.run_root,
+                review_path=args.review_path,
+            )
+        except (OSError, RuntimeError, ValueError) as exc:
+            parser.error(f"wet-review-validate: {exc}")
+        if args.format == "json":
+            print(json.dumps(validation_result.payload, ensure_ascii=False, indent=2))
+        else:
+            summary = validation_result.payload["summary"]
+            decision_counts = validation_result.payload["decision_counts"]
+            print(
+                "Wet-review validation inspected "
+                f"{summary['row_count']} rows; "
+                f"valid={validation_result.payload['valid']} "
+                f"errors={summary['error_count']} "
+                f"pass={decision_counts['pass']} "
+                f"hold={decision_counts['hold']} "
+                f"reject={decision_counts['reject']} "
+                f"unreviewed={decision_counts['unreviewed']}"
+            )
+        return 0 if validation_result.payload["valid"] else 1
     if args.command == "evidence-run":
         try:
             report = _run_evidence_capture(
