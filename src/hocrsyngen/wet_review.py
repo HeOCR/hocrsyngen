@@ -10,14 +10,13 @@ from typing import Any
 
 from hocrsyngen.validation import validate_batch
 from hocrsyngen.wet_run_artifact import (
-    WetRunBatch,
+    ResolvedWetRunBatch,
+    WetRunArtifactError,
     load_wet_run_payload,
     portable_path,
     read_batches,
     relative_to_run,
-    require_passed_run,
     resolve_run_path,
-    validated_manifest_path,
 )
 
 
@@ -195,18 +194,16 @@ def validate_wet_review(
     reason_code_counts: dict[str, int] = {code: 0 for code in REASON_CODES}
     regression_fixture_count = 0
     reviewed_count = 0
-    unreviewed_count = 0
 
     for row in rows:
         fields = row.fields
-        batch_id = _get_str(fields, "batch_id")
-        sample_id = _get_str(fields, "sample_id")
-        page_id = _get_str(fields, "page_id")
-        decision = _get_str(fields, "decision")
-        severity = _get_str(fields, "severity")
-        notes = _get_str(fields, "notes")
-        regression_text = _get_str(fields, "regression_fixture_candidate")
-        reviewer = _get_str(fields, "reviewer")
+        batch_id = fields["batch_id"]
+        sample_id = fields["sample_id"]
+        page_id = fields["page_id"]
+        decision = fields["decision"]
+        severity = fields["severity"]
+        regression_text = fields["regression_fixture_candidate"]
+        reviewer = fields["reviewer"]
         reason_codes = row.raw_reason_codes
 
         key = (batch_id, sample_id, page_id)
@@ -265,7 +262,6 @@ def validate_wet_review(
                     )
                 )
         else:
-            unreviewed_count += 1
             if reviewer:
                 errors.append(
                     _ReviewError(
@@ -344,10 +340,6 @@ def validate_wet_review(
                     )
                 )
 
-        # `notes` is free-form; we don't validate its contents but suppress
-        # the unused-binding lint by referencing it.
-        del notes
-
     for batch_id, sample_id, page_id in sorted(expected_keys - seen_keys):
         errors.append(
             _ReviewError(
@@ -374,7 +366,8 @@ def validate_wet_review(
             "row_count": len(rows),
             "expected_page_count": len(expected_keys),
             "reviewed_page_count": reviewed_count,
-            "unreviewed_page_count": unreviewed_count,
+            # Derived: rows that landed in `unreviewed` because decision was blank.
+            "unreviewed_page_count": len(rows) - reviewed_count,
             "regression_fixture_candidate_count": regression_fixture_count,
             "error_count": len(errors),
         },
@@ -403,16 +396,14 @@ _SCOPE: dict[str, bool] = {
 
 
 def _reviewable_pages(run_root: Path) -> list[_ReviewablePage]:
-    run_payload = load_wet_run_payload(run_root)
-    require_passed_run(run_payload)
+    run_payload = load_wet_run_payload(run_root, require_passed=True)
     batches = read_batches(run_payload)
     pages: list[_ReviewablePage] = []
     for batch in batches:
-        batch_dir = resolve_run_path(run_root, batch.batch_path)
-        validate_batch(batch_dir)
-        manifest_path = resolve_run_path(run_root, validated_manifest_path(batch))
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        pages.extend(_pages_for_batch(run_root, batch, manifest))
+        resolved = batch.resolved(run_root)
+        validate_batch(resolved.batch_dir)
+        manifest = json.loads(resolved.manifest_path_abs.read_text(encoding="utf-8"))
+        pages.extend(_pages_for_batch(run_root, resolved, manifest))
     pages.sort(
         key=lambda page: (
             page.batch_id,
@@ -426,28 +417,30 @@ def _reviewable_pages(run_root: Path) -> list[_ReviewablePage]:
 
 def _pages_for_batch(
     run_root: Path,
-    batch: WetRunBatch,
+    batch: ResolvedWetRunBatch,
     manifest: dict[str, Any],
 ) -> list[_ReviewablePage]:
     samples = manifest.get("samples", [])
     if not isinstance(samples, list):
-        raise ValueError(f"manifest samples must be a list: {batch.manifest_path}")
+        raise WetRunArtifactError(
+            f"manifest samples must be a list: {batch.manifest_path}"
+        )
     batch_path = PurePosixPath(batch.batch_path)
     pages: list[_ReviewablePage] = []
     for sample in samples:
         if not isinstance(sample, dict):
-            raise ValueError(
+            raise WetRunArtifactError(
                 f"manifest sample must be an object: {batch.manifest_path}"
             )
         provenance = sample.get("provenance") or {}
         controls = sample.get("controls") or {}
         sample_pages = sample.get("pages", [])
         if not isinstance(provenance, dict) or not isinstance(controls, dict):
-            raise ValueError(
+            raise WetRunArtifactError(
                 f"manifest sample metadata is invalid: {batch.manifest_path}"
             )
         if not isinstance(sample_pages, list):
-            raise ValueError(
+            raise WetRunArtifactError(
                 f"manifest sample pages must be a list: {batch.manifest_path}"
             )
         sample_id = str(sample.get("sample_id", ""))
@@ -459,16 +452,10 @@ def _pages_for_batch(
         font_id = str(provenance.get("font_id", ""))
         for page in sample_pages:
             if not isinstance(page, dict):
-                raise ValueError(
+                raise WetRunArtifactError(
                     f"manifest page must be an object: {batch.manifest_path}"
                 )
-            portable_asset = portable_path(page.get("asset_path"))
-            if portable_asset is None:
-                raise ValueError(
-                    "manifest asset path must be relative and portable: "
-                    f"{page.get('asset_path')!r}"
-                )
-            run_asset_path = batch_path / portable_asset
+            run_asset_path = batch_path / portable_path(page.get("asset_path"))
             # Verify the asset resolves under the run root before recording it.
             resolve_run_path(run_root, run_asset_path.as_posix())
             pages.append(
@@ -509,7 +496,7 @@ def _write_jsonl_template(output: Path, pages: list[_ReviewablePage]) -> None:
     output.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
 
 
-def _csv_template_row(page: _ReviewablePage) -> dict[str, str]:
+def _manifest_derived_fields(page: _ReviewablePage) -> dict[str, str]:
     return {
         "batch_id": page.batch_id,
         "sample_id": page.sample_id,
@@ -521,6 +508,12 @@ def _csv_template_row(page: _ReviewablePage) -> dict[str, str]:
         "degradation": page.degradation,
         "font_id": page.font_id,
         "asset_path": page.asset_path,
+    }
+
+
+def _csv_template_row(page: _ReviewablePage) -> dict[str, str]:
+    return {
+        **_manifest_derived_fields(page),
         "reviewer": "",
         "decision": "",
         "severity": "",
@@ -531,9 +524,14 @@ def _csv_template_row(page: _ReviewablePage) -> dict[str, str]:
 
 
 def _jsonl_template_row(page: _ReviewablePage) -> dict[str, object]:
-    row = _csv_template_row(page)
     # JSON Lines worksheets carry reason_codes as a real JSON array.
-    row["reason_codes"] = []  # type: ignore[assignment]
+    row: dict[str, object] = dict(_manifest_derived_fields(page))
+    row["reviewer"] = ""
+    row["decision"] = ""
+    row["severity"] = ""
+    row["reason_codes"] = []
+    row["notes"] = ""
+    row["regression_fixture_candidate"] = ""
     return row
 
 
@@ -658,9 +656,7 @@ def _coerce_jsonl_reason_codes(value: object) -> tuple[str, ...]:
     return (str(value).strip(),)
 
 
-def _get_str(fields: Mapping[str, str], key: str) -> str:
-    return (fields.get(key) or "").strip()
-
-
-def _error_sort_key(error: _ReviewError) -> tuple[str, int, str]:
-    return (error.code, error.row if error.row is not None else 0, error.message)
+def _error_sort_key(error: _ReviewError) -> tuple[str, int]:
+    # Sort by (code, row); Python's stable sort preserves insertion order
+    # for ties so error messages don't influence the sort.
+    return (error.code, error.row if error.row is not None else 0)

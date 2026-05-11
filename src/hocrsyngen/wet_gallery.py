@@ -9,15 +9,12 @@ from typing import Any
 
 from hocrsyngen.validation import validate_batch
 from hocrsyngen.wet_run_artifact import (
-    WetRunArtifactError,
-    WetRunBatch,
+    ResolvedWetRunBatch,
     load_wet_run_payload,
     portable_relative_str,
     read_batches,
     relative_to_run,
-    require_passed_run,
     resolve_run_path,
-    validated_manifest_path,
 )
 
 
@@ -69,23 +66,18 @@ def create_wet_gallery(*, run_root: Path, output: Path) -> WetGalleryResult:
             f"gallery output directory already exists and is not empty: {output}"
         )
 
-    run_payload = load_wet_run_payload(run_root)
-    require_passed_run(run_payload)
+    run_payload = load_wet_run_payload(run_root, require_passed=True)
     batches = read_batches(run_payload)
     pages: list[GalleryPage] = []
     for batch in batches:
-        batch_dir = resolve_run_path(run_root, batch.batch_path)
-        validate_batch(batch_dir)
-        manifest_path = resolve_run_path(
-            run_root,
-            validated_manifest_path(batch),
-        )
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        resolved = batch.resolved(run_root)
+        validate_batch(resolved.batch_dir)
+        manifest = json.loads(resolved.manifest_path_abs.read_text(encoding="utf-8"))
         pages.extend(
             _gallery_pages(
                 run_root=run_root,
                 output=output,
-                batch=batch,
+                batch=resolved,
                 manifest=manifest,
             )
         )
@@ -125,7 +117,7 @@ def _gallery_pages(
     *,
     run_root: Path,
     output: Path,
-    batch: WetRunBatch,
+    batch: ResolvedWetRunBatch,
     manifest: dict[str, Any],
 ) -> list[GalleryPage]:
     samples = manifest.get("samples", [])
@@ -328,12 +320,3 @@ def _relative_href(from_dir: Path, target: Path) -> str:
     if path.is_absolute() or "\\" in path.as_posix():
         raise ValueError(f"could not create relative gallery link for: {target}")
     return path.as_posix()
-
-
-__all__ = [
-    "WET_GALLERY_INDEX_FILENAME",
-    "WET_GALLERY_REPORT_VERSION",
-    "WetGalleryResult",
-    "WetRunArtifactError",
-    "create_wet_gallery",
-]

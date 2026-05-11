@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import io
 import json
 import os
 import subprocess
@@ -2050,19 +2051,17 @@ def _find_row(
     )
 
 
-def _default_batch_first_row_keys(
+def _min_default_batch_page_key(
     run_root: Path,
 ) -> tuple[str, str, str]:
-    """Return the (batch_id, sample_id, page_id) for the first row of the
-    default ``default_governed_templates`` batch. Stable across runs because
-    the batch's sample ordering is deterministic."""
-    candidates = sorted(
+    """Return the tuple-minimum (batch_id, sample_id, page_id) within the
+    ``default_governed_templates`` batch. Stable across runs because the
+    batch's sample ordering is deterministic."""
+    return min(
         key
         for key in _enumerate_wet_run_pages(run_root)
         if key[0] == "default_governed_templates"
     )
-    assert candidates, "default_governed_templates batch missing from wet-run"
-    return candidates[0]
 
 
 def _generate_template(
@@ -2259,7 +2258,7 @@ def test_wet_review_validate_handles_completed_jsonl_template(
     wet_run: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     review_path = _generate_template(wet_run, capsys, review_format="jsonl")
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     lines = []
     for raw in review_path.read_text(encoding="utf-8").splitlines():
         if not raw.strip():
@@ -2297,7 +2296,7 @@ def test_wet_review_validate_rejects_unknown_page_ids(
 ) -> None:
     review_path = _generate_template(wet_run, capsys)
     rows = _read_review_csv(review_path)
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
     target["page_id"] = "page_does_not_exist"
     _write_review_csv(review_path, rows)
@@ -2326,7 +2325,7 @@ def test_wet_review_validate_rejects_unknown_decision_states(
 ) -> None:
     review_path = _generate_template(wet_run, capsys)
     rows = _read_review_csv(review_path)
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
     target["reviewer"] = "rv"
     target["decision"] = "approved"
@@ -2358,7 +2357,7 @@ def test_wet_review_validate_rejects_unknown_severity_levels(
 ) -> None:
     review_path = _generate_template(wet_run, capsys)
     rows = _read_review_csv(review_path)
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
     target["reviewer"] = "rv"
     target["decision"] = "hold"
@@ -2388,7 +2387,7 @@ def test_wet_review_validate_rejects_unknown_reason_codes(
 ) -> None:
     review_path = _generate_template(wet_run, capsys)
     rows = _read_review_csv(review_path)
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
     target["reviewer"] = "rv"
     target["decision"] = "reject"
@@ -2421,18 +2420,19 @@ def test_wet_review_validate_rejects_unknown_reason_codes(
 def test_wet_review_validate_rejects_missing_csv_field(
     wet_run: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    from hocrsyngen.wet_review import REVIEW_FIELDS
+
     review_path = _generate_template(wet_run, capsys)
     text = review_path.read_text(encoding="utf-8")
+    severity_index = REVIEW_FIELDS.index("severity")
     # Drop the `severity` column entirely (header + every row's column).
-    rewritten_lines = []
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, lineterminator="\n")
     for line in text.splitlines():
         cells = next(csv.reader([line]))
-        # Position of "severity" in REVIEW_FIELDS is fixed by the writer.
-        del cells[12]  # severity index
-        rewritten_lines.append(
-            ",".join(_csv_quote(cell) for cell in cells)
-        )
-    review_path.write_text("\n".join(rewritten_lines) + "\n", encoding="utf-8")
+        cells.pop(severity_index)
+        writer.writerow(cells)
+    review_path.write_text(buffer.getvalue(), encoding="utf-8")
 
     assert (
         main(
@@ -2503,7 +2503,7 @@ def test_wet_review_validate_rejects_invalid_regression_fixture_value(
 ) -> None:
     review_path = _generate_template(wet_run, capsys)
     rows = _read_review_csv(review_path)
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
     target["reviewer"] = "rv"
     target["decision"] = "pass"
@@ -2534,7 +2534,7 @@ def test_wet_review_validate_requires_severity_and_reason_codes_for_hold_or_reje
 ) -> None:
     review_path = _generate_template(wet_run, capsys)
     rows = _read_review_csv(review_path)
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
     target["reviewer"] = "rv"
     target["decision"] = "reject"
@@ -2564,7 +2564,7 @@ def test_wet_review_validate_requires_reviewer_on_reviewed_rows(
 ) -> None:
     review_path = _generate_template(wet_run, capsys)
     rows = _read_review_csv(review_path)
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
     target["decision"] = "pass"
     # reviewer intentionally left blank.
@@ -2591,7 +2591,7 @@ def test_wet_review_validate_flags_reviewer_without_decision(
 ) -> None:
     review_path = _generate_template(wet_run, capsys)
     rows = _read_review_csv(review_path)
-    keys = _default_batch_first_row_keys(wet_run)
+    keys = _min_default_batch_page_key(wet_run)
     target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
     target["reviewer"] = "rv"
     # decision intentionally left blank.
@@ -2649,7 +2649,7 @@ def test_wet_review_validate_does_not_change_generation_manifest_v1(
     before = {path: sha256_file(path) for path in manifest_paths}
 
     rows = _read_review_csv(review_path)
-    keys_one = _default_batch_first_row_keys(wet_run)
+    keys_one = _min_default_batch_page_key(wet_run)
     first = _find_row(
         rows, batch_id=keys_one[0], sample_id=keys_one[1], page_id=keys_one[2]
     )
@@ -2690,17 +2690,6 @@ def test_wet_review_validate_does_not_change_generation_manifest_v1(
 
     after = {path: sha256_file(path) for path in manifest_paths}
     assert before == after
-
-
-def _csv_quote(value: str) -> str:
-    """Tiny CSV-safe quoter used by the missing-field test."""
-    if not value:
-        return ""
-    needs_quote = any(ch in value for ch in (",", '"', "\n", "\r"))
-    if not needs_quote:
-        return value
-    escaped = value.replace('"', '""')
-    return f'"{escaped}"'
 
 
 def test_wet_run_smoke_rejects_reusing_existing_run_directory(

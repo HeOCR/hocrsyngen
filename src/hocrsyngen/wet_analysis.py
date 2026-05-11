@@ -14,10 +14,9 @@ from hocrsyngen.validation import BatchValidationError, validate_batch
 from hocrsyngen.wet_run_artifact import (
     BatchReadError,
     load_wet_run_payload,
-    portable_path,
     read_batches_safely,
     resolve_run_path,
-    validated_manifest_path,
+    try_portable_path,
 )
 
 
@@ -104,9 +103,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
 
     for batch in batches:
         try:
-            batch_dir = resolve_run_path(run_root, batch.batch_path)
-            manifest_path_text = validated_manifest_path(batch)
-            manifest_path = resolve_run_path(run_root, manifest_path_text)
+            resolved = batch.resolved(run_root)
         except ValueError as exc:
             hard_blockers.append(
                 _finding(
@@ -119,7 +116,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
             )
             continue
         try:
-            validate_batch(batch_dir)
+            validate_batch(resolved.batch_dir)
         except BatchValidationError as exc:
             hard_blockers.append(
                 _finding(
@@ -130,19 +127,19 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                     source_path=batch.batch_path,
                 )
             )
-        if not manifest_path.is_file():
+        if not resolved.manifest_path_abs.is_file():
             hard_blockers.append(
                 _finding(
                     code="manifest_missing",
                     severity="P0",
                     message="Batch manifest is missing.",
                     batch_id=batch.batch_id,
-                    source_path=manifest_path_text,
+                    source_path=resolved.manifest_path,
                 )
             )
             continue
         try:
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest = json.loads(resolved.manifest_path_abs.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             hard_blockers.append(
                 _finding(
@@ -153,7 +150,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                         f"column {exc.colno}: {exc.msg}"
                     ),
                     batch_id=batch.batch_id,
-                    source_path=manifest_path_text,
+                    source_path=resolved.manifest_path,
                 )
             )
             continue
@@ -165,7 +162,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                     severity="P0",
                     message="Manifest samples must be a list.",
                     batch_id=batch.batch_id,
-                    source_path=manifest_path_text,
+                    source_path=resolved.manifest_path,
                 )
             )
             continue
@@ -177,7 +174,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                         severity="P0",
                         message="Manifest sample must be an object.",
                         batch_id=batch.batch_id,
-                        source_path=manifest_path_text,
+                        source_path=resolved.manifest_path,
                     )
                 )
                 continue
@@ -224,7 +221,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                         message="Manifest sample pages must be a list.",
                         batch_id=batch.batch_id,
                         sample_id=sample_id,
-                        source_path=manifest_path_text,
+                        source_path=resolved.manifest_path,
                     )
                 )
                 continue
@@ -237,14 +234,14 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                             message="Manifest page must be an object.",
                             batch_id=batch.batch_id,
                             sample_id=sample_id,
-                            source_path=manifest_path_text,
+                            source_path=resolved.manifest_path,
                         )
                     )
                     continue
                 page_id = str(page.get("page_id", ""))
                 page_ids[page_id] += 1
                 asset_path = str(page.get("asset_path", ""))
-                portable_asset = portable_path(asset_path)
+                portable_asset = try_portable_path(asset_path)
                 if portable_asset is None:
                     unsafe_path_count += 1
                     hard_blockers.append(
@@ -522,7 +519,7 @@ def _load_checksum_inventory(run_root: Path) -> ChecksumInventory:
         ):
             malformed_line_count += 1
             continue
-        if portable_path(relative_path) is None:
+        if try_portable_path(relative_path) is None:
             unsafe_path_count += 1
             continue
         if relative_path in entries:
@@ -590,7 +587,7 @@ def _expected_checksum_paths(run_payload: dict[str, Any]) -> set[str]:
         paths.update(
             path
             for path in artifact_checksums
-            if isinstance(path, str) and portable_path(path) is not None
+            if isinstance(path, str) and try_portable_path(path) is not None
         )
     checksum_contract = run_payload.get("checksum_contract", {})
     if isinstance(checksum_contract, dict):
@@ -599,7 +596,7 @@ def _expected_checksum_paths(run_payload: dict[str, Any]) -> set[str]:
             paths.update(
                 path
                 for path in included
-                if isinstance(path, str) and portable_path(path) is not None
+                if isinstance(path, str) and try_portable_path(path) is not None
             )
     return paths
 
