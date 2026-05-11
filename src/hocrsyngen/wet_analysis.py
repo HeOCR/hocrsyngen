@@ -11,10 +11,16 @@ from PIL import Image, UnidentifiedImageError
 from hocrsyngen.generator import GOVERNED_TEMPLATE_IDS, rich_template_catalog
 from hocrsyngen.io import sha256_file
 from hocrsyngen.validation import BatchValidationError, validate_batch
+from hocrsyngen.wet_run_artifact import (
+    BatchReadError,
+    load_wet_run_payload,
+    read_batches_safely,
+    resolve_run_path,
+    try_portable_path,
+)
 
 
 WET_ANALYSIS_REPORT_VERSION = "wet_analysis_report.v1"
-WET_TEST_RUN_FILENAME = "wet_test_run.json"
 NEAR_BLANK_INK_DENSITY_MAX = 0.002
 LOW_INK_DENSITY_MIN = 0.01
 HIGH_INK_DENSITY_MAX = 0.95
@@ -25,14 +31,6 @@ INK_LUMA_THRESHOLD = 128
 class WetAnalysisResult:
     run_root: Path
     payload: dict[str, Any]
-
-
-@dataclass(frozen=True)
-class AnalysisBatch:
-    batch_id: str
-    role: str
-    batch_path: str
-    manifest_path: str
 
 
 @dataclass(frozen=True)
@@ -65,7 +63,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
     if not run_root.is_dir():
         raise ValueError(f"wet-test run directory does not exist: {run_root}")
 
-    run_payload = _load_wet_test_run(run_root)
+    run_payload = load_wet_run_payload(run_root)
     if run_payload.get("status") != "passed":
         hard_blockers.append(
             _finding(
@@ -76,7 +74,9 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
             )
         )
 
-    batches = _analysis_batches(run_payload, hard_blockers)
+    batches, batch_errors = read_batches_safely(run_payload)
+    for error in batch_errors:
+        hard_blockers.append(_batch_read_error_to_finding(error))
     catalog = _catalog_by_join_key()
     checksum_inventory = _load_checksum_inventory(run_root)
     hard_blockers.extend(_checksum_inventory_blockers(checksum_inventory))
@@ -103,9 +103,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
 
     for batch in batches:
         try:
-            batch_dir = _resolve_run_path(run_root, batch.batch_path)
-            manifest_path_text = _validated_manifest_path(batch)
-            manifest_path = _resolve_run_path(run_root, manifest_path_text)
+            resolved = batch.resolved(run_root)
         except ValueError as exc:
             hard_blockers.append(
                 _finding(
@@ -118,7 +116,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
             )
             continue
         try:
-            validate_batch(batch_dir)
+            validate_batch(resolved.batch_dir)
         except BatchValidationError as exc:
             hard_blockers.append(
                 _finding(
@@ -129,19 +127,19 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                     source_path=batch.batch_path,
                 )
             )
-        if not manifest_path.is_file():
+        if not resolved.manifest_path_abs.is_file():
             hard_blockers.append(
                 _finding(
                     code="manifest_missing",
                     severity="P0",
                     message="Batch manifest is missing.",
                     batch_id=batch.batch_id,
-                    source_path=manifest_path_text,
+                    source_path=resolved.manifest_path,
                 )
             )
             continue
         try:
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest = json.loads(resolved.manifest_path_abs.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
             hard_blockers.append(
                 _finding(
@@ -152,7 +150,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                         f"column {exc.colno}: {exc.msg}"
                     ),
                     batch_id=batch.batch_id,
-                    source_path=manifest_path_text,
+                    source_path=resolved.manifest_path,
                 )
             )
             continue
@@ -164,7 +162,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                     severity="P0",
                     message="Manifest samples must be a list.",
                     batch_id=batch.batch_id,
-                    source_path=manifest_path_text,
+                    source_path=resolved.manifest_path,
                 )
             )
             continue
@@ -176,7 +174,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                         severity="P0",
                         message="Manifest sample must be an object.",
                         batch_id=batch.batch_id,
-                        source_path=manifest_path_text,
+                        source_path=resolved.manifest_path,
                     )
                 )
                 continue
@@ -223,7 +221,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                         message="Manifest sample pages must be a list.",
                         batch_id=batch.batch_id,
                         sample_id=sample_id,
-                        source_path=manifest_path_text,
+                        source_path=resolved.manifest_path,
                     )
                 )
                 continue
@@ -236,14 +234,14 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                             message="Manifest page must be an object.",
                             batch_id=batch.batch_id,
                             sample_id=sample_id,
-                            source_path=manifest_path_text,
+                            source_path=resolved.manifest_path,
                         )
                     )
                     continue
                 page_id = str(page.get("page_id", ""))
                 page_ids[page_id] += 1
                 asset_path = str(page.get("asset_path", ""))
-                portable_asset = _portable_path(asset_path)
+                portable_asset = try_portable_path(asset_path)
                 if portable_asset is None:
                     unsafe_path_count += 1
                     hard_blockers.append(
@@ -262,7 +260,7 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
                     )
                     continue
                 run_asset_path = PurePosixPath(batch.batch_path) / portable_asset
-                asset_abs = _resolve_run_path(run_root, run_asset_path.as_posix())
+                asset_abs = resolve_run_path(run_root, run_asset_path.as_posix())
                 expected_sha = str(page.get("sha256", ""))
                 actual_sha = sha256_file(asset_abs) if asset_abs.is_file() else ""
                 if actual_sha:
@@ -475,100 +473,13 @@ def analyze_wet_test_run(*, run_root: Path) -> WetAnalysisResult:
     return WetAnalysisResult(run_root=run_root, payload=payload)
 
 
-def _load_wet_test_run(run_root: Path) -> dict[str, Any]:
-    path = run_root / "reports" / WET_TEST_RUN_FILENAME
-    if not path.is_file():
-        raise ValueError(f"missing wet-test run report: {path}")
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if payload.get("report_version") != "wet_test_run.v1":
-        raise ValueError("wet-analyze requires a wet_test_run.v1 report")
-    return payload
-
-
-def _analysis_batches(
-    run_payload: dict[str, Any],
-    hard_blockers: list[dict[str, object]],
-) -> list[AnalysisBatch]:
-    generated_batch = run_payload.get("generated_batch")
-    if not isinstance(generated_batch, dict):
-        hard_blockers.append(
-            _finding(
-                code="wet_run_report_invalid",
-                severity="P0",
-                message="wet-test run report is missing generated_batch",
-                source_path="reports/wet_test_run.json",
-            )
-        )
-        return []
-    batches: list[AnalysisBatch] = []
-    generated = _analysis_batch_from_payload(
-        generated_batch,
-        fallback_batch_id="generated_batch",
-        fallback_role="generated_batch",
-        hard_blockers=hard_blockers,
-    )
-    if generated is not None:
-        batches.append(generated)
-    supplemental_batches = run_payload.get("supplemental_batches", [])
-    if not isinstance(supplemental_batches, list):
-        hard_blockers.append(
-            _finding(
-                code="wet_run_report_invalid",
-                severity="P0",
-                message="wet-test run report supplemental_batches must be a list",
-                source_path="reports/wet_test_run.json",
-            )
-        )
-        return batches
-    for index, raw_batch in enumerate(supplemental_batches):
-        if not isinstance(raw_batch, dict):
-            hard_blockers.append(
-                _finding(
-                    code="wet_run_report_invalid",
-                    severity="P0",
-                    message="wet-test run report supplemental batch must be an object",
-                    source_path="reports/wet_test_run.json",
-                )
-            )
-            continue
-        batch = _analysis_batch_from_payload(
-            raw_batch,
-            fallback_batch_id=f"supplemental_{index}",
-            fallback_role="supplemental",
-            hard_blockers=hard_blockers,
-        )
-        if batch is not None:
-            batches.append(batch)
-    return batches
-
-
-def _analysis_batch_from_payload(
-    raw_batch: dict[str, Any],
-    *,
-    fallback_batch_id: str,
-    fallback_role: str,
-    hard_blockers: list[dict[str, object]],
-) -> AnalysisBatch | None:
-    batch_id = str(raw_batch.get("batch_id", fallback_batch_id))
-    try:
-        batch_path = _portable_relative_str(raw_batch.get("batch_path"))
-        manifest_path = _portable_relative_str(raw_batch.get("manifest_path"))
-    except ValueError as exc:
-        hard_blockers.append(
-            _finding(
-                code="wet_run_batch_path_invalid",
-                severity="P0",
-                message=str(exc),
-                batch_id=batch_id,
-                source_path="reports/wet_test_run.json",
-            )
-        )
-        return None
-    return AnalysisBatch(
-        batch_id=batch_id,
-        role=str(raw_batch.get("role", fallback_role)),
-        batch_path=batch_path,
-        manifest_path=manifest_path,
+def _batch_read_error_to_finding(error: BatchReadError) -> dict[str, object]:
+    return _finding(
+        code=error.code,
+        severity="P0",
+        message=error.message,
+        batch_id=error.batch_id,
+        source_path="reports/wet_test_run.json",
     )
 
 
@@ -608,7 +519,7 @@ def _load_checksum_inventory(run_root: Path) -> ChecksumInventory:
         ):
             malformed_line_count += 1
             continue
-        if _portable_path(relative_path) is None:
+        if try_portable_path(relative_path) is None:
             unsafe_path_count += 1
             continue
         if relative_path in entries:
@@ -676,7 +587,7 @@ def _expected_checksum_paths(run_payload: dict[str, Any]) -> set[str]:
         paths.update(
             path
             for path in artifact_checksums
-            if isinstance(path, str) and _portable_path(path) is not None
+            if isinstance(path, str) and try_portable_path(path) is not None
         )
     checksum_contract = run_payload.get("checksum_contract", {})
     if isinstance(checksum_contract, dict):
@@ -685,22 +596,9 @@ def _expected_checksum_paths(run_payload: dict[str, Any]) -> set[str]:
             paths.update(
                 path
                 for path in included
-                if isinstance(path, str) and _portable_path(path) is not None
+                if isinstance(path, str) and try_portable_path(path) is not None
             )
     return paths
-
-
-def _validated_manifest_path(batch: AnalysisBatch) -> str:
-    manifest_path = PurePosixPath(batch.manifest_path)
-    expected_manifest_path = (
-        PurePosixPath(batch.batch_path) / "generation_manifest.json"
-    )
-    if manifest_path != expected_manifest_path:
-        raise ValueError(
-            "wet-test run manifest_path must match the validated batch manifest: "
-            f"{batch.manifest_path}"
-        )
-    return manifest_path.as_posix()
 
 
 def _page_metric(
@@ -1027,29 +925,3 @@ def _ratio(numerator: int, denominator: int) -> float:
 
 def _optional_int(value: object) -> int | None:
     return value if isinstance(value, int) and not isinstance(value, bool) else None
-
-
-def _portable_path(value: object) -> PurePosixPath | None:
-    if not isinstance(value, str) or not value:
-        return None
-    path = PurePosixPath(value)
-    if path.is_absolute() or ".." in path.parts or "\\" in value:
-        return None
-    return path
-
-
-def _portable_relative_str(value: object) -> str:
-    path = _portable_path(value)
-    if path is None:
-        raise ValueError(f"expected a portable relative path: {value}")
-    return path.as_posix()
-
-
-def _resolve_run_path(run_root: Path, relative_path: str) -> Path:
-    portable = PurePosixPath(_portable_relative_str(relative_path))
-    resolved = (run_root / Path(*portable.parts)).resolve()
-    try:
-        resolved.relative_to(run_root)
-    except ValueError as exc:
-        raise ValueError(f"path escapes wet-test run root: {relative_path}") from exc
-    return resolved

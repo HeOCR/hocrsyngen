@@ -58,6 +58,8 @@ hocrsyngen validate out/fixture-batch --format json
 hocrsyngen wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
 hocrsyngen wet-gallery out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/gallery
 hocrsyngen wet-analyze out/wet-tests/smoke-17 --format json
+hocrsyngen wet-review-template out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/review/human_review.csv --format json
+hocrsyngen wet-review-validate out/wet-tests/smoke-17 out/wet-tests/smoke-17/review/human_review.csv --format json
 hocrsyngen evidence-run --count 20 --seed 101
 ```
 
@@ -143,9 +145,10 @@ behavior.
 S8a defines the developer-owned wet-testing program for generator-quality
 evidence. S8b adds a deterministic wet-test smoke run artifact generator, S8c
 adds the candidate evidence-run wrapper for downstream preflight evidence, S8d
-adds the human-first static gallery over existing wet-test runs, and S8e adds
-deterministic warning metrics over wet-test runs without adding release
-governance, baseline LLM/network dependencies, schemas, review sidecars, or
+adds the human-first static gallery over existing wet-test runs, S8e adds
+deterministic warning metrics over wet-test runs, and S8f adds the human
+review worksheet template and validator over existing wet-test runs without
+adding release governance, baseline LLM/network dependencies, schemas, or
 manifest v1 changes.
 Readiness for public dataset use still depends on downstream `hocrgen` import
 governance, review, caps, dedupe, release assembly, export, and publication
@@ -201,6 +204,37 @@ mismatches, unreadable images, or unsafe paths stay separate from warnings. The
 report is source-backed local analysis only; it does not claim realism
 acceptance, OCR/HTR utility, domain match, release readiness, export,
 publication, or downstream governance behavior.
+
+`hocrsyngen wet-review-template RUN_ROOT --output RUN_ROOT/review/human_review.csv`
+writes a deterministic human-review worksheet for an existing passed `wet-run`
+directory. It validates each referenced batch, enumerates every sample/page
+from the validated manifests, and pre-fills the manifest-derived columns so
+reviewers only have to record their identifier, decision, severity, reason
+codes, notes, and regression-fixture flag. The canonical column list is
+`REVIEW_FIELDS` in `src/hocrsyngen/wet_review.py`. Default output is CSV; JSON
+Lines is also supported via `--review-format jsonl`. The summary report is
+`wet_review_template_report.v1`. The command is a human-evidence aid only; it
+does not change `generation_manifest.json` v1 and does not claim realism
+acceptance, OCR/HTR utility, release readiness, export, publication, or
+downstream governance behavior.
+
+CSV worksheets carry `reason_codes` as a comma-separated string (the CSV
+writer quotes the field automatically when it contains a comma). JSON Lines
+worksheets carry `reason_codes` as a JSON array. The output path must be
+inside the wet-test run directory and must use a `.csv`, `.jsonl`, or
+`.ndjson` extension.
+
+`hocrsyngen wet-review-validate RUN_ROOT REVIEW_PATH --format json` validates
+a completed CSV/JSONL review worksheet against a passed `wet-run` directory.
+The review file must be inside the wet-test run directory. The validator
+checks that every row matches a manifest-derived sample/page id, that every
+reviewed row uses one of the documented decision states
+(`pass`/`hold`/`reject`), severity levels (`P0`/`P1`/`P2`/`info`), and reason
+codes from the wet-testing program plan, that every `hold` or `reject` row
+carries severity, reason codes, and a reviewer identifier, and that no row
+records a reviewer without a decision. The summary report is
+`wet_review_validation_report.v1`; the command exits non-zero on any error
+and does not modify any wet-run artifact.
 
 `hocrsyngen generate --rendering-coverage-report` writes an opt-in
 `rendering_coverage_report.json` sidecar beside the manifest. The sidecar uses

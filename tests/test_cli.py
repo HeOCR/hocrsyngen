@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
 import os
 import subprocess
@@ -284,6 +286,8 @@ INSTALLED_CLI_SMOKE_CASES = [
     "wet-run-smoke",
     "wet-gallery",
     "wet-analyze",
+    "wet-review-template",
+    "wet-review-validate",
     "evidence-run-json",
 ]
 
@@ -689,6 +693,111 @@ def _assert_installed_cli_smoke_case(
         assert analysis["hard_blockers"] == []
         assert analysis["scope"]["release_ready_dataset_artifact"] is False
         assert analysis["scope"]["network_required"] is False
+        return
+
+    if cli_case == "wet-review-template":
+        wet_run_dir = output_root / "wet-review-template-run"
+        review_path = wet_run_dir / "review" / "human_review.csv"
+        _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-run",
+                    "--profile",
+                    "smoke",
+                    "--seed",
+                    "17",
+                    "--output",
+                    str(wet_run_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        template = _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-review-template",
+                    str(wet_run_dir),
+                    "--output",
+                    str(review_path),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert template["report_version"] == "wet_review_template_report.v1"
+        assert template["row_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+        assert template["review_path"] == "review/human_review.csv"
+        assert review_path.is_file()
+        assert template["scope"]["release_ready_dataset_artifact"] is False
+        assert template["scope"]["network_required"] is False
+        return
+
+    if cli_case == "wet-review-validate":
+        wet_run_dir = output_root / "wet-review-validate-run"
+        review_path = wet_run_dir / "review" / "human_review.csv"
+        _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-run",
+                    "--profile",
+                    "smoke",
+                    "--seed",
+                    "17",
+                    "--output",
+                    str(wet_run_dir),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-review-template",
+                    str(wet_run_dir),
+                    "--output",
+                    str(review_path),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        validation = _json_from_successful_cli(
+            _run_installed_cli(
+                command
+                + [
+                    "wet-review-validate",
+                    str(wet_run_dir),
+                    str(review_path),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+                env=env,
+            )
+        )
+        assert validation["report_version"] == "wet_review_validation_report.v1"
+        assert validation["valid"] is True
+        assert validation["errors"] == []
+        assert validation["summary"]["row_count"] == len(GOVERNED_TEMPLATE_IDS) + 1
+        assert validation["summary"]["expected_page_count"] == (
+            len(GOVERNED_TEMPLATE_IDS) + 1
+        )
+        assert validation["scope"]["release_ready_dataset_artifact"] is False
+        assert validation["scope"]["network_required"] is False
         return
 
     if cli_case == "evidence-run-json":
@@ -1845,6 +1954,742 @@ def test_wet_analyze_reports_checksum_inventory_integrity_blockers(
     assert report["path_hash_safety"]["checksum_inventory_malformed_line_count"] == 1
     assert report["path_hash_safety"]["checksum_inventory_unsafe_path_count"] == 1
     assert report["path_hash_safety"]["checksum_inventory_duplicate_path_count"] == 1
+
+
+@pytest.fixture(scope="session")
+def _shared_wet_run(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    from hocrsyngen.wet_run import create_wet_test_smoke_run
+
+    run_root = tmp_path_factory.mktemp("shared-wet-run") / "smoke-17"
+    create_wet_test_smoke_run(
+        output=run_root,
+        seed=17,
+        command_line=[
+            "hocrsyngen",
+            "wet-run",
+            "--profile",
+            "smoke",
+            "--seed",
+            "17",
+            "--output",
+            str(run_root),
+            "--format",
+            "json",
+        ],
+    )
+    return run_root
+
+
+@pytest.fixture
+def wet_run(_shared_wet_run: Path, tmp_path: Path) -> Path:
+    """Per-test copy of the session-shared wet-run so individual tests can
+    mutate the worksheet, manifests, or checksum inventory in isolation."""
+    import shutil
+
+    target = tmp_path / "smoke-17"
+    shutil.copytree(_shared_wet_run, target)
+    return target
+
+
+def _enumerate_wet_run_pages(run_root: Path) -> set[tuple[str, str, str]]:
+    run_payload = json.loads(
+        (run_root / "reports" / "wet_test_run.json").read_text(encoding="utf-8")
+    )
+    batches = [
+        run_payload["generated_batch"],
+        *run_payload.get("supplemental_batches", []),
+    ]
+    keys: set[tuple[str, str, str]] = set()
+    for batch in batches:
+        manifest_path = run_root / Path(*PurePosixPath(batch["manifest_path"]).parts)
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for sample in manifest["samples"]:
+            for page in sample["pages"]:
+                keys.add((batch["batch_id"], sample["sample_id"], page["page_id"]))
+    return keys
+
+
+def _read_review_csv(review_path: Path) -> list[dict[str, str]]:
+    import csv
+
+    with review_path.open("r", encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
+def _write_review_csv(review_path: Path, rows: list[dict[str, str]]) -> None:
+    import csv
+    from hocrsyngen.wet_review import REVIEW_FIELDS
+
+    review_path.parent.mkdir(parents=True, exist_ok=True)
+    with review_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=list(REVIEW_FIELDS),
+            lineterminator="\n",
+        )
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({field: row.get(field, "") for field in REVIEW_FIELDS})
+
+
+def _find_row(
+    rows: list[dict[str, str]],
+    *,
+    batch_id: str,
+    sample_id: str,
+    page_id: str,
+) -> dict[str, str]:
+    for row in rows:
+        if (row["batch_id"], row["sample_id"], row["page_id"]) == (
+            batch_id,
+            sample_id,
+            page_id,
+        ):
+            return row
+    raise AssertionError(
+        f"row not found for batch={batch_id} sample={sample_id} page={page_id}"
+    )
+
+
+def _min_default_batch_page_key(
+    run_root: Path,
+) -> tuple[str, str, str]:
+    """Return the tuple-minimum (batch_id, sample_id, page_id) within the
+    ``default_governed_templates`` batch. Stable across runs because the
+    batch's sample ordering is deterministic."""
+    return min(
+        key
+        for key in _enumerate_wet_run_pages(run_root)
+        if key[0] == "default_governed_templates"
+    )
+
+
+def _generate_template(
+    run_root: Path,
+    capsys: pytest.CaptureFixture[str],
+    *,
+    review_format: str = "csv",
+) -> Path:
+    extension = "csv" if review_format == "csv" else "jsonl"
+    review_path = run_root / "review" / f"human_review.{extension}"
+    args = [
+        "wet-review-template",
+        str(run_root),
+        "--output",
+        str(review_path),
+    ]
+    if review_format != "csv":
+        args.extend(["--review-format", review_format])
+    assert main(args) == 0
+    capsys.readouterr()  # discard the template's text summary
+    return review_path
+
+
+def test_wet_review_template_csv_includes_every_sample_and_page(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = wet_run / "review" / "human_review.csv"
+
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(wet_run),
+                "--output",
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    expected_keys = _enumerate_wet_run_pages(wet_run)
+
+    assert payload["report_version"] == "wet_review_template_report.v1"
+    assert payload["review_path"] == "review/human_review.csv"
+    assert payload["review_format"] == "csv"
+    assert payload["row_count"] == len(expected_keys)
+    assert payload["sample_count"] == len(expected_keys)
+    assert payload["page_count"] == len(expected_keys)
+    assert payload["decision_states"] == ["pass", "hold", "reject"]
+    assert payload["severity_levels"] == ["P0", "P1", "P2", "info"]
+    assert "invalid_manifest" in payload["reason_codes"]
+    assert "run_id" not in payload["review_fields"]
+    assert payload["scope"]["release_ready_dataset_artifact"] is False
+    assert payload["scope"]["network_required"] is False
+    assert payload["scope"]["human_review_sidecar_included"] is True
+
+    template_rows = _read_review_csv(review_path)
+    template_keys = {
+        (row["batch_id"], row["sample_id"], row["page_id"]) for row in template_rows
+    }
+    assert template_keys == expected_keys
+    for row in template_rows:
+        assert row["decision"] == ""
+        assert row["severity"] == ""
+        assert row["reason_codes"] == ""
+        assert row["reviewer"] == ""
+        assert row["regression_fixture_candidate"] == ""
+        asset_path = PurePosixPath(row["asset_path"])
+        assert not asset_path.is_absolute()
+        assert ".." not in asset_path.parts
+
+
+def test_wet_review_template_is_deterministic(wet_run: Path) -> None:
+    first = wet_run / "review" / "first.csv"
+    second = wet_run / "review" / "second.csv"
+
+    assert main(["wet-review-template", str(wet_run), "--output", str(first)]) == 0
+    assert main(["wet-review-template", str(wet_run), "--output", str(second)]) == 0
+
+    assert first.read_text(encoding="utf-8") == second.read_text(encoding="utf-8")
+
+
+def test_wet_review_template_supports_jsonl(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = wet_run / "review" / "human_review.jsonl"
+
+    assert (
+        main(
+            [
+                "wet-review-template",
+                str(wet_run),
+                "--output",
+                str(review_path),
+                "--review-format",
+                "jsonl",
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["review_format"] == "jsonl"
+    rows = [
+        json.loads(line)
+        for line in review_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    expected_keys = _enumerate_wet_run_pages(wet_run)
+    assert len(rows) == len(expected_keys)
+    for row in rows:
+        assert row["reason_codes"] == []
+        assert "page_id" in row
+
+
+def test_wet_review_template_rejects_path_outside_run(
+    wet_run: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    outside_review = tmp_path / "outside.csv"
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(
+            [
+                "wet-review-template",
+                str(wet_run),
+                "--output",
+                str(outside_review),
+            ]
+        )
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert (
+        "wet-review-template: review template output path must be inside the wet-test run"
+        in captured.err
+    )
+
+
+def test_wet_review_template_does_not_change_generation_manifest_v1(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    manifest_paths = sorted(wet_run.rglob("generation_manifest.json"))
+    assert manifest_paths
+    before = {path: sha256_file(path) for path in manifest_paths}
+
+    _generate_template(wet_run, capsys)
+
+    after = {path: sha256_file(path) for path in manifest_paths}
+    assert before == after
+
+
+def test_wet_review_validate_passes_for_completed_template(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    for row in rows:
+        row["reviewer"] = "rv"
+        row["decision"] = "pass"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["report_version"] == "wet_review_validation_report.v1"
+    assert payload["valid"] is True
+    assert payload["errors"] == []
+    assert payload["status"] == "passed"
+    assert payload["decision_counts"] == {
+        "pass": len(rows),
+        "hold": 0,
+        "reject": 0,
+    }
+    assert "unreviewed" not in payload["decision_counts"]
+    assert payload["summary"]["expected_page_count"] == len(rows)
+    assert payload["summary"]["reviewed_page_count"] == len(rows)
+    assert payload["summary"]["unreviewed_page_count"] == 0
+
+
+def test_wet_review_validate_handles_completed_jsonl_template(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys, review_format="jsonl")
+    keys = _min_default_batch_page_key(wet_run)
+    lines = []
+    for raw in review_path.read_text(encoding="utf-8").splitlines():
+        if not raw.strip():
+            continue
+        row = json.loads(raw)
+        if (row["batch_id"], row["sample_id"], row["page_id"]) == keys:
+            row["reviewer"] = "rv"
+            row["decision"] = "hold"
+            row["severity"] = "P2"
+            row["reason_codes"] = ["text_clipped", "layout_implausible"]
+        lines.append(json.dumps(row, ensure_ascii=False, sort_keys=True))
+    review_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["review_format"] == "jsonl"
+    assert payload["decision_counts"]["hold"] == 1
+    assert payload["reason_code_counts"]["text_clipped"] == 1
+    assert payload["reason_code_counts"]["layout_implausible"] == 1
+
+
+def test_wet_review_validate_rejects_unknown_page_ids(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    keys = _min_default_batch_page_key(wet_run)
+    target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
+    target["page_id"] = "page_does_not_exist"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    error_codes = {error["code"] for error in payload["errors"]}
+    assert "unknown_page_id" in error_codes
+    assert "missing_page_row" in error_codes
+    assert payload["valid"] is False
+
+
+def test_wet_review_validate_rejects_unknown_decision_states(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    keys = _min_default_batch_page_key(wet_run)
+    target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
+    target["reviewer"] = "rv"
+    target["decision"] = "approved"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    error_codes = {error["code"] for error in payload["errors"]}
+    assert "unknown_decision" in error_codes
+    decision_error = next(
+        error for error in payload["errors"] if error["code"] == "unknown_decision"
+    )
+    assert decision_error["details"]["value"] == "approved"
+
+
+def test_wet_review_validate_rejects_unknown_severity_levels(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    keys = _min_default_batch_page_key(wet_run)
+    target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
+    target["reviewer"] = "rv"
+    target["decision"] = "hold"
+    target["severity"] = "P9"
+    target["reason_codes"] = "reviewer_uncertain"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    error_codes = {error["code"] for error in payload["errors"]}
+    assert "unknown_severity" in error_codes
+
+
+def test_wet_review_validate_rejects_unknown_reason_codes(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    keys = _min_default_batch_page_key(wet_run)
+    target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
+    target["reviewer"] = "rv"
+    target["decision"] = "reject"
+    target["severity"] = "P1"
+    target["reason_codes"] = "made_up_reason,reviewer_uncertain"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    unknown_reason = [
+        error
+        for error in payload["errors"]
+        if error["code"] == "unknown_reason_code"
+    ]
+    assert unknown_reason
+    assert unknown_reason[0]["details"]["value"] == "made_up_reason"
+
+
+def test_wet_review_validate_rejects_missing_csv_field(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    from hocrsyngen.wet_review import REVIEW_FIELDS
+
+    review_path = _generate_template(wet_run, capsys)
+    text = review_path.read_text(encoding="utf-8")
+    severity_index = REVIEW_FIELDS.index("severity")
+    # Drop the `severity` column entirely (header + every row's column).
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, lineterminator="\n")
+    for line in text.splitlines():
+        cells = next(csv.reader([line]))
+        cells.pop(severity_index)
+        writer.writerow(cells)
+    review_path.write_text(buffer.getvalue(), encoding="utf-8")
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert any(error["code"] == "missing_csv_field" for error in payload["errors"])
+
+
+def test_wet_review_validate_rejects_duplicate_page_rows(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    # Duplicate the first row.
+    rows.append(dict(rows[0]))
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert any(error["code"] == "duplicate_page_row" for error in payload["errors"])
+
+
+def test_wet_review_validate_rejects_invalid_jsonl_row(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys, review_format="jsonl")
+    text = review_path.read_text(encoding="utf-8")
+    review_path.write_text(text + "this is not json\n", encoding="utf-8")
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert any(error["code"] == "invalid_jsonl_row" for error in payload["errors"])
+
+
+def test_wet_review_validate_rejects_invalid_regression_fixture_value(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    keys = _min_default_batch_page_key(wet_run)
+    target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
+    target["reviewer"] = "rv"
+    target["decision"] = "pass"
+    target["regression_fixture_candidate"] = "maybe"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert any(
+        error["code"] == "invalid_regression_fixture_value"
+        for error in payload["errors"]
+    )
+
+
+def test_wet_review_validate_requires_severity_and_reason_codes_for_hold_or_reject(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    keys = _min_default_batch_page_key(wet_run)
+    target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
+    target["reviewer"] = "rv"
+    target["decision"] = "reject"
+    # Intentionally leave severity and reason_codes blank.
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    codes = {error["code"] for error in payload["errors"]}
+    assert "missing_severity" in codes
+    assert "missing_reason_codes" in codes
+
+
+def test_wet_review_validate_requires_reviewer_on_reviewed_rows(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    keys = _min_default_batch_page_key(wet_run)
+    target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
+    target["decision"] = "pass"
+    # reviewer intentionally left blank.
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert any(error["code"] == "missing_reviewer" for error in payload["errors"])
+
+
+def test_wet_review_validate_flags_reviewer_without_decision(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    rows = _read_review_csv(review_path)
+    keys = _min_default_batch_page_key(wet_run)
+    target = _find_row(rows, batch_id=keys[0], sample_id=keys[1], page_id=keys[2])
+    target["reviewer"] = "rv"
+    # decision intentionally left blank.
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 1
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert any(
+        error["code"] == "reviewer_without_decision" for error in payload["errors"]
+    )
+
+
+def test_wet_review_validate_rejects_review_path_outside_run(
+    wet_run: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    outside = tmp_path / "outside.csv"
+    outside.write_text("ignored\n", encoding="utf-8")
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(outside),
+                "--format",
+                "json",
+            ]
+        )
+
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert (
+        "wet-review-validate: review file must be inside the wet-test run"
+        in captured.err
+    )
+
+
+def test_wet_review_validate_does_not_change_generation_manifest_v1(
+    wet_run: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    review_path = _generate_template(wet_run, capsys)
+    manifest_paths = sorted(wet_run.rglob("generation_manifest.json"))
+    assert manifest_paths
+    before = {path: sha256_file(path) for path in manifest_paths}
+
+    rows = _read_review_csv(review_path)
+    keys_one = _min_default_batch_page_key(wet_run)
+    first = _find_row(
+        rows, batch_id=keys_one[0], sample_id=keys_one[1], page_id=keys_one[2]
+    )
+    first["reviewer"] = "rv"
+    first["decision"] = "hold"
+    first["severity"] = "P2"
+    first["reason_codes"] = "reviewer_uncertain"
+    # Mutate a second row with comma-separated reason codes and a regression flag.
+    sorted_rows = sorted(
+        rows,
+        key=lambda row: (row["batch_id"], row["sample_id"], row["page_id"]),
+    )
+    second = next(
+        row
+        for row in sorted_rows
+        if (row["batch_id"], row["sample_id"], row["page_id"]) != keys_one
+    )
+    second["reviewer"] = "rv"
+    second["decision"] = "reject"
+    second["severity"] = "P1"
+    second["reason_codes"] = "text_clipped,layout_implausible"
+    second["regression_fixture_candidate"] = "true"
+    _write_review_csv(review_path, rows)
+
+    assert (
+        main(
+            [
+                "wet-review-validate",
+                str(wet_run),
+                str(review_path),
+                "--format",
+                "json",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    after = {path: sha256_file(path) for path in manifest_paths}
+    assert before == after
 
 
 def test_wet_run_smoke_rejects_reusing_existing_run_directory(

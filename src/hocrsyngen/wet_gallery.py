@@ -8,11 +8,18 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from hocrsyngen.validation import validate_batch
+from hocrsyngen.wet_run_artifact import (
+    ResolvedWetRunBatch,
+    load_wet_run_payload,
+    portable_relative_str,
+    read_batches,
+    relative_to_run,
+    resolve_run_path,
+)
 
 
 WET_GALLERY_REPORT_VERSION = "wet_gallery_report.v1"
 WET_GALLERY_INDEX_FILENAME = "index.html"
-WET_TEST_RUN_FILENAME = "wet_test_run.json"
 
 
 @dataclass(frozen=True)
@@ -21,14 +28,6 @@ class WetGalleryResult:
     output_dir: Path
     index_path: Path
     payload: dict[str, Any]
-
-
-@dataclass(frozen=True)
-class GalleryBatch:
-    batch_id: str
-    role: str
-    batch_path: str
-    manifest_path: str
 
 
 @dataclass(frozen=True)
@@ -67,22 +66,18 @@ def create_wet_gallery(*, run_root: Path, output: Path) -> WetGalleryResult:
             f"gallery output directory already exists and is not empty: {output}"
         )
 
-    run_payload = _load_wet_test_run(run_root)
-    batches = _gallery_batches(run_payload)
+    run_payload = load_wet_run_payload(run_root, require_passed=True)
+    batches = read_batches(run_payload)
     pages: list[GalleryPage] = []
     for batch in batches:
-        batch_dir = _resolve_run_path(run_root, batch.batch_path)
-        validate_batch(batch_dir)
-        manifest_path = _resolve_run_path(
-            run_root,
-            _validated_manifest_path(batch),
-        )
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        resolved = batch.resolved(run_root)
+        validate_batch(resolved.batch_dir)
+        manifest = json.loads(resolved.manifest_path_abs.read_text(encoding="utf-8"))
         pages.extend(
             _gallery_pages(
                 run_root=run_root,
                 output=output,
-                batch=batch,
+                batch=resolved,
                 manifest=manifest,
             )
         )
@@ -96,7 +91,7 @@ def create_wet_gallery(*, run_root: Path, output: Path) -> WetGalleryResult:
     payload: dict[str, Any] = {
         "report_version": WET_GALLERY_REPORT_VERSION,
         "run_path": ".",
-        "index_path": _relative_path(run_root, index_path),
+        "index_path": relative_to_run(run_root, index_path),
         "page_count": len(pages),
         "sample_count": len({(page.batch_id, page.sample_id) for page in pages}),
         "batch_count": len(batches),
@@ -118,52 +113,11 @@ def create_wet_gallery(*, run_root: Path, output: Path) -> WetGalleryResult:
     )
 
 
-def _load_wet_test_run(run_root: Path) -> dict[str, Any]:
-    path = run_root / "reports" / WET_TEST_RUN_FILENAME
-    if not path.is_file():
-        raise ValueError(f"missing wet-test run report: {path}")
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if payload.get("report_version") != "wet_test_run.v1":
-        raise ValueError("wet-gallery requires a wet_test_run.v1 report")
-    if payload.get("status") != "passed":
-        raise ValueError("wet-gallery requires a passed wet-test run")
-    return payload
-
-
-def _gallery_batches(run_payload: dict[str, Any]) -> list[GalleryBatch]:
-    generated_batch = run_payload.get("generated_batch")
-    if not isinstance(generated_batch, dict):
-        raise ValueError("wet-test run report is missing generated_batch")
-    batches = [
-        GalleryBatch(
-            batch_id=str(generated_batch.get("batch_id", "generated_batch")),
-            role=str(generated_batch.get("role", "generated_batch")),
-            batch_path=_portable_relative_str(generated_batch.get("batch_path")),
-            manifest_path=_portable_relative_str(generated_batch.get("manifest_path")),
-        )
-    ]
-    supplemental_batches = run_payload.get("supplemental_batches", [])
-    if not isinstance(supplemental_batches, list):
-        raise ValueError("wet-test run report supplemental_batches must be a list")
-    for index, raw_batch in enumerate(supplemental_batches):
-        if not isinstance(raw_batch, dict):
-            raise ValueError("wet-test run report supplemental batch must be an object")
-        batches.append(
-            GalleryBatch(
-                batch_id=str(raw_batch.get("batch_id", f"supplemental_{index}")),
-                role=str(raw_batch.get("role", "supplemental")),
-                batch_path=_portable_relative_str(raw_batch.get("batch_path")),
-                manifest_path=_portable_relative_str(raw_batch.get("manifest_path")),
-            )
-        )
-    return batches
-
-
 def _gallery_pages(
     *,
     run_root: Path,
     output: Path,
-    batch: GalleryBatch,
+    batch: ResolvedWetRunBatch,
     manifest: dict[str, Any],
 ) -> list[GalleryPage]:
     samples = manifest.get("samples", [])
@@ -185,9 +139,9 @@ def _gallery_pages(
         for page in sample_pages:
             if not isinstance(page, dict):
                 raise ValueError(f"manifest page must be an object: {batch.manifest_path}")
-            asset_path = _portable_relative_str(page.get("asset_path"))
+            asset_path = portable_relative_str(page.get("asset_path"))
             run_asset_path = batch_path / asset_path
-            asset_abs = _resolve_run_path(run_root, run_asset_path.as_posix())
+            asset_abs = resolve_run_path(run_root, run_asset_path.as_posix())
             image_href = _relative_href(output, asset_abs)
             pages.append(
                 GalleryPage(
@@ -358,40 +312,6 @@ def _render_page_card(page: GalleryPage) -> str:
       </dl>
       <div class="text" lang="he">{html.escape(page.logical_text)}</div>
     </article>"""
-
-
-def _resolve_run_path(run_root: Path, relative_path: str) -> Path:
-    portable = PurePosixPath(_portable_relative_str(relative_path))
-    resolved = (run_root / Path(*portable.parts)).resolve()
-    try:
-        resolved.relative_to(run_root)
-    except ValueError as exc:
-        raise ValueError(f"path escapes wet-test run root: {relative_path}") from exc
-    return resolved
-
-
-def _validated_manifest_path(batch: GalleryBatch) -> str:
-    manifest_path = PurePosixPath(batch.manifest_path)
-    expected_manifest_path = PurePosixPath(batch.batch_path) / "generation_manifest.json"
-    if manifest_path != expected_manifest_path:
-        raise ValueError(
-            "wet-test run manifest_path must match the validated batch manifest: "
-            f"{batch.manifest_path}"
-        )
-    return manifest_path.as_posix()
-
-
-def _portable_relative_str(value: object) -> str:
-    if not isinstance(value, str) or not value:
-        raise ValueError("expected a non-empty relative path")
-    path = PurePosixPath(value)
-    if path.is_absolute() or ".." in path.parts or "\\" in value:
-        raise ValueError(f"expected a portable relative path: {value}")
-    return path.as_posix()
-
-
-def _relative_path(root: Path, path: Path) -> str:
-    return PurePosixPath(*path.resolve().relative_to(root).parts).as_posix()
 
 
 def _relative_href(from_dir: Path, target: Path) -> str:
