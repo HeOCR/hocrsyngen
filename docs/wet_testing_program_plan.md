@@ -922,37 +922,45 @@ PYTHONPATH=src python -m hocrsyngen.cli wet-review-validate out/wet-tests/review
 ```
 
 `wet-review-template` reads an existing passed `wet_test_run.v1` artifact,
-enumerates every sample/page from the validated batches, and writes a
-deterministic review worksheet to a path inside the run directory. CSV is the
-default to keep human editing simple; JSON Lines is also supported via
-`--review-format jsonl`. The command emits a `wet_review_template.v1` summary
-on stdout.
+calls `validate_batch` for each referenced batch, enumerates every sample/page
+from the validated manifests, and writes a deterministic review worksheet to
+a path inside the run directory. CSV is the default to keep human editing
+simple; JSON Lines is also supported via `--review-format jsonl`. The command
+emits a `wet_review_template_report.v1` summary on stdout.
 
-The worksheet columns are: `run_id`, `batch_id`, `sample_id`, `page_id`,
-`template_id`, `recipe_id`, `persona`, `condition`, `degradation`, `font_id`,
-`asset_path`, `reviewer`, `decision`, `severity`, `reason_codes`, `notes`, and
-`regression_fixture_candidate`. The first eleven columns are pre-filled from
-the wet-test run; reviewers fill the remaining columns. `reason_codes` is a
-pipe-separated list of values from the documented reason-code set, and
-`regression_fixture_candidate` accepts `true`/`false` (or `yes`/`no`/`1`/`0`).
+The canonical worksheet column list is `REVIEW_FIELDS` in
+`src/hocrsyngen/wet_review.py`. Manifest-derived columns are pre-filled;
+reviewers record their identifier, decision, severity, reason codes, notes,
+and a regression-fixture flag. CSV worksheets carry `reason_codes` as a
+comma-separated string (CSV quoting is automatic); JSON Lines worksheets
+carry `reason_codes` as a JSON array.
+`regression_fixture_candidate` accepts `true`/`false`
+(or `yes`/`no`/`1`/`0`).
 
 `wet-review-validate` reads a completed CSV/JSONL worksheet and emits a
-`wet_review_validation.v1` summary. It checks that:
+`wet_review_validation_report.v1` summary. The review file must be inside the
+wet-test run directory. The validator checks that:
 
 - Every (`batch_id`, `sample_id`, `page_id`) row matches a manifest-derived
   page from the run.
+- The worksheet contains no duplicate rows for the same page.
 - Every reviewed row uses a known decision state from `pass`/`hold`/`reject`.
 - Every populated severity uses a known level from `P0`/`P1`/`P2`/`info`.
 - Every populated reason code is one of the documented reason codes.
 - Every reviewed `hold` or `reject` row carries severity and reason codes.
 - Every reviewed row carries a reviewer identifier or initials.
-- Every populated `run_id` matches the run directory's name.
+- No row records a reviewer identifier with an empty decision.
+- Every populated `regression_fixture_candidate` value is a recognized
+  boolean form.
 - The run's expected sample/page set is fully covered.
 
-The validator returns a non-zero exit code when any error is reported, but
-does not modify any wet-run artifact. The summary includes deterministic
-counts per decision state, severity level, and reason code, plus a
-`regression_fixture_candidate` count.
+Errors share a fixed shape: a `code`, a `message`, an optional `row` (line
+number in the worksheet), and an optional `details` object carrying per-error
+context. The validator returns a non-zero exit code when any error is
+reported, but does not modify any wet-run artifact. The summary includes
+deterministic counts per decision state, severity level, and reason code,
+plus a regression-fixture-candidate count and reviewed/unreviewed page
+counts.
 
 Both commands keep all paths relative and portable, do not change manifest v1,
 do not promote artifacts to schemas, do not add LLM/network/GPU dependencies,

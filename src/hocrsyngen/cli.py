@@ -1158,17 +1158,13 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(validation_result.payload, ensure_ascii=False, indent=2))
         else:
             summary = validation_result.payload["summary"]
-            decision_counts = validation_result.payload["decision_counts"]
             print(
-                "Wet-review validation inspected "
-                f"{summary['row_count']} rows; "
-                f"valid={validation_result.payload['valid']} "
-                f"errors={summary['error_count']} "
-                f"pass={decision_counts['pass']} "
-                f"hold={decision_counts['hold']} "
-                f"reject={decision_counts['reject']} "
-                f"unreviewed={decision_counts['unreviewed']}"
+                f"Wet-review validation: valid={validation_result.payload['valid']} "
+                f"errors={summary['error_count']} rows={summary['row_count']} "
+                f"reviewed={summary['reviewed_page_count']} "
+                f"unreviewed={summary['unreviewed_page_count']}"
             )
+            print("use --format json for the full report")
         return 0 if validation_result.payload["valid"] else 1
     if args.command == "evidence-run":
         try:

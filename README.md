@@ -207,25 +207,33 @@ publication, or downstream governance behavior.
 
 `hocrsyngen wet-review-template RUN_ROOT --output RUN_ROOT/review/human_review.csv`
 writes a deterministic human-review worksheet for an existing passed `wet-run`
-directory. It enumerates every sample/page from the validated batches and
-pre-fills the run id, batch id, sample id, page id, template id, recipe id,
-persona, condition, degradation, font id, and asset path columns. The empty
-columns - reviewer, decision, severity, reason codes, notes, and
-regression-fixture flag - are filled in by reviewers. Default output is CSV;
-JSON Lines is also supported via `--review-format jsonl`. The summary report
-is `wet_review_template.v1`. The command is a human-evidence aid only; it does
-not change `generation_manifest.json` v1 and does not claim realism
+directory. It validates each referenced batch, enumerates every sample/page
+from the validated manifests, and pre-fills the manifest-derived columns so
+reviewers only have to record their identifier, decision, severity, reason
+codes, notes, and regression-fixture flag. The canonical column list is
+`REVIEW_FIELDS` in `src/hocrsyngen/wet_review.py`. Default output is CSV; JSON
+Lines is also supported via `--review-format jsonl`. The summary report is
+`wet_review_template_report.v1`. The command is a human-evidence aid only; it
+does not change `generation_manifest.json` v1 and does not claim realism
 acceptance, OCR/HTR utility, release readiness, export, publication, or
 downstream governance behavior.
 
+CSV worksheets carry `reason_codes` as a comma-separated string (the CSV
+writer quotes the field automatically when it contains a comma). JSON Lines
+worksheets carry `reason_codes` as a JSON array. The output path must be
+inside the wet-test run directory and must use a `.csv`, `.jsonl`, or
+`.ndjson` extension.
+
 `hocrsyngen wet-review-validate RUN_ROOT REVIEW_PATH --format json` validates
 a completed CSV/JSONL review worksheet against a passed `wet-run` directory.
-It checks that every row matches a manifest-derived sample/page id, that
-every reviewed row uses one of the documented decision states
+The review file must be inside the wet-test run directory. The validator
+checks that every row matches a manifest-derived sample/page id, that every
+reviewed row uses one of the documented decision states
 (`pass`/`hold`/`reject`), severity levels (`P0`/`P1`/`P2`/`info`), and reason
-codes from the wet-testing program plan, and that every `hold` or `reject`
-row carries severity, reason codes, and a reviewer identifier. The summary
-report is `wet_review_validation.v1`; the command exits non-zero on any error
+codes from the wet-testing program plan, that every `hold` or `reject` row
+carries severity, reason codes, and a reviewer identifier, and that no row
+records a reviewer without a decision. The summary report is
+`wet_review_validation_report.v1`; the command exits non-zero on any error
 and does not modify any wet-run artifact.
 
 `hocrsyngen generate --rendering-coverage-report` writes an opt-in

@@ -21,6 +21,7 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `src/hocrsyngen/wet_gallery.py`: S8d static HTML gallery builder for existing wet-test runs outside manifest v1.
 - `src/hocrsyngen/wet_analysis.py`: S8e deterministic wet-test warning metrics over existing wet-test runs outside manifest v1.
 - `src/hocrsyngen/wet_review.py`: S8f human review worksheet template generator and worksheet validator over existing wet-test runs outside manifest v1.
+- `src/hocrsyngen/wet_run_artifact.py`: shared loader and helpers for `wet_test_run.v1` artifacts used by wet-gallery, wet-analyze, and wet-review-* commands.
 - `src/hocrsyngen/validation.py`: batch validation, schema validation, asset integrity checks.
 - `src/hocrsyngen/schemas/generation_manifest.schema.json`: serialized manifest contract.
 - `src/hocrsyngen/schemas/rendering_coverage_report.schema.json`: serialized rendering coverage report contract.
@@ -64,8 +65,8 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `wet_test_run.json` via `hocrsyngen wet-run --profile smoke`, outside manifest v1
 - Static `gallery/index.html` via `hocrsyngen wet-gallery`, outside manifest v1
 - `wet_analysis_report.v1` via `hocrsyngen wet-analyze`, outside manifest v1 and without a schema
-- `wet_review_template.v1` summary plus a CSV or JSON Lines worksheet via `hocrsyngen wet-review-template`, outside manifest v1 and without a schema
-- `wet_review_validation.v1` summary via `hocrsyngen wet-review-validate`, outside manifest v1 and without a schema
+- `wet_review_template_report.v1` summary plus a CSV or JSON Lines worksheet via `hocrsyngen wet-review-template`, outside manifest v1 and without a schema
+- `wet_review_validation_report.v1` summary via `hocrsyngen wet-review-validate`, outside manifest v1 and without a schema
 - Optional `rendering_coverage_report.json` sidecar with report version `rendering_coverage_report.v1`
 - Optional downstream review evidence sidecar contract documented as `review_evidence_sidecar.v1`; it is not emitted or validated by `hocrsyngen`
 - Optional downstream candidate batch profile/mix contract documented as `candidate_batch_profile_mix.v1`; it is not emitted or validated by `hocrsyngen`

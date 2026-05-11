@@ -3,14 +3,26 @@ from __future__ import annotations
 import csv
 import io
 import json
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from hocrsyngen.validation import validate_batch
+from hocrsyngen.wet_run_artifact import (
+    WetRunBatch,
+    load_wet_run_payload,
+    portable_path,
+    read_batches,
+    relative_to_run,
+    require_passed_run,
+    resolve_run_path,
+    validated_manifest_path,
+)
 
-WET_REVIEW_TEMPLATE_REPORT_VERSION = "wet_review_template.v1"
-WET_REVIEW_VALIDATION_REPORT_VERSION = "wet_review_validation.v1"
-WET_TEST_RUN_FILENAME = "wet_test_run.json"
+
+WET_REVIEW_TEMPLATE_REPORT_VERSION = "wet_review_template_report.v1"
+WET_REVIEW_VALIDATION_REPORT_VERSION = "wet_review_validation_report.v1"
 
 DECISION_STATES: tuple[str, ...] = ("pass", "hold", "reject")
 SEVERITY_LEVELS: tuple[str, ...] = ("P0", "P1", "P2", "info")
@@ -33,7 +45,6 @@ REASON_CODES: tuple[str, ...] = (
     "reviewer_uncertain",
 )
 REVIEW_FIELDS: tuple[str, ...] = (
-    "run_id",
     "batch_id",
     "sample_id",
     "page_id",
@@ -52,7 +63,6 @@ REVIEW_FIELDS: tuple[str, ...] = (
     "regression_fixture_candidate",
 )
 REVIEW_FORMATS: tuple[str, ...] = ("csv", "jsonl")
-REASON_CODE_SEPARATOR = "|"
 
 
 @dataclass(frozen=True)
@@ -71,7 +81,6 @@ class WetReviewValidationResult:
 
 @dataclass(frozen=True)
 class _ReviewablePage:
-    run_id: str
     batch_id: str
     sample_id: str
     page_id: str
@@ -85,10 +94,26 @@ class _ReviewablePage:
 
 
 @dataclass(frozen=True)
-class _ReviewBatch:
-    batch_id: str
-    batch_path: str
-    manifest_path: str
+class _ParsedRow:
+    line: int
+    fields: Mapping[str, str]
+    raw_reason_codes: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class _ReviewError:
+    code: str
+    message: str
+    row: int | None = None
+    details: Mapping[str, object] = field(default_factory=dict)
+
+    def to_payload(self) -> dict[str, object]:
+        payload: dict[str, object] = {"code": self.code, "message": self.message}
+        if self.row is not None:
+            payload["row"] = self.row
+        if self.details:
+            payload["details"] = dict(self.details)
+        return payload
 
 
 def build_wet_review_template(
@@ -124,7 +149,7 @@ def build_wet_review_template(
     payload: dict[str, Any] = {
         "report_version": WET_REVIEW_TEMPLATE_REPORT_VERSION,
         "run_path": ".",
-        "review_path": _relative_to_run(run_root, output),
+        "review_path": relative_to_run(run_root, output),
         "review_format": review_format,
         "row_count": len(pages),
         "sample_count": len({(page.batch_id, page.sample_id) for page in pages}),
@@ -133,15 +158,7 @@ def build_wet_review_template(
         "severity_levels": list(SEVERITY_LEVELS),
         "reason_codes": list(REASON_CODES),
         "review_fields": list(REVIEW_FIELDS),
-        "scope": {
-            "generator_quality_evidence_only": True,
-            "release_ready_dataset_artifact": False,
-            "manifest_v1_changed": False,
-            "hocrgen_behavior_added": False,
-            "human_review_sidecar_included": True,
-            "llm_triage_included": False,
-            "network_required": False,
-        },
+        "scope": _SCOPE,
     }
     return WetReviewTemplateResult(run_root=run_root, output=output, payload=payload)
 
@@ -157,111 +174,131 @@ def validate_wet_review(
         raise ValueError(f"wet-test run directory does not exist: {run_root}")
     if not review_path.is_file():
         raise ValueError(f"review file does not exist: {review_path}")
+    try:
+        review_path.relative_to(run_root)
+    except ValueError as exc:
+        raise ValueError(
+            "review file must be inside the wet-test run"
+        ) from exc
 
     review_format = _detect_review_format(review_path)
     pages = _reviewable_pages(run_root)
     expected_keys = {
         (page.batch_id, page.sample_id, page.page_id) for page in pages
     }
-    expected_run_ids = {page.run_id for page in pages}
-    expected_run_id = pages[0].run_id if pages else run_root.name
 
     rows, parse_errors = _read_review_rows(review_path, review_format)
-    errors: list[dict[str, object]] = list(parse_errors)
+    errors: list[_ReviewError] = list(parse_errors)
     seen_keys: set[tuple[str, str, str]] = set()
     decision_counts: dict[str, int] = {state: 0 for state in DECISION_STATES}
-    decision_counts["unreviewed"] = 0
     severity_counts: dict[str, int] = {level: 0 for level in SEVERITY_LEVELS}
     reason_code_counts: dict[str, int] = {code: 0 for code in REASON_CODES}
     regression_fixture_count = 0
     reviewed_count = 0
+    unreviewed_count = 0
 
     for row in rows:
-        line = int(row.get("__line__", 0))
-        run_id = (row.get("run_id") or "").strip()
-        batch_id = (row.get("batch_id") or "").strip()
-        sample_id = (row.get("sample_id") or "").strip()
-        page_id = (row.get("page_id") or "").strip()
-        decision = (row.get("decision") or "").strip()
-        severity = (row.get("severity") or "").strip()
-        reason_codes_text = (row.get("reason_codes") or "").strip()
-        regression_text = (row.get("regression_fixture_candidate") or "").strip()
-        reviewer = (row.get("reviewer") or "").strip()
+        fields = row.fields
+        batch_id = _get_str(fields, "batch_id")
+        sample_id = _get_str(fields, "sample_id")
+        page_id = _get_str(fields, "page_id")
+        decision = _get_str(fields, "decision")
+        severity = _get_str(fields, "severity")
+        notes = _get_str(fields, "notes")
+        regression_text = _get_str(fields, "regression_fixture_candidate")
+        reviewer = _get_str(fields, "reviewer")
+        reason_codes = row.raw_reason_codes
 
-        if run_id and run_id not in expected_run_ids:
-            errors.append(
-                {
-                    "code": "unknown_run_id",
-                    "row": line,
-                    "value": run_id,
-                    "expected_run_id": expected_run_id,
-                }
-            )
         key = (batch_id, sample_id, page_id)
         if key in expected_keys:
             if key in seen_keys:
                 errors.append(
-                    {
-                        "code": "duplicate_page_row",
-                        "row": line,
-                        "batch_id": batch_id,
-                        "sample_id": sample_id,
-                        "page_id": page_id,
-                    }
+                    _ReviewError(
+                        code="duplicate_page_row",
+                        message="Worksheet contains duplicate rows for the same page.",
+                        row=row.line,
+                        details={
+                            "batch_id": batch_id,
+                            "sample_id": sample_id,
+                            "page_id": page_id,
+                        },
+                    )
                 )
             seen_keys.add(key)
         else:
             errors.append(
-                {
-                    "code": "unknown_page_id",
-                    "row": line,
-                    "batch_id": batch_id,
-                    "sample_id": sample_id,
-                    "page_id": page_id,
-                }
+                _ReviewError(
+                    code="unknown_page_id",
+                    message="Worksheet row does not match any sample/page in the wet-test run.",
+                    row=row.line,
+                    details={
+                        "batch_id": batch_id,
+                        "sample_id": sample_id,
+                        "page_id": page_id,
+                    },
+                )
             )
 
         if decision and decision not in DECISION_STATES:
             errors.append(
-                {
-                    "code": "unknown_decision",
-                    "row": line,
-                    "value": decision,
-                }
+                _ReviewError(
+                    code="unknown_decision",
+                    message=(
+                        "Worksheet decision is not one of pass/hold/reject."
+                    ),
+                    row=row.line,
+                    details={"value": decision},
+                )
             )
         elif decision in DECISION_STATES:
             decision_counts[decision] += 1
             reviewed_count += 1
             if not reviewer:
                 errors.append(
-                    {
-                        "code": "missing_reviewer",
-                        "row": line,
-                        "decision": decision,
-                    }
+                    _ReviewError(
+                        code="missing_reviewer",
+                        message=(
+                            "Reviewed row must record a reviewer identifier or initials."
+                        ),
+                        row=row.line,
+                        details={"decision": decision},
+                    )
                 )
         else:
-            decision_counts["unreviewed"] += 1
+            unreviewed_count += 1
+            if reviewer:
+                errors.append(
+                    _ReviewError(
+                        code="reviewer_without_decision",
+                        message=(
+                            "Reviewer initials were recorded but decision is empty."
+                        ),
+                        row=row.line,
+                        details={"reviewer": reviewer},
+                    )
+                )
 
         if severity and severity not in SEVERITY_LEVELS:
             errors.append(
-                {
-                    "code": "unknown_severity",
-                    "row": line,
-                    "value": severity,
-                }
+                _ReviewError(
+                    code="unknown_severity",
+                    message="Worksheet severity is not one of P0/P1/P2/info.",
+                    row=row.line,
+                    details={"value": severity},
+                )
             )
         elif severity:
             severity_counts[severity] += 1
 
-        for code in _split_reason_codes(reason_codes_text):
+        for code in reason_codes:
             if code not in REASON_CODES:
                 errors.append(
-                    {
-                        "code": "unknown_reason_code",
-                        "row": line,
-                        "value": code,
-                    }
+                    _ReviewError(
+                        code="unknown_reason_code",
+                        message="Worksheet reason code is not in the documented set.",
+                        row=row.line,
+                        details={"value": code},
+                    )
                 )
             else:
                 reason_code_counts[code] += 1
@@ -272,40 +309,56 @@ def validate_wet_review(
                 regression_fixture_count += 1
             elif normalized not in ("false", "no", "0"):
                 errors.append(
-                    {
-                        "code": "invalid_regression_fixture_value",
-                        "row": line,
-                        "value": regression_text,
-                    }
+                    _ReviewError(
+                        code="invalid_regression_fixture_value",
+                        message=(
+                            "regression_fixture_candidate must be empty, true, "
+                            "false, yes, no, 1, or 0."
+                        ),
+                        row=row.line,
+                        details={"value": regression_text},
+                    )
                 )
 
         if decision in ("hold", "reject"):
             if not severity:
                 errors.append(
-                    {
-                        "code": "missing_severity",
-                        "row": line,
-                        "decision": decision,
-                    }
+                    _ReviewError(
+                        code="missing_severity",
+                        message=(
+                            "Hold and reject rows must record a severity level."
+                        ),
+                        row=row.line,
+                        details={"decision": decision},
+                    )
                 )
-            if not reason_codes_text:
+            if not reason_codes:
                 errors.append(
-                    {
-                        "code": "missing_reason_codes",
-                        "row": line,
-                        "decision": decision,
-                    }
+                    _ReviewError(
+                        code="missing_reason_codes",
+                        message=(
+                            "Hold and reject rows must record at least one reason code."
+                        ),
+                        row=row.line,
+                        details={"decision": decision},
+                    )
                 )
 
-    missing_pages = sorted(expected_keys - seen_keys)
-    for batch_id, sample_id, page_id in missing_pages:
+        # `notes` is free-form; we don't validate its contents but suppress
+        # the unused-binding lint by referencing it.
+        del notes
+
+    for batch_id, sample_id, page_id in sorted(expected_keys - seen_keys):
         errors.append(
-            {
-                "code": "missing_page_row",
-                "batch_id": batch_id,
-                "sample_id": sample_id,
-                "page_id": page_id,
-            }
+            _ReviewError(
+                code="missing_page_row",
+                message="Worksheet is missing a row for an expected sample/page.",
+                details={
+                    "batch_id": batch_id,
+                    "sample_id": sample_id,
+                    "page_id": page_id,
+                },
+            )
         )
 
     valid = not errors
@@ -313,7 +366,7 @@ def validate_wet_review(
     payload: dict[str, Any] = {
         "report_version": WET_REVIEW_VALIDATION_REPORT_VERSION,
         "run_path": ".",
-        "review_path": _relative_to_run(run_root, review_path),
+        "review_path": relative_to_run(run_root, review_path),
         "review_format": review_format,
         "valid": valid,
         "status": status,
@@ -321,22 +374,15 @@ def validate_wet_review(
             "row_count": len(rows),
             "expected_page_count": len(expected_keys),
             "reviewed_page_count": reviewed_count,
-            "error_count": len(errors),
+            "unreviewed_page_count": unreviewed_count,
             "regression_fixture_candidate_count": regression_fixture_count,
+            "error_count": len(errors),
         },
         "decision_counts": decision_counts,
         "severity_counts": severity_counts,
         "reason_code_counts": reason_code_counts,
-        "errors": sorted(errors, key=_error_sort_key),
-        "scope": {
-            "generator_quality_evidence_only": True,
-            "release_ready_dataset_artifact": False,
-            "manifest_v1_changed": False,
-            "hocrgen_behavior_added": False,
-            "human_review_sidecar_included": True,
-            "llm_triage_included": False,
-            "network_required": False,
-        },
+        "errors": [error.to_payload() for error in sorted(errors, key=_error_sort_key)],
+        "scope": _SCOPE,
     }
     return WetReviewValidationResult(
         run_root=run_root,
@@ -345,82 +391,28 @@ def validate_wet_review(
     )
 
 
+_SCOPE: dict[str, bool] = {
+    "generator_quality_evidence_only": True,
+    "release_ready_dataset_artifact": False,
+    "manifest_v1_changed": False,
+    "hocrgen_behavior_added": False,
+    "human_review_sidecar_included": True,
+    "llm_triage_included": False,
+    "network_required": False,
+}
+
+
 def _reviewable_pages(run_root: Path) -> list[_ReviewablePage]:
-    run_payload = _load_wet_test_run(run_root)
-    run_id = run_root.name
-    batches = _review_batches(run_payload)
+    run_payload = load_wet_run_payload(run_root)
+    require_passed_run(run_payload)
+    batches = read_batches(run_payload)
     pages: list[_ReviewablePage] = []
     for batch in batches:
-        manifest_path = _resolve_run_path(run_root, batch.manifest_path)
-        if not manifest_path.is_file():
-            raise ValueError(
-                f"wet-test run is missing manifest: {batch.manifest_path}"
-            )
-        try:
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            raise ValueError(
-                f"wet-test run manifest is not valid JSON: {batch.manifest_path}: {exc}"
-            ) from exc
-        samples = manifest.get("samples", [])
-        if not isinstance(samples, list):
-            raise ValueError(
-                f"manifest samples must be a list: {batch.manifest_path}"
-            )
-        batch_path = PurePosixPath(batch.batch_path)
-        for sample in samples:
-            if not isinstance(sample, dict):
-                raise ValueError(
-                    f"manifest sample must be an object: {batch.manifest_path}"
-                )
-            provenance = sample.get("provenance") or {}
-            controls = sample.get("controls") or {}
-            sample_pages = sample.get("pages", [])
-            if not isinstance(provenance, dict) or not isinstance(controls, dict):
-                raise ValueError(
-                    f"manifest sample metadata is invalid: {batch.manifest_path}"
-                )
-            if not isinstance(sample_pages, list):
-                raise ValueError(
-                    f"manifest sample pages must be a list: {batch.manifest_path}"
-                )
-            sample_id = str(sample.get("sample_id", ""))
-            template_id = str(provenance.get("template_id", ""))
-            recipe_id = str(
-                provenance.get("recipe_id", sample.get("recipe_id", ""))
-            )
-            persona = controls.get("persona")
-            condition = controls.get("condition")
-            degradation = str(provenance.get("degradation_preset", ""))
-            font_id = str(provenance.get("font_id", ""))
-            for page in sample_pages:
-                if not isinstance(page, dict):
-                    raise ValueError(
-                        f"manifest page must be an object: {batch.manifest_path}"
-                    )
-                asset_path_text = page.get("asset_path")
-                portable_asset = _portable_path(asset_path_text)
-                if portable_asset is None:
-                    raise ValueError(
-                        "manifest asset path must be relative and portable: "
-                        f"{asset_path_text}"
-                    )
-                run_asset_path = batch_path / portable_asset
-                pages.append(
-                    _ReviewablePage(
-                        run_id=run_id,
-                        batch_id=batch.batch_id,
-                        sample_id=sample_id,
-                        page_id=str(page.get("page_id", "")),
-                        template_id=template_id,
-                        recipe_id=recipe_id,
-                        persona=str(persona) if persona is not None else "",
-                        condition=str(condition) if condition is not None else "",
-                        degradation=degradation,
-                        font_id=font_id,
-                        asset_path=run_asset_path.as_posix(),
-                    )
-                )
+        batch_dir = resolve_run_path(run_root, batch.batch_path)
+        validate_batch(batch_dir)
+        manifest_path = resolve_run_path(run_root, validated_manifest_path(batch))
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        pages.extend(_pages_for_batch(run_root, batch, manifest))
     pages.sort(
         key=lambda page: (
             page.batch_id,
@@ -432,45 +424,68 @@ def _reviewable_pages(run_root: Path) -> list[_ReviewablePage]:
     return pages
 
 
-def _load_wet_test_run(run_root: Path) -> dict[str, Any]:
-    path = run_root / "reports" / WET_TEST_RUN_FILENAME
-    if not path.is_file():
-        raise ValueError(f"missing wet-test run report: {path}")
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if payload.get("report_version") != "wet_test_run.v1":
-        raise ValueError("wet-review requires a wet_test_run.v1 report")
-    if payload.get("status") != "passed":
-        raise ValueError("wet-review requires a passed wet-test run")
-    return payload
-
-
-def _review_batches(run_payload: dict[str, Any]) -> list[_ReviewBatch]:
-    generated_batch = run_payload.get("generated_batch")
-    if not isinstance(generated_batch, dict):
-        raise ValueError("wet-test run report is missing generated_batch")
-    batches = [
-        _ReviewBatch(
-            batch_id=str(generated_batch.get("batch_id", "generated_batch")),
-            batch_path=_portable_relative_str(generated_batch.get("batch_path")),
-            manifest_path=_portable_relative_str(generated_batch.get("manifest_path")),
-        )
-    ]
-    supplemental_batches = run_payload.get("supplemental_batches", [])
-    if not isinstance(supplemental_batches, list):
-        raise ValueError("wet-test run report supplemental_batches must be a list")
-    for index, raw_batch in enumerate(supplemental_batches):
-        if not isinstance(raw_batch, dict):
+def _pages_for_batch(
+    run_root: Path,
+    batch: WetRunBatch,
+    manifest: dict[str, Any],
+) -> list[_ReviewablePage]:
+    samples = manifest.get("samples", [])
+    if not isinstance(samples, list):
+        raise ValueError(f"manifest samples must be a list: {batch.manifest_path}")
+    batch_path = PurePosixPath(batch.batch_path)
+    pages: list[_ReviewablePage] = []
+    for sample in samples:
+        if not isinstance(sample, dict):
             raise ValueError(
-                "wet-test run report supplemental batch must be an object"
+                f"manifest sample must be an object: {batch.manifest_path}"
             )
-        batches.append(
-            _ReviewBatch(
-                batch_id=str(raw_batch.get("batch_id", f"supplemental_{index}")),
-                batch_path=_portable_relative_str(raw_batch.get("batch_path")),
-                manifest_path=_portable_relative_str(raw_batch.get("manifest_path")),
+        provenance = sample.get("provenance") or {}
+        controls = sample.get("controls") or {}
+        sample_pages = sample.get("pages", [])
+        if not isinstance(provenance, dict) or not isinstance(controls, dict):
+            raise ValueError(
+                f"manifest sample metadata is invalid: {batch.manifest_path}"
             )
-        )
-    return batches
+        if not isinstance(sample_pages, list):
+            raise ValueError(
+                f"manifest sample pages must be a list: {batch.manifest_path}"
+            )
+        sample_id = str(sample.get("sample_id", ""))
+        template_id = str(provenance.get("template_id", ""))
+        recipe_id = str(provenance.get("recipe_id", sample.get("recipe_id", "")))
+        persona = controls.get("persona")
+        condition = controls.get("condition")
+        degradation = str(provenance.get("degradation_preset", ""))
+        font_id = str(provenance.get("font_id", ""))
+        for page in sample_pages:
+            if not isinstance(page, dict):
+                raise ValueError(
+                    f"manifest page must be an object: {batch.manifest_path}"
+                )
+            portable_asset = portable_path(page.get("asset_path"))
+            if portable_asset is None:
+                raise ValueError(
+                    "manifest asset path must be relative and portable: "
+                    f"{page.get('asset_path')!r}"
+                )
+            run_asset_path = batch_path / portable_asset
+            # Verify the asset resolves under the run root before recording it.
+            resolve_run_path(run_root, run_asset_path.as_posix())
+            pages.append(
+                _ReviewablePage(
+                    batch_id=batch.batch_id,
+                    sample_id=sample_id,
+                    page_id=str(page.get("page_id", "")),
+                    template_id=template_id,
+                    recipe_id=recipe_id,
+                    persona=str(persona) if persona is not None else "",
+                    condition=str(condition) if condition is not None else "",
+                    degradation=degradation,
+                    font_id=font_id,
+                    asset_path=run_asset_path.as_posix(),
+                )
+            )
+    return pages
 
 
 def _write_csv_template(output: Path, pages: list[_ReviewablePage]) -> None:
@@ -479,25 +494,23 @@ def _write_csv_template(output: Path, pages: list[_ReviewablePage]) -> None:
         buffer,
         fieldnames=list(REVIEW_FIELDS),
         lineterminator="\n",
-        extrasaction="ignore",
     )
     writer.writeheader()
     for page in pages:
-        writer.writerow(_template_row(page))
+        writer.writerow(_csv_template_row(page))
     output.write_text(buffer.getvalue(), encoding="utf-8")
 
 
 def _write_jsonl_template(output: Path, pages: list[_ReviewablePage]) -> None:
     lines = [
-        json.dumps(_template_row(page), ensure_ascii=False, sort_keys=True)
+        json.dumps(_jsonl_template_row(page), ensure_ascii=False, sort_keys=True)
         for page in pages
     ]
     output.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
 
 
-def _template_row(page: _ReviewablePage) -> dict[str, str]:
+def _csv_template_row(page: _ReviewablePage) -> dict[str, str]:
     return {
-        "run_id": page.run_id,
         "batch_id": page.batch_id,
         "sample_id": page.sample_id,
         "page_id": page.page_id,
@@ -517,6 +530,13 @@ def _template_row(page: _ReviewablePage) -> dict[str, str]:
     }
 
 
+def _jsonl_template_row(page: _ReviewablePage) -> dict[str, object]:
+    row = _csv_template_row(page)
+    # JSON Lines worksheets carry reason_codes as a real JSON array.
+    row["reason_codes"] = []  # type: ignore[assignment]
+    return row
+
+
 def _detect_review_format(review_path: Path) -> str:
     suffix = review_path.suffix.lower()
     if suffix == ".csv":
@@ -532,7 +552,7 @@ def _detect_review_format(review_path: Path) -> str:
 def _read_review_rows(
     review_path: Path,
     review_format: str,
-) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+) -> tuple[list[_ParsedRow], list[_ReviewError]]:
     text = review_path.read_text(encoding="utf-8")
     if review_format == "csv":
         return _read_csv_rows(text)
@@ -541,108 +561,106 @@ def _read_review_rows(
 
 def _read_csv_rows(
     text: str,
-) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
-    errors: list[dict[str, object]] = []
-    rows: list[dict[str, object]] = []
+) -> tuple[list[_ParsedRow], list[_ReviewError]]:
+    errors: list[_ReviewError] = []
+    rows: list[_ParsedRow] = []
     reader = csv.DictReader(io.StringIO(text))
     fieldnames = reader.fieldnames or []
     missing_fields = [field for field in REVIEW_FIELDS if field not in fieldnames]
     if missing_fields:
         errors.append(
-            {
-                "code": "missing_csv_field",
-                "fields": sorted(missing_fields),
-            }
+            _ReviewError(
+                code="missing_csv_field",
+                message="Worksheet CSV header is missing required columns.",
+                details={"fields": sorted(missing_fields)},
+            )
         )
-    for index, raw in enumerate(reader, start=2):
-        row: dict[str, object] = {"__line__": index}
-        for field in REVIEW_FIELDS:
-            row[field] = raw.get(field, "")
-        rows.append(row)
+        return rows, errors
+    for line, raw in enumerate(reader, start=2):
+        fields = {field: (raw.get(field) or "").strip() for field in REVIEW_FIELDS}
+        reason_codes = _split_csv_reason_codes(fields.get("reason_codes", ""))
+        rows.append(
+            _ParsedRow(
+                line=line,
+                fields=fields,
+                raw_reason_codes=reason_codes,
+            )
+        )
     return rows, errors
 
 
 def _read_jsonl_rows(
     text: str,
-) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
-    errors: list[dict[str, object]] = []
-    rows: list[dict[str, object]] = []
-    for index, line in enumerate(text.splitlines(), start=1):
-        if not line.strip():
+) -> tuple[list[_ParsedRow], list[_ReviewError]]:
+    errors: list[_ReviewError] = []
+    rows: list[_ParsedRow] = []
+    for line, source in enumerate(text.splitlines(), start=1):
+        if not source.strip():
             continue
         try:
-            entry = json.loads(line)
+            entry = json.loads(source)
         except json.JSONDecodeError as exc:
             errors.append(
-                {
-                    "code": "invalid_jsonl_row",
-                    "row": index,
-                    "message": exc.msg,
-                }
+                _ReviewError(
+                    code="invalid_jsonl_row",
+                    message="Worksheet JSONL row is not valid JSON.",
+                    row=line,
+                    details={"detail": exc.msg},
+                )
             )
             continue
         if not isinstance(entry, dict):
             errors.append(
-                {
-                    "code": "invalid_jsonl_row",
-                    "row": index,
-                    "message": "review row must be a JSON object",
-                }
+                _ReviewError(
+                    code="invalid_jsonl_row",
+                    message="Worksheet JSONL row must be a JSON object.",
+                    row=line,
+                )
             )
             continue
-        row: dict[str, object] = {"__line__": index}
+        fields: dict[str, str] = {}
+        reason_codes: tuple[str, ...] = ()
         for field in REVIEW_FIELDS:
             value = entry.get(field, "")
-            row[field] = "" if value is None else str(value)
-        rows.append(row)
+            if field == "reason_codes":
+                reason_codes = _coerce_jsonl_reason_codes(value)
+                fields[field] = ",".join(reason_codes)
+                continue
+            if value is None:
+                fields[field] = ""
+            elif isinstance(value, bool):
+                fields[field] = "true" if value else "false"
+            else:
+                fields[field] = str(value).strip()
+        rows.append(
+            _ParsedRow(
+                line=line,
+                fields=fields,
+                raw_reason_codes=reason_codes,
+            )
+        )
     return rows, errors
 
 
-def _split_reason_codes(text: str) -> list[str]:
-    return [code.strip() for code in text.split(REASON_CODE_SEPARATOR) if code.strip()]
+def _split_csv_reason_codes(value: str) -> tuple[str, ...]:
+    if not value:
+        return ()
+    return tuple(item.strip() for item in value.split(",") if item.strip())
 
 
-def _error_sort_key(error: dict[str, object]) -> tuple[str, int, str]:
-    return (
-        str(error.get("code", "")),
-        int(error.get("row", 0) or 0),
-        str(error.get("value", "")),
-    )
+def _coerce_jsonl_reason_codes(value: object) -> tuple[str, ...]:
+    if value is None or value == "":
+        return ()
+    if isinstance(value, str):
+        return _split_csv_reason_codes(value)
+    if isinstance(value, list):
+        return tuple(str(item).strip() for item in value if str(item).strip())
+    return (str(value).strip(),)
 
 
-def _portable_path(value: object) -> PurePosixPath | None:
-    if not isinstance(value, str) or not value:
-        return None
-    path = PurePosixPath(value)
-    if path.is_absolute() or ".." in path.parts or "\\" in value:
-        return None
-    return path
+def _get_str(fields: Mapping[str, str], key: str) -> str:
+    return (fields.get(key) or "").strip()
 
 
-def _portable_relative_str(value: object) -> str:
-    path = _portable_path(value)
-    if path is None:
-        raise ValueError(f"expected a portable relative path: {value}")
-    return path.as_posix()
-
-
-def _resolve_run_path(run_root: Path, relative_path: str) -> Path:
-    portable = _portable_path(relative_path)
-    if portable is None:
-        raise ValueError(f"expected a portable relative path: {relative_path}")
-    resolved = (run_root / Path(*portable.parts)).resolve()
-    try:
-        resolved.relative_to(run_root)
-    except ValueError as exc:
-        raise ValueError(
-            f"path escapes wet-test run root: {relative_path}"
-        ) from exc
-    return resolved
-
-
-def _relative_to_run(run_root: Path, path: Path) -> str:
-    try:
-        relative = path.resolve().relative_to(run_root)
-    except ValueError:
-        return path.resolve().as_posix()
-    return PurePosixPath(*relative.parts).as_posix()
+def _error_sort_key(error: _ReviewError) -> tuple[str, int, str]:
+    return (error.code, error.row if error.row is not None else 0, error.message)
