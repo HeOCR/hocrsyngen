@@ -591,7 +591,7 @@ Planned PR breakdown:
   manifest v1 changes.
 - `S8g` — LLM triage packet export: export bounded operator-run LLM review
   packets and prompts without adding baseline LLM clients, network calls, or
-  pass/fail authority.
+  pass/fail authority. Status: done in PR #65.
 - `S8h` — Wet-test report: combine run metadata, code warnings, human review,
   optional LLM notes, top examples, and follow-up recommendations into a
   developer-facing generator-quality report with explicit non-release wording.
