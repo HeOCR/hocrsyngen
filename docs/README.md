@@ -42,6 +42,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.
 - [decisions/](decisions/): accepted ADR-style design decisions, including persona/style/condition semantics.
 - [decisions/0005-persona-style-condition-semantics.md](decisions/0005-persona-style-condition-semantics.md): normative semantics and forbidden-claim boundaries for synthetic persona, style, and condition controls.
+- [decisions/0006-real-glyph-provenance-boundary.md](decisions/0006-real-glyph-provenance-boundary.md): decision that real writer identity belongs in `sample.provenance` (not `controls.persona`), preserving ADR 0005's forbidden-claims boundary for S9 real-glyph composition.
 
 ## Suggested Reading Order
 

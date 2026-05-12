@@ -74,13 +74,6 @@ PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
   workflows, synthetic caps, export, or publication in this repository. Document
   those as downstream dependencies and keep `hocrsyngen` focused on candidate
   generation, validation, contracts, and generator-quality evidence.
-- Real-glyph composition from `HeOCR/hletterscript` (`letter_set.v1`) is
-  design-only under Phase S9 today. Any implementation of S9 must remain
-  additive over manifest v1 (introducing `generation_manifest.v2` rather than
-  mutating v1), preserve the no-network/no-GPU/no-LLM baseline policy, and
-  keep `hletterscript` data discovery file-based (e.g., a `--letter-set-root`
-  path), never an automatic download. See
-  `docs/real_glyph_composition_plan.md`.
 
 ## Branch And PR Conventions
 

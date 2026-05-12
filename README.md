@@ -10,46 +10,12 @@ assembly, and export to `HeOCR` and `HeOCRsynth`.
 
 ## HeOCR Ecosystem Position
 
-`hocrsyngen` is the page-composition step of a six-repository HeOCR pipeline:
-
-```
-public-domain-hand-written-     hletterscriptgen      hletterscript
-   hebrew-scans              ─►  (extraction code, ─►  (per-writer  ─►  hocrsyngen ─► hocrgen ─► HeOCR
-   (rights-curated page          letter_set.v1         letter-glyph     (this repo)               (real)
-    scans + per-scan              schema and CLI)       dataset, LFS                              HeOCRsynth
-    license evidence)                                   image bytes)                              (synthetic)
-```
-
-The baseline package composes pages from packaged TTF fonts shipped under
-`src/hocrsyngen/data/synthetic/fonts/`. Real-glyph composition from
-[`HeOCR/hletterscript`](https://github.com/HeOCR/hletterscript) per-writer
-letter sets is a planned future intake tracked under
-[Phase S9](docs/roadmap.md#phase-s9--real-glyph-composition-from-hletterscript)
-and designed in
-[real_glyph_composition_plan.md](docs/real_glyph_composition_plan.md). It is
-not implemented in this baseline; `hletterscript` is currently `v0.0.0-rc`
-with empty indexes, and no `hocrsyngen` code or contract depends on it today.
-
-Upstream repos:
-
-- [`HeOCR/public-domain-hand-written-hebrew-scans`](https://github.com/HeOCR/public-domain-hand-written-hebrew-scans)
-  — rights-curated page scans plus per-scan license evidence.
-- [`HeOCR/hletterscriptgen`](https://github.com/HeOCR/hletterscriptgen) — the
-  code framework that turns those scans into per-writer letter-glyph sets and
-  owns the `letter_set.v1` contract.
-- [`HeOCR/hletterscript`](https://github.com/HeOCR/hletterscript) — the
-  per-writer letter-glyph image dataset, LFS-stored, with rights inherited
-  from each crop's upstream scan.
-
-Downstream repos:
-
-- [`HeOCR/hocrgen`](https://github.com/HeOCR/hocrgen) — dataset orchestration,
-  governance, validation, review, dedupe, caps, release assembly, export, and
-  publication. Consumes `hocrsyngen` through the installed CLI, manifest v1,
-  and the packaged contract fixture only.
-- [`HeOCR/HeOCR`](https://github.com/HeOCR/HeOCR) and
-  [`HeOCR/HeOCRsynth`](https://github.com/HeOCR/HeOCRsynth) — public real and
-  synthetic dataset payloads/releases.
+`hocrsyngen` is the page-composition step of the HeOCR pipeline, sitting
+downstream of the real-glyph chain (`public-domain-hand-written-hebrew-scans`
+→ `hletterscriptgen` → `hletterscript`) and upstream of `hocrgen` and the
+public dataset releases. See [docs/repository_scope.md](docs/repository_scope.md)
+for the full six-repo ecosystem table, ownership boundaries, and the planned
+Phase S9 real-glyph composition work.
 
 ## Scope
 
