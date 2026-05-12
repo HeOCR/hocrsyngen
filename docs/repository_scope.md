@@ -8,6 +8,28 @@
 
 HeOCR is the public dataset payload and release repository.
 
+## HeOCR Ecosystem Position
+
+`hocrsyngen` is the page-composition step of a six-repository pipeline.
+Upstream of `hocrsyngen` are the real-glyph chain repositories that turn
+public-domain handwritten Hebrew scans into per-writer letter-glyph sets;
+downstream of `hocrsyngen` are governance and release repositories.
+
+| Repo | Owns | Relationship to `hocrsyngen` |
+| --- | --- | --- |
+| `HeOCR/public-domain-hand-written-hebrew-scans` | Rights-curated handwritten Hebrew page scans plus per-scan license evidence (JSONL indexes). | Upstream of `hletterscriptgen`. Not consumed directly by `hocrsyngen`. |
+| `HeOCR/hletterscriptgen` | Code-only framework that extracts per-writer letter-glyph sets from those scans. Owns the `letter_set.v1` JSON Schema and CLI. | Tooling upstream of `hletterscript`. Not imported or consumed by `hocrsyngen`. |
+| `HeOCR/hletterscript` | Per-writer Hebrew letter-glyph image dataset (LFS-stored) with rights inherited from upstream scans. Currently `v0.0.0-rc` with empty indexes. | Future S9 input substrate for `hocrsyngen` real-glyph composition. Not consumed today. |
+| `HeOCR/hocrsyngen` (this repo) | Deterministic candidate synthetic Hebrew OCR/HTR page generation, manifest v1, validation, contract fixtures, and generator-quality evidence. | — |
+| `HeOCR/hocrgen` | Dataset orchestration, governance, validation, review, dedupe, caps, release assembly, export, and publication. Consumes `hocrsyngen` only through installed CLI, manifest v1, and the packaged contract fixture. | Downstream. Must never be imported by `hocrsyngen`. |
+| `HeOCR/HeOCR` and `HeOCR/HeOCRsynth` | Public real and synthetic dataset payloads and releases. | Further downstream. |
+
+Today `hocrsyngen` composes pages only from packaged TTF fonts shipped under
+`src/hocrsyngen/data/synthetic/fonts/`. Real-glyph composition from
+`hletterscript` per-writer letter sets is design-only under Phase S9 and is
+documented in
+[real_glyph_composition_plan.md](real_glyph_composition_plan.md).
+
 ## In Scope For hocrsyngen
 
 - Deterministic synthetic batch generation.
@@ -55,6 +77,12 @@ The durable semantics are recorded in
 - Plan style/persona/condition metadata before adding new manifest semantics,
   following [ADR 0005](decisions/0005-persona-style-condition-semantics.md).
 - Keep optional ML-backed research paths isolated from the baseline package.
+- Plan real-glyph composition from `HeOCR/hletterscript` letter sets through
+  the design-only `S9a` track in
+  [real_glyph_composition_plan.md](real_glyph_composition_plan.md) before any
+  implementation. Real-glyph composition must remain additive over manifest
+  v1, file-based (no network/LFS pulls inside `hocrsyngen`), and must preserve
+  the existing baseline dependency boundary.
 
 ## Risks And Open Questions
 

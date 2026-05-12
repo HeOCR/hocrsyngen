@@ -44,6 +44,17 @@ measurements. Remaining handwriting prototype/evaluation work is intentionally
 deferred to a future S5 follow-up or external `hocrgen`/HeOCR work; it should
 not be treated as baseline `hocrsyngen` generator behavior.
 
+The likely external resolution path for the handwriting-realism question that
+S5 left open is now Phase S9 real-glyph composition from
+[`HeOCR/hletterscript`](https://github.com/HeOCR/hletterscript) per-writer
+letter sets, designed in
+[real_glyph_composition_plan.md](real_glyph_composition_plan.md). Phase S9
+replaces the unsupervised ML-synthesis direction with deterministic
+file-based composition of real Hebrew letter glyphs, preserving the baseline
+no-network / no-GPU / no-LLM dependency policy and keeping downstream
+governance in `hocrgen`/HeOCR. Phase S9 is design-only today and is gated on
+upstream `hletterscript` data readiness; it does not reopen S5.
+
 ## Research Tracks
 
 1. Deterministic typography and document simulation baseline.

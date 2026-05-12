@@ -71,6 +71,13 @@ Treat the CLI, manifest schema, and contract fixture as stable downstream surfac
 - Richer degradation presets.
 - Future persona, style, and condition controls as synthetic parameter bundles.
 - Future optional model-backed generation outside the baseline package.
+- Future real-glyph page composition from external `HeOCR/hletterscript`
+  `letter_set.v1` letter sets. The current page-rendering pipeline assumes a
+  single packaged TTF font per sample; a future glyph composer would select
+  per-writer letter variants from a file-based `letter_set.v1` source while
+  preserving deterministic seeding, baseline dependency policy, manifest
+  validation, and asset hashing. This is design-only under Phase S9; see
+  [real_glyph_composition_plan.md](real_glyph_composition_plan.md).
 
 ## Current Risks And Open Questions
 

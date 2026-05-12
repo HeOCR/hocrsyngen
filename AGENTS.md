@@ -24,6 +24,15 @@ PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
 - `hocrsyngen` owns deterministic candidate synthetic Hebrew OCR/HTR sample generation.
 - `hocrgen` owns dataset orchestration, governance, validation, review, dedupe, release assembly, export, and publication.
 - HeOCR owns public dataset payloads and releases.
+- Upstream of the page-composition step lives in the parallel real-glyph chain
+  `HeOCR/public-domain-hand-written-hebrew-scans` → `HeOCR/hletterscriptgen` →
+  `HeOCR/hletterscript`. Today this chain is not consumed by `hocrsyngen`;
+  future S9 work composes pages from `letter_set.v1` glyph variants and must
+  use file-based contracts only.
+- Do not import `hletterscript` or `hletterscriptgen` from `hocrsyngen`. If
+  future S9 work consumes per-writer letter sets, it does so through the
+  `letter_set.v1` document plus relative asset bytes, not by importing those
+  repositories' Python code.
 - Generated batches are candidate synthetic inputs, not release-ready dataset artifacts.
 - Do not import `hocrgen` from `hocrsyngen`.
 - Do not add network, REST, scraping, publication, release-governance, or dataset-export behavior to the `hocrsyngen` baseline.
@@ -65,6 +74,13 @@ PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
   workflows, synthetic caps, export, or publication in this repository. Document
   those as downstream dependencies and keep `hocrsyngen` focused on candidate
   generation, validation, contracts, and generator-quality evidence.
+- Real-glyph composition from `HeOCR/hletterscript` (`letter_set.v1`) is
+  design-only under Phase S9 today. Any implementation of S9 must remain
+  additive over manifest v1 (introducing `generation_manifest.v2` rather than
+  mutating v1), preserve the no-network/no-GPU/no-LLM baseline policy, and
+  keep `hletterscript` data discovery file-based (e.g., a `--letter-set-root`
+  path), never an automatic download. See
+  `docs/real_glyph_composition_plan.md`.
 
 ## Branch And PR Conventions
 

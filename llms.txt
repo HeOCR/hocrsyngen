@@ -2,6 +2,20 @@
 
 hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample batches. It emits `generation_manifest.json` plus relative JPEG page assets. hocrgen remains the downstream governance, validation, release, and publication toolchain.
 
+## HeOCR Ecosystem Position
+
+hocrsyngen is the page-composition step of a six-repository pipeline:
+
+- Upstream (real-glyph chain, not yet wired into hocrsyngen):
+  - `HeOCR/public-domain-hand-written-hebrew-scans`: rights-curated page scans plus per-scan license evidence (JSONL indexes).
+  - `HeOCR/hletterscriptgen`: code-only framework that extracts per-writer letter-glyph sets from those scans; owns the `letter_set.v1` JSON Schema and CLI.
+  - `HeOCR/hletterscript`: per-writer Hebrew letter-glyph image dataset (LFS-stored) with rights inherited from upstream scans; currently `v0.0.0-rc` with empty indexes.
+- Downstream:
+  - `HeOCR/hocrgen`: dataset orchestration, governance, validation, review, dedupe, caps, release assembly, export, publication.
+  - `HeOCR/HeOCR` and `HeOCR/HeOCRsynth`: public real and synthetic dataset releases.
+
+Today hocrsyngen composes pages only from packaged TTF fonts under `src/hocrsyngen/data/synthetic/fonts/`. Real-glyph composition from `HeOCR/hletterscript` is planned under Phase S9 as design-only; no current code, schema, or contract depends on it.
+
 ## Compact Source Tree
 
 - `src/hocrsyngen/`: Python package.
@@ -44,7 +58,8 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - `docs/hocrgen_adapter_handoff_checklist.md`: S6g external hocrgen adapter handoff checklist for installed CLI import, public JSON assertions, manifest id/path retention, template_catalog.v2 joins, S6a-S6f evidence links, failure handling, and downstream governance boundaries.
 - `docs/wet_testing_program_plan.md`: S8a developer-owned wet-testing sub-plan for staged code validation, human review, optional LLM triage, evidence artifacts, and regression promotion outside manifest v1 and release governance; S8b adds the first smoke run artifact generator, S8c adds the candidate evidence-run handoff, S8d adds the static gallery, S8e adds deterministic warning metrics, and S8f adds the human review worksheet template and validator.
 - `docs/script_abstraction_design.md`: S7a design-only script abstraction boundaries for future RTL-script profiles; preserves Hebrew-first manifest v1, logical-order UTF-8 Hebrew, NFC normalization, RTL metadata, and current validation semantics.
-- `docs/roadmap.md`: S6 is complete through S6g, S7a script abstraction design is complete, and S8 is active for wet-testing/generator-quality evidence with S8f as the current implementation slice.
+- `docs/roadmap.md`: S6 is complete through S6g, S7a script abstraction design is complete, S8 is active for wet-testing/generator-quality evidence with S8f as the current implementation slice, and S9 (real-glyph composition from `hletterscript`) is design-only with `S9a` documented in `docs/real_glyph_composition_plan.md`.
+- `docs/real_glyph_composition_plan.md`: S9a design-only plan for future real-glyph page composition from `HeOCR/hletterscript` `letter_set.v1` letter sets, including the proposed manifest v2 boundary, composer interface, asset-location boundary, validation extensions, wet-test extensions, and prerequisites. It does not implement glyph composition.
 
 ## Public Contracts
 
@@ -79,3 +94,4 @@ hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample bat
 - No `hocrgen` import from `hocrsyngen`.
 - No baseline network, GPU, LLM, or diffusion dependencies.
 - No publication or release governance inside `hocrsyngen`.
+- No current `hletterscript` or `hletterscriptgen` import from `hocrsyngen`. If future S9 work composes real glyphs from `letter_set.v1` sources, it must consume them through file-based contracts only, not by importing those repositories.

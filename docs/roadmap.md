@@ -25,21 +25,34 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
   `S8c` adds the candidate evidence-run wrapper for downstream `hocrgen`
   preflight evidence, `S8d` adds the human-first static gallery over existing
   wet-test runs, `S8e` adds deterministic warning metrics over existing
-  wet-test runs, and `S8f` is the active implementation slice: a human review
-  worksheet template generator and worksheet validator over existing wet-test
-  runs, without adding schemas, LLM/network dependencies, hocrgen behavior,
-  release governance, or manifest v1 changes.
-4. Keep generated batches classified as candidate synthetic inputs until
+  wet-test runs, and `S8f` adds a human review worksheet template generator
+  and worksheet validator over existing wet-test runs without adding schemas,
+  LLM/network dependencies, hocrgen behavior, release governance, or manifest
+  v1 changes.
+4. Treat Phase S9 (real-glyph page composition from `HeOCR/hletterscript`) as
+   design-only. `S9a` is documented in
+   [real_glyph_composition_plan.md](real_glyph_composition_plan.md): it scopes
+   future composer-, manifest-, validation-, and wet-test-level work needed to
+   compose pages from `letter_set.v1` per-writer letter variants, but it does
+   not implement composer code, change manifest v1, add `hletterscript` or
+   `hletterscriptgen` imports, change baseline dependencies, or move
+   downstream governance into this repository. Implementation slices `S9b`
+   through `S9h` remain planned and are gated on `hletterscript` reaching a
+   populated, validated baseline corpus.
+5. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
-5. Make production-readiness gaps explicit in this roadmap or in a named
+6. Make production-readiness gaps explicit in this roadmap or in a named
    external `hocrgen` dependency. Do not leave required release, review, or
    quality gates only in conversation notes.
-6. Keep S5 closed through the deferral path recorded by S5e: this repo has planning
+7. Keep S5 closed through the deferral path recorded by S5e: this repo has planning
    gates and boundaries, but no accepted prototype or downstream evaluation
    evidence. Remaining S5 prototype/evaluation work is deferred to a future S5
-   follow-up or external `hocrgen`/HeOCR work.
-7. Keep S6 closed. S6a is complete in PR #48 and defines downstream realism
+   follow-up or external `hocrgen`/HeOCR work. Real-glyph composition from
+   `HeOCR/hletterscript` is the external path that may eventually answer the
+   handwriting-realism question S5 left open; it is tracked under Phase S9,
+   not as a reopening of S5.
+8. Keep S6 closed. S6a is complete in PR #48 and defines downstream realism
    acceptance; S6b is complete in PR #49 and defines what evidence is required
    before any CER/WER or other OCR/HTR utility claim is made; S6c is complete
    in PR #50 and defines how to detect repeated synthetic patterns,
@@ -620,3 +633,107 @@ Risks/dependencies:
 - LLM review can create false confidence unless it remains advisory and
   subordinate to human review.
 - Large soak runs can become too expensive or noisy for normal CI.
+
+## Phase S9 — Real-Glyph Composition From hletterscript
+
+Current status: `open`; `S9a` is design-only. `S9b` through `S9h` are planned
+and are gated on `HeOCR/hletterscript` reaching a populated, validated baseline
+corpus. No `S9` slice changes `generation_manifest.json` v1 semantics for
+existing font-rendered batches.
+
+Objective: define and (later) implement a second deterministic page-composition
+substrate that consumes per-writer Hebrew letter-glyph variants from
+[`HeOCR/hletterscript`](https://github.com/HeOCR/hletterscript) `letter_set.v1`
+sources, while preserving the existing font-rendered baseline, the no-network /
+no-GPU / no-LLM baseline dependency boundary, manifest v1 compatibility, and
+the downstream-governance-in-`hocrgen` boundary.
+
+Scope:
+
+- File-based consumption of `letter_set.v1` documents and the relative asset
+  bytes they reference. No imports of `hletterscript` or `hletterscriptgen`
+  Python code, and no network or LFS fetching from inside `hocrsyngen`.
+- An additive `generation_manifest.v2` schema that carries per-glyph
+  provenance (writer id, variant id, source `scan_entry_id`, per-variant
+  license) plus a per-sample `license_summary`, while leaving `manifest_v1`
+  batches and the existing `generation_manifest_v1_fixture_batch` unchanged.
+- Glyph-composed sibling templates (for example `handwritten_note_glyph_v1`)
+  living alongside today's TTF templates. The TTF templates remain the
+  deterministic floor.
+- Wet-testing extensions for glyph batches (writer-distribution warnings,
+  per-glyph coverage, review-worksheet fields).
+- A tiny embedded `letter_set.v1` fixture so unit tests stay hermetic and
+  CI does not require Git LFS.
+
+Out of scope:
+
+- `hocrgen` import, governance, release profiles, review workflows, caps,
+  export, or publication. Mix decisions (which writers a batch samples from)
+  remain downstream per `S6d`/`S6f`.
+- Network or LFS fetching, model-backed synthesis, or any baseline dependency
+  expansion beyond what is already in `pyproject.toml`.
+- Arabic or other non-Hebrew script support. `S7b`/`S7c` continue to track
+  script abstraction work separately.
+
+Planned PR breakdown:
+
+- `S9a` — Real-glyph composition design plan: scope, upstream contracts,
+  proposed manifest v2 boundary, composer interface, asset-location boundary,
+  validation extensions, wet-test extensions, persona/condition vs.
+  provenance reconciliation, prerequisites, and stop/reject gates. Status:
+  design-only in
+  [real_glyph_composition_plan.md](real_glyph_composition_plan.md). Must not
+  implement composer code, schemas, fixtures, or CLI changes.
+- `S9b` — `generation_manifest.v2` schema design and packaged JSON Schema,
+  additive over v1; coexisting `generation_manifest_v2_fixture_batch`.
+  Status: planned.
+- `S9c` — File-based glyph composer (no model dependencies): deterministic
+  letter-variant selection from a `letter_set.v1` source, baseline placement,
+  integration with existing degradation presets. Status: planned.
+- `S9d` — Governed glyph-composed templates alongside existing TTF templates;
+  `template_catalog.v2` extension to carry a `glyph_source` discriminator.
+  Status: planned.
+- `S9e` — Validation for glyph batches: variant existence and hash checks,
+  per-sample `license_summary` consistency, optional resolution of
+  `source.scan_entry_id` against a configured upstream scans index. Status:
+  planned.
+- `S9f` — S8 wet-test extensions for glyph batches: writer-distribution
+  warnings, per-glyph coverage, review-worksheet fields. Status: planned.
+- `S9g` — Embedded tiny `letter_set.v1` fixture so unit tests run hermetically
+  without Git LFS or external repo checkouts. Status: planned.
+- `S9h` — Production-readiness, external-dependency, and `hocrgen` adapter
+  updates for manifest v2 and glyph batches. Status: planned.
+
+Deliverables:
+
+- Design-only `S9a` plan that covers boundaries, contracts, prerequisites,
+  and stop/reject gates before any implementation slice.
+- Later implementation slices produce: an additive `generation_manifest.v2`
+  schema, a file-based glyph composer, glyph-composed template variants, a
+  glyph-aware validator, glyph-aware wet-test artifacts, and a hermetic
+  embedded letter-set fixture.
+
+Exit criteria:
+
+- Existing font-rendered behavior, manifest v1 batches, and the packaged
+  `generation_manifest_v1_fixture_batch` remain bit-stable across `S9` work.
+- Real-glyph batches are deterministic from public inputs and a fixed seed.
+- Glyph batches carry full per-glyph provenance and per-sample license summary
+  in manifest v2.
+- Wet-test artifacts cover glyph-specific quality signals.
+- `hocrgen` can consume both manifest v1 and v2 batches through the existing
+  installed CLI and contract-fixture boundary.
+
+Risks/dependencies:
+
+- `HeOCR/hletterscript` must reach a populated, validated baseline corpus
+  before `S9b` and later slices are meaningful. Until then, only `S9a`
+  design-only work is appropriate.
+- A single restrictive per-glyph license can propagate to the page level;
+  manifest v2 must record per-sample `license_summary` faithfully so
+  `hocrgen` can apply release caps.
+- Writer-distribution skew (one writer dominating a batch) becomes a
+  diversity concern that must surface through `S8e` warning metrics rather
+  than through release-eligibility claims in this repo.
+- Persona/condition ADR boundaries must hold: real writer identity is
+  provenance, not a persona or condition claim.

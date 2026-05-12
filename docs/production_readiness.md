@@ -126,7 +126,8 @@ produce large quality or operational gains.
 | Rendering coverage report artifact | `S2e` | Makes Hebrew feature, template, degradation, style, and condition coverage inspectable outside manifest v1. |
 | Richer template/catalog metadata | `S3e` | Lets downstream tools filter by document family, page regions, annotations, identifiers, density, and base family through a stable public boundary. |
 | Additional governed document families | `S3f` | Done in PR #42; expands visual diversity beyond the earlier families and should help reduce overfitting to narrow synthetic layouts. |
-| Handwriting realism research | `S5a` through `S5e`, future S5 follow-up, or external `hocrgen`/HeOCR work | Biggest expected visual-realism lift for handwritten-like OCR/HTR samples, but S5 produced planning gates and boundaries only. S5a is done in PR #43, S5b is done in PR #44, S5c is done in PR #45, S5d is done in PR #46, and S5e closes S5 by deferring remaining prototype/evaluation evidence out of the baseline package. |
+| Handwriting realism research | `S5a` through `S5e`, future S5 follow-up, Phase S9 real-glyph composition, or external `hocrgen`/HeOCR work | Biggest expected visual-realism lift for handwritten-like OCR/HTR samples, but S5 produced planning gates and boundaries only. S5a is done in PR #43, S5b is done in PR #44, S5c is done in PR #45, S5d is done in PR #46, and S5e closes S5 by deferring remaining prototype/evaluation evidence out of the baseline package. The likely external resolution path is `Phase S9` real-glyph composition from `HeOCR/hletterscript` letter sets rather than ML-backed synthesis; that work is design-only and gated on `hletterscript` reaching a populated baseline corpus. |
+| Real-glyph composition from `HeOCR/hletterscript` | `Phase S9` (design-only `S9a` today), external dependency `H2` for upstream data readiness | Replaces today's TTF "handwritten-like" approximation with deterministic file-based composition of real per-writer Hebrew letter glyphs. Adds `generation_manifest.v2`, glyph-aware validation, and wet-test extensions while preserving the manifest v1 contract for existing batches. Documented in [real_glyph_composition_plan.md](real_glyph_composition_plan.md). |
 | Downstream realism acceptance rubric | `S6a` | Done in PR #48; gives `hocrgen`/HeOCR reviewers a shared acceptance vocabulary for generated candidate batches before utility, caps, and review sidecar contracts are implemented. |
 | Downstream utility measurement | `S6b` | Done in PR #49; defines how `hocrgen`/HeOCR must prove whether synthetic batches improve CER/WER or expose model weaknesses against real references before any utility claim is made. |
 | Diversity and domain-shift metrics | `S6c` | Done in PR #50; helps detect synthetic over-representation, repeated artifacts, and gaps versus real Hebrew document distributions. |
@@ -139,8 +140,13 @@ produce large quality or operational gains.
 ## Current Planning Track
 
 `S7a` script abstraction design is complete in
-[script_abstraction_design.md](script_abstraction_design.md). Phase S8 is now
-the current implementation track for wet testing and generator-quality evidence.
+[script_abstraction_design.md](script_abstraction_design.md). Phase S8 is the
+current implementation track for wet testing and generator-quality evidence.
+Phase S9 (real-glyph composition from `HeOCR/hletterscript`) is design-only;
+`S9a` is documented in
+[real_glyph_composition_plan.md](real_glyph_composition_plan.md) and remaining
+S9 implementation slices are gated on upstream `hletterscript` readiness
+(`H2c`).
 `S8a` defines the program in
 [wet_testing_program_plan.md](wet_testing_program_plan.md), `S8b` is the
 first implementation slice, `S8c` adds the downstream preflight evidence-run
@@ -169,6 +175,29 @@ planning:
 
 `hocrsyngen` may document the contract and provide fixtures, but it must not
 implement these governance workflows in the baseline package.
+
+## External hletterscript / hletterscriptgen Dependency Labels
+
+The following dependency labels track upstream real-glyph chain work that
+`hocrsyngen` Phase S9 implementation slices depend on. They are not
+`hocrsyngen` PR notation and they must not be implemented inside this
+repository:
+
+- `H2a` - `HeOCR/public-domain-hand-written-hebrew-scans` reaches a stable
+  index baseline with documented per-scan rights evidence for every entry
+  referenced by upstream letter-glyph extractions.
+- `H2b` - `HeOCR/hletterscriptgen` ships an extraction pipeline (currently
+  reserved) that produces conforming `letter_set.v1` documents from
+  rights-clean scans, with deterministic asset hashes and full rights
+  carryover into each variant.
+- `H2c` - `HeOCR/hletterscript` reaches a populated baseline corpus of
+  per-writer letter sets covering all 27 Hebrew letter forms across multiple
+  writers, with passing validation, rights-summary completeness, and stable
+  LFS-tracked assets.
+
+`hocrsyngen` Phase S9 implementation slices `S9b` through `S9h` are gated on
+`H2c` reaching a populated baseline. Until then, only design-only `S9a`
+documentation work is appropriate inside this repository.
 
 ## Recommended First Production Rehearsal
 
