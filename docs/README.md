@@ -32,7 +32,8 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md): S6f candidate batch profile and mix handoff contract for requested, generated/observed, reviewed, capped/admitted, and released candidate mix layers, required/preferred/excluded strata, mix gap reason codes, and downstream ownership boundaries outside manifest v1.
 - [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md): S6g external `hocrgen` adapter handoff checklist for installed CLI import, public JSON boundary assertions, manifest id/path retention, `template_catalog.v2` joins, S6a-S6f evidence links, failure handling, and downstream-only governance responsibilities.
 - [script_abstraction_design.md](script_abstraction_design.md): S7a design-only script abstraction boundaries for future RTL-script profiles while preserving Hebrew-first manifest v1, logical-order UTF-8 Hebrew, NFC, RTL metadata, and current validation semantics.
-- [roadmap.md](roadmap.md): hocrsyngen-specific phases from planning foundation through Hebrew rendering, realism, research, completed S6 evaluation handoffs, S7 script-abstraction design, and active S8 wet-testing/generator-quality evidence planning.
+- [real_glyph_composition_plan.md](real_glyph_composition_plan.md): S9a design-only plan for future real-glyph page composition from `HeOCR/hletterscript` `letter_set.v1` per-writer letter sets, including proposed `generation_manifest.v2` boundary, composer interface, asset-location boundary, validation extensions, wet-test extensions, persona/condition vs. provenance reconciliation, prerequisites, and stop/reject gates.
+- [roadmap.md](roadmap.md): hocrsyngen-specific phases from planning foundation through Hebrew rendering, realism, research, completed S6 evaluation handoffs, S7 script-abstraction design, active S8 wet-testing/generator-quality evidence, and design-only S9 real-glyph composition planning.
 - [research_program.md](research_program.md): planning track for believable synthetic Hebrew handwriting and document generation.
 - [handwriting_research_acceptance_criteria.md](handwriting_research_acceptance_criteria.md): S5a boundaries, reproducibility, licensing, visual review, downstream evaluation, and stop/reject gates for handwriting research.
 - [allograph_character_prototype_plan.md](allograph_character_prototype_plan.md): S5b deterministic allograph and character-level prototype boundary, bounded sampling plan, Hebrew cases, evidence plan, and proceed/stop gates.
@@ -41,6 +42,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.
 - [decisions/](decisions/): accepted ADR-style design decisions, including persona/style/condition semantics.
 - [decisions/0005-persona-style-condition-semantics.md](decisions/0005-persona-style-condition-semantics.md): normative semantics and forbidden-claim boundaries for synthetic persona, style, and condition controls.
+- [decisions/0006-real-glyph-provenance-boundary.md](decisions/0006-real-glyph-provenance-boundary.md): decision that real writer identity belongs in `sample.provenance` (not `controls.persona`), preserving ADR 0005's forbidden-claims boundary for S9 real-glyph composition.
 
 ## Suggested Reading Order
 

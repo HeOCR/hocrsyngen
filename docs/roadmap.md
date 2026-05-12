@@ -25,10 +25,10 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
   `S8c` adds the candidate evidence-run wrapper for downstream `hocrgen`
   preflight evidence, `S8d` adds the human-first static gallery over existing
   wet-test runs, `S8e` adds deterministic warning metrics over existing
-  wet-test runs, and `S8f` is the active implementation slice: a human review
-  worksheet template generator and worksheet validator over existing wet-test
-  runs, without adding schemas, LLM/network dependencies, hocrgen behavior,
-  release governance, or manifest v1 changes.
+  wet-test runs, and `S8f` adds a human review worksheet template generator
+  and worksheet validator over existing wet-test runs without adding schemas,
+  LLM/network dependencies, hocrgen behavior, release governance, or manifest
+  v1 changes.
 4. Keep generated batches classified as candidate synthetic inputs until
    `hocrgen` applies import governance, review, caps, dedupe, release assembly,
    export, and publication policy.
@@ -38,7 +38,10 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
 6. Keep S5 closed through the deferral path recorded by S5e: this repo has planning
    gates and boundaries, but no accepted prototype or downstream evaluation
    evidence. Remaining S5 prototype/evaluation work is deferred to a future S5
-   follow-up or external `hocrgen`/HeOCR work.
+   follow-up or external `hocrgen`/HeOCR work. Real-glyph composition from
+   `HeOCR/hletterscript` is the external path that may eventually answer the
+   handwriting-realism question S5 left open; it is tracked under Phase S9,
+   not as a reopening of S5.
 7. Keep S6 closed. S6a is complete in PR #48 and defines downstream realism
    acceptance; S6b is complete in PR #49 and defines what evidence is required
    before any CER/WER or other OCR/HTR utility claim is made; S6c is complete
@@ -60,6 +63,13 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    optional S6a-S6f evidence links, dry-run failure modes, and governance
    boundaries. Remaining adapter implementation and governance work is an
    external `hocrgen` dependency, not active `hocrsyngen` S6 work.
+8. Treat Phase S9 (real-glyph page composition from `HeOCR/hletterscript`) as
+   design-only. `S9a` is documented in
+   [real_glyph_composition_plan.md](real_glyph_composition_plan.md) and does
+   not implement composer code, change manifest v1, add `hletterscript` or
+   `hletterscriptgen` imports, change baseline dependencies, or move downstream
+   governance into this repository. Implementation work is gated on
+   `hletterscript` reaching a populated, validated baseline corpus.
 
 ## Current Baseline After S7a
 
@@ -620,3 +630,21 @@ Risks/dependencies:
 - LLM review can create false confidence unless it remains advisory and
   subordinate to human review.
 - Large soak runs can become too expensive or noisy for normal CI.
+
+## Phase S9 — Real-Glyph Composition From hletterscript
+
+Current status: `open`; `S9a` is design-only, documented in
+[real_glyph_composition_plan.md](real_glyph_composition_plan.md). No `S9` slice
+changes `generation_manifest.json` v1 semantics for existing font-rendered
+batches.
+
+Objective: define and (later) implement a second deterministic page-composition
+substrate that consumes per-writer Hebrew letter-glyph variants from
+[`HeOCR/hletterscript`](https://github.com/HeOCR/hletterscript) `letter_set.v1`
+sources, while preserving manifest v1 compatibility, the no-network / no-GPU /
+no-LLM baseline policy, and downstream governance in `hocrgen`.
+
+Implementation slices are gated on `HeOCR/hletterscript` reaching a populated,
+validated baseline corpus. Until that condition is met, only design-only `S9a`
+work is appropriate inside this repository. The design direction is documented
+in [real_glyph_composition_plan.md](real_glyph_composition_plan.md).

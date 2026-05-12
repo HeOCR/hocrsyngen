@@ -8,6 +8,15 @@ This package owns deterministic candidate synthetic sample generation. `hocrgen`
 remains responsible for dataset orchestration, governance, validation, release
 assembly, and export to `HeOCR` and `HeOCRsynth`.
 
+## HeOCR Ecosystem Position
+
+`hocrsyngen` is the page-composition step of the HeOCR pipeline, sitting
+downstream of the real-glyph chain (`public-domain-hand-written-hebrew-scans`
+→ `hletterscriptgen` → `hletterscript`) and upstream of `hocrgen` and the
+public dataset releases. See [docs/repository_scope.md](docs/repository_scope.md)
+for the full six-repo ecosystem table, ownership boundaries, and the planned
+Phase S9 real-glyph composition work.
+
 ## Scope
 
 - Generate governed synthetic Hebrew OCR/HTR fixture batches.
@@ -42,6 +51,7 @@ Generated directories are deterministic candidate synthetic inputs for later
 - [hocrgen adapter handoff checklist](docs/hocrgen_adapter_handoff_checklist.md)
 - [Script abstraction design](docs/script_abstraction_design.md)
 - [Wet-testing program plan](docs/wet_testing_program_plan.md)
+- [Real-glyph composition plan](docs/real_glyph_composition_plan.md)
 - [Testing and quality](docs/testing_and_quality.md)
 
 ## CLI

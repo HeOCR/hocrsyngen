@@ -24,6 +24,15 @@ PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
 - `hocrsyngen` owns deterministic candidate synthetic Hebrew OCR/HTR sample generation.
 - `hocrgen` owns dataset orchestration, governance, validation, review, dedupe, release assembly, export, and publication.
 - HeOCR owns public dataset payloads and releases.
+- Upstream of the page-composition step lives in the parallel real-glyph chain
+  `HeOCR/public-domain-hand-written-hebrew-scans` → `HeOCR/hletterscriptgen` →
+  `HeOCR/hletterscript`. Today this chain is not consumed by `hocrsyngen`;
+  future S9 work composes pages from `letter_set.v1` glyph variants and must
+  use file-based contracts only.
+- Do not import `hletterscript` or `hletterscriptgen` from `hocrsyngen`. If
+  future S9 work consumes per-writer letter sets, it does so through the
+  `letter_set.v1` document plus relative asset bytes, not by importing those
+  repositories' Python code.
 - Generated batches are candidate synthetic inputs, not release-ready dataset artifacts.
 - Do not import `hocrgen` from `hocrsyngen`.
 - Do not add network, REST, scraping, publication, release-governance, or dataset-export behavior to the `hocrsyngen` baseline.
