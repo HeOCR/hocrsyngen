@@ -8,6 +8,7 @@ from typing import Any
 
 WET_TEST_RUN_FILENAME = "wet_test_run.json"
 WET_TEST_RUN_REPORT_VERSION = "wet_test_run.v1"
+WET_ANALYSIS_REPORT_VERSION = "wet_analysis_report.v1"
 
 
 class WetRunArtifactError(ValueError):
@@ -267,3 +268,56 @@ def relative_to_run(run_root: Path, path: Path) -> str:
     """
     relative = path.resolve().relative_to(run_root)
     return PurePosixPath(*relative.parts).as_posix()
+
+
+def extract_run_meta(run_payload: dict[str, Any]) -> dict[str, Any]:
+    """Extract the run-meta summary fields from a loaded ``wet_test_run.json`` payload."""
+    config = run_payload.get("config") or {}
+    validation = run_payload.get("validation") or {}
+    package = run_payload.get("package") or {}
+    if not isinstance(config, dict):
+        config = {}
+    if not isinstance(validation, dict):
+        validation = {}
+    if not isinstance(package, dict):
+        package = {}
+    return {
+        "generator_version": package.get("version"),
+        "profile": run_payload.get("profile"),
+        "seed": config.get("seed"),
+        "batch_count": config.get("total_count"),
+        "sample_count": validation.get("sample_count"),
+        "status": run_payload.get("status"),
+    }
+
+
+def load_analysis_summary(run_root: Path) -> dict[str, Any] | None:
+    """Load the analysis-summary slice from ``reports/wet_analysis_report.json``.
+
+    Returns ``None`` when the file is absent, malformed, or version-mismatched,
+    so callers can treat the analysis report as optional.
+    """
+    report_path = run_root / "reports" / "wet_analysis_report.json"
+    if not report_path.is_file():
+        return None
+    try:
+        data = json.loads(report_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    if data.get("report_version") != WET_ANALYSIS_REPORT_VERSION:
+        return None
+    summary = data.get("summary")
+    if not isinstance(summary, dict):
+        return None
+    hard_blockers = data.get("hard_blockers")
+    warnings_list = data.get("warnings")
+    return {
+        "sample_count": summary.get("sample_count"),
+        "page_count": summary.get("page_count"),
+        "warning_count": summary.get("warning_count"),
+        "hard_blocker_count": summary.get("hard_blocker_count"),
+        "hard_blockers": hard_blockers if isinstance(hard_blockers, list) else [],
+        "warnings": warnings_list if isinstance(warnings_list, list) else [],
+    }

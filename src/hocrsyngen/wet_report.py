@@ -5,32 +5,24 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from hocrsyngen.wet_analysis import WET_ANALYSIS_REPORT_VERSION
 from hocrsyngen.wet_review import validate_wet_review
 from hocrsyngen.wet_run_artifact import (
+    WET_ANALYSIS_REPORT_VERSION,
     WetRunArtifactError,
+    extract_run_meta,
+    load_analysis_summary,
     load_wet_run_payload,
 )
 
 
 WET_REPORT_VERSION = "wet_report.v1"
 
-_NON_RELEASE_STATEMENT = (
+NON_RELEASE_STATEMENT = (
     "This report is generator-quality evidence only. It is not a release "
     "eligibility determination, OCR/HTR utility claim, or domain-match "
     "assessment. Generated batches remain candidate synthetic inputs until "
     "downstream hocrgen governance admits them."
 )
-
-_SCOPE: dict[str, bool] = {
-    "generator_quality_evidence_only": True,
-    "release_ready_dataset_artifact": False,
-    "manifest_v1_changed": False,
-    "hocrgen_behavior_added": False,
-    "human_review_sidecar_included": False,
-    "llm_triage_included": False,
-    "network_required": False,
-}
 
 
 @dataclass(frozen=True)
@@ -51,20 +43,23 @@ def build_wet_report(
         raise WetRunArtifactError(f"wet-test run directory does not exist: {run_root}")
 
     run_payload = load_wet_run_payload(run_root)
-    run_meta = _extract_run_meta(run_payload)
-    analysis_summary = _load_analysis_summary(run_root)
+    run_meta = extract_run_meta(run_payload)
+    analysis_summary = load_analysis_summary(run_root)
     review_summary = _load_review_summary(run_root, review_path)
     llm_triage_summary = _load_llm_triage_summary(llm_packet_path)
-    coverage_matrix = _load_coverage_matrix(run_root)
+    coverage_matrix = _load_coverage_matrix(run_root, analysis_summary)
 
-    has_hard_blockers = bool(
-        analysis_summary is not None
-        and (analysis_summary.get("hard_blocker_count") or 0) > 0
-    )
+    has_hard_blockers = _has_hard_blockers(analysis_summary)
 
-    scope = dict(_SCOPE)
-    scope["human_review_sidecar_included"] = review_path is not None
-    scope["llm_triage_included"] = llm_packet_path is not None
+    scope: dict[str, bool] = {
+        "generator_quality_evidence_only": True,
+        "release_ready_dataset_artifact": False,
+        "manifest_v1_changed": False,
+        "hocrgen_behavior_added": False,
+        "human_review_sidecar_included": review_path is not None,
+        "llm_triage_included": llm_packet_path is not None,
+        "network_required": False,
+    }
 
     payload: dict[str, Any] = {
         "report_version": WET_REPORT_VERSION,
@@ -73,7 +68,7 @@ def build_wet_report(
         "analysis_summary": analysis_summary,
         "review_summary": review_summary,
         "llm_triage_summary": llm_triage_summary,
-        "non_release_statement": _NON_RELEASE_STATEMENT,
+        "non_release_statement": NON_RELEASE_STATEMENT,
         "scope": scope,
     }
     if coverage_matrix is not None:
@@ -108,8 +103,6 @@ def format_wet_report_text(payload: dict[str, Any]) -> str:
     review_status = review.get("status", "not_provided")
     if review_status == "not_provided":
         lines.append("review: not provided")
-    elif review_status == "error":
-        lines.append(f"review: error ({review.get('error', '?')})")
     else:
         rev_count = review.get("reviewed_page_count")
         unreviewed = review.get("unreviewed_page_count", 0)
@@ -129,16 +122,11 @@ def format_wet_report_text(payload: dict[str, Any]) -> str:
     llm_status = llm_triage.get("status", "not_provided")
     if llm_status == "not_provided":
         lines.append("llm_triage: not provided")
-    elif llm_status == "error":
-        lines.append(f"llm_triage: error ({llm_triage.get('error', '?')})")
     else:
         sel = llm_triage.get("selected_sample_count", "?")
         lines.append(f"llm_triage: samples={sel} [advisory]")
 
-    has_blockers = bool(
-        analysis is not None and (analysis.get("hard_blocker_count") or 0) > 0
-    )
-    if has_blockers:
+    if _has_hard_blockers(analysis):
         n = analysis.get("hard_blocker_count", 0) if analysis else 0
         lines.append(f"status: BLOCKED ({n} hard blockers)")
     else:
@@ -147,51 +135,11 @@ def format_wet_report_text(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _extract_run_meta(run_payload: dict[str, Any]) -> dict[str, Any]:
-    config = run_payload.get("config") or {}
-    validation = run_payload.get("validation") or {}
-    package = run_payload.get("package") or {}
-    if not isinstance(config, dict):
-        config = {}
-    if not isinstance(validation, dict):
-        validation = {}
-    if not isinstance(package, dict):
-        package = {}
-    return {
-        "generator_version": package.get("version"),
-        "profile": run_payload.get("profile"),
-        "seed": config.get("seed"),
-        "batch_count": config.get("total_count"),
-        "sample_count": validation.get("sample_count"),
-        "status": run_payload.get("status"),
-    }
-
-
-def _load_analysis_summary(run_root: Path) -> dict[str, Any] | None:
-    report_path = run_root / "reports" / "wet_analysis_report.json"
-    if not report_path.is_file():
-        return None
-    try:
-        data = json.loads(report_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return None
-    if not isinstance(data, dict):
-        return None
-    if data.get("report_version") != WET_ANALYSIS_REPORT_VERSION:
-        return None
-    summary = data.get("summary")
-    if not isinstance(summary, dict):
-        return None
-    hard_blockers = data.get("hard_blockers")
-    warnings_list = data.get("warnings")
-    return {
-        "sample_count": summary.get("sample_count"),
-        "page_count": summary.get("page_count"),
-        "warning_count": summary.get("warning_count"),
-        "hard_blocker_count": summary.get("hard_blocker_count"),
-        "hard_blockers": hard_blockers if isinstance(hard_blockers, list) else [],
-        "warnings": warnings_list if isinstance(warnings_list, list) else [],
-    }
+def _has_hard_blockers(analysis_summary: dict[str, Any] | None) -> bool:
+    return bool(
+        analysis_summary is not None
+        and (analysis_summary.get("hard_blocker_count") or 0) > 0
+    )
 
 
 def _load_review_summary(
@@ -235,11 +183,33 @@ def _load_llm_triage_summary(llm_packet_path: Path | None) -> dict[str, Any]:
         "advisory": True,
         "selected_sample_count": selection.get("selected_count"),
         "total_sample_count": selection.get("total_sample_count"),
-        "advisory_text": data.get("advisory"),
+        "advisory_notice": data.get("advisory"),
     }
 
 
-def _load_coverage_matrix(run_root: Path) -> list[str] | None:
+def _load_coverage_matrix(
+    run_root: Path,
+    analysis_summary: dict[str, Any] | None,
+) -> list[str] | None:
+    # Prefer per-run observations from the analysis report when available.
+    if analysis_summary is not None:
+        analysis_path = run_root / "reports" / "wet_analysis_report.json"
+        if analysis_path.is_file():
+            try:
+                data = json.loads(analysis_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                data = None
+            if (
+                isinstance(data, dict)
+                and data.get("report_version") == WET_ANALYSIS_REPORT_VERSION
+            ):
+                coverage = data.get("coverage_matrix")
+                if isinstance(coverage, dict):
+                    observed = coverage.get("observed_template_ids")
+                    if isinstance(observed, dict) and observed:
+                        return sorted(observed.keys())
+
+    # Fall back to static catalog snapshot written by wet-run.
     catalog_path = run_root / "reports" / "template_catalog_v2.json"
     if not catalog_path.is_file():
         return None

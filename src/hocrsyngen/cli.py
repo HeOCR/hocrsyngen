@@ -34,7 +34,7 @@ from hocrsyngen.wet_review import (
     validate_wet_review,
 )
 from hocrsyngen.wet_run import create_wet_test_smoke_run
-from hocrsyngen.wet_report import WET_REPORT_VERSION, build_wet_report, format_wet_report_text
+from hocrsyngen.wet_report import NON_RELEASE_STATEMENT, WET_REPORT_VERSION, build_wet_report, format_wet_report_text
 from hocrsyngen.wet_triage import DEFAULT_MAX_SAMPLES, build_llm_triage_packet
 
 
@@ -1277,6 +1277,13 @@ def main(argv: list[str] | None = None) -> int:
             )
         except (OSError, RuntimeError, ValueError) as exc:
             parser.error(f"wet-report: {exc}")
+        review_summary = report_result.payload.get("review_summary") or {}
+        if review_summary.get("status") == "error":
+            print(
+                f"wet-report: review file error: {review_summary.get('error', '?')}",
+                file=sys.stderr,
+            )
+            return 2
         if args.format == "json":
             print(json.dumps(report_result.payload, ensure_ascii=False, indent=2))
         else:
