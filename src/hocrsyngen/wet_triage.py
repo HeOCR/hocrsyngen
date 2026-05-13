@@ -7,9 +7,10 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from hocrsyngen.validation import validate_batch
-from hocrsyngen.wet_analysis import WET_ANALYSIS_REPORT_VERSION
 from hocrsyngen.wet_run_artifact import (
     WetRunArtifactError,
+    extract_run_meta,
+    load_analysis_summary,
     load_wet_run_payload,
     portable_path,
     read_batches,
@@ -101,13 +102,13 @@ def build_llm_triage_packet(
 
     run_payload = load_wet_run_payload(run_root, require_passed=True)
     batches = read_batches(run_payload)
-    analysis_summary = _load_analysis_summary(run_root)
+    analysis_summary = load_analysis_summary(run_root)
 
     all_samples = _collect_samples(run_root, batches)
     all_samples = _apply_sample_warnings(all_samples, analysis_summary)
     selected = all_samples[:max_samples]
 
-    run_meta = _extract_run_meta(run_payload)
+    run_meta = extract_run_meta(run_payload)
 
     output.mkdir(parents=True, exist_ok=True)
 
@@ -222,53 +223,6 @@ def _apply_sample_warnings(
         else s
         for s in samples
     ]
-
-
-def _load_analysis_summary(run_root: Path) -> dict[str, Any] | None:
-    report_path = run_root / "reports" / "wet_analysis_report.json"
-    if not report_path.is_file():
-        return None
-    try:
-        data = json.loads(report_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return None
-    if not isinstance(data, dict):
-        return None
-    if data.get("report_version") != WET_ANALYSIS_REPORT_VERSION:
-        return None
-    summary = data.get("summary")
-    if not isinstance(summary, dict):
-        return None
-    hard_blockers = data.get("hard_blockers")
-    warnings_list = data.get("warnings")
-    return {
-        "sample_count": summary.get("sample_count"),
-        "page_count": summary.get("page_count"),
-        "warning_count": summary.get("warning_count"),
-        "hard_blocker_count": summary.get("hard_blocker_count"),
-        "hard_blockers": hard_blockers if isinstance(hard_blockers, list) else [],
-        "warnings": warnings_list if isinstance(warnings_list, list) else [],
-    }
-
-
-def _extract_run_meta(run_payload: dict[str, Any]) -> dict[str, Any]:
-    config = run_payload.get("config") or {}
-    validation = run_payload.get("validation") or {}
-    package = run_payload.get("package") or {}
-    if not isinstance(config, dict):
-        config = {}
-    if not isinstance(validation, dict):
-        validation = {}
-    if not isinstance(package, dict):
-        package = {}
-    return {
-        "generator_version": package.get("version"),
-        "profile": run_payload.get("profile"),
-        "seed": config.get("seed"),
-        "batch_count": config.get("total_count"),
-        "sample_count": validation.get("sample_count"),
-        "status": run_payload.get("status"),
-    }
 
 
 def _build_packet_data(

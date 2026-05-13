@@ -71,6 +71,7 @@ hocrsyngen wet-analyze out/wet-tests/smoke-17 --format json
 hocrsyngen wet-review-template out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/review/human_review.csv --format json
 hocrsyngen wet-review-validate out/wet-tests/smoke-17 out/wet-tests/smoke-17/review/human_review.csv --format json
 hocrsyngen wet-llm-packet out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/review/llm_packet --format json
+hocrsyngen wet-report out/wet-tests/smoke-17 --format json
 hocrsyngen evidence-run --count 20 --seed 101
 ```
 

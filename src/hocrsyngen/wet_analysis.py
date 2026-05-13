@@ -13,14 +13,12 @@ from hocrsyngen.io import sha256_file
 from hocrsyngen.validation import BatchValidationError, validate_batch
 from hocrsyngen.wet_run_artifact import (
     BatchReadError,
+    WET_ANALYSIS_REPORT_VERSION,
     load_wet_run_payload,
     read_batches_safely,
     resolve_run_path,
     try_portable_path,
 )
-
-
-WET_ANALYSIS_REPORT_VERSION = "wet_analysis_report.v1"
 NEAR_BLANK_INK_DENSITY_MAX = 0.002
 LOW_INK_DENSITY_MIN = 0.01
 HIGH_INK_DENSITY_MAX = 0.95
