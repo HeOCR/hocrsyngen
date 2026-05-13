@@ -72,6 +72,16 @@ def _non_negative_int(value: str) -> int:
     return parsed
 
 
+def _positive_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"invalid int value: {value!r}") from exc
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
 def _format_template_catalog_entry(entry: TemplateCatalogEntry) -> str:
     return (
         f"template_id={entry.template_id} "
@@ -914,7 +924,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     wet_llm_packet.add_argument(
         "--max-samples",
-        type=_non_negative_int,
+        type=_positive_int,
         default=DEFAULT_MAX_SAMPLES,
         help=(
             f"Maximum number of samples to include in the prompt. "
@@ -1207,7 +1217,7 @@ def main(argv: list[str] | None = None) -> int:
                 output=args.output,
                 max_samples=args.max_samples,
             )
-        except (OSError, RuntimeError, ValueError) as exc:
+        except (BatchValidationError, OSError, RuntimeError, ValueError) as exc:
             parser.error(f"wet-llm-packet: {exc}")
         if args.format == "json":
             print(json.dumps(triage_result.payload, ensure_ascii=False, indent=2))

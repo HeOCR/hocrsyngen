@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import dataclasses
 import json
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from hocrsyngen.validation import validate_batch
+from hocrsyngen.wet_analysis import WET_ANALYSIS_REPORT_VERSION
 from hocrsyngen.wet_run_artifact import (
     WetRunArtifactError,
     load_wet_run_payload,
@@ -16,7 +19,6 @@ from hocrsyngen.wet_run_artifact import (
 
 
 LLM_TRIAGE_PACKET_REPORT_VERSION = "llm_triage_packet_report.v1"
-WET_ANALYSIS_REPORT_VERSION = "wet_analysis_report.v1"
 
 DEFAULT_MAX_SAMPLES = 20
 
@@ -86,8 +88,6 @@ def build_llm_triage_packet(
     output: Path,
     max_samples: int = DEFAULT_MAX_SAMPLES,
 ) -> WetTriageResult:
-    if max_samples < 1:
-        raise ValueError(f"max_samples must be at least 1, got {max_samples}")
     run_root = run_root.resolve()
     output = output.resolve()
     if not run_root.is_dir():
@@ -101,17 +101,17 @@ def build_llm_triage_packet(
 
     run_payload = load_wet_run_payload(run_root, require_passed=True)
     batches = read_batches(run_payload)
+    analysis_summary = _load_analysis_summary(run_root)
 
-    all_samples = _collect_samples(run_root, batches, run_payload)
+    all_samples = _collect_samples(run_root, batches)
+    all_samples = _apply_sample_warnings(all_samples, analysis_summary)
     selected = all_samples[:max_samples]
 
-    analysis_summary = _load_analysis_summary(run_root)
     run_meta = _extract_run_meta(run_payload)
 
     output.mkdir(parents=True, exist_ok=True)
 
     packet_data = _build_packet_data(
-        run_root=run_root,
         run_meta=run_meta,
         analysis_summary=analysis_summary,
         selected=selected,
@@ -153,11 +153,11 @@ def build_llm_triage_packet(
 def _collect_samples(
     run_root: Path,
     batches: list[Any],
-    run_payload: dict[str, Any],
 ) -> list[_TriageSample]:
     samples: list[_TriageSample] = []
     for batch in batches:
         resolved = batch.resolved(run_root)
+        validate_batch(resolved.batch_dir)
         manifest = json.loads(resolved.manifest_path_abs.read_text(encoding="utf-8"))
         batch_path = PurePosixPath(batch.batch_path)
         for raw_sample in manifest.get("samples", []):
@@ -179,11 +179,8 @@ def _collect_samples(
             for raw_page in raw_sample.get("pages", []):
                 if not isinstance(raw_page, dict):
                     continue
-                try:
-                    run_asset_path = batch_path / portable_path(raw_page.get("asset_path"))
-                    resolve_run_path(run_root, run_asset_path.as_posix())
-                except (ValueError, WetRunArtifactError):
-                    continue
+                run_asset_path = batch_path / portable_path(raw_page.get("asset_path"))
+                resolve_run_path(run_root, run_asset_path.as_posix())
                 samples.append(
                     _TriageSample(
                         batch_id=batch.batch_id,
@@ -198,6 +195,33 @@ def _collect_samples(
                 break  # one representative page per sample
     samples.sort(key=lambda s: (s.batch_id, s.sample_id))
     return samples
+
+
+def _apply_sample_warnings(
+    samples: list[_TriageSample],
+    analysis_summary: dict[str, Any] | None,
+) -> list[_TriageSample]:
+    if analysis_summary is None:
+        return samples
+    warning_map: dict[tuple[str, str], list[str]] = {}
+    for finding in analysis_summary.get("warnings", []):
+        if not isinstance(finding, dict):
+            continue
+        batch_id = str(finding.get("batch_id") or "")
+        sample_id = str(finding.get("sample_id") or "")
+        if not batch_id or not sample_id:
+            continue
+        code = str(finding.get("code") or "")
+        if code:
+            warning_map.setdefault((batch_id, sample_id), []).append(code)
+    if not warning_map:
+        return samples
+    return [
+        dataclasses.replace(s, warnings=tuple(warning_map[(s.batch_id, s.sample_id)]))
+        if (s.batch_id, s.sample_id) in warning_map
+        else s
+        for s in samples
+    ]
 
 
 def _load_analysis_summary(run_root: Path) -> dict[str, Any] | None:
@@ -237,16 +261,11 @@ def _extract_run_meta(run_payload: dict[str, Any]) -> dict[str, Any]:
         validation = {}
     if not isinstance(package, dict):
         package = {}
-    batch_count = (
-        config.get("primary_count", 0) + config.get("supplemental_count", 0)
-        if isinstance(config.get("primary_count"), int)
-        else config.get("total_count")
-    )
     return {
         "generator_version": package.get("version"),
         "profile": run_payload.get("profile"),
         "seed": config.get("seed"),
-        "batch_count": batch_count,
+        "batch_count": config.get("total_count"),
         "sample_count": validation.get("sample_count"),
         "status": run_payload.get("status"),
     }
@@ -254,7 +273,6 @@ def _extract_run_meta(run_payload: dict[str, Any]) -> dict[str, Any]:
 
 def _build_packet_data(
     *,
-    run_root: Path,
     run_meta: dict[str, Any],
     analysis_summary: dict[str, Any] | None,
     selected: list[_TriageSample],
@@ -297,11 +315,13 @@ def _build_prompt(
 ) -> str:
     parts: list[str] = []
 
-    parts.append("# Developer Quality-Review Aid — LLM Triage Packet\n")
+    parts.append("# Developer Quality-Review Aid — LLM Triage Packet")
+    parts.append("")
     parts.append(_ADVISORY_PREAMBLE)
     parts.append("")
 
-    parts.append("## Run Metadata\n")
+    parts.append("## Run Metadata")
+    parts.append("")
     parts.append(f"- Generator version: `{run_meta.get('generator_version', 'unknown')}`")
     parts.append(f"- Profile: `{run_meta.get('profile', 'unknown')}`")
     parts.append(f"- Seed: `{run_meta.get('seed', 'unknown')}`")
@@ -309,7 +329,8 @@ def _build_prompt(
     parts.append(f"- Total sample count: `{run_meta.get('sample_count', 'unknown')}`")
     parts.append("")
 
-    parts.append("## Warning Summary\n")
+    parts.append("## Warning Summary")
+    parts.append("")
     if analysis_summary is not None:
         parts.append(
             f"- Samples analysed: `{analysis_summary.get('sample_count', 'n/a')}`"
@@ -317,16 +338,15 @@ def _build_prompt(
         parts.append(
             f"- Pages analysed: `{analysis_summary.get('page_count', 'n/a')}`"
         )
-        parts.append(
-            f"- Warnings: `{analysis_summary.get('warning_count', 0)}`"
-        )
+        parts.append(f"- Warnings: `{analysis_summary.get('warning_count', 0)}`")
         parts.append(
             f"- Hard blockers: `{analysis_summary.get('hard_blocker_count', 0)}`"
         )
         hard_blockers = analysis_summary.get("hard_blockers", [])
         if hard_blockers:
             parts.append("")
-            parts.append("### Hard Blockers\n")
+            parts.append("### Hard Blockers")
+            parts.append("")
             for b in hard_blockers[:10]:
                 if isinstance(b, dict):
                     parts.append(
@@ -336,7 +356,8 @@ def _build_prompt(
         warnings_list = analysis_summary.get("warnings", [])
         if warnings_list:
             parts.append("")
-            parts.append("### Warnings (first 10)\n")
+            parts.append("### Warnings (first 10)")
+            parts.append("")
             for w in warnings_list[:10]:
                 if isinstance(w, dict):
                     parts.append(
@@ -353,10 +374,12 @@ def _build_prompt(
     parts.append(
         f"## Sample Review ({len(selected)} of "
         f"{run_meta.get('sample_count', '?')} total, "
-        f"capped at {max_samples})\n"
+        f"capped at {max_samples})"
     )
+    parts.append("")
     for i, s in enumerate(selected, 1):
-        parts.append(f"### Sample {i}: `{s.sample_id}`\n")
+        parts.append(f"### Sample {i}: `{s.sample_id}`")
+        parts.append("")
         parts.append(f"- Batch: `{s.batch_id}`")
         parts.append(f"- Template: `{s.template_id}`")
         parts.append(f"- Recipe: `{s.recipe_id}`")
@@ -366,16 +389,19 @@ def _build_prompt(
             parts.append(f"- Warnings: {', '.join(s.warnings)}")
         parts.append("")
 
-    parts.append("## Suggested Review Questions\n")
+    parts.append("## Suggested Review Questions")
+    parts.append("")
     parts.append(
         "Please review the samples above and share observations on the following "
-        "questions. Frame all responses as advisory notes only.\n"
+        "questions. Frame all responses as advisory notes only."
     )
-    for q in _REVIEW_QUESTIONS:
-        parts.append(f"1. {q}")
+    parts.append("")
+    for i, q in enumerate(_REVIEW_QUESTIONS, 1):
+        parts.append(f"{i}. {q}")
     parts.append("")
 
-    parts.append("## Constraints\n")
+    parts.append("## Constraints")
+    parts.append("")
     parts.append(_FORBIDDEN_CLAIM_REMINDER)
     parts.append("")
 
