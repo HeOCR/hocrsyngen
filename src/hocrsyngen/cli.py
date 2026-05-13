@@ -34,6 +34,7 @@ from hocrsyngen.wet_review import (
     validate_wet_review,
 )
 from hocrsyngen.wet_run import create_wet_test_smoke_run
+from hocrsyngen.wet_report import WET_REPORT_VERSION, build_wet_report, format_wet_report_text
 from hocrsyngen.wet_triage import DEFAULT_MAX_SAMPLES, build_llm_triage_packet
 
 
@@ -937,6 +938,45 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format for the packet summary report.",
     )
+    wet_report = subparsers.add_parser(
+        "wet-report",
+        help=(
+            "Aggregate a developer-facing generator-quality report over an "
+            "existing wet-test run. Read-only; exits non-zero when hard "
+            "blockers are present."
+        ),
+    )
+    wet_report.add_argument(
+        "run_root",
+        type=Path,
+        help="Existing wet-test run directory created by hocrsyngen wet-run.",
+    )
+    wet_report.add_argument(
+        "--review",
+        dest="review_path",
+        type=Path,
+        default=None,
+        help=(
+            "Optional completed review file (.csv or .jsonl). "
+            "If omitted, review_summary is marked not_provided."
+        ),
+    )
+    wet_report.add_argument(
+        "--llm-packet",
+        dest="llm_packet_path",
+        type=Path,
+        default=None,
+        help=(
+            "Optional llm_triage_packet.json file. "
+            "If omitted, llm_triage_summary is marked not_provided."
+        ),
+    )
+    wet_report.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the report. Defaults to text.",
+    )
     evidence_run = subparsers.add_parser(
         "evidence-run",
         help="Generate a candidate batch with operator evidence and progress logs.",
@@ -1228,6 +1268,20 @@ def main(argv: list[str] | None = None) -> int:
                 f"{triage_result.output}"
             )
         return 0
+    if args.command == "wet-report":
+        try:
+            report_result = build_wet_report(
+                run_root=args.run_root,
+                review_path=args.review_path,
+                llm_packet_path=args.llm_packet_path,
+            )
+        except (OSError, RuntimeError, ValueError) as exc:
+            parser.error(f"wet-report: {exc}")
+        if args.format == "json":
+            print(json.dumps(report_result.payload, ensure_ascii=False, indent=2))
+        else:
+            print(format_wet_report_text(report_result.payload))
+        return 1 if report_result.has_hard_blockers else 0
     if args.command == "evidence-run":
         try:
             report = _run_evidence_capture(

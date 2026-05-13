@@ -595,6 +595,7 @@ Planned PR breakdown:
 - `S8h` — Wet-test report: combine run metadata, code warnings, human review,
   optional LLM notes, top examples, and follow-up recommendations into a
   developer-facing generator-quality report with explicit non-release wording.
+  Status: done in PR #N.
 - `S8i` — Regression promotion and schema/CI decision: promote confirmed
   wet-test findings into small deterministic automated tests, and only then
   decide whether wet-test artifact schemas or a CI smoke profile are stable
