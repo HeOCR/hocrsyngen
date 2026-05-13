@@ -70,6 +70,7 @@ hocrsyngen wet-gallery out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/ga
 hocrsyngen wet-analyze out/wet-tests/smoke-17 --format json
 hocrsyngen wet-review-template out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/review/human_review.csv --format json
 hocrsyngen wet-review-validate out/wet-tests/smoke-17 out/wet-tests/smoke-17/review/human_review.csv --format json
+hocrsyngen wet-llm-packet out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/review/llm_packet --format json
 hocrsyngen evidence-run --count 20 --seed 101
 ```
 
@@ -245,6 +246,18 @@ carries severity, reason codes, and a reviewer identifier, and that no row
 records a reviewer without a decision. The summary report is
 `wet_review_validation_report.v1`; the command exits non-zero on any error
 and does not modify any wet-run artifact.
+
+`hocrsyngen wet-llm-packet RUN_ROOT --output RUN_ROOT/review/llm_packet` exports
+a bounded LLM triage packet for an existing passed `wet-run` directory. It writes
+`llm_triage_prompt.md` (a Markdown prompt for operator-run LLM advisory review)
+and `llm_triage_packet.json` (structured metadata with sample ids, asset paths,
+run metadata, and analysis warning summary if available). The `--max-samples N`
+flag caps the prompt to N samples (default: 20) to keep the packet bounded. The
+`--format json` flag emits a `llm_triage_packet_report.v1` summary to stdout. The
+output directory must be inside the wet-test run directory. The command is
+advisory only — it does not call any LLM API, does not require network access,
+does not make pass/fail or release-eligibility claims, and does not modify any
+wet-run artifact or manifest.
 
 `hocrsyngen generate --rendering-coverage-report` writes an opt-in
 `rendering_coverage_report.json` sidecar beside the manifest. The sidecar uses

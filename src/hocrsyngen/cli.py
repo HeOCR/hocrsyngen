@@ -34,6 +34,7 @@ from hocrsyngen.wet_review import (
     validate_wet_review,
 )
 from hocrsyngen.wet_run import create_wet_test_smoke_run
+from hocrsyngen.wet_triage import DEFAULT_MAX_SAMPLES, build_llm_triage_packet
 
 
 EVIDENCE_RUN_REPORT_SCHEMA_VERSION = "candidate_evidence_run_report.v1"
@@ -68,6 +69,16 @@ def _non_negative_int(value: str) -> int:
         raise argparse.ArgumentTypeError(f"invalid int value: {value!r}") from exc
     if parsed < 0:
         raise argparse.ArgumentTypeError("must be non-negative")
+    return parsed
+
+
+def _positive_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"invalid int value: {value!r}") from exc
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
     return parsed
 
 
@@ -893,6 +904,39 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format for the validation summary.",
     )
+    wet_llm_packet = subparsers.add_parser(
+        "wet-llm-packet",
+        help=(
+            "Export a bounded LLM triage packet for an existing wet-test run. "
+            "Advisory only — no LLM API calls, no network dependency."
+        ),
+    )
+    wet_llm_packet.add_argument(
+        "run_root",
+        type=Path,
+        help="Existing wet-test run directory created by hocrsyngen wet-run.",
+    )
+    wet_llm_packet.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Directory to write the LLM triage packet files into.",
+    )
+    wet_llm_packet.add_argument(
+        "--max-samples",
+        type=_positive_int,
+        default=DEFAULT_MAX_SAMPLES,
+        help=(
+            f"Maximum number of samples to include in the prompt. "
+            f"Defaults to {DEFAULT_MAX_SAMPLES}."
+        ),
+    )
+    wet_llm_packet.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for the packet summary report.",
+    )
     evidence_run = subparsers.add_parser(
         "evidence-run",
         help="Generate a candidate batch with operator evidence and progress logs.",
@@ -1166,6 +1210,24 @@ def main(argv: list[str] | None = None) -> int:
             )
             print("use --format json for the full report")
         return 0 if validation_result.payload["valid"] else 1
+    if args.command == "wet-llm-packet":
+        try:
+            triage_result = build_llm_triage_packet(
+                run_root=args.run_root,
+                output=args.output,
+                max_samples=args.max_samples,
+            )
+        except (BatchValidationError, OSError, RuntimeError, ValueError) as exc:
+            parser.error(f"wet-llm-packet: {exc}")
+        if args.format == "json":
+            print(json.dumps(triage_result.payload, ensure_ascii=False, indent=2))
+        else:
+            print(
+                f"LLM triage packet wrote {triage_result.payload['selected_sample_count']} "
+                f"samples (of {triage_result.payload['total_sample_count']} total) to "
+                f"{triage_result.output}"
+            )
+        return 0
     if args.command == "evidence-run":
         try:
             report = _run_evidence_capture(
