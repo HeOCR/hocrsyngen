@@ -1,5 +1,7 @@
 # Documentation Index
 
+Created by [Shay Palachy Affek](http://www.shaypalachy.com/).
+
 This directory holds human-facing design, architecture, specification, roadmap, research, testing, and decision records for `hocrsyngen`.
 
 ## Repository Context Files
@@ -54,3 +56,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 6. Read [roadmap.md](roadmap.md), [production_readiness.md](production_readiness.md), [research_program.md](research_program.md), and [decisions/](decisions/) for planning context.
 
 Coding agents should also read [AGENTS.md](../AGENTS.md), [llms.txt](../llms.txt), and the current [.agent-plan.md](../.agent-plan.md) before editing.
+
+## Credits
+
+Created by [Shay Palachy Affek ](http://www.shaypalachy.com/) [[GitHub](https://github.com/shaypal5)]

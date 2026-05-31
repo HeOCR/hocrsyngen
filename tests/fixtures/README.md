@@ -1,5 +1,7 @@
 # Test Fixtures
 
+Created by [Shay Palachy Affek](http://www.shaypalachy.com/).
+
 ## `hebrew_edge_text_corpus.txt`
 
 Synthetic project-authored Hebrew edge text corpus for S2a test coverage.
@@ -20,3 +22,7 @@ authorship, medical, psychological, governance, or release provenance claims.
 They are covered by the repository license and are used to verify deterministic
 logical-order rendering inputs for sparse niqqud, fuller niqqud, mixed Hebrew/Latin/numeric fragments,
 punctuation, and bidi-sensitive text.
+
+## Credits
+
+Created by [Shay Palachy Affek ](http://www.shaypalachy.com/) [[GitHub](https://github.com/shaypal5)]
