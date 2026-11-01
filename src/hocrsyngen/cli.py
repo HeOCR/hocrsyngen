@@ -13,6 +13,7 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 
 from hocrsyngen.generator import (
+    DEFAULT_TEMPLATE_IDS,
     GENERATOR_VERSION,
     GOVERNED_TEMPLATE_IDS,
     RichTemplateCatalogEntry,
@@ -39,6 +40,14 @@ from hocrsyngen.wet_triage import DEFAULT_MAX_SAMPLES, build_llm_triage_packet
 
 
 EVIDENCE_RUN_REPORT_SCHEMA_VERSION = "candidate_evidence_run_report.v1"
+# Downstream-defined runtime contract read by `hocrgen hocrsyngen-preflight`
+# from `candidate_evidence_run_report.provider_runtime`.
+PROVIDER_RUNTIME_SCHEMA_VERSION = "hocrgen_hocrsyngen_provider_runtime.v1"
+PROVIDER_RUNTIME_BASIS = (
+    "hocrsyngen baseline evidence-run renders locally with Pillow and validates "
+    "with jsonschema only; baseline dependency policy forbids network, REST, "
+    "GPU, LLM, and diffusion runtimes"
+)
 CONTRACT_FIXTURE_CATALOG_SCHEMA_VERSION = "contract_fixture_catalog.v1"
 CONTRACT_FIXTURE_EXPORT_SCHEMA_VERSION = "contract_fixture_export.v1"
 GENERATION_REPORT_SCHEMA_VERSION = "generation_report.v1"
@@ -400,6 +409,7 @@ def _write_evidence_run_notes(
     started_at: datetime,
     count: int,
     seed: int,
+    template_ids: list[str],
     run_dir: Path,
     include_rendering_coverage_report: bool,
 ) -> None:
@@ -416,6 +426,7 @@ def _write_evidence_run_notes(
                 f"- generator_version: {GENERATOR_VERSION}",
                 f"- count: {count}",
                 f"- seed: {seed}",
+                f"- template_ids: {', '.join(template_ids)}",
                 f"- rendering_coverage_report: {str(include_rendering_coverage_report).lower()}",
                 f"- output_root: {run_dir}",
                 "- release_eligible: false",
@@ -433,6 +444,7 @@ def _candidate_evidence_report(
     run_dir: Path,
     count: int,
     seed: int,
+    template_ids: list[str],
     reports_dir: Path,
     fixture_batch_dir: Path,
     generated_batch_dir: Path,
@@ -453,7 +465,9 @@ def _candidate_evidence_report(
         "release_eligible": False,
         "count": count,
         "seed": seed,
+        "template_ids": list(template_ids),
         "generator_version": GENERATOR_VERSION,
+        "provider_runtime": _provider_runtime(),
         "output_root": str(run_dir),
         "reports_dir": str(reports_dir),
         "fixture_batch_path": str(fixture_batch_dir),
@@ -474,6 +488,18 @@ def _candidate_evidence_report(
             "generation": generation,
             "generated_validation": generated_validation,
         },
+    }
+
+
+def _provider_runtime() -> dict[str, object]:
+    return {
+        "schema_version": PROVIDER_RUNTIME_SCHEMA_VERSION,
+        "used_network": False,
+        "used_rest_service": False,
+        "used_gpu": False,
+        "used_llm": False,
+        "used_diffusion": False,
+        "basis": PROVIDER_RUNTIME_BASIS,
     }
 
 
@@ -499,7 +525,9 @@ def _run_evidence_capture(
     overwrite: bool,
     color: str,
     include_rendering_coverage_report: bool,
+    template_ids: list[str] | None = None,
 ) -> dict[str, object]:
+    template_ids = list(DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids)
     progress = _ProgressPrinter(color)
     started_at = _utc_now()
     actual_run_id = run_id or _default_evidence_run_id(count=count, seed=seed)
@@ -530,6 +558,7 @@ def _run_evidence_capture(
         started_at=started_at,
         count=count,
         seed=seed,
+        template_ids=template_ids,
         run_dir=run_dir,
         include_rendering_coverage_report=include_rendering_coverage_report,
     )
@@ -587,7 +616,13 @@ def _run_evidence_capture(
     progress.done("packaged fixture validated", started)
 
     started = progress.step(f"Generate candidate batch count={count} seed={seed}")
-    manifest = generate_batch(count=count, seed=seed, output_dir=generated_batch_dir)
+    progress.note("template_ids", ",".join(template_ids))
+    manifest = generate_batch(
+        count=count,
+        seed=seed,
+        output_dir=generated_batch_dir,
+        template_ids=template_ids,
+    )
     rendering_coverage_report_path = (
         write_rendering_coverage_report(manifest, generated_batch_dir)
         if include_rendering_coverage_report
@@ -631,6 +666,7 @@ def _run_evidence_capture(
         run_dir=run_dir,
         count=count,
         seed=seed,
+        template_ids=template_ids,
         reports_dir=reports_dir,
         fixture_batch_dir=fixture_batch_dir,
         generated_batch_dir=generated_batch_dir,
@@ -994,6 +1030,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Deterministic generation seed. Defaults to 101.",
     )
     evidence_run.add_argument(
+        "--template-id",
+        action="append",
+        dest="template_ids",
+        choices=GOVERNED_TEMPLATE_IDS,
+        help=(
+            "Template id to include. May be provided more than once. Defaults "
+            "to the generate command's default templates."
+        ),
+    )
+    evidence_run.add_argument(
         "--output-root",
         type=Path,
         default=Path(tempfile.gettempdir()) / "hocrsyngen-candidate-batches",
@@ -1301,6 +1347,7 @@ def main(argv: list[str] | None = None) -> int:
                 include_rendering_coverage_report=(
                     not args.no_rendering_coverage_report
                 ),
+                template_ids=args.template_ids,
             )
         except FileNotFoundError as exc:
             parser.exit(

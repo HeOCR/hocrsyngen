@@ -3102,6 +3102,17 @@ def test_evidence_run_cli_creates_operator_evidence_with_progress(
     assert report["release_eligible"] is False
     assert report["count"] == 1
     assert report["seed"] == 17
+    assert report["template_ids"] == ["printed_letter", "handwritten_note"]
+    assert report["provider_runtime"] == {
+        "schema_version": "hocrgen_hocrsyngen_provider_runtime.v1",
+        "used_network": False,
+        "used_rest_service": False,
+        "used_gpu": False,
+        "used_llm": False,
+        "used_diffusion": False,
+        "basis": report["provider_runtime"]["basis"],
+    }
+    assert isinstance(report["provider_runtime"]["basis"], str)
     assert report["output_root"] == str(run_dir)
     assert report["fixture_batch_path"] == str(run_dir / "fixture_batch")
     assert report["generated_batch_path"] == str(run_dir / "generated_batch")
@@ -3123,6 +3134,69 @@ def test_evidence_run_cli_creates_operator_evidence_with_progress(
     assert (run_dir / "reports" / "generation_report.json").is_file()
     assert (run_dir / "reports" / "generated_validation_report.json").is_file()
     _assert_batch_assets_are_portable(run_dir / "generated_batch")
+
+
+def test_evidence_run_cli_selects_template_ids(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    template_ids = ["printed_letter_heavy_scan", "handwritten_note_heavy_wear"]
+    assert (
+        main(
+            [
+                "evidence-run",
+                "--count",
+                "4",
+                "--seed",
+                "17",
+                "--output-root",
+                str(tmp_path),
+                "--run-id",
+                "selected-templates",
+                "--template-id",
+                template_ids[0],
+                "--template-id",
+                template_ids[1],
+                "--no-rendering-coverage-report",
+                "--format",
+                "json",
+                "--color",
+                "never",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    report = json.loads(captured.out)
+    run_dir = tmp_path / "selected-templates"
+    assert report["template_ids"] == template_ids
+    assert "template_ids: printed_letter_heavy_scan, handwritten_note_heavy_wear" in (
+        (run_dir / "RUN_NOTES.md").read_text(encoding="utf-8")
+    )
+    manifest = json.loads(
+        (run_dir / "generated_batch" / "generation_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert [sample["provenance"]["template_id"] for sample in manifest["samples"]] == [
+        *template_ids,
+        *template_ids,
+    ]
+
+
+def test_evidence_run_cli_rejects_unknown_template_id(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        main(
+            [
+                "evidence-run",
+                "--output-root",
+                str(tmp_path),
+                "--template-id",
+                "not-a-template",
+            ]
+        )
+    assert excinfo.value.code == 2
+    assert not any(tmp_path.iterdir())
 
 
 @pytest.mark.parametrize(

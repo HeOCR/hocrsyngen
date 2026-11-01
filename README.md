@@ -105,6 +105,7 @@ hocrsyngen wet-review-validate out/wet-tests/smoke-17 out/wet-tests/smoke-17/rev
 hocrsyngen wet-llm-packet out/wet-tests/smoke-17 --output out/wet-tests/smoke-17/review/llm_packet --format json
 hocrsyngen wet-report out/wet-tests/smoke-17 --format json
 hocrsyngen evidence-run --count 20 --seed 101
+hocrsyngen evidence-run --count 80 --seed 101 --template-id printed_letter --template-id handwritten_note
 ```
 
 `hocrsyngen templates` prints one deterministic catalog line per packaged
@@ -224,7 +225,11 @@ and contract JSON reports, generates and validates a candidate batch, writes the
 optional rendering coverage sidecar, records a checksum inventory, and emits a
 final `candidate_evidence_run_report.v1`. The default output root is a
 timestamped directory under the system temp directory; use `--output-root PATH`
-and `--run-id ID` to make the location explicit. Evidence runs remain
+and `--run-id ID` to make the location explicit. Repeatable `--template-id`
+selects governed templates, and the report records the resolved `template_ids`
+plus a `provider_runtime` block (`hocrgen_hocrsyngen_provider_runtime.v1`) that
+declares the no-network/no-REST/no-GPU/no-LLM/no-diffusion baseline for
+downstream `hocrgen hocrsyngen-preflight`. Evidence runs remain
 candidate-only and write `release_eligible: false`; they do not add review,
 release, export, publication, or downstream governance behavior.
 
