@@ -814,6 +814,24 @@ and emits `candidate_evidence_run_report.v1`. The report must keep
 `release_eligible: false`; downstream `hocrgen` remains responsible for import
 metadata, review, caps, release profiles, export, and publication governance.
 
+`S8j` extends the command for downstream import preflight. Repeatable
+`--template-id` selects governed templates (defaulting to the `generate`
+defaults), and the report records the resolved `template_ids`. The report also
+carries `provider_runtime`, the downstream-defined
+`hocrgen_hocrsyngen_provider_runtime.v1` contract, with `used_network`,
+`used_rest_service`, `used_gpu`, `used_llm`, and `used_diffusion` explicitly
+`false` plus a short `basis` string. These flags restate the baseline
+dependency policy enforced by `tests/test_baseline_dependencies.py`; they are
+not release eligibility. Example target-scale run for the current `hocrgen`
+release/import layout families:
+
+```bash
+hocrsyngen evidence-run --count 80 --seed 101 \
+  --template-id printed_letter --template-id handwritten_note \
+  --template-id printed_letter_heavy_scan --template-id handwritten_note_heavy_wear \
+  --output-root PATH --run-id s8j-seed101-count80-4tpl --format json
+```
+
 Do not add:
 
 - hocrgen adapter code or imports.

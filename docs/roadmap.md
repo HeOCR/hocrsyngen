@@ -600,6 +600,16 @@ Planned PR breakdown:
   wet-test findings into small deterministic automated tests, and only then
   decide whether wet-test artifact schemas or a CI smoke profile are stable
   enough to adopt.
+- `S8j` — Evidence-run downstream import readiness: let `evidence-run` select
+  governed templates with repeatable `--template-id`, record the resolved
+  `template_ids`, and emit the downstream-defined
+  `hocrgen_hocrsyngen_provider_runtime.v1` block as
+  `candidate_evidence_run_report.provider_runtime` with explicit `false`
+  network/REST/GPU/LLM/diffusion flags. This lets `hocrgen
+  hocrsyngen-preflight` validate an 80-sample printed/handwritten-like evidence
+  root against its release/import model without manifest v1 changes. Release
+  eligibility stays `false`; admission, caps, and synthetic target-scale
+  closure remain `hocrgen` work.
 
 Deliverables:
 
