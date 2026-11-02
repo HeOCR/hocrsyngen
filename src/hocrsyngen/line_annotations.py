@@ -51,6 +51,7 @@ def build_line_annotations(
                     "page_sha256": page.sha256,
                     "width": page.width,
                     "height": page.height,
+                    "truncated_segments": document.truncated_segments,
                     "lines": [
                         {
                             "line_index": line_index,

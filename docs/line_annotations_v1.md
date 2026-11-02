@@ -40,6 +40,7 @@ The first three lines of seed-101 sample 0 (`printed_letter`):
       "page_sha256": "12d320d667074a881214bddb7ef42feb42298b5aa42007cbbf29b658051d756b",
       "width": 1200,
       "height": 1600,
+      "truncated_segments": 0,
       "lines": [
         {"line_index": 0, "logical_line_index": null, "logical_join": null, "occluded": true,
          "region": "stamp_area", "text": "נבדק",
@@ -60,6 +61,9 @@ Page fields:
 
 - `pages` follow manifest order (samples, then pages).
 - `sample_id`, `page_id`, `page_sha256`, `width`, `height` match the manifest.
+- `truncated_segments` counts wrapped body segments that the template's body
+  cap left undrawn (see Body Capacity And Truncation). It is always `0` for
+  uncapped templates.
 
 Line fields:
 
@@ -117,7 +121,8 @@ stripped, and wrapping splits on whitespace).
 ## Body Capacity And Truncation
 
 The sidecar holds only segments that were actually drawn, each with its own
-text. Segments that are never drawn appear nowhere.
+text. Segments that are never drawn appear nowhere in it; the page's
+`truncated_segments` field counts them.
 
 - `printed_letter` and `handwritten_note` families draw every wrapped segment,
   with no cap. `logical_order` holds the unwrapped source line, and the
@@ -130,7 +135,9 @@ text. Segments that are never drawn appear nowhere.
   utilisation: long source lines lose their tails on these templates. With
   lines of about 55–60 characters, a ledger detail cell wraps each source line
   into roughly 3 rows. 5 sampled lines then need about 15 rows, so only the
-  first 10 survive.
+  first 10 survive. The ledger caps ordinary corpora too: even the packaged
+  19-line corpus wraps to about 3 ledger rows per source line, so most ledger
+  pages report `truncated_segments > 0`.
 - Uncapped templates assume source lines short enough for the body band. About
   16 printed lines fit before the signature captions, which is far more than 4
   source lines of 60 characters need. A much longer external line could run
@@ -232,8 +239,11 @@ with this sidecar:
 | `handwritten_note_heavy_wear` | 20 | 100 (2,798) | 20 (86) | 20 | 0 (0) |
 | **Total** | 80 | 440 (12,939) | 200 (931) | 80 | 62 (40) |
 
-- **No clipping or truncation.** 0 of 440 lines leave the page, and no body
-  line wraps. Every page's drawn lines rebuild its `logical_order` exactly.
+- **No clipping, and no truncation on these four templates.** 0 of 440 lines
+  leave the page, no body line wraps, and every page reports
+  `truncated_segments: 0`. Every page's drawn lines rebuild its
+  `logical_order` exactly. This batch has no `archive_card` or `ledger` pages,
+  whose capped bodies do truncate (see Body Capacity And Truncation).
 - **What "cut off" was.** On printed letters the stamp ring lies across the
   left end of the body band, which is where RTL lines end. The text is drawn on
   top and stays in gold, but engines misread it. These lines now carry

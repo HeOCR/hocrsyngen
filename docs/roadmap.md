@@ -698,8 +698,10 @@ Planned PR breakdown:
   seed-101 finding: 200 drawn items (931 characters, about 7% of scored
   characters) on 80/80 pages are missing from `logical_order`. Also set body
   capacity rules: `archive_card` keeps 7 and `ledger` keeps 10 wrapped body
-  segments, so long corpus lines lose their tails (consistently on page and in
-  gold). Uncapped printed and handwritten bodies need a documented line-length
+  segments, so source lines lose their tails, consistently on page and in
+  gold, and reported per page as `truncated_segments`. Ledger row capacity is
+  the binding case: even the packaged corpus drops about 4 segments per ledger
+  page. Uncapped printed and handwritten bodies need a documented line-length
   or line-count limit before long external corpora are used. Status: planned;
   scheduled by the coordinating team lead.
 

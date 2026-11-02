@@ -50,6 +50,7 @@
         "page_sha256",
         "width",
         "height",
+        "truncated_segments",
         "lines"
       ],
       "properties": {
@@ -71,6 +72,11 @@
         "height": {
           "type": "integer",
           "minimum": 1
+        },
+        "truncated_segments": {
+          "description": "Wrapped body segments the template's body cap left undrawn (archive_card keeps 7, ledger keeps 10). They are absent from both the page and logical_order; see roadmap S10c.",
+          "type": "integer",
+          "minimum": 0
         },
         "lines": {
           "type": "array",

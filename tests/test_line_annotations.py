@@ -235,6 +235,8 @@ def test_capped_body_segments_are_dropped_from_page_and_gold_alike(tmp_path: Pat
     wrapped = [line for page in pages[:2] for line in page["lines"] if line["logical_join"] == "space"]
     assert wrapped, "long lines must wrap on printed and handwritten pages"
 
+    assert [page["truncated_segments"] for page in pages[:2]] == [0, 0]
+    assert pages[2]["truncated_segments"] > 0 and pages[3]["truncated_segments"] > 0
     archive_body = [line["text"] for line in pages[2]["lines"] if line["region"] == "body"]
     ledger_rows = [line for line in pages[3]["lines"] if line["region"] == "table_cells" and line["logical_join"] == "cell"]
     assert len(archive_body) == 7

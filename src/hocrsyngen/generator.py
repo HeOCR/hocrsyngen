@@ -85,6 +85,7 @@ class SyntheticDocument:
     logical_text: str
     # Final-page line geometry; populated only when generation records it.
     lines: tuple[LineGeometry, ...] | None = None
+    truncated_segments: int | None = None
 
 
 @dataclass(frozen=True)
@@ -207,6 +208,9 @@ class _LineRecorder:
     lines: list[_RecordedLine] = field(default_factory=list)
     marks: list[tuple[tuple[Point, ...], float, int | None]] = field(default_factory=list)
     rotation_degrees: float = 0.0
+    # Wrapped body segments a capped renderer never drew (and so never put
+    # into logical_order).
+    truncated_segments: int = 0
 
     def record(
         self,
@@ -1076,6 +1080,8 @@ def _draw_archive_card(
     for line in body_lines:
         wrapped_lines.extend(_wrap_hebrew_text(draw, line, body_font, max_width))
     rendered_body_lines = wrapped_lines[:7]
+    if recorder is not None:
+        recorder.truncated_segments = len(wrapped_lines) - len(rendered_body_lines)
 
     for index, line in enumerate(rendered_body_lines):
         standard = STYLE_BUNDLES["style_standard_v1"]
@@ -1240,6 +1246,8 @@ def _draw_ledger(
     for line in body_lines:
         wrapped_lines.extend(_wrap_hebrew_text(draw, line, body_font, detail_width))
     rendered_body_lines = wrapped_lines[:row_count]
+    if recorder is not None:
+        recorder.truncated_segments = len(wrapped_lines) - len(rendered_body_lines)
 
     logical_rows: list[str] = []
     standard = STYLE_BUNDLES["style_standard_v1"]
@@ -1574,6 +1582,7 @@ def generate_documents(
                 generator_version=GENERATOR_VERSION,
                 logical_text=logical_text,
                 lines=recorder.final_lines(image.size) if recorder is not None else None,
+                truncated_segments=recorder.truncated_segments if recorder is not None else None,
             )
         )
     return documents
