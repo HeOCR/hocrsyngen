@@ -23,7 +23,11 @@ from hocrsyngen.manifest import (
 )
 
 
-GENERATOR_VERSION = "d4a-realism-v2"
+GENERATOR_VERSION = "s10c-gold-complete-v1"
+# Earlier generator versions whose batches still validate. d4a-realism-v2 drew
+# the same pages but left stamp, signature-caption and marginal text out of
+# logical_order (S10c).
+PREVIOUS_GENERATOR_VERSIONS = ("d4a-realism-v2",)
 CANVAS_SIZE = (1200, 1600)
 PAPER_MARGIN = 96
 DEFAULT_TEMPLATE_IDS = ["printed_letter", "handwritten_note"]
@@ -36,6 +40,9 @@ GOVERNED_TEMPLATE_IDS = [
     "archive_card_faded_scan",
 ]
 
+STAMP_TEXT = "נבדק"
+SIGNATURE_CAPTION = "אישור"
+SIGNATURE_CAPTION_COUNT = 3
 PRINTED_TITLES = ["מכתב מנהלי", "דו\"ח קבלה", "רישום ארכיוני"]
 HANDWRITTEN_TITLES = ["פנקס הערות", "רישום קצר", "הודעה פנימית"]
 ARCHIVE_CARD_TITLES = ["כרטיס ארכיון", "רישום כרטסת", "תיק מסווג"]
@@ -154,7 +161,16 @@ class LedgerRender:
     logical_lines: list[str]
 
 
+@dataclass(frozen=True)
+class DocumentRender:
+    image: Image.Image
+    # Drawn body text per source line (wrapped segments rejoined).
+    rendered_body_lines: list[str]
+    logical_lines: list[str]
+
+
 LINE_POLYGON_PADDING = 4
+OVERLAY_TEXT_REGIONS = frozenset({"stamp_area", "margin", "signature_area"})
 LOGICAL_JOIN_SPACE = "space"
 LOGICAL_JOIN_CELL = "cell"
 _ARC_SEGMENTS = 16
@@ -252,12 +268,13 @@ class _LineRecorder:
                 for start, end in zip(points, points[1:])
             ):
                 return True
-        # Overlay text (lines outside logical_order) occludes, and is occluded
-        # by, any text it overlaps; logical lines never occlude each other.
+        # Overlay text (stamp, margin and signature regions) occludes, and is
+        # occluded by, any text it overlaps; main-flow lines never occlude
+        # each other.
         for other_index, other in enumerate(self.lines):
             if other_index == index:
                 continue
-            if line.logical_line_index is not None and other.logical_line_index is not None:
+            if line.region not in OVERLAY_TEXT_REGIONS and other.region not in OVERLAY_TEXT_REGIONS:
                 continue
             if _boxes_overlap(line.box, other.box):
                 return True
@@ -290,7 +307,14 @@ class _LineRecorder:
                     clipped=clipped,
                 )
             )
-        return tuple(lines)
+        # Emit in logical (reading) order; drawing order differs where an
+        # annotation such as a stamp is drawn before the text it follows.
+        return tuple(
+            sorted(
+                lines,
+                key=lambda line: (line.logical_line_index is None, line.logical_line_index or 0),
+            )
+        )
 
 
 def _ellipse_points(box: Box, start: float, end: float, segments: int) -> tuple[Point, ...]:
@@ -961,7 +985,8 @@ def _draw_stamp(
     randomizer: random.Random,
     font: ImageFont.FreeTypeFont,
     recorder: _LineRecorder | None = None,
-) -> None:
+    logical_line_index: int | None = None,
+) -> str:
     center_x = PAPER_MARGIN + randomizer.randint(150, 260)
     center_y = PAPER_MARGIN + randomizer.randint(135, 245)
     radius_x = randomizer.randint(92, 118)
@@ -972,9 +997,10 @@ def _draw_stamp(
     if recorder is not None:
         recorder.mark_ellipse(ellipse, 4)
     _draw_rtl_text(
-        draw, (center_x + 62, center_y - 13), "נבדק", font=font, fill=color,
-        recorder=recorder, region="stamp_area",
+        draw, (center_x + 62, center_y - 13), STAMP_TEXT, font=font, fill=color,
+        recorder=recorder, region="stamp_area", logical_line_index=logical_line_index,
     )
+    return STAMP_TEXT
 
 
 def _draw_handwritten_guides(draw: ImageDraw.ImageDraw, randomizer: random.Random) -> None:
@@ -989,12 +1015,16 @@ def _draw_marginalia(
     randomizer: random.Random,
     font: ImageFont.FreeTypeFont,
     recorder: _LineRecorder | None = None,
-) -> None:
+    logical_line_index: int | None = None,
+) -> str:
     notes = ["נבדק", "להמשך", "עותק"]
     x = PAPER_MARGIN + randomizer.randint(60, 150)
     y = PAPER_MARGIN + randomizer.randint(430, 680)
     note = notes[randomizer.randrange(len(notes))]
-    _draw_rtl_text(draw, (x + 115, y), note, font=font, fill=(88, 68, 48), recorder=recorder, region="margin")
+    _draw_rtl_text(
+        draw, (x + 115, y), note, font=font, fill=(88, 68, 48),
+        recorder=recorder, region="margin", logical_line_index=logical_line_index,
+    )
     draw.line((x, y + 44, x + 120, y + 32), fill=(88, 68, 48), width=2)
     if recorder is not None:
         # The stroke underlines the note just drawn.
@@ -1005,6 +1035,7 @@ def _draw_marginalia(
         draw.arc((sx, sy, sx + 70, sy + 32), start=190, end=345, fill=(94, 72, 50), width=2)
         if recorder is not None:
             recorder.mark_arc((sx, sy, sx + 70, sy + 32), 190, 345, 2)
+    return note
 
 
 def _draw_handwritten_underline(draw: ImageDraw.ImageDraw, randomizer: random.Random, x: int, y: int, width: int) -> None:
@@ -1320,6 +1351,44 @@ def _draw_ledger(
     )
 
 
+# Body top is title_y plus this offset; title_y is at most PAPER_MARGIN + 24.
+_DOCUMENT_BODY_OFFSET = {True: 132, False: 118}
+_DOCUMENT_TITLE_Y_MAX = PAPER_MARGIN + 24
+# Lowest y body ink may reach: above the printed signature rules, or above the
+# highest possible handwritten footer.
+_DOCUMENT_BODY_LIMIT_Y = {
+    True: CANVAS_SIZE[1] - PAPER_MARGIN - 160 - 8,
+    False: CANVAS_SIZE[1] - PAPER_MARGIN - 24 - 8,
+}
+
+
+def _document_body_capacity(
+    form_layout: bool,
+    line_height: int,
+    max_y_jitter: int,
+    body_font: ImageFont.FreeTypeFont,
+) -> int:
+    """Wrapped body lines that fit above the bottom furniture in the worst case."""
+
+    ascent, descent = body_font.getmetrics()
+    body_top = _DOCUMENT_TITLE_Y_MAX + _DOCUMENT_BODY_OFFSET[form_layout]
+    room = _DOCUMENT_BODY_LIMIT_Y[form_layout] - body_top - max_y_jitter - (ascent + descent)
+    return max(0, room // line_height + 1)
+
+
+def _require_segment_fits(
+    draw: ImageDraw.ImageDraw,
+    segment: str,
+    font: ImageFont.FreeTypeFont,
+    max_width: int,
+) -> None:
+    left, _top, right, _bottom = draw.textbbox((0, 0), segment, font=font, direction="rtl")
+    if right - left > max_width:
+        raise ValueError(
+            f"Synthetic body text has a word wider than the body ({right - left}px > {max_width}px): {segment!r}"
+        )
+
+
 def _draw_document(
     randomizer: random.Random,
     title: str,
@@ -1330,7 +1399,7 @@ def _draw_document(
     style_bundle: StyleBundle,
     condition_bundle: ConditionBundle,
     recorder: _LineRecorder | None = None,
-) -> Image.Image:
+) -> DocumentRender:
     recipe = _recipe_for_template(template_id)
     form_layout = recipe.render_template_id == "printed_letter"
     handwritten_text = recipe.font_style == "handwritten_like"
@@ -1343,14 +1412,47 @@ def _draw_document(
     footer_font = _load_font(font_path, 28)
     annotation_font = _load_font(font_path, 30 if handwritten_text else 26)
 
+    # Body layout is settled before anything is drawn, without the randomizer,
+    # so annotation text drawn first can take its logical_order slot after the
+    # body. Reading order: title, body, stamp, margin note, signature captions
+    # right to left, footer.
+    max_width = CANVAS_SIZE[0] - (2 * PAPER_MARGIN) - 40
+    standard = STYLE_BUNDLES["style_standard_v1"]
+    base_line_height = style_bundle.handwritten_line_height if handwritten_text else style_bundle.printed_line_height
+    line_height = _conditioned_line_height(base_line_height, condition_bundle)
+    target_y_jitter = style_bundle.handwritten_y_jitter if handwritten_text else style_bundle.printed_y_jitter
+    capacity = _document_body_capacity(form_layout, line_height, target_y_jitter[1], body_font)
+    wrapped_lines: list[str] = []
+    wrapped_sources: list[int] = []
+    for source_index, line in enumerate(body_lines):
+        segments = _wrap_hebrew_text(draw, line, body_font, max_width)
+        for segment in segments:
+            _require_segment_fits(draw, segment, body_font, max_width)
+        wrapped_lines.extend(segments)
+        wrapped_sources.extend([source_index] * len(segments))
+    drawn_lines = wrapped_lines[:capacity]
+    if recorder is not None:
+        recorder.truncated_segments = len(wrapped_lines) - len(drawn_lines)
+    drawn_sources = wrapped_sources[: len(drawn_lines)]
+    rendered_body_lines = [
+        " ".join(segment for segment, source in zip(drawn_lines, drawn_sources, strict=True) if source == source_index)
+        for source_index in dict.fromkeys(drawn_sources)
+    ]
+    body_logical_index = {source: 1 + position for position, source in enumerate(dict.fromkeys(drawn_sources))}
+    annotation_index = 1 + len(rendered_body_lines)
+
     _draw_paper_frame(draw, randomizer, handwritten=not form_layout)
     _draw_creased_paper(draw, randomizer, handwritten=not form_layout)
+    annotation_lines: list[str] = []
     if form_layout:
         _draw_printed_form_guides(draw, randomizer)
-        _draw_stamp(draw, randomizer, annotation_font, recorder)
+        annotation_lines.append(_draw_stamp(draw, randomizer, annotation_font, recorder, annotation_index))
     else:
         _draw_handwritten_guides(draw, randomizer)
-        _draw_marginalia(draw, randomizer, annotation_font, recorder)
+        annotation_lines.append(_draw_marginalia(draw, randomizer, annotation_font, recorder, annotation_index))
+    if form_layout:
+        annotation_lines.extend([SIGNATURE_CAPTION] * SIGNATURE_CAPTION_COUNT)
+    footer_index = annotation_index + len(annotation_lines)
     _draw_stains(image, randomizer, handwritten=not form_layout)
 
     title_x = CANVAS_SIZE[0] - PAPER_MARGIN - randomizer.randint(0, 24)
@@ -1360,28 +1462,12 @@ def _draw_document(
         recorder=recorder, region="title", logical_line_index=0,
     )
 
-    body_top = title_y + (132 if form_layout else 118)
-    max_width = CANVAS_SIZE[0] - (2 * PAPER_MARGIN) - 40
-    wrapped_lines: list[str] = []
-    # logical_order holds each unwrapped source line, so a wrapped segment maps
-    # back to the source line it came from (title is logical line 0).
-    wrapped_logical_indices: list[int] = []
-    wrapped_joins: list[str | None] = []
-    for source_index, line in enumerate(body_lines):
-        segments = _wrap_hebrew_text(draw, line, body_font, max_width)
-        wrapped_lines.extend(segments)
-        wrapped_logical_indices.extend([1 + source_index] * len(segments))
-        wrapped_joins.extend([None] + [LOGICAL_JOIN_SPACE] * (len(segments) - 1))
-
-    standard = STYLE_BUNDLES["style_standard_v1"]
-    base_line_height = style_bundle.handwritten_line_height if handwritten_text else style_bundle.printed_line_height
-    line_height = _conditioned_line_height(base_line_height, condition_bundle)
+    body_top = title_y + _DOCUMENT_BODY_OFFSET[form_layout]
     standard_x_jitter = standard.handwritten_x_jitter if handwritten_text else standard.printed_x_jitter
     target_x_jitter = style_bundle.handwritten_x_jitter if handwritten_text else style_bundle.printed_x_jitter
     standard_y_jitter = standard.handwritten_y_jitter if handwritten_text else standard.printed_y_jitter
-    target_y_jitter = style_bundle.handwritten_y_jitter if handwritten_text else style_bundle.printed_y_jitter
     start_x = CANVAS_SIZE[0] - PAPER_MARGIN - randomizer.randint(0, 20)
-    for index, line in enumerate(wrapped_lines):
+    for index, line in enumerate(drawn_lines):
         x_offset = _map_jitter(
             randomizer.randint(0, standard_x_jitter),
             (0, standard_x_jitter),
@@ -1396,19 +1482,20 @@ def _draw_document(
         y = body_top + index * line_height + y_offset
         ink = randomizer.randint(-8, 7) + style_bundle.ink_delta + condition_bundle.ink_delta
         fill = (max(18, 33 + ink), max(16, 28 + ink), max(12, 23 + ink), 255)
+        continues_source = index > 0 and drawn_sources[index - 1] == drawn_sources[index]
         _draw_rtl_text(
             draw, (x, y), line, font=body_font, fill=fill,
-            recorder=recorder, region="body", logical_line_index=wrapped_logical_indices[index],
-            logical_join=wrapped_joins[index],
+            recorder=recorder, region="body", logical_line_index=body_logical_index[drawn_sources[index]],
+            logical_join=LOGICAL_JOIN_SPACE if continues_source else None,
         )
-        if not form_layout and index in {0, len(wrapped_lines) - 1}:
+        if not form_layout and index in {0, len(drawn_lines) - 1}:
             _draw_handwritten_underline(draw, randomizer, x - 5, y + 52, min(360, max_width // 2))
 
     footer_x = CANVAS_SIZE[0] - PAPER_MARGIN - randomizer.randint(12, 48)
     footer_y = CANVAS_SIZE[1] - PAPER_MARGIN - randomizer.randint(8, 24)
     _draw_rtl_text(
         draw, (footer_x, footer_y), footer, font=footer_font, fill=(93, 82, 70, 255),
-        recorder=recorder, region="footer", logical_line_index=1 + len(body_lines),
+        recorder=recorder, region="footer", logical_line_index=footer_index,
     )
 
     if not form_layout:
@@ -1425,11 +1512,17 @@ def _draw_document(
             y = CANVAS_SIZE[1] - PAPER_MARGIN - 160
             draw.line((x - 120, y, x, y), fill=(132, 121, 102, 255), width=2)
             _draw_rtl_text(
-                draw, (x, y + 12), "אישור", font=annotation_font, fill=(104, 92, 76, 255),
-                recorder=recorder, region="signature_area",
+                draw, (x, y + 12), SIGNATURE_CAPTION, font=annotation_font, fill=(104, 92, 76, 255),
+                recorder=recorder, region="signature_area", logical_line_index=annotation_index + 1 + column,
             )
 
-    return _degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder)
+    return DocumentRender(
+        image=_degrade(
+            image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder
+        ),
+        rendered_body_lines=rendered_body_lines,
+        logical_lines=[title, *rendered_body_lines, *annotation_lines, footer],
+    )
 
 
 def _select_font(fonts: list[dict[str, str]], template_id: str) -> dict[str, str]:
@@ -1549,7 +1642,7 @@ def generate_documents(
             document_body = "\n".join(ledger_render.rendered_body_lines)
             document_footer = ledger_render.footer_text
         else:
-            image = _draw_document(
+            document_render = _draw_document(
                 randomizer,
                 title,
                 body_lines,
@@ -1560,8 +1653,9 @@ def generate_documents(
                 condition_bundle,
                 recorder,
             )
-            logical_text = unicodedata.normalize("NFC", "\n".join([title, *body_lines, footer]))
-            document_body = "\n".join(body_lines)
+            image = document_render.image
+            logical_text = unicodedata.normalize("NFC", "\n".join(document_render.logical_lines))
+            document_body = "\n".join(document_render.rendered_body_lines)
             document_footer = footer
         degradation_preset = _degradation_preset(recipe.degradation_preset)
         image.save(path, format="JPEG", quality=degradation_preset.jpeg_quality, optimize=True)

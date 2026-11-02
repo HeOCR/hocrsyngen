@@ -25,7 +25,7 @@ Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for h
 - `sample_id`: stable deterministic id matching `^hocrsyngen-s[0-9]{8}-[0-9]{6}$`.
 - `pages`: list of page assets with at least one page.
 - `text`: Hebrew logical-order text metadata.
-- `generator_version`: non-empty generator implementation version string. Current validation requires the package's current generator version.
+- `generator_version`: non-empty generator implementation version string. Validation accepts the package's current generator version (`s10c-gold-complete-v1`) and the previous versions listed in [Generator Versions](#generator-versions).
 - `recipe_id`: non-empty governed recipe id and must match `provenance.recipe_id`.
 - `provenance`: deterministic generation provenance.
 - `license`: must be `"PROJECT-SYNTHETIC"`.
@@ -52,6 +52,29 @@ Generated synthetic Hebrew OCR/HTR sample. It is candidate synthetic input for h
 - `language`: must be `he`.
 - `direction`: must be `rtl`.
 - `unicode_normalization`: must be `NFC`.
+
+### Reading Order Of `logical_order`
+
+Since `s10c-gold-complete-v1`, `logical_order` holds every piece of text drawn on
+the page, one region per line, in this fixed order:
+
+| Template family | Order of `logical_order` lines |
+| --- | --- |
+| `printed_letter`, `printed_letter_heavy_scan` | title; body (one line per source line, wrapped segments rejoined with a space); stamp word `נבדק`; three signature captions `אישור`, right to left; footer |
+| `handwritten_note`, `handwritten_note_heavy_wear` | title; body; marginal note (`נבדק`, `להמשך`, or `עותק`); footer |
+| `archive_card`, `archive_card_faded_scan` | title; archive id; date; body (one line per drawn wrapped segment, at most 7); left-column labels `מקור`, `תאריך`, `מספר`, `הערה`; stamp `ארכיון`; footer |
+| `ledger` | title; ledger id; date; five column headers; rows (at most 10, cells joined with `" \| "` in left-to-right column order); footer; `עמוד 1` |
+
+The rule is main text flow first (title, then body), then annotation regions in
+a fixed order (stamp, margin, signatures), with the footer last. The ledger and
+archive-card orders are unchanged from `d4a-realism-v2`.
+
+Page-level scores computed on `logical_order` as one string, which is how
+`hocrgen evaluate-references` scores a page, are sensitive to reading order.
+An engine that reads the stamp or captions in a different position than this
+rule pays for the reordering in CER and WER even when every character is
+recognized. Line-level scoring through the optional
+[line annotations sidecar](line_annotations_v1.md) is not affected.
 
 ## Provenance Fields
 
@@ -170,6 +193,19 @@ The governed template contract currently requires:
   change logical-order UTF-8/NFC requirements, or add Arabic support through
   manifest v1.
 
+## Generator Versions
+
+| `generator_version` | Change | Seed-101 evidence batch manifest sha256 |
+| --- | --- | --- |
+| `s10c-gold-complete-v1` | Current. Stamp, signature-caption, and marginal text is part of `logical_order` (reading order above). Uncapped printed and handwritten bodies stop at a computed capacity, and a word wider than the body is rejected. Page images are byte-identical to `d4a-realism-v2` for every packaged-corpus batch. | `c4b4ca4ed5b92080c0a4d13c4fa2da505080da11b37203ecb0d4fa1bcb164ec3` |
+| `d4a-realism-v2` | Previous; still accepted by validation. `logical_order` omitted drawn stamp, caption, and marginal text. | `9b6e54f798fc6d131431e114716b2db12018c3bc4726369b4c749a7237182d20` |
+
+The repository does not keep old generator versions runnable side by side. A
+`d4a-realism-v2` batch is reproduced from a checkout before `S10c` (for example
+commit `ee4c5aa`). The seed-101 batch is the `evidence-run --count 80 --seed 101`
+run over `printed_letter`, `handwritten_note`, `printed_letter_heavy_scan`, and
+`handwritten_note_heavy_wear`. See [CHANGELOG.md](../CHANGELOG.md).
+
 ## Example Shape
 
 ```json
@@ -198,7 +234,7 @@ The governed template contract currently requires:
         "direction": "rtl",
         "unicode_normalization": "NFC"
       },
-      "generator_version": "d4a-realism-v2",
+      "generator_version": "s10c-gold-complete-v1",
       "recipe_id": "printed_letter_form_v1",
       "provenance": {
         "seed": 17,

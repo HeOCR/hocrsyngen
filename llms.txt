@@ -32,6 +32,7 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `src/hocrsyngen/schemas/rendering_coverage_report.schema.json`: serialized rendering coverage report contract.
 - `src/hocrsyngen/schemas/template_catalog.schema.json`: serialized `template_catalog.v2` contract.
 - `src/hocrsyngen/schemas/line_annotations.schema.json`: serialized `hocrsyngen_line_annotations.v1` contract.
+- `CHANGELOG.md`: generator-output changes keyed by `generator_version`.
 - `docs/line_annotations_v1.md`: S10a line annotations sidecar contract, coordinate rules, `logical_order` relation, `--text-corpus` provenance, and seed-101 gold finding.
 - `src/hocrsyngen/data/contracts/generation_manifest_v1/fixture-batch/`: downstream integration fixture.
 - `src/hocrsyngen/data/synthetic/fonts/manifest.yaml`: governed packaged font registry.

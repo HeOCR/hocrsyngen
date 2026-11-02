@@ -13,6 +13,7 @@ from PIL import Image, UnidentifiedImageError
 
 from hocrsyngen.generator import (
     GENERATOR_VERSION,
+    PREVIOUS_GENERATOR_VERSIONS,
     GOVERNED_TEMPLATE_IDS,
     TemplateCatalogEntry,
     template_catalog,
@@ -134,9 +135,10 @@ def _validate_sample_constants(
         raise BatchValidationError(
             f"{location}.synthetic_disclosure does not match the hocrsyngen v1 disclosure."
         )
-    if sample["generator_version"] != GENERATOR_VERSION:
+    if sample["generator_version"] not in (GENERATOR_VERSION, *PREVIOUS_GENERATOR_VERSIONS):
         raise BatchValidationError(
-            f"{location}.generator_version must be {GENERATOR_VERSION}."
+            f"{location}.generator_version must be {GENERATOR_VERSION} "
+            f"or a previous version ({', '.join(PREVIOUS_GENERATOR_VERSIONS)})."
         )
     if sample["recipe_id"] != sample["provenance"]["recipe_id"]:
         raise BatchValidationError(

@@ -74,7 +74,7 @@
           "minimum": 1
         },
         "truncated_segments": {
-          "description": "Wrapped body segments the template's body cap left undrawn (archive_card keeps 7, ledger keeps 10). They are absent from both the page and logical_order; see roadmap S10c.",
+          "description": "Wrapped body segments the template's body cap left undrawn (archive_card keeps 7, ledger keeps 10, printed and handwritten bodies keep a computed 13-23). They are absent from both the page and logical_order.",
           "type": "integer",
           "minimum": 0
         },
@@ -105,7 +105,7 @@
           "minimum": 0
         },
         "logical_line_index": {
-          "description": "Index into text.logical_order.split(\"\\n\") of the line this segment belongs to; null means drawn but not in page gold (stamp words, signature captions, marginal notes; see roadmap S10c).",
+          "description": "Index into text.logical_order.split(\"\\n\") of the line this segment belongs to; null means drawn but not in page gold; no template emits it since generator s10c-gold-complete-v1 (d4a-realism-v2 used it for stamp words, signature captions and marginal notes).",
           "type": ["integer", "null"],
           "minimum": 0
         },

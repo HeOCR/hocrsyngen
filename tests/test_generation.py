@@ -37,6 +37,9 @@ from hocrsyngen.io import sha256_file
 from hocrsyngen.manifest import TextMetadata
 
 
+# S10c: printed letters score their stamp word and three signature captions
+# after the body, before the footer.
+PRINTED_LETTER_ANNOTATION_LINES = ["נבדק", "אישור", "אישור", "אישור"]
 SCHEMA_PATH = (
     Path(__file__).resolve().parents[1]
     / "src"
@@ -484,7 +487,7 @@ def test_stable_seed_manifest_identity_and_output_layout_drift_guard(tmp_path: P
         assert page["media_type"] == "image/jpeg"
         assert (page["width"], page["height"]) == CANVAS_SIZE
         assert (output_dir / Path(*asset_path.parts)).is_file()
-        assert sample["generator_version"] == "d4a-realism-v2"
+        assert sample["generator_version"] == "s10c-gold-complete-v1"
         assert sample["provenance"]["seed"] == 29
         assert sample["provenance"]["recipe_id"] == sample["recipe_id"]
         assert sample["provenance"]["source_corpus"] == "packaged:synthetic/texts/hebrew_lines.txt"
@@ -1072,7 +1075,8 @@ def test_generated_manifest_preserves_logical_order_hebrew_contract_cases(tmp_pa
 
     assert lines[0] == "מכתב מנהלי"
     assert lines[1:3] == HEBREW_CONTRACT_LINES
-    assert len(lines) == 4
+    assert lines[3:7] == PRINTED_LETTER_ANNOTATION_LINES
+    assert len(lines) == 8
     assert sample["text"] == {
         "logical_order": text,
         "script": "Hebr",
@@ -1173,7 +1177,8 @@ def test_generated_document_preserves_hebrew_edge_text_corpus_logical_order(tmp_
     assert document.footer == "עמוד 91"
     assert lines[0] == "מכתב מנהלי"
     assert set(lines[1:5]) == set(HEBREW_EDGE_TEXT_LINES)
-    assert len(lines) == 6
+    assert lines[5:9] == PRINTED_LETTER_ANNOTATION_LINES
+    assert len(lines) == 10
     assert lines[-1] == "עמוד 91"
     _assert_hebrew_edge_text_markers(text)
 
@@ -1210,7 +1215,8 @@ def test_generated_document_preserves_bidi_niqqud_corpus_logical_order(tmp_path:
     assert document.footer == "עמוד 53"
     assert lines[0] == "מכתב מנהלי"
     assert lines[1:5] == BIDI_NIQQUD_SEED_2027_BODY_LINES
-    assert len(lines) == 6
+    assert lines[5:9] == PRINTED_LETTER_ANNOTATION_LINES
+    assert len(lines) == 10
     assert lines[-1] == "עמוד 53"
     _assert_bidi_niqqud_markers(text)
 
@@ -1362,7 +1368,7 @@ def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Pat
     )
 
     assert {document.path.suffix for document in documents} == {".jpg"}
-    assert {document.generator_version for document in documents} == {"d4a-realism-v2"}
+    assert {document.generator_version for document in documents} == {"s10c-gold-complete-v1"}
     assert {document.template_id: document.font_id for document in documents} == {
         "printed_letter": "alef-regular",
         "handwritten_note": "gveret-levin-regular",
