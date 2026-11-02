@@ -679,6 +679,8 @@ Planned PR breakdown:
   `--emit-line-annotations` (opt-in `line_annotations.json`,
   `hocrsyngen_line_annotations.v1`, final-page pixel polygons and left-to-right
   baselines mapped through page rotation, `logical_line_index` back-references,
+  explicit `logical_join` separators, an `occluded` flag, and drawn text
+  outside `logical_order` annotated with `logical_line_index: null`;
   schema plus `validate` checks) and `--text-corpus PATH` (recorded as
   `provenance.source_corpus` `external:sha256:<hex>` and as a run-record
   `text_corpus` block) on `generate` and `evidence-run`. Documented in
@@ -687,12 +689,15 @@ Planned PR breakdown:
 - `S10b` — Project-authored training line corpus: a large original Hebrew line
   corpus with a train/eval split, provenance documentation, and corpus checks,
   consumable through `--text-corpus`. Status: planned.
-- `S10c` — Page-level gold completeness: put every drawn text element (stamp
-  words, `אישור` captions, marginal notes) into `logical_order` and line
-  annotations, and keep stamps and marginalia out of the body text band, behind
-  a `GENERATOR_VERSION` bump with fixture review. Motivated by the `S10a`
-  seed-101 finding (200 unlisted drawn items on 80/80 pages; stamp ring over
-  line ends on 55 of 240 printed-family lines). Status: planned.
+- `S10c` — Page-level gold completeness: resolve drawn text that
+  `logical_order` omits (stamp words, `אישור` captions, marginal notes). Either
+  add it to `logical_order` behind a recorded `GENERATOR_VERSION` bump with
+  fixture review, or declare it an explicitly excluded region that page-level
+  scoring masks out. Stamp occlusion of body text stays as realistic noise and
+  is exposed through the `S10a` `occluded` flag. Motivated by the `S10a`
+  seed-101 finding: 200 drawn lines (931 characters, about 7% of scored
+  characters) on 80/80 pages are missing from `logical_order`. Status: planned;
+  scheduled by the coordinating team lead.
 
 Exit criteria:
 

@@ -86,6 +86,8 @@
       "required": [
         "line_index",
         "logical_line_index",
+        "logical_join",
+        "occluded",
         "region",
         "text",
         "polygon",
@@ -97,8 +99,17 @@
           "minimum": 0
         },
         "logical_line_index": {
-          "type": "integer",
+          "description": "Index into text.logical_order.split(\"\\n\") of the line this segment belongs to; null for drawn text that logical_order does not contain (stamp words, signature captions, marginal notes).",
+          "type": ["integer", "null"],
           "minimum": 0
+        },
+        "logical_join": {
+          "description": "How this segment joins the previous segment of the same logical line: \"space\" (wrapped text, joined with a single space) or \"cell\" (table cell, joined with \" | \"); null on the first segment of a logical line and on lines outside logical_order.",
+          "enum": ["space", "cell", null]
+        },
+        "occluded": {
+          "description": "True when a stamp ring, overlay stroke, or overlay text box intersects this line's text box (geometric test, not pixel analysis).",
+          "type": "boolean"
         },
         "region": {
           "enum": [
@@ -107,7 +118,9 @@
             "footer",
             "identifier_area",
             "table_cells",
-            "stamp_area"
+            "stamp_area",
+            "signature_area",
+            "margin"
           ]
         },
         "text": {
@@ -115,6 +128,7 @@
           "minLength": 1
         },
         "polygon": {
+          "description": "Text bounding box padded by 4 px, mapped through the page rotation; four points clockwise from top-left, integer final-page pixels.",
           "type": "array",
           "minItems": 3,
           "items": {
@@ -122,6 +136,7 @@
           }
         },
         "baseline": {
+          "description": "Typographic baseline mapped through the page rotation; points ordered left-to-right in pixel x regardless of the RTL reading direction (Kraken convention).",
           "type": "array",
           "minItems": 2,
           "items": {

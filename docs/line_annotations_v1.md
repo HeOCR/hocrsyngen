@@ -26,42 +26,52 @@ one manifest by content hash (`generation_manifest_sha256`) and to each page by
 
 ## Payload
 
+The first three lines of seed-101 sample 0 (`printed_letter`):
+
 ```json
 {
   "schema": "hocrsyngen_line_annotations.v1",
-  "generation_manifest_sha256": "<sha256 of generation_manifest.json bytes>",
+  "generation_manifest_sha256": "9b6e54f798fc6d131431e114716b2db12018c3bc4726369b4c749a7237182d20",
   "coordinate_space": "final_page_pixels",
   "pages": [
     {
       "sample_id": "hocrsyngen-s00000101-000000",
       "page_id": "hocrsyngen-s00000101-000000-page-0001",
-      "page_sha256": "<same as the manifest page sha256>",
+      "page_sha256": "12d320d667074a881214bddb7ef42feb42298b5aa42007cbbf29b658051d756b",
       "width": 1200,
       "height": 1600,
       "lines": [
-        {
-          "line_index": 0,
-          "logical_line_index": 0,
-          "region": "title",
-          "text": "מכתב מנהלי",
-          "polygon": [[775, 123], [1082, 122], [1082, 172], [775, 173]],
-          "baseline": [[779, 167], [1078, 166]]
-        }
+        {"line_index": 0, "logical_line_index": null, "logical_join": null, "occluded": true,
+         "region": "stamp_area", "text": "נבדק",
+         "polygon": [[337, 324], [398, 324], [398, 350], [337, 350]], "baseline": [[341, 342], [394, 342]]},
+        {"line_index": 1, "logical_line_index": 0, "logical_join": null, "occluded": false,
+         "region": "title", "text": "מכתב מנהלי",
+         "polygon": [[775, 123], [1082, 122], [1082, 172], [775, 173]], "baseline": [[779, 167], [1078, 166]]},
+        {"line_index": 2, "logical_line_index": 1, "logical_join": null, "occluded": true,
+         "region": "body", "text": "בדיקת אותיות סופיות ךםןףץ נשמרה ברשימת הבקרה.",
+         "polygon": [[218, 256], [1104, 252], [1104, 289], [218, 293]], "baseline": [[222, 283], [1100, 279]]}
       ]
     }
   ]
 }
 ```
 
+Page fields:
+
 - `pages` follow manifest order (samples, then pages).
-- `line_index` is `0..n-1` in drawing order, which is also logical order.
-- `logical_line_index` is the index into
-  `sample.text.logical_order.split("\n")` that the line belongs to. It is
-  non-decreasing across `line_index`.
-- `region` is one of `title`, `body`, `footer`, `identifier_area`,
-  `table_cells`, `stamp_area` (the `template_catalog.v2` page-region
-  vocabulary).
-- `text` is NFC-normalized, logical-order Hebrew, exactly as drawn.
+- `sample_id`, `page_id`, `page_sha256`, `width`, `height` match the manifest.
+
+Line fields:
+
+| Field | Meaning |
+| --- | --- |
+| `line_index` | `0..n-1` in drawing order. |
+| `logical_line_index` | Index into `sample.text.logical_order.split("\n")`, or `null` for drawn text that `logical_order` does not contain (see below). Non-decreasing over the non-null lines. |
+| `logical_join` | How this segment continues its logical line: `"space"` (wrapped body text, joined with one space) or `"cell"` (ledger cell, joined with `" \| "`). `null` on the first segment of a logical line and on every line with `logical_line_index: null`. |
+| `occluded` | `true` when a stamp ring, an overlay stroke (ledger tick or correction, marginal stroke), or an overlay text box intersects this line's text box. |
+| `region` | `title`, `body`, `footer`, `identifier_area`, `table_cells`, `stamp_area`, `signature_area`, or `margin` (the `template_catalog.v2` page-region vocabulary). |
+| `text` | NFC-normalized, logical-order Hebrew, exactly as drawn. |
+| `polygon`, `baseline` | See Coordinates. |
 
 ## Coordinates
 
@@ -80,35 +90,73 @@ one manifest by content hash (`generation_manifest_sha256`) and to each page by
 - Points are clamped into the page. No line in the seed-101 evidence batch
   needed clamping.
 
-## Relation To `logical_order`
+## Rebuilding `logical_order`
 
-Group lines by `logical_line_index` (in `line_index` order) and join each group:
+No heuristics are needed. In `line_index` order, skip lines with
+`logical_line_index: null`; a line with `logical_join: null` starts its logical
+line, and every later line appends its `text` after the separator its
+`logical_join` names (`"space"` → `" "`, `"cell"` → `" | "`). Joining the rebuilt
+lines in `logical_line_index` order with `"\n"` reproduces `logical_order`
+exactly, for every governed template. `hocrsyngen validate` enforces this.
 
-- with `" | "` when every line in the group has region `table_cells` (a ledger
-  row is drawn as five cells and recorded in `logical_order` as
-  `number | date | amount | details | balance`, in left-to-right column order);
-- otherwise with a single space (a long body source line wrapped onto several
-  physical lines).
+Where it applies:
 
-Every `logical_order` line is produced exactly once by this rule, so the result
-joined with `"\n"` reproduces `logical_order`. `hocrsyngen validate` enforces it.
-When no line wraps and there are no ledger rows, which holds for every page of
-the seed-101 evidence batch, the lines' `text` joined with `"\n"` is
-`logical_order` verbatim. The wrap rule assumes source lines have no repeated
-internal whitespace, which holds for corpora read by the generator's line
-loader (lines are stripped, and wrapping splits on whitespace).
+- A long body source line wrapped across physical lines: the first segment has
+  `logical_join: null`, the rest `"space"`.
+- A ledger row, drawn as five cells and recorded in `logical_order` as
+  `number | date | amount | details | balance` (left-to-right column order):
+  the first cell `null`, the rest `"cell"`.
+- When nothing wraps and there are no ledger rows (every page of the seed-101
+  evidence batch), the non-null lines' `text` joined with `"\n"` is
+  `logical_order` verbatim.
 
-Text drawn on the page but absent from `logical_order` is **not** annotated:
-the printed-letter stamp word and the three `אישור` signature captions, and the
-handwritten-note marginal note (`נבדק`, `להמשך`, or `עותק`). See the gold
-finding below.
+The wrap rule assumes source lines have no repeated internal whitespace, which
+holds for corpora read through the generator's line loader (lines are
+stripped, and wrapping splits on whitespace).
+
+## Drawn Text Outside `logical_order`
+
+Some text is drawn on the page but is not part of `logical_order`. It is still
+annotated, with its real `text` and `region`, `logical_line_index: null`, and
+`logical_join: null`, so training can use the labels and the consumer decides:
+
+| Template family | Text | Region |
+| --- | --- | --- |
+| `printed_letter`, `printed_letter_heavy_scan` | stamp word `נבדק` | `stamp_area` |
+| `printed_letter`, `printed_letter_heavy_scan` | three `אישור` signature captions | `signature_area` |
+| `handwritten_note`, `handwritten_note_heavy_wear` | marginal note `נבדק`, `להמשך`, or `עותק` | `margin` |
+
+`archive_card` and `ledger` families draw no such text (the archive card's
+`ארכיון` stamp is in `logical_order`).
+
+## Occlusion
+
+`occluded` is a cheap geometric test on pre-rotation text boxes, not pixel
+analysis. A line is occluded when:
+
+- a recorded overlay mark crosses its text box: stamp rings (printed letters
+  and archive cards), ledger ticks and the correction stroke, and marginal
+  strokes and arcs. A mark that decorates a line, such as a marginal note's
+  underline, does not occlude that line;
+- or its text box overlaps another line's text box and at least one of the two
+  is outside `logical_order` (for example the stamp word under a body line).
+  Lines in `logical_order` never occlude each other.
+
+Occlusion is realistic and stays in the data. Body text under a stamp remains
+in gold, and evaluators can split scores on the flag.
 
 ## Validation
 
 `hocrsyngen validate` checks `line_annotations.json` whenever it is present:
-JSON schema, manifest hash, page ids/hashes/dimensions in manifest order,
-contiguous `line_index`, NFC text, in-page coordinates, and the
-`logical_order` reconstruction rule above.
+
+- JSON schema;
+- manifest hash;
+- page ids, hashes, and dimensions in manifest order;
+- contiguous `line_index`;
+- NFC text;
+- in-page coordinates;
+- `logical_join` / `logical_line_index` consistency;
+- the `logical_order` rebuild above.
 
 ## External Text Corpora
 
@@ -127,34 +175,46 @@ a UTF-8 file with one line per row instead of the packaged corpus.
 
 ## Determinism
 
-Recording geometry never draws from the generator's random stream. With both
-flags off, output is byte-identical to earlier releases, and with
-`--emit-line-annotations` the manifest and every page asset are byte-identical
-to a run without it; the sidecar is the only added file. The seed-101,
-80-sample, four-template evidence batch reproduces manifest sha256
-`9b6e54f798fc6d131431e114716b2db12018c3bc4726369b4c749a7237182d20` either way.
+Recording geometry never draws from the generator's random stream:
 
-## Gold Finding: Occlusion And Unlisted Text, Not Clipping
+- With both flags off, output is byte-identical to earlier releases.
+- With `--emit-line-annotations`, the manifest and every page asset are
+  byte-identical to a run without it; the sidecar is the only added file.
+- The seed-101, 80-sample, four-template evidence batch reproduces manifest
+  sha256 `9b6e54f798fc6d131431e114716b2db12018c3bc4726369b4c749a7237182d20`
+  either way.
 
-A Tesseract spot check reported that "the ends of some lines are cut off". On
-the seed-101 batch (80 pages: 20 each of `printed_letter`,
-`handwritten_note`, `printed_letter_heavy_scan`,
-`handwritten_note_heavy_wear`, 440 logical lines):
+## Gold Finding (seed 101)
 
-- **No clipping or truncation.** 0 of 440 lines leave the page, no body line
-  wraps, and every page's drawn lines reproduce its `logical_order` exactly.
-- **Stamp occlusion at line ends.** On the printed-letter family the stamp
-  ellipse (drawn first, at the left of the body band) runs through 55 of 240
-  printed lines on 39 of 40 printed pages, always in the leftmost quarter of the
-  line, which is the end of an RTL line. The text is fully drawn on top, so the
-  line labels stay correct, but engines read those words poorly. The
-  handwritten family has no such overlap.
-- **Text drawn but missing from `logical_order`.** All 80 pages carry such
-  text, 200 items in total: `אישור` 120 times (3 per printed page), the stamp
-  word `נבדק` 40 times, and marginal notes on handwritten pages (`נבדק` 15,
-  `עותק` 14, `להמשך` 11). Page-level CER/WER therefore counts correct reads of
-  this text as insertions. This is a page-level answer-key defect.
+A Tesseract spot check reported that "the ends of some lines are cut off". The
+seed-101 batch has 80 pages, 20 per template, and 440 logical lines. Measured
+with this sidecar:
 
-Fixing either issue changes rendered pages or `logical_order`, so it needs a
-`GENERATOR_VERSION` bump and fixture review. It is tracked as `S10c` in the
-[roadmap](roadmap.md), not done in `S10a`, so that `S10a` stays byte-identical.
+| Template | Pages | Scored lines (chars) | Drawn, unscored lines (chars) | Pages with unscored text | Occluded scored lines (pages) |
+| --- | --- | --- | --- | --- | --- |
+| `printed_letter` | 20 | 120 (3,626) | 80 (380) | 20 | 31 (20) |
+| `printed_letter_heavy_scan` | 20 | 120 (3,685) | 80 (380) | 20 | 31 (20) |
+| `handwritten_note` | 20 | 100 (2,830) | 20 (85) | 20 | 0 (0) |
+| `handwritten_note_heavy_wear` | 20 | 100 (2,798) | 20 (86) | 20 | 0 (0) |
+| **Total** | 80 | 440 (12,939) | 200 (931) | 80 | 62 (40) |
+
+- **No clipping or truncation.** 0 of 440 lines leave the page, and no body
+  line wraps. Every page's drawn lines rebuild its `logical_order` exactly.
+- **What "cut off" was.** On printed letters the stamp ring lies across the
+  left end of the body band, which is where RTL lines end. The text is drawn on
+  top and stays in gold, but engines misread it. These lines now carry
+  `occluded: true`.
+- **Gold defect: drawn but unscored text.** 931 drawn characters on 80 of 80
+  pages are not in `logical_order`. That is about 7% of the 12,939 scored
+  characters: 10.4% on printed letters and 3.0% on handwritten notes. The
+  items:
+  - `אישור` 120 times;
+  - stamp `נבדק` 40 times;
+  - marginal notes 40 times (`נבדק` 15, `עותק` 14, `להמשך` 11).
+
+  Page-level CER/WER charges an engine that reads them correctly with
+  insertions.
+
+`S10a` deliberately leaves `logical_order` and the manifest unchanged, so the
+seed-101 benchmark stays stable. The fix is the separate follow-up slice
+`S10c` in the [roadmap](roadmap.md).

@@ -4,6 +4,7 @@ import json
 import math
 import random
 import unicodedata
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path, PurePosixPath
@@ -153,6 +154,13 @@ class LedgerRender:
 
 
 LINE_POLYGON_PADDING = 4
+LOGICAL_JOIN_SPACE = "space"
+LOGICAL_JOIN_CELL = "cell"
+_ARC_SEGMENTS = 16
+_ELLIPSE_SEGMENTS = 64
+
+Box = tuple[float, float, float, float]
+Point = tuple[float, float]
 
 
 @dataclass(frozen=True)
@@ -161,22 +169,43 @@ class LineGeometry:
 
     ``polygon`` is clockwise from the top-left corner and ``baseline`` runs
     left-to-right in pixel x, independent of the RTL reading direction.
+    ``logical_line_index`` is ``None`` for drawn text that ``logical_order``
+    does not contain (stamp words, signature captions, marginal notes).
     """
 
     region: str
     text: str
-    logical_line_index: int
+    logical_line_index: int | None
+    logical_join: str | None
     polygon: tuple[tuple[int, int], ...]
     baseline: tuple[tuple[int, int], ...]
+    occluded: bool
     # True when the unclamped polygon left the page and was clamped to it.
     clipped: bool = False
 
 
+@dataclass(frozen=True)
+class _RecordedLine:
+    region: str
+    text: str
+    logical_line_index: int | None
+    logical_join: str | None
+    box: Box
+    baseline_y: float
+
+
 @dataclass
 class _LineRecorder:
-    """Collects pre-degradation text geometry without touching the randomizer."""
+    """Collects pre-degradation text geometry without touching the randomizer.
 
-    boxes: list[tuple[str, str, int, tuple[float, float, float, float], float]] = field(default_factory=list)
+    ``marks`` are stroked overlay polylines (stamp rings, correction strokes,
+    ticks, marginal strokes) as ``(points, stroke_width, owner)``, where
+    ``owner`` is the index of a line the mark decorates (an underline does not
+    occlude its own text).
+    """
+
+    lines: list[_RecordedLine] = field(default_factory=list)
+    marks: list[tuple[tuple[Point, ...], float, int | None]] = field(default_factory=list)
     rotation_degrees: float = 0.0
 
     def record(
@@ -188,18 +217,53 @@ class _LineRecorder:
         font: ImageFont.FreeTypeFont,
         anchor: str,
         region: str,
-        logical_line_index: int,
+        logical_line_index: int | None,
+        logical_join: str | None,
     ) -> None:
         if anchor != "ra":
             raise ValueError(f"Line geometry recording supports anchor 'ra' only, got {anchor!r}")
-        left, top, right, bottom = draw.textbbox(xy, _rtl_display_text(text), font=font, anchor=anchor, direction="rtl")
+        box = draw.textbbox(xy, _rtl_display_text(text), font=font, anchor=anchor, direction="rtl")
         baseline_y = xy[1] + font.getmetrics()[0]
-        self.boxes.append((region, text, logical_line_index, (left, top, right, bottom), baseline_y))
+        self.lines.append(_RecordedLine(region, text, logical_line_index, logical_join, box, baseline_y))
+
+    def mark_polyline(self, points: Sequence[Point], width: float, *, owner: int | None = None) -> None:
+        self.marks.append((tuple(points), width, owner))
+
+    def last_line_index(self) -> int:
+        return len(self.lines) - 1
+
+    def mark_ellipse(self, box: Box, width: float) -> None:
+        self.mark_polyline(_ellipse_points(box, 0, 360, _ELLIPSE_SEGMENTS), width)
+
+    def mark_arc(self, box: Box, start: float, end: float, width: float) -> None:
+        self.mark_polyline(_ellipse_points(box, start, end, _ARC_SEGMENTS), width)
+
+    def _occluded(self, index: int) -> bool:
+        line = self.lines[index]
+        for points, width, owner in self.marks:
+            if owner == index:
+                continue
+            if any(
+                _segment_hits_box(start, end, _grown_box(line.box, width / 2))
+                for start, end in zip(points, points[1:])
+            ):
+                return True
+        # Overlay text (lines outside logical_order) occludes, and is occluded
+        # by, any text it overlaps; logical lines never occlude each other.
+        for other_index, other in enumerate(self.lines):
+            if other_index == index:
+                continue
+            if line.logical_line_index is not None and other.logical_line_index is not None:
+                continue
+            if _boxes_overlap(line.box, other.box):
+                return True
+        return False
 
     def final_lines(self, size: tuple[int, int]) -> tuple[LineGeometry, ...]:
         width, height = size
         lines: list[LineGeometry] = []
-        for region, text, logical_line_index, (left, top, right, bottom), baseline_y in self.boxes:
+        for index, line in enumerate(self.lines):
+            left, top, right, bottom = line.box
             pad = LINE_POLYGON_PADDING
             corners = (
                 (left - pad, top - pad),
@@ -207,20 +271,65 @@ class _LineRecorder:
                 (right + pad, bottom + pad),
                 (left - pad, bottom + pad),
             )
-            baseline = ((left, baseline_y), (right, baseline_y))
+            baseline = ((left, line.baseline_y), (right, line.baseline_y))
             rotated = [_rotated_point(point, self.rotation_degrees, size) for point in (*corners, *baseline)]
             clipped = any(x < 0 or y < 0 or x > width - 1 or y > height - 1 for x, y in rotated)
             lines.append(
                 LineGeometry(
-                    region=region,
-                    text=unicodedata.normalize("NFC", text),
-                    logical_line_index=logical_line_index,
+                    region=line.region,
+                    text=unicodedata.normalize("NFC", line.text),
+                    logical_line_index=line.logical_line_index,
+                    logical_join=line.logical_join,
                     polygon=tuple(_clamped_point(point, size) for point in rotated[:4]),
                     baseline=tuple(_clamped_point(point, size) for point in rotated[4:]),
+                    occluded=self._occluded(index),
                     clipped=clipped,
                 )
             )
         return tuple(lines)
+
+
+def _ellipse_points(box: Box, start: float, end: float, segments: int) -> tuple[Point, ...]:
+    # Same angle convention as ImageDraw.arc: degrees clockwise from 3 o'clock.
+    left, top, right, bottom = box
+    center_x, center_y = (left + right) / 2, (top + bottom) / 2
+    radius_x, radius_y = (right - left) / 2, (bottom - top) / 2
+    return tuple(
+        (
+            center_x + radius_x * math.cos(math.radians(start + (end - start) * step / segments)),
+            center_y + radius_y * math.sin(math.radians(start + (end - start) * step / segments)),
+        )
+        for step in range(segments + 1)
+    )
+
+
+def _grown_box(box: Box, amount: float) -> Box:
+    return (box[0] - amount, box[1] - amount, box[2] + amount, box[3] + amount)
+
+
+def _boxes_overlap(first: Box, second: Box) -> bool:
+    return first[0] < second[2] and second[0] < first[2] and first[1] < second[3] and second[1] < first[3]
+
+
+def _segment_hits_box(start: Point, end: Point, box: Box) -> bool:
+    """Liang-Barsky clip test: does segment ``start``-``end`` touch ``box``?"""
+
+    (x0, y0), (x1, y1) = start, end
+    dx, dy = x1 - x0, y1 - y0
+    low, high = 0.0, 1.0
+    for p, q in ((-dx, x0 - box[0]), (dx, box[2] - x0), (-dy, y0 - box[1]), (dy, box[3] - y0)):
+        if p == 0:
+            if q < 0:
+                return False
+            continue
+        t = q / p
+        if p < 0:
+            low = max(low, t)
+        else:
+            high = min(high, t)
+        if low > high:
+            return False
+    return True
 
 
 def _rotated_point(point: tuple[float, float], angle_degrees: float, size: tuple[int, int]) -> tuple[float, float]:
@@ -325,9 +434,10 @@ def _draw_rtl_text(
     recorder: _LineRecorder | None = None,
     region: str | None = None,
     logical_line_index: int | None = None,
+    logical_join: str | None = None,
 ) -> None:
     _require_raqm()
-    if recorder is not None and region is not None and logical_line_index is not None:
+    if recorder is not None and region is not None:
         recorder.record(
             draw,
             xy,
@@ -336,6 +446,7 @@ def _draw_rtl_text(
             anchor=anchor,
             region=region,
             logical_line_index=logical_line_index,
+            logical_join=logical_join,
         )
     draw.text(xy, _rtl_display_text(text), font=font, fill=fill, anchor=anchor, direction="rtl")
 
@@ -841,14 +952,25 @@ def _draw_printed_form_guides(draw: ImageDraw.ImageDraw, randomizer: random.Rand
         draw.line((right - offset, box_top, right - offset, box_top + 220), fill=faint, width=1)
 
 
-def _draw_stamp(draw: ImageDraw.ImageDraw, randomizer: random.Random, font: ImageFont.FreeTypeFont) -> None:
+def _draw_stamp(
+    draw: ImageDraw.ImageDraw,
+    randomizer: random.Random,
+    font: ImageFont.FreeTypeFont,
+    recorder: _LineRecorder | None = None,
+) -> None:
     center_x = PAPER_MARGIN + randomizer.randint(150, 260)
     center_y = PAPER_MARGIN + randomizer.randint(135, 245)
     radius_x = randomizer.randint(92, 118)
     radius_y = randomizer.randint(44, 58)
     color = (129, 47, 41)
-    draw.ellipse((center_x - radius_x, center_y - radius_y, center_x + radius_x, center_y + radius_y), outline=color, width=4)
-    _draw_rtl_text(draw, (center_x + 62, center_y - 13), "נבדק", font=font, fill=color)
+    ellipse = (center_x - radius_x, center_y - radius_y, center_x + radius_x, center_y + radius_y)
+    draw.ellipse(ellipse, outline=color, width=4)
+    if recorder is not None:
+        recorder.mark_ellipse(ellipse, 4)
+    _draw_rtl_text(
+        draw, (center_x + 62, center_y - 13), "נבדק", font=font, fill=color,
+        recorder=recorder, region="stamp_area",
+    )
 
 
 def _draw_handwritten_guides(draw: ImageDraw.ImageDraw, randomizer: random.Random) -> None:
@@ -858,17 +980,27 @@ def _draw_handwritten_guides(draw: ImageDraw.ImageDraw, randomizer: random.Rando
         draw.line((PAPER_MARGIN + 65, y, CANVAS_SIZE[0] - PAPER_MARGIN - 70, y), fill=guide, width=1)
 
 
-def _draw_marginalia(draw: ImageDraw.ImageDraw, randomizer: random.Random, font: ImageFont.FreeTypeFont) -> None:
+def _draw_marginalia(
+    draw: ImageDraw.ImageDraw,
+    randomizer: random.Random,
+    font: ImageFont.FreeTypeFont,
+    recorder: _LineRecorder | None = None,
+) -> None:
     notes = ["נבדק", "להמשך", "עותק"]
     x = PAPER_MARGIN + randomizer.randint(60, 150)
     y = PAPER_MARGIN + randomizer.randint(430, 680)
     note = notes[randomizer.randrange(len(notes))]
-    _draw_rtl_text(draw, (x + 115, y), note, font=font, fill=(88, 68, 48))
+    _draw_rtl_text(draw, (x + 115, y), note, font=font, fill=(88, 68, 48), recorder=recorder, region="margin")
     draw.line((x, y + 44, x + 120, y + 32), fill=(88, 68, 48), width=2)
+    if recorder is not None:
+        # The stroke underlines the note just drawn.
+        recorder.mark_polyline(((x, y + 44), (x + 120, y + 32)), 2, owner=recorder.last_line_index())
     for _ in range(2):
         sx = x + randomizer.randint(5, 95)
         sy = y + randomizer.randint(60, 140)
         draw.arc((sx, sy, sx + 70, sy + 32), start=190, end=345, fill=(94, 72, 50), width=2)
+        if recorder is not None:
+            recorder.mark_arc((sx, sy, sx + 70, sy + 32), 190, 345, 2)
 
 
 def _draw_handwritten_underline(draw: ImageDraw.ImageDraw, randomizer: random.Random, x: int, y: int, width: int) -> None:
@@ -977,6 +1109,8 @@ def _draw_archive_card(
     stamp_x = card_left + 190
     stamp_y = card_bottom - 128
     draw.ellipse((stamp_x - 92, stamp_y - 42, stamp_x + 92, stamp_y + 42), outline=stamp_ink, width=4)
+    if recorder is not None:
+        recorder.mark_ellipse((stamp_x - 92, stamp_y - 42, stamp_x + 92, stamp_y + 42), 4)
     _draw_rtl_text(
         draw, (stamp_x + 48, stamp_y - 14), "ארכיון", font=stamp_font, fill=stamp_ink,
         recorder=recorder, region="stamp_area", logical_line_index=labels_start + len(labels),
@@ -1012,9 +1146,12 @@ def _draw_ledger_tick(
     x: int,
     y: int,
     color: tuple[int, int, int, int],
+    recorder: _LineRecorder | None = None,
 ) -> None:
     draw.line((x - 22, y + 18, x - 8, y + 32), fill=color, width=3)
     draw.line((x - 8, y + 32, x + 26, y - 4), fill=color, width=3)
+    if recorder is not None:
+        recorder.mark_polyline(((x - 22, y + 18), (x - 8, y + 32), (x + 26, y - 4)), 3)
 
 
 def _draw_ledger(
@@ -1125,20 +1262,23 @@ def _draw_ledger(
         fill_value = max(18, min(78, 33 + style_bundle.ink_delta + condition_bundle.ink_delta))
         row_ink = (fill_value, max(16, fill_value - 4), max(12, fill_value - 9), 255)
         values = [row_number, row_date, amount, line, balance]
-        for x, value in zip(header_anchors, values, strict=True):
+        for cell_index, (x, value) in enumerate(zip(header_anchors, values, strict=True)):
             _draw_rtl_text(
                 draw, (x - x_offset, y), value, font=body_font, fill=row_ink,
                 recorder=recorder, region="table_cells", logical_line_index=3 + len(headers) + index,
+                logical_join=LOGICAL_JOIN_CELL if cell_index else None,
             )
         if index in {1, 6}:
             mark_x = column_edges[1] - 96
-            _draw_ledger_tick(draw, mark_x, y + 2, correction_ink)
+            _draw_ledger_tick(draw, mark_x, y + 2, correction_ink, recorder)
         if index == 3:
             draw.line(
                 (column_edges[3] + 16, y + 36, column_edges[4] - 26, y + 30),
                 fill=correction_ink,
                 width=2,
             )
+            if recorder is not None:
+                recorder.mark_polyline(((column_edges[3] + 16, y + 36), (column_edges[4] - 26, y + 30)), 2)
         logical_rows.append(" | ".join(values))
 
     footer_text = f"{footer} - {ledger_id}"
@@ -1199,10 +1339,10 @@ def _draw_document(
     _draw_creased_paper(draw, randomizer, handwritten=not form_layout)
     if form_layout:
         _draw_printed_form_guides(draw, randomizer)
-        _draw_stamp(draw, randomizer, annotation_font)
+        _draw_stamp(draw, randomizer, annotation_font, recorder)
     else:
         _draw_handwritten_guides(draw, randomizer)
-        _draw_marginalia(draw, randomizer, annotation_font)
+        _draw_marginalia(draw, randomizer, annotation_font, recorder)
     _draw_stains(image, randomizer, handwritten=not form_layout)
 
     title_x = CANVAS_SIZE[0] - PAPER_MARGIN - randomizer.randint(0, 24)
@@ -1218,10 +1358,12 @@ def _draw_document(
     # logical_order holds each unwrapped source line, so a wrapped segment maps
     # back to the source line it came from (title is logical line 0).
     wrapped_logical_indices: list[int] = []
+    wrapped_joins: list[str | None] = []
     for source_index, line in enumerate(body_lines):
         segments = _wrap_hebrew_text(draw, line, body_font, max_width)
         wrapped_lines.extend(segments)
         wrapped_logical_indices.extend([1 + source_index] * len(segments))
+        wrapped_joins.extend([None] + [LOGICAL_JOIN_SPACE] * (len(segments) - 1))
 
     standard = STYLE_BUNDLES["style_standard_v1"]
     base_line_height = style_bundle.handwritten_line_height if handwritten_text else style_bundle.printed_line_height
@@ -1249,6 +1391,7 @@ def _draw_document(
         _draw_rtl_text(
             draw, (x, y), line, font=body_font, fill=fill,
             recorder=recorder, region="body", logical_line_index=wrapped_logical_indices[index],
+            logical_join=wrapped_joins[index],
         )
         if not form_layout and index in {0, len(wrapped_lines) - 1}:
             _draw_handwritten_underline(draw, randomizer, x - 5, y + 52, min(360, max_width // 2))
@@ -1266,12 +1409,17 @@ def _draw_document(
             y = randomizer.randint(CANVAS_SIZE[1] - PAPER_MARGIN - 220, CANVAS_SIZE[1] - PAPER_MARGIN - 120)
             radius = randomizer.randint(18, 34)
             draw.arc((x, y, x + radius * 3, y + radius), start=180, end=360, fill=(63, 50, 38, 255), width=2)
+            if recorder is not None:
+                recorder.mark_arc((x, y, x + radius * 3, y + radius), 180, 360, 2)
     else:
         for column in range(3):
             x = CANVAS_SIZE[0] - PAPER_MARGIN - 180 - (column * 220)
             y = CANVAS_SIZE[1] - PAPER_MARGIN - 160
             draw.line((x - 120, y, x, y), fill=(132, 121, 102, 255), width=2)
-            _draw_rtl_text(draw, (x, y + 12), "אישור", font=annotation_font, fill=(104, 92, 76, 255))
+            _draw_rtl_text(
+                draw, (x, y + 12), "אישור", font=annotation_font, fill=(104, 92, 76, 255),
+                recorder=recorder, region="signature_area",
+            )
 
     return _degrade(image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder)
 

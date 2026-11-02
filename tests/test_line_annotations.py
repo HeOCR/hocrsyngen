@@ -10,12 +10,15 @@ import jsonschema
 import pytest
 from PIL import Image, ImageDraw
 
+import hocrsyngen.generator as generator_module
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.cli import main
 from hocrsyngen.generator import (
     CANVAS_SIZE,
     GOVERNED_TEMPLATE_IDS,
+    _LineRecorder,
     _rotated_point,
+    _segment_hits_box,
     generate_batch,
     generate_documents,
     source_corpus_id,
@@ -100,9 +103,14 @@ def test_lines_rebuild_logical_order_for_every_template(annotated_batch: Path) -
         assert all(unicodedata.is_normalized("NFC", line["text"]) for line in lines)
         rebuilt = reconstruct_logical_lines(lines)
         assert [rebuilt[index] for index in sorted(rebuilt)] == logical_lines
+        scored = [line for line in lines if line["logical_line_index"] is not None]
+        assert all(
+            (line["logical_join"] is None) == (index == 0 or scored[index - 1]["logical_line_index"] != line["logical_line_index"])
+            for index, line in enumerate(scored)
+        )
         if sample["provenance"]["template_id"] != "ledger":
-            # Without wrapping or table cells, the lines are logical_order verbatim.
-            assert "\n".join(line["text"] for line in lines) == sample["text"]["logical_order"]
+            # Without wrapping or table cells, scored lines are logical_order verbatim.
+            assert "\n".join(line["text"] for line in scored) == sample["text"]["logical_order"]
 
     assert templates_seen == set(ALL_TEMPLATES)
 
@@ -114,14 +122,14 @@ def test_ledger_rows_are_cells_joined_with_pipe_separator(annotated_batch: Path)
     lines = payload["pages"][ledger_index]["lines"]
     logical_lines = manifest["samples"][ledger_index]["text"]["logical_order"].split("\n")
 
-    row_groups: dict[int, list[str]] = {}
+    row_groups: dict[int, list[dict]] = {}
     for line in lines:
-        row_groups.setdefault(line["logical_line_index"], []).append(line["text"])
+        row_groups.setdefault(line["logical_line_index"], []).append(line)
     multi_cell_rows = {index: cells for index, cells in row_groups.items() if len(cells) > 1}
     assert multi_cell_rows
     for index, cells in multi_cell_rows.items():
-        assert len(cells) == 5
-        assert " | ".join(cells) == logical_lines[index]
+        assert [cell["logical_join"] for cell in cells] == [None, "cell", "cell", "cell", "cell"]
+        assert " | ".join(cell["text"] for cell in cells) == logical_lines[index]
 
 
 def test_wrapped_source_lines_share_logical_index_and_rejoin_with_space(tmp_path: Path) -> None:
@@ -134,8 +142,68 @@ def test_wrapped_source_lines_share_logical_index_and_rejoin_with_space(tmp_path
     body = [line for line in lines if line["region"] == "body"]
     assert len(body) > 1
     assert {line["logical_line_index"] for line in body} == {1}
+    assert [line["logical_join"] for line in body] == [None] + ["space"] * (len(body) - 1)
     assert " ".join(line["text"] for line in body) == LONG_LINE
     assert validate_batch(output_dir).sample_count == 1
+
+
+UNSCORED_TEXTS = {
+    "printed_letter": {("stamp_area", "נבדק"), ("signature_area", "אישור")},
+    "printed_letter_heavy_scan": {("stamp_area", "נבדק"), ("signature_area", "אישור")},
+    "handwritten_note": {("margin", "נבדק"), ("margin", "להמשך"), ("margin", "עותק")},
+    "handwritten_note_heavy_wear": {("margin", "נבדק"), ("margin", "להמשך"), ("margin", "עותק")},
+    "archive_card": set(),
+    "archive_card_faded_scan": set(),
+    "ledger": set(),
+}
+
+
+def test_drawn_text_outside_logical_order_is_annotated_with_null_index(annotated_batch: Path) -> None:
+    payload = _load(annotated_batch / LINE_ANNOTATIONS_FILENAME)
+    manifest = _load(annotated_batch / "generation_manifest.json")
+
+    for sample, page in zip(manifest["samples"], payload["pages"], strict=True):
+        template_id = sample["provenance"]["template_id"]
+        unscored = [line for line in page["lines"] if line["logical_line_index"] is None]
+        assert all(line["logical_join"] is None for line in unscored)
+        assert {(line["region"], line["text"]) for line in unscored} <= UNSCORED_TEXTS[template_id]
+        if template_id.startswith("printed_letter"):
+            regions = [line["region"] for line in unscored]
+            assert regions.count("stamp_area") == 1 and regions.count("signature_area") == 3
+        elif template_id.startswith("handwritten_note"):
+            assert [line["region"] for line in unscored] == ["margin"]
+        else:
+            assert unscored == []
+
+
+def test_occluded_flags_stamp_ring_crossings_on_printed_letters(tmp_path: Path) -> None:
+    output_dir = tmp_path / "printed"
+    generate_batch(4, 101, output_dir, ["printed_letter", "handwritten_note"], emit_line_annotations=True)
+    pages = _load(output_dir / LINE_ANNOTATIONS_FILENAME)["pages"]
+
+    printed_body = [line for page in pages[0::2] for line in page["lines"] if line["region"] == "body"]
+    handwritten = [line for page in pages[1::2] for line in page["lines"]]
+    assert any(line["occluded"] for line in printed_body)
+    assert not all(line["occluded"] for line in printed_body)
+    # Marginal notes are not occluded by their own underline stroke.
+    assert not any(line["occluded"] for line in handwritten)
+
+
+def test_segment_hits_box_and_mark_ownership() -> None:
+    box = (10.0, 10.0, 20.0, 20.0)
+    assert _segment_hits_box((0, 15), (30, 15), box)
+    assert _segment_hits_box((12, 12), (13, 13), box)
+    assert not _segment_hits_box((0, 0), (5, 30), box)
+    assert not _segment_hits_box((0, 25), (30, 25), box)
+
+    recorder = _LineRecorder()
+    recorder.lines.append(
+        generator_module._RecordedLine("margin", "עותק", None, None, (0.0, 0.0, 40.0, 20.0), 15.0)
+    )
+    recorder.mark_polyline(((0, 18), (40, 18)), 2, owner=0)
+    assert recorder.final_lines(CANVAS_SIZE)[0].occluded is False
+    recorder.mark_polyline(((0, 10), (40, 10)), 2)
+    assert recorder.final_lines(CANVAS_SIZE)[0].occluded is True
 
 
 def _gray(path: Path) -> Image.Image:
@@ -211,13 +279,17 @@ def _rewrite(path: Path, mutate) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 
+# Page 2 is an archive card: every drawn line there is in logical_order.
 @pytest.mark.parametrize(
     ("mutate", "message"),
     [
         (lambda p: p.update(generation_manifest_sha256="0" * 64), "generation_manifest_sha256"),
-        (lambda p: p["pages"][0]["lines"][0].update(text="שגוי"), "rebuild"),
-        (lambda p: p["pages"][0]["lines"][0]["polygon"][0].__setitem__(0, 5000), "outside the page"),
-        (lambda p: p["pages"][0]["lines"].pop(), "cover every logical_order line"),
+        (lambda p: p["pages"][2]["lines"][0].update(text="שגוי"), "rebuild"),
+        (lambda p: p["pages"][2]["lines"][0]["polygon"][0].__setitem__(0, 5000), "outside the page"),
+        (lambda p: p["pages"][2]["lines"].pop(), "cover every logical_order line"),
+        (lambda p: p["pages"][2]["lines"][1].update(logical_line_index=0), "more than one segment"),
+        (lambda p: p["pages"][2]["lines"][0].update(logical_join="space"), "continues before its first segment"),
+        (lambda p: p["pages"][0]["lines"][0].update(logical_join="cell"), "must be null outside logical_order"),
         (lambda p: p["pages"][0].update(page_sha256="f" * 64), "page_sha256"),
         (lambda p: p["pages"][0]["lines"][0].update(region="margin_scribble"), "schema violation"),
     ],
