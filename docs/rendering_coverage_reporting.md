@@ -102,7 +102,7 @@ Minimal example:
 {
   "report_version": "rendering_coverage_report.v1",
   "generator_name": "hocrsyngen",
-  "generator_version": "d4a-realism-v2",
+  "generator_version": "s10c-gold-complete-v1",
   "batch": {
     "manifest_path": "generation_manifest.json",
     "sample_count": 2,

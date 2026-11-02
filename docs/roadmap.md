@@ -74,7 +74,9 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    recognizer (`heocr-engine` R3). `S10a` adds the opt-in
    `hocrsyngen_line_annotations.v1` sidecar and `--text-corpus`, documented in
    [line_annotations_v1.md](line_annotations_v1.md), without changing manifest
-   v1 or default output bytes.
+   v1 or default output bytes. `S10b` adds the project-authored training and
+   eval corpora. `S10c` makes page-level gold complete under generator version
+   `s10c-gold-complete-v1` (see [CHANGELOG.md](../CHANGELOG.md)).
 
 ## Current Baseline After S7a
 
@@ -685,29 +687,42 @@ Planned PR breakdown:
   `provenance.source_corpus` `external:sha256:<hex>` and as a run-record
   `text_corpus` block) on `generate` and `evidence-run`. Documented in
   [line_annotations_v1.md](line_annotations_v1.md), including the seed-101
-  gold finding. Status: in review.
+  gold finding. Status: done in PR #73.
 - `S10b` — Project-authored training line corpus: a large original Hebrew line
   corpus with a train/eval split, provenance documentation, and corpus checks,
-  consumable through `--text-corpus`. Status: planned.
-- `S10c` — Page-level gold completeness: resolve drawn text that
-  `logical_order` omits (stamp words, `אישור` captions, marginal notes). Either
-  add it to `logical_order` behind a recorded `GENERATOR_VERSION` bump with
-  fixture review, or declare it an explicitly excluded region that page-level
-  scoring masks out. Stamp occlusion of body text stays as realistic noise and
-  is exposed through the `S10a` `occluded` flag. Motivated by the `S10a`
-  seed-101 finding: 200 drawn items (931 characters, about 7% of scored
-  characters) on 80/80 pages are missing from `logical_order`. Also set body
-  capacity rules: `archive_card` keeps 7 and `ledger` keeps 10 wrapped body
-  segments, so source lines lose their tails, consistently on page and in
-  gold, and reported per page as `truncated_segments`. Ledger row capacity is
-  the binding case: even the packaged corpus drops about 4 segments per ledger
-  page. Uncapped printed and handwritten bodies need a documented line-length
-  or line-count limit before long external corpora are used. Status: planned;
-  scheduled by the coordinating team lead.
+  consumable through `--text-corpus`. Status: done in PR #74.
+- `S10c` — Page-level gold completeness: every drawn text element is gold.
+  The printed-letter stamp word, the three `אישור` signature captions, and
+  the handwritten marginal note join `logical_order` in a documented reading
+  order: title, body, stamp, margin, signatures right to left, footer. This
+  happens under a `GENERATOR_VERSION` bump to `s10c-gold-complete-v1`
+  (recorded in `CHANGELOG.md`; validation still accepts `d4a-realism-v2`) and
+  a regenerated packaged fixture manifest. Page images are unchanged.
+  - Capacity: printed and handwritten bodies get a computed cap (13–23
+    wrapped lines) reported as `truncated_segments`, and an overlong body word
+    is rejected, so nothing leaves the page. The archive-card (7) and ledger
+    (10) caps are kept and documented.
+  - Motivated by the `S10a` seed-101 finding: 200 drawn items (931
+    characters) on 80/80 pages were missing from `logical_order`.
+  - Stamp occlusion stays as realistic noise, flagged by `occluded`.
+  - Seed-101 benchmark (manifest
+    `c4b4ca4ed5b92080c0a4d13c4fa2da505080da11b37203ecb0d4fa1bcb164ec3`, pages
+    byte-identical to the `d4a-realism-v2` batch):
+
+  | Template | Pages | Gold lines before → after | Scored chars before → after (no spaces) | Added chars |
+  |---|---|---|---|---|
+  | printed_letter | 20 | 120 → 200 | 3,626 → 4,006 (3,101 → 3,481) | +380 (+10.5%) |
+  | printed_letter_heavy_scan | 20 | 120 → 200 | 3,685 → 4,065 (3,147 → 3,527) | +380 (+10.3%) |
+  | handwritten_note | 20 | 100 → 120 | 2,830 → 2,915 (2,416 → 2,501) | +85 (+3.0%) |
+  | handwritten_note_heavy_wear | 20 | 100 → 120 | 2,798 → 2,884 (2,387 → 2,473) | +86 (+3.1%) |
+  | TOTAL | 80 | 440 → 640 | 12,939 → 13,870 (11,051 → 11,982) | +931 (+7.2%) |
+
+  Status: in review.
 
 Exit criteria:
 
 - A candidate batch can emit validated line geometry whose lines rebuild
   `logical_order` exactly.
+- Page-level gold covers every drawn character.
 - External corpora are identified by content hash, never by local path.
 - Page-level answer keys cover all drawn text.

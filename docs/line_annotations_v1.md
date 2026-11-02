@@ -26,12 +26,13 @@ one manifest by content hash (`generation_manifest_sha256`) and to each page by
 
 ## Payload
 
-The first three lines of seed-101 sample 0 (`printed_letter`):
+Three lines of seed-101 sample 0 (`printed_letter`, generator
+`s10c-gold-complete-v1`):
 
 ```json
 {
   "schema": "hocrsyngen_line_annotations.v1",
-  "generation_manifest_sha256": "9b6e54f798fc6d131431e114716b2db12018c3bc4726369b4c749a7237182d20",
+  "generation_manifest_sha256": "c4b4ca4ed5b92080c0a4d13c4fa2da505080da11b37203ecb0d4fa1bcb164ec3",
   "coordinate_space": "final_page_pixels",
   "pages": [
     {
@@ -42,15 +43,15 @@ The first three lines of seed-101 sample 0 (`printed_letter`):
       "height": 1600,
       "truncated_segments": 0,
       "lines": [
-        {"line_index": 0, "logical_line_index": null, "logical_join": null, "occluded": true,
-         "region": "stamp_area", "text": "נבדק",
-         "polygon": [[337, 324], [398, 324], [398, 350], [337, 350]], "baseline": [[341, 342], [394, 342]]},
-        {"line_index": 1, "logical_line_index": 0, "logical_join": null, "occluded": false,
+        {"line_index": 0, "logical_line_index": 0, "logical_join": null, "occluded": false,
          "region": "title", "text": "מכתב מנהלי",
          "polygon": [[775, 123], [1082, 122], [1082, 172], [775, 173]], "baseline": [[779, 167], [1078, 166]]},
-        {"line_index": 2, "logical_line_index": 1, "logical_join": null, "occluded": true,
+        {"line_index": 1, "logical_line_index": 1, "logical_join": null, "occluded": true,
          "region": "body", "text": "בדיקת אותיות סופיות ךםןףץ נשמרה ברשימת הבקרה.",
-         "polygon": [[218, 256], [1104, 252], [1104, 289], [218, 293]], "baseline": [[222, 283], [1100, 279]]}
+         "polygon": [[218, 256], [1104, 252], [1104, 289], [218, 293]], "baseline": [[222, 283], [1100, 279]]},
+        {"line_index": 5, "logical_line_index": 5, "logical_join": null, "occluded": false,
+         "region": "stamp_area", "text": "נבדק",
+         "polygon": [[337, 324], [398, 324], [398, 350], [337, 350]], "baseline": [[341, 342], [394, 342]]}
       ]
     }
   ]
@@ -69,8 +70,8 @@ Line fields:
 
 | Field | Meaning |
 | --- | --- |
-| `line_index` | `0..n-1` in drawing order. |
-| `logical_line_index` | Index into `sample.text.logical_order.split("\n")`. `null` means drawn but not in page gold (see below and roadmap `S10c`). Non-decreasing over the non-null lines. |
+| `line_index` | `0..n-1` in logical (reading) order: sorted by `logical_line_index`, ties in drawing order. |
+| `logical_line_index` | Index into `sample.text.logical_order.split("\n")`. `null` means drawn but not in page gold. Since `s10c-gold-complete-v1` no template emits `null`; it remains valid for decorative text a future template might draw. Non-decreasing over the non-null lines. |
 | `logical_join` | How this segment continues its logical line: `"space"` (wrapped body text, joined with one space) or `"cell"` (ledger cell, joined with `" \| "`). `null` on the first segment of a logical line and on every line with `logical_line_index: null`. |
 | `occluded` | `true` when a stamp ring, an overlay stroke (ledger tick or correction, marginal stroke), or an overlay text box intersects this line's text box. |
 | `region` | `title`, `body`, `footer`, `identifier_area`, `table_cells`, `stamp_area`, `signature_area`, or `margin` (the `template_catalog.v2` page-region vocabulary). |
@@ -121,43 +122,43 @@ stripped, and wrapping splits on whitespace).
 ## Body Capacity And Truncation
 
 The sidecar holds only segments that were actually drawn, each with its own
-text. Segments that are never drawn appear nowhere in it; the page's
-`truncated_segments` field counts them.
+text. Segments that are never drawn appear nowhere in it, and the page's
+`truncated_segments` field counts them. Every template builds `logical_order`
+from the drawn segments, so text past a cap is missing from the page and from
+gold alike, and the round trip always holds.
 
-- `printed_letter` and `handwritten_note` families draw every wrapped segment,
-  with no cap. `logical_order` holds the unwrapped source line, and the
-  continuation segments carry `logical_join: "space"`.
-- `archive_card` families keep the first 7 wrapped body segments. `ledger`
-  keeps the first 10 wrapped detail segments, one per row. Both build
-  `logical_order` from those kept segments, one logical line per segment or
-  row. Text past the cap is dropped from the page and from gold alike, so the
-  round trip holds and no validation exemption is needed. The cost is corpus
-  utilisation: long source lines lose their tails on these templates. With
-  lines of about 55–60 characters, a ledger detail cell wraps each source line
-  into roughly 3 rows. 5 sampled lines then need about 15 rows, so only the
-  first 10 survive. The ledger caps ordinary corpora too: even the packaged
-  19-line corpus wraps to about 3 ledger rows per source line, so most ledger
-  pages report `truncated_segments > 0`.
-- Uncapped templates assume source lines short enough for the body band. About
-  16 printed lines fit before the signature captions, which is far more than 4
-  source lines of 60 characters need. A much longer external line could run
-  into the captions or off the page. Points are clamped into the page, but such
-  corpora are out of scope until `S10c` sets explicit capacity rules.
-
-## Drawn Text Outside `logical_order`
-
-Some text is drawn on the page but is not part of `logical_order`. It is still
-annotated, with its real `text` and `region`, `logical_line_index: null`, and
-`logical_join: null`, so training can use the labels and the consumer decides:
-
-| Template family | Text | Region |
+| Template family | Body cap (wrapped lines) | Why |
 | --- | --- | --- |
-| `printed_letter`, `printed_letter_heavy_scan` | stamp word `נבדק` | `stamp_area` |
-| `printed_letter`, `printed_letter_heavy_scan` | three `אישור` signature captions | `signature_area` |
-| `handwritten_note`, `handwritten_note_heavy_wear` | marginal note `נבדק`, `להמשך`, or `עותק` | `margin` |
+| `printed_letter` | 13–23, computed: 16 with standard style and condition | Worst-case body top plus y jitter and font height must stay 8 px above the signature rules (y = 1344). |
+| `handwritten_note` | 13–23, computed: 16 with standard style and condition | Same rule against the highest possible footer (y = 1480). |
+| `archive_card` | 7 | Fixed cap, kept as is. The card body could fit about 10 lines, but raising the cap would change pages of existing archive batches. |
+| `ledger` | 10 | Fixed cap, kept as is. Ten 86 px rows fill the table, so this is its geometric capacity. |
 
-`archive_card` and `ledger` families draw no such text (the archive card's
-`ארכיון` stamp is in `logical_order`).
+The computed cap is lowest with `style_open_drift_v1` (82/94 px lines) and
+highest with `style_compact_steady_v1` plus `condition_dense_spacing_v1`. For
+printed and handwritten bodies, a source line cut by the cap keeps its drawn
+segments, rejoined with a space, as its `logical_order` line.
+
+- The packaged and `S10b` corpora never reach the printed or handwritten cap:
+  4 or 3 source lines of at most about 60 characters wrap to 8 lines or fewer.
+- The ledger cap binds even with the packaged corpus, at about 4 truncated
+  segments per page. A ledger detail cell is 282 px wide, so each source line
+  wraps into about 3 rows.
+- A body word wider than the printed or handwritten body (968 px) raises
+  `ValueError` instead of being drawn off the page. Archive and ledger cells
+  sit far enough from the left edge that no realistic word leaves the page.
+
+## Drawn Text And Reading Order
+
+Since `s10c-gold-complete-v1`, every drawn text element is in `logical_order`
+and carries a `logical_line_index`. That includes the printed-letter stamp
+word, the three `אישור` captions, and the handwritten marginal note. The fixed
+reading order is documented in
+[generation_manifest_v1.md](generation_manifest_v1.md#reading-order-of-logical_order).
+
+`d4a-realism-v2` sidecars (S10a) emitted these lines with
+`logical_line_index: null`, because that version left them out of
+`logical_order`.
 
 ## Occlusion
 
@@ -169,19 +170,23 @@ analysis. A line is occluded when:
   strokes and arcs. A mark that decorates a line, such as a marginal note's
   underline, does not occlude that line;
 - or its text box overlaps another line's text box and at least one of the two
-  is outside `logical_order` (for example the stamp word under a body line).
-  Lines in `logical_order` never occlude each other.
+  is overlay text: region `stamp_area`, `margin`, or `signature_area` (for
+  example the stamp word under a body line). Main-flow lines never occlude
+  each other.
 
 Occlusion is realistic and stays in the data. Body text under a stamp remains
 in gold, and evaluators can split scores on the flag.
 
-On seed 101 the flag marks 62 printed-family body or title lines:
+On seed 101 the flag marks 90 lines, all on printed-family pages: 62 body or
+title lines and 28 stamp words.
 
-- 59 lines are crossed by the stamp ring's centreline;
-- 3 more lie within the ring's 2 px stroke half-width;
-- 28 of the 62 also overlap the stamp word's text box.
+- Of the 62 main-flow lines, 59 are crossed by the stamp ring's centreline and
+  3 lie within the ring's 2 px stroke half-width.
+- 28 of the 62 also overlap the stamp word's text box; those stamp words are
+  the 28 occluded `stamp_area` lines.
+- An earlier ring-sampling estimate of 55 counted only the inward-drawn
+  stroke.
 
-An earlier ring-sampling estimate of 55 counted only the inward-drawn stroke.
 No handwritten-family line is marked.
 
 ## Validation
@@ -218,14 +223,19 @@ a UTF-8 file with one line per row instead of the packaged corpus.
 
 Recording geometry never draws from the generator's random stream:
 
-- With both flags off, output is byte-identical to earlier releases.
-- With `--emit-line-annotations`, the manifest and every page asset are
-  byte-identical to a run without it; the sidecar is the only added file.
-- The seed-101, 80-sample, four-template evidence batch reproduces manifest
-  sha256 `9b6e54f798fc6d131431e114716b2db12018c3bc4726369b4c749a7237182d20`
-  either way.
+- `--emit-line-annotations` never changes the manifest or any page asset. The
+  sidecar is the only added file.
+- Under `s10c-gold-complete-v1`, the seed-101, 80-sample, four-template
+  evidence batch has manifest sha256
+  `c4b4ca4ed5b92080c0a4d13c4fa2da505080da11b37203ecb0d4fa1bcb164ec3`.
+  Its pages are byte-identical to the `d4a-realism-v2` batch (manifest
+  `9b6e54f7…`).
 
-## Gold Finding (seed 101)
+## Gold Finding (seed 101, `d4a-realism-v2`; resolved in `S10c`)
+
+This section records what `S10a` measured on `d4a-realism-v2` output. `S10c`
+put the missing text into `logical_order`. The before/after table is in the
+[roadmap](roadmap.md) `S10c` entry.
 
 A Tesseract spot check reported that "the ends of some lines are cut off". The
 seed-101 batch has 80 pages, 20 per template, and 440 logical lines. Measured
@@ -259,6 +269,5 @@ with this sidecar:
   Page-level CER/WER charges an engine that reads them correctly with
   insertions.
 
-`S10a` deliberately leaves `logical_order` and the manifest unchanged, so the
-seed-101 benchmark stays stable. The fix is the separate follow-up slice
-`S10c` in the [roadmap](roadmap.md).
+`S10a` deliberately left `logical_order` and the manifest unchanged. `S10c`
+fixed the gold under the new generator version `s10c-gold-complete-v1`.

@@ -8,7 +8,7 @@
         "condition": null,
         "persona": null
       },
-      "generator_version": "d4a-realism-v2",
+      "generator_version": "s10c-gold-complete-v1",
       "license": "PROJECT-SYNTHETIC",
       "pages": [
         {
@@ -35,7 +35,7 @@
       "text": {
         "direction": "rtl",
         "language": "he",
-        "logical_order": "מכתב מנהלי\nמספר תיק 42/7 נרשם: סוף, כסף, דרך, נייר.\nהאסמכתה נשמרה יחד עם מסמכי החשבון הקודם.\nתזכורת זו צורפה למכתב שנשלח עם שליח הקהילה.\nהפרטים אושרו ונרשמו מחדש בדף הסיכום.\nרישום 34",
+        "logical_order": "מכתב מנהלי\nמספר תיק 42/7 נרשם: סוף, כסף, דרך, נייר.\nהאסמכתה נשמרה יחד עם מסמכי החשבון הקודם.\nתזכורת זו צורפה למכתב שנשלח עם שליח הקהילה.\nהפרטים אושרו ונרשמו מחדש בדף הסיכום.\nנבדק\nאישור\nאישור\nאישור\nרישום 34",
         "script": "Hebr",
         "unicode_normalization": "NFC"
       }
@@ -45,7 +45,7 @@
         "condition": null,
         "persona": null
       },
-      "generator_version": "d4a-realism-v2",
+      "generator_version": "s10c-gold-complete-v1",
       "license": "PROJECT-SYNTHETIC",
       "pages": [
         {
@@ -72,7 +72,7 @@
       "text": {
         "direction": "rtl",
         "language": "he",
-        "logical_order": "רישום קצר\nבדיקת אותיות סופיות ךםןףץ נשמרה ברשימת הבקרה.\nהודעה זו נמסרה למזכירות ונרשמה בספר העזר.\nתזכורת זו צורפה למכתב שנשלח עם שליח הקהילה.\nרישום 123",
+        "logical_order": "רישום קצר\nבדיקת אותיות סופיות ךםןףץ נשמרה ברשימת הבקרה.\nהודעה זו נמסרה למזכירות ונרשמה בספר העזר.\nתזכורת זו צורפה למכתב שנשלח עם שליח הקהילה.\nנבדק\nרישום 123",
         "script": "Hebr",
         "unicode_normalization": "NFC"
       }

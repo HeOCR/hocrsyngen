@@ -147,33 +147,43 @@ def test_wrapped_source_lines_share_logical_index_and_rejoin_with_space(tmp_path
     assert validate_batch(output_dir).sample_count == 1
 
 
-UNSCORED_TEXTS = {
-    "printed_letter": {("stamp_area", "נבדק"), ("signature_area", "אישור")},
-    "printed_letter_heavy_scan": {("stamp_area", "נבדק"), ("signature_area", "אישור")},
-    "handwritten_note": {("margin", "נבדק"), ("margin", "להמשך"), ("margin", "עותק")},
-    "handwritten_note_heavy_wear": {("margin", "נבדק"), ("margin", "להמשך"), ("margin", "עותק")},
-    "archive_card": set(),
-    "archive_card_faded_scan": set(),
-    "ledger": set(),
+# S10c reading order after the body: stamp, margin note, signature captions
+# right to left; the footer is always last.
+EXPECTED_ANNOTATION_LINES = {
+    "printed_letter": [("stamp_area", "נבדק"), *[("signature_area", "אישור")] * 3],
+    "printed_letter_heavy_scan": [("stamp_area", "נבדק"), *[("signature_area", "אישור")] * 3],
+    "handwritten_note": [("margin", None)],
+    "handwritten_note_heavy_wear": [("margin", None)],
+    "archive_card": [],
+    "archive_card_faded_scan": [],
+    "ledger": [],
 }
 
 
-def test_drawn_text_outside_logical_order_is_annotated_with_null_index(annotated_batch: Path) -> None:
+def test_every_drawn_text_is_in_logical_order_in_documented_reading_order(annotated_batch: Path) -> None:
     payload = _load(annotated_batch / LINE_ANNOTATIONS_FILENAME)
     manifest = _load(annotated_batch / "generation_manifest.json")
 
     for sample, page in zip(manifest["samples"], payload["pages"], strict=True):
         template_id = sample["provenance"]["template_id"]
-        unscored = [line for line in page["lines"] if line["logical_line_index"] is None]
-        assert all(line["logical_join"] is None for line in unscored)
-        assert {(line["region"], line["text"]) for line in unscored} <= UNSCORED_TEXTS[template_id]
-        if template_id.startswith("printed_letter"):
-            regions = [line["region"] for line in unscored]
-            assert regions.count("stamp_area") == 1 and regions.count("signature_area") == 3
-        elif template_id.startswith("handwritten_note"):
-            assert [line["region"] for line in unscored] == ["margin"]
-        else:
-            assert unscored == []
+        lines = page["lines"]
+        assert all(line["logical_line_index"] is not None for line in lines)
+        logical_lines = sample["text"]["logical_order"].split("\n")
+        expected = EXPECTED_ANNOTATION_LINES[template_id]
+        if not expected:
+            continue
+        annotations = [line for line in lines if line["region"] in {"stamp_area", "signature_area", "margin"}]
+        assert [line["region"] for line in annotations] == [region for region, _text in expected]
+        for line, (_region, text) in zip(annotations, expected, strict=True):
+            if text is not None:
+                assert line["text"] == text
+            assert logical_lines[line["logical_line_index"]] == line["text"]
+        # Annotations sit directly before the footer, which is the last line.
+        footer_index = len(logical_lines) - 1
+        assert [line["logical_line_index"] for line in annotations] == list(
+            range(footer_index - len(annotations), footer_index)
+        )
+        assert lines[-1]["region"] == "footer"
 
 
 def test_occluded_flags_stamp_ring_crossings_on_printed_letters(tmp_path: Path) -> None:
@@ -333,7 +343,7 @@ def _rewrite(path: Path, mutate) -> None:
         (lambda p: p["pages"][2]["lines"].pop(), "cover every logical_order line"),
         (lambda p: p["pages"][2]["lines"][1].update(logical_line_index=0), "more than one segment"),
         (lambda p: p["pages"][2]["lines"][0].update(logical_join="space"), "continues before its first segment"),
-        (lambda p: p["pages"][0]["lines"][0].update(logical_join="cell"), "must be null outside logical_order"),
+        (lambda p: p["pages"][0]["lines"][0].update(logical_line_index=None, logical_join="cell"), "must be null outside logical_order"),
         (lambda p: p["pages"][0]["lines"][0]["baseline"].reverse(), "left-to-right"),
         (lambda p: p["pages"][0]["lines"][0].update(text="\u200fנבדק"), "bidi control"),
         (lambda p: p["pages"][0]["lines"][0].update(text="נבדק "), "surrounding whitespace"),
@@ -462,3 +472,63 @@ def test_no_rendered_line_is_clipped_by_the_page_edge(tmp_path: Path) -> None:
         for line in document.lines
         if line.clipped
     ]
+
+
+VERY_LONG_LINE = " ".join(["הרישום הועבר לעיון ועד הקהילה בשבוע הבא לאחר בדיקה נוספת"] * 5) + "."
+
+
+@pytest.mark.parametrize("template_id", ["printed_letter", "handwritten_note"])
+def test_uncapped_bodies_stop_at_capacity_and_keep_gold_consistent(tmp_path: Path, template_id: str) -> None:
+    corpus = tmp_path / "very_long.txt"
+    corpus.write_text("\n".join([VERY_LONG_LINE] * 4) + "\n", encoding="utf-8")
+    output_dir = tmp_path / "long"
+    documents = generate_documents(
+        1, 8, [template_id], default_font_manifest_path(), corpus, output_dir, record_line_geometry=True
+    )
+    document = documents[0]
+
+    assert document.truncated_segments > 0
+    assert not any(line.clipped for line in document.lines)
+    body = [line for line in document.lines if line.region == "body"]
+    footer = next(line for line in document.lines if line.region == "footer")
+    annotation_tops = [
+        min(y for _x, y in line.polygon)
+        for line in document.lines
+        if line.region in {"signature_area", "footer"}
+    ]
+    assert max(y for line in body for _x, y in line.polygon) < min(annotation_tops)
+    logical_lines = document.logical_text.split("\n")
+    assert logical_lines[-1] == footer.text
+    # The last drawn source line may be partial; gold holds exactly what was drawn.
+    rebuilt: dict[int, list[str]] = {}
+    for line in body:
+        rebuilt.setdefault(line.logical_line_index, []).append(line.text)
+    assert [" ".join(parts) for _index, parts in sorted(rebuilt.items())] == logical_lines[1 : 1 + len(rebuilt)]
+
+
+def test_overlong_word_is_rejected_instead_of_leaving_the_page(tmp_path: Path) -> None:
+    corpus = tmp_path / "overlong.txt"
+    corpus.write_text("א" * 80 + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="wider than the body"):
+        generate_batch(1, 1, tmp_path / "out", ["printed_letter"], text_corpus_path=corpus)
+
+
+def test_previous_generator_version_batches_still_validate(annotated_batch: Path, tmp_path: Path) -> None:
+    batch = tmp_path / "old"
+    for relative, data in _tree_bytes(annotated_batch).items():
+        if relative == LINE_ANNOTATIONS_FILENAME:
+            continue
+        target = batch / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+    manifest_path = batch / "generation_manifest.json"
+    for version, valid in (("d4a-realism-v2", True), ("unknown-v0", False)):
+        payload = _load(manifest_path)
+        for sample in payload["samples"]:
+            sample["generator_version"] = version
+        manifest_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        if valid:
+            assert validate_batch(batch).sample_count == len(ALL_TEMPLATES)
+        else:
+            with pytest.raises(BatchValidationError, match="generator_version"):
+                validate_batch(batch)
