@@ -194,6 +194,16 @@ ids, page ids, template ids, recipe ids, fixture ids, and relative asset paths.
 They should not use local temporary paths, package resource paths, private
 Python class names, drawing helper names, or platform-specific identifiers.
 
+## Line Geometry For Training Data (S10a)
+
+`S10a` exposes per-line polygons and baselines as an opt-in
+`line_annotations.json` sidecar (`hocrsyngen_line_annotations.v1`, see
+[line_annotations_v1.md](line_annotations_v1.md)) rather than a manifest
+change. Line geometry is a derived training artifact tied to exact page bytes,
+not durable sample identity, so the sidecar binds itself to the manifest and
+each page by sha256 and the manifest v1 boundary above still holds for
+reading-order regions and page-region geometry.
+
 ## Future Implementation Sequence
 
 The recommended implementation order after S3a is:

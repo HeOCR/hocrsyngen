@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://heocr.org/hocrsyngen/line_annotations.schema.json",
+  "title": "hocrsyngen hocrsyngen_line_annotations.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generation_manifest_sha256",
+    "coordinate_space",
+    "pages"
+  ],
+  "properties": {
+    "schema": {
+      "const": "hocrsyngen_line_annotations.v1"
+    },
+    "generation_manifest_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "coordinate_space": {
+      "const": "final_page_pixels"
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/page"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "point": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "integer", "minimum": 0},
+        {"type": "integer", "minimum": 0}
+      ],
+      "items": false,
+      "minItems": 2
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "page_id",
+        "page_sha256",
+        "width",
+        "height",
+        "truncated_segments",
+        "lines"
+      ],
+      "properties": {
+        "sample_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "page_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "page_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "truncated_segments": {
+          "description": "Wrapped body segments the template's body cap left undrawn (archive_card keeps 7, ledger keeps 10). They are absent from both the page and logical_order; see roadmap S10c.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/line"
+          }
+        }
+      }
+    },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line_index",
+        "logical_line_index",
+        "logical_join",
+        "occluded",
+        "region",
+        "text",
+        "polygon",
+        "baseline"
+      ],
+      "properties": {
+        "line_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "logical_line_index": {
+          "description": "Index into text.logical_order.split(\"\\n\") of the line this segment belongs to; null means drawn but not in page gold (stamp words, signature captions, marginal notes; see roadmap S10c).",
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "logical_join": {
+          "description": "How this segment joins the previous segment of the same logical line: \"space\" (wrapped text, joined with a single space) or \"cell\" (table cell, joined with \" | \"); null on the first segment of a logical line and on lines outside logical_order.",
+          "enum": ["space", "cell", null]
+        },
+        "occluded": {
+          "description": "True when a stamp ring, overlay stroke, or overlay text box intersects this line's text box (geometric test, not pixel analysis).",
+          "type": "boolean"
+        },
+        "region": {
+          "enum": [
+            "title",
+            "body",
+            "footer",
+            "identifier_area",
+            "table_cells",
+            "stamp_area",
+            "signature_area",
+            "margin"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "polygon": {
+          "description": "Text bounding box padded by 4 px, mapped through the page rotation; four points clockwise from top-left, integer final-page pixels.",
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        },
+        "baseline": {
+          "description": "Typographic baseline mapped through the page rotation; points ordered left-to-right in pixel x regardless of the RTL reading direction (Kraken convention).",
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        }
+      }
+    }
+  }
+}
