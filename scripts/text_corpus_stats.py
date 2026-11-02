@@ -14,11 +14,13 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
+import sys
 from collections import Counter
 from pathlib import Path
 
 
-TEXTS_DIR = Path(__file__).resolve().parents[1] / "src" / "hocrsyngen" / "data" / "synthetic" / "texts"
+SRC_DIR = Path(__file__).resolve().parents[1] / "src"
+TEXTS_DIR = SRC_DIR / "hocrsyngen" / "data" / "synthetic" / "texts"
 FILES = {
     "train": "hebrew_lines_train_v1.txt",
     "eval": "hebrew_lines_eval_v1.txt",
@@ -130,6 +132,46 @@ def overlap(source: list[str], target: list[str]) -> dict:
     return report
 
 
+def wrap_report(lines: list[str]) -> dict:
+    """Wrapped-row counts per body region and the ledger page truncation rate.
+
+    Uses the generator's own wrap function at each region's worst-case width.
+    The ledger draws at most 10 detail rows for 5 sampled lines; the rate is the
+    probability that 5 lines drawn independently from ``lines`` wrap to more than
+    10 rows (exact convolution, a close approximation of sampling without
+    replacement for corpora this size).
+    """
+
+    sys.path.insert(0, str(SRC_DIR))
+    from PIL import Image, ImageDraw, ImageFont
+
+    from hocrsyngen.generator import _wrap_hebrew_text
+
+    fonts_dir = SRC_DIR / "hocrsyngen" / "data" / "synthetic" / "fonts"
+    regions = {
+        "printed_letter": ("Alef-Regular.ttf", 42, 968),
+        "handwritten_note": ("GveretLevin-Regular.ttf", 46, 968),
+        "archive_card": ("Alef-Regular.ttf", 38, 498),
+        "ledger": ("Alef-Regular.ttf", 30, 282),
+    }
+    draw = ImageDraw.Draw(Image.new("RGB", (8, 8)))
+    report: dict = {}
+    for region, (font_file, size, width) in regions.items():
+        font = ImageFont.truetype(str(fonts_dir / font_file), size)
+        rows = Counter(len(_wrap_hebrew_text(draw, line, font, width)) for line in lines)
+        report[f"{region}_rows_per_line"] = {str(count): rows[count] for count in sorted(rows)}
+    ledger_rows = {int(count): number for count, number in report["ledger_rows_per_line"].items()}
+    distribution = {0: 1.0}
+    for _ in range(5):
+        step: dict[int, float] = Counter()
+        for total, probability in distribution.items():
+            for count, number in ledger_rows.items():
+                step[total + count] += probability * number / len(lines)
+        distribution = step
+    report["ledger_page_truncation_rate"] = round(sum(p for total, p in distribution.items() if total > 10), 4)
+    return report
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--top", type=int, default=25, help="rows in frequency tables")
@@ -138,6 +180,10 @@ def main() -> None:
     train_all = corpora["train"] + corpora["niqqud_train"]
     report = {
         "files": {name: file_stats(lines, args.top) for name, lines in corpora.items()},
+        "wrapping": {
+            "train": wrap_report(corpora["train"]),
+            "reference_eval_19": wrap_report(corpora["reference_eval_19"]),
+        },
         "overlap": {
             "train_vs_reference_eval_19": overlap(train_all, corpora["reference_eval_19"]),
             "train_vs_eval": overlap(corpora["train"], corpora["eval"]),

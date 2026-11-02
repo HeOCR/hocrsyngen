@@ -16,7 +16,13 @@ import pytest
 from PIL import Image, ImageDraw, ImageFont
 
 from hocrsyngen.assets import synthetic_data_path
-from hocrsyngen.generator import CANVAS_SIZE, PAPER_MARGIN, load_text_corpus
+from hocrsyngen.generator import (
+    CANVAS_SIZE,
+    PAPER_MARGIN,
+    _recipe_for_template,
+    _wrap_hebrew_text,
+    load_text_corpus,
+)
 
 
 DOCS_DIR = Path(__file__).resolve().parents[1] / "docs"
@@ -58,23 +64,34 @@ FORBIDDEN_LOOKALIKES = {
 FONTS_DIR = synthetic_data_path("fonts")
 PRINTED_FONT = "Alef-Regular.ttf"
 HANDWRITTEN_FONT = "GveretLevin-Regular.ttf"
-# Body text regions, mirroring the measurement used by the generator's word wrap.
+# Every body region that receives corpus lines wraps them with _wrap_hebrew_text
+# (titles, footers and ledger number columns are generator strings, not corpus
+# text). Wrapping only splits at spaces, and two regions cap the rendered rows,
+# so "no character lost" means: no single word is wider than a region, and a
+# capped region never receives more wrapped rows than it draws.
 # printed_letter / handwritten_note: page width minus margins, see _draw_document.
 LETTER_BODY_WIDTH = CANVAS_SIZE[0] - (2 * PAPER_MARGIN) - 40
 # archive_card: card_right - card_left - 340 with both edges at their worst-case
-# -/+10px jitter, see _draw_archive_card. This is the narrowest free-text body.
+# -/+10px jitter, see _draw_archive_card. It draws wrapped_lines[:7].
 ARCHIVE_CARD_BODY_WIDTH = (CANVAS_SIZE[0] - PAPER_MARGIN - 70 - 10) - (PAPER_MARGIN + 80 + 10) - 340
-# ledger: the "details" column cell (310px minus 28px padding). The generator
-# wraps body lines into several rows here by design, so only single tokens must fit.
+ARCHIVE_CARD_ROW_CAP = 7
+# ledger: the "details" column cell (310px minus 28px padding), see _draw_ledger.
+# It draws wrapped_lines[:row_count] with row_count = 10.
 LEDGER_DETAIL_CELL_WIDTH = 310 - 28
-WHOLE_LINE_BUDGETS = (
-    ("archive_card", PRINTED_FONT, 38, ARCHIVE_CARD_BODY_WIDTH),
-    ("printed_letter", PRINTED_FONT, 42, LETTER_BODY_WIDTH),
-    ("handwritten_note", HANDWRITTEN_FONT, 46, LETTER_BODY_WIDTH),
+LEDGER_ROW_CAP = 10
+WRAPPING_BODIES = (
+    # template_id, font, size, wrap width, rendered-row cap (None: draws every row)
+    ("printed_letter", PRINTED_FONT, 42, LETTER_BODY_WIDTH, None),
+    ("handwritten_note", HANDWRITTEN_FONT, 46, LETTER_BODY_WIDTH, None),
+    ("archive_card", PRINTED_FONT, 38, ARCHIVE_CARD_BODY_WIDTH, ARCHIVE_CARD_ROW_CAP),
+    ("ledger", PRINTED_FONT, 30, LEDGER_DETAIL_CELL_WIDTH, LEDGER_ROW_CAP),
 )
+# The 19 reference lines are 36-47 characters; long lines must cover that range.
+REFERENCE_LENGTH_RANGE = (36, 47)
+MAX_LINE_CHARS = 55
 
-MIN_TRAIN_LINES = 6000
-EVAL_LINE_RANGE = (550, 700)
+MIN_TRAIN_LINES = 8500
+EVAL_LINE_RANGE = (750, 900)
 
 
 @lru_cache(maxsize=None)
@@ -246,17 +263,40 @@ def test_corpus_has_no_contact_or_identity_number_patterns(file_name: str) -> No
             assert len(re.sub(r"\D", "", joined)) < 9, f"phone/ID-like digit group in {line!r}"
 
 
-@pytest.mark.parametrize("file_name", CORPUS_FILES)
-def test_corpus_lines_fit_every_template_body_without_wrapping(file_name: str) -> None:
+def _wrapped_row_counts(template_id: str, font_file: str, size: int, width: int, lines: list[str]) -> list[int]:
     draw = ImageDraw.Draw(Image.new("RGB", (8, 8)))
-    ledger_font = _font(PRINTED_FONT, 30)
-    for line in _lines(file_name):
-        for template_id, font_file, size, max_width in WHOLE_LINE_BUDGETS:
-            width = _rendered_width(draw, line, _font(font_file, size))
-            assert width <= max_width, f"{template_id}: {width}px > {max_width}px for {line!r}"
-        for token in line.split():
-            width = _rendered_width(draw, token, ledger_font)
-            assert width <= LEDGER_DETAIL_CELL_WIDTH, f"ledger cell overflow {width}px for {token!r}"
+    font = _font(font_file, size)
+    return [len(_wrap_hebrew_text(draw, line, font, width)) for line in lines]
+
+
+@pytest.mark.parametrize("template_id, font_file, size, width, _cap", WRAPPING_BODIES)
+def test_no_word_is_wider_than_any_wrapping_body(
+    template_id: str, font_file: str, size: int, width: int, _cap: int | None
+) -> None:
+    draw = ImageDraw.Draw(Image.new("RGB", (8, 8)))
+    font = _font(font_file, size)
+    for token in sorted({token for line in _union(CORPUS_FILES) for token in line.split()}):
+        token_width = _rendered_width(draw, token, font)
+        assert token_width <= width, f"{template_id}: {token!r} is {token_width}px > {width}px"
+
+
+def test_archive_card_pages_never_truncate_wrapped_rows() -> None:
+    lines_per_page = _recipe_for_template("archive_card").line_count
+    max_rows_per_line = ARCHIVE_CARD_ROW_CAP // lines_per_page
+    rows = _wrapped_row_counts(
+        "archive_card", PRINTED_FONT, 38, ARCHIVE_CARD_BODY_WIDTH, _union(CORPUS_FILES)
+    )
+    too_long = [line for line, count in zip(_union(CORPUS_FILES), rows) if count > max_rows_per_line]
+    assert too_long == []
+
+
+@pytest.mark.parametrize("file_name", (TRAIN, EVAL))
+def test_line_lengths_cover_the_reference_range(file_name: str) -> None:
+    lengths = [len(line) for line in _lines(file_name)]
+    low, high = REFERENCE_LENGTH_RANGE
+    assert max(lengths) <= MAX_LINE_CHARS
+    assert max(lengths) > high
+    assert sum(low <= length <= high for length in lengths) >= len(lengths) // 8
 
 
 def test_corpus_card_records_current_line_counts_and_sha256() -> None:
