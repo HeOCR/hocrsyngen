@@ -95,6 +95,8 @@ hocrsyngen templates --format json --catalog-version v2
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --format json
 hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --rendering-coverage-report
+hocrsyngen generate --count 2 --seed 17 --output out/fixture-batch --emit-line-annotations
+hocrsyngen generate --count 2 --seed 17 --output out/corpus-batch --text-corpus my_lines.txt
 hocrsyngen validate out/fixture-batch
 hocrsyngen validate out/fixture-batch --format json
 hocrsyngen wet-run --profile smoke --seed 17 --output out/wet-tests/smoke-17 --format json
@@ -307,12 +309,23 @@ checks. It is coverage evidence outside manifest v1, not review, release,
 export, or publication metadata. `hocrsyngen validate` does not require or
 inspect the sidecar.
 
+`hocrsyngen generate --emit-line-annotations` (also on `evidence-run`) writes an
+opt-in `line_annotations.json` sidecar (`hocrsyngen_line_annotations.v1`) with
+each rendered text line's polygon and baseline in final-page pixel coordinates,
+for line-level recognizer training. `--text-corpus PATH` samples body lines
+from an external UTF-8 line corpus and records it in provenance as
+`external:sha256:<hex>`. Neither flag changes manifest v1, and with both off the
+output is byte-identical. `hocrsyngen validate` checks the line annotations
+sidecar when it is present. See
+[docs/line_annotations_v1.md](docs/line_annotations_v1.md).
+
 The command writes:
 
 ```text
 out/fixture-batch/
   generation_manifest.json
   rendering_coverage_report.json  # only with --rendering-coverage-report
+  line_annotations.json           # only with --emit-line-annotations
   assets/
     hocrsyngen-s00000017-000000/page_0001.jpg
     hocrsyngen-s00000017-000001/page_0001.jpg

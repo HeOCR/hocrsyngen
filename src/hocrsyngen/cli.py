@@ -22,9 +22,11 @@ from hocrsyngen.generator import (
     TemplateCatalogEntry,
     generate_batch,
     rich_template_catalog,
+    source_corpus_id,
     template_catalog,
 )
 from hocrsyngen.io import sha256_file
+from hocrsyngen.line_annotations import LINE_ANNOTATIONS_FILENAME
 from hocrsyngen.rendering_coverage import write_rendering_coverage_report
 from hocrsyngen.validation import BatchValidationError, validate_batch
 from hocrsyngen.wet_analysis import analyze_wet_test_run
@@ -203,6 +205,8 @@ def _format_generation_report_json(
     sample_count: int,
     page_count: int,
     rendering_coverage_report_path: Path | None = None,
+    line_annotations_path: Path | None = None,
+    text_corpus: dict[str, object] | None = None,
 ) -> str:
     payload: dict[str, object] = {
         "schema_version": GENERATION_REPORT_SCHEMA_VERSION,
@@ -215,7 +219,29 @@ def _format_generation_report_json(
         payload["rendering_coverage_report_path"] = str(
             rendering_coverage_report_path
         )
+    if line_annotations_path is not None:
+        payload["line_annotations_path"] = str(line_annotations_path)
+    if text_corpus is not None:
+        payload["text_corpus"] = text_corpus
     return json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def _text_corpus_record(text_corpus_path: Path | None) -> dict[str, object] | None:
+    """Corpus provenance for run records; only present for --text-corpus runs."""
+
+    if text_corpus_path is None:
+        return None
+    return {
+        "source_corpus": source_corpus_id(text_corpus_path),
+        "sha256": sha256_file(text_corpus_path),
+    }
+
+
+def _require_text_corpus_file(
+    parser: argparse.ArgumentParser, command: str, text_corpus_path: Path | None
+) -> None:
+    if text_corpus_path is not None and not text_corpus_path.is_file():
+        parser.error(f"{command}: --text-corpus is not a file: {text_corpus_path}")
 
 
 def _format_contract_fixture_export_report_json(
@@ -412,7 +438,14 @@ def _write_evidence_run_notes(
     template_ids: list[str],
     run_dir: Path,
     include_rendering_coverage_report: bool,
+    text_corpus: dict[str, object] | None = None,
+    emit_line_annotations: bool = False,
 ) -> None:
+    optional_notes = []
+    if text_corpus is not None:
+        optional_notes.append(f"- text_corpus: {text_corpus['source_corpus']}")
+    if emit_line_annotations:
+        optional_notes.append(f"- line_annotations: generated_batch/{LINE_ANNOTATIONS_FILENAME}")
     _write_text(
         path,
         "\n".join(
@@ -428,6 +461,7 @@ def _write_evidence_run_notes(
                 f"- seed: {seed}",
                 f"- template_ids: {', '.join(template_ids)}",
                 f"- rendering_coverage_report: {str(include_rendering_coverage_report).lower()}",
+                *optional_notes,
                 f"- output_root: {run_dir}",
                 "- release_eligible: false",
                 "- downstream release path: not used",
@@ -457,8 +491,10 @@ def _candidate_evidence_report(
     fixture_validation: dict[str, object],
     generation: dict[str, object],
     generated_validation: dict[str, object],
+    line_annotations_path: Path | None = None,
+    text_corpus: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    return {
+    report: dict[str, object] = {
         "schema_version": EVIDENCE_RUN_REPORT_SCHEMA_VERSION,
         "started_at_utc": _format_utc(started_at),
         "completed_at_utc": _format_utc(completed_at),
@@ -489,6 +525,11 @@ def _candidate_evidence_report(
             "generated_validation": generated_validation,
         },
     }
+    if line_annotations_path is not None:
+        report["line_annotations_path"] = str(line_annotations_path)
+    if text_corpus is not None:
+        report["text_corpus"] = text_corpus
+    return report
 
 
 def _provider_runtime() -> dict[str, object]:
@@ -526,8 +567,11 @@ def _run_evidence_capture(
     color: str,
     include_rendering_coverage_report: bool,
     template_ids: list[str] | None = None,
+    text_corpus_path: Path | None = None,
+    emit_line_annotations: bool = False,
 ) -> dict[str, object]:
     template_ids = list(DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids)
+    text_corpus = _text_corpus_record(text_corpus_path)
     progress = _ProgressPrinter(color)
     started_at = _utc_now()
     actual_run_id = run_id or _default_evidence_run_id(count=count, seed=seed)
@@ -561,6 +605,8 @@ def _run_evidence_capture(
         template_ids=template_ids,
         run_dir=run_dir,
         include_rendering_coverage_report=include_rendering_coverage_report,
+        text_corpus=text_corpus,
+        emit_line_annotations=emit_line_annotations,
     )
     progress.note("notes", notes_path)
     progress.done("run notes written", started)
@@ -622,11 +668,16 @@ def _run_evidence_capture(
         seed=seed,
         output_dir=generated_batch_dir,
         template_ids=template_ids,
+        text_corpus_path=text_corpus_path,
+        emit_line_annotations=emit_line_annotations,
     )
     rendering_coverage_report_path = (
         write_rendering_coverage_report(manifest, generated_batch_dir)
         if include_rendering_coverage_report
         else None
+    )
+    line_annotations_path = (
+        generated_batch_dir / LINE_ANNOTATIONS_FILENAME if emit_line_annotations else None
     )
     generation = _write_json_report(
         reports_dir / "generation_report.json",
@@ -635,6 +686,8 @@ def _run_evidence_capture(
             sample_count=len(manifest.samples),
             page_count=sum(len(sample.pages) for sample in manifest.samples),
             rendering_coverage_report_path=rendering_coverage_report_path,
+            line_annotations_path=line_annotations_path,
+            text_corpus=text_corpus,
         ),
     )
     progress.note("generated_batch", generated_batch_dir)
@@ -642,6 +695,8 @@ def _run_evidence_capture(
     progress.note("page_count", generation["page_count"])
     if rendering_coverage_report_path is not None:
         progress.note("rendering_coverage_report", rendering_coverage_report_path)
+    if line_annotations_path is not None:
+        progress.note("line_annotations", line_annotations_path)
     progress.done("candidate batch generated", started)
 
     started = progress.step("Validate generated candidate batch")
@@ -679,6 +734,8 @@ def _run_evidence_capture(
         fixture_validation=fixture_validation,
         generation=generation,
         generated_validation=generated_validation,
+        line_annotations_path=line_annotations_path,
+        text_corpus=text_corpus,
     )
 
     started = progress.step("Write candidate evidence report")
@@ -803,6 +860,24 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Write an opt-in rendering_coverage_report.v1 sidecar beside the "
             "manifest without changing generation_manifest.json v1."
+        ),
+    )
+    generate.add_argument(
+        "--text-corpus",
+        type=Path,
+        help=(
+            "UTF-8 Hebrew line corpus (one line per row) to sample body text "
+            "from instead of the packaged corpus. Recorded as "
+            "provenance.source_corpus external:sha256:<hex>."
+        ),
+    )
+    generate.add_argument(
+        "--emit-line-annotations",
+        action="store_true",
+        help=(
+            "Write an opt-in hocrsyngen_line_annotations.v1 sidecar "
+            "(line_annotations.json) with per-line polygons and baselines in "
+            "final-page pixels, without changing generation_manifest.json v1."
         ),
     )
     validate = subparsers.add_parser(
@@ -1075,6 +1150,24 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     evidence_run.add_argument(
+        "--text-corpus",
+        type=Path,
+        help=(
+            "UTF-8 Hebrew line corpus (one line per row) to sample body text "
+            "from instead of the packaged corpus. Recorded as "
+            "provenance.source_corpus external:sha256:<hex>."
+        ),
+    )
+    evidence_run.add_argument(
+        "--emit-line-annotations",
+        action="store_true",
+        help=(
+            "Write an opt-in hocrsyngen_line_annotations.v1 sidecar "
+            "(line_annotations.json) with per-line polygons and baselines in "
+            "final-page pixels, without changing generation_manifest.json v1."
+        ),
+    )
+    evidence_run.add_argument(
         "--format",
         choices=("text", "json"),
         default="text",
@@ -1154,6 +1247,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(
                 f"generate: output path exists and is not a directory: {args.output}"
             )
+        _require_text_corpus_file(parser, "generate", args.text_corpus)
         try:
             manifest = generate_batch(
                 count=args.count,
@@ -1162,6 +1256,8 @@ def main(argv: list[str] | None = None) -> int:
                 template_ids=args.template_ids,
                 persona=args.persona,
                 condition=args.condition,
+                text_corpus_path=args.text_corpus,
+                emit_line_annotations=args.emit_line_annotations,
             )
             rendering_coverage_report_path = (
                 write_rendering_coverage_report(manifest, args.output)
@@ -1181,6 +1277,12 @@ def main(argv: list[str] | None = None) -> int:
                     sample_count=len(manifest.samples),
                     page_count=sum(len(sample.pages) for sample in manifest.samples),
                     rendering_coverage_report_path=rendering_coverage_report_path,
+                    line_annotations_path=(
+                        args.output / LINE_ANNOTATIONS_FILENAME
+                        if args.emit_line_annotations
+                        else None
+                    ),
+                    text_corpus=_text_corpus_record(args.text_corpus),
                 )
             )
         return 0
@@ -1336,6 +1438,7 @@ def main(argv: list[str] | None = None) -> int:
             print(format_wet_report_text(report_result.payload))
         return 1 if report_result.has_hard_blockers else 0
     if args.command == "evidence-run":
+        _require_text_corpus_file(parser, "evidence-run", args.text_corpus)
         try:
             report = _run_evidence_capture(
                 output_root=args.output_root,
@@ -1348,6 +1451,8 @@ def main(argv: list[str] | None = None) -> int:
                     not args.no_rendering_coverage_report
                 ),
                 template_ids=args.template_ids,
+                text_corpus_path=args.text_corpus,
+                emit_line_annotations=args.emit_line_annotations,
             )
         except FileNotFoundError as exc:
             parser.exit(

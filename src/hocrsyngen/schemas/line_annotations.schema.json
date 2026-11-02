@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://heocr.org/hocrsyngen/line_annotations.schema.json",
+  "title": "hocrsyngen hocrsyngen_line_annotations.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generation_manifest_sha256",
+    "coordinate_space",
+    "pages"
+  ],
+  "properties": {
+    "schema": {
+      "const": "hocrsyngen_line_annotations.v1"
+    },
+    "generation_manifest_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "coordinate_space": {
+      "const": "final_page_pixels"
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/page"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "point": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "integer", "minimum": 0},
+        {"type": "integer", "minimum": 0}
+      ],
+      "items": false,
+      "minItems": 2
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "page_id",
+        "page_sha256",
+        "width",
+        "height",
+        "lines"
+      ],
+      "properties": {
+        "sample_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "page_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "page_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/line"
+          }
+        }
+      }
+    },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line_index",
+        "logical_line_index",
+        "region",
+        "text",
+        "polygon",
+        "baseline"
+      ],
+      "properties": {
+        "line_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "logical_line_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "region": {
+          "enum": [
+            "title",
+            "body",
+            "footer",
+            "identifier_area",
+            "table_cells",
+            "stamp_area"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "polygon": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        },
+        "baseline": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/point"
+          }
+        }
+      }
+    }
+  }
+}

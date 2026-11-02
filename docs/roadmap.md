@@ -70,6 +70,11 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    `hletterscriptgen` imports, change baseline dependencies, or move downstream
    governance into this repository. Implementation work is gated on
    `hletterscript` reaching a populated, validated baseline corpus.
+9. Advance Phase S10 recognizer training-data support for HeOCR's own
+   recognizer (`heocr-engine` R3). `S10a` adds the opt-in
+   `hocrsyngen_line_annotations.v1` sidecar and `--text-corpus`, documented in
+   [line_annotations_v1.md](line_annotations_v1.md), without changing manifest
+   v1 or default output bytes.
 
 ## Current Baseline After S7a
 
@@ -659,3 +664,39 @@ Implementation slices are gated on `HeOCR/hletterscript` reaching a populated,
 validated baseline corpus. Until that condition is met, only design-only `S9a`
 work is appropriate inside this repository. The design direction is documented
 in [real_glyph_composition_plan.md](real_glyph_composition_plan.md).
+
+## Phase S10 — Recognizer Training-Data Support
+
+Current status: `open`.
+
+Objective: let candidate batches feed line-level recognizer training (for
+example Kraken/ketos runs in `HeOCR/heocr-engine` roadmap R3) through opt-in,
+hash-bound artifacts, without changing manifest v1 or default output bytes.
+
+Planned PR breakdown:
+
+- `S10a` — Line annotations sidecar and external text corpora: add
+  `--emit-line-annotations` (opt-in `line_annotations.json`,
+  `hocrsyngen_line_annotations.v1`, final-page pixel polygons and left-to-right
+  baselines mapped through page rotation, `logical_line_index` back-references,
+  schema plus `validate` checks) and `--text-corpus PATH` (recorded as
+  `provenance.source_corpus` `external:sha256:<hex>` and as a run-record
+  `text_corpus` block) on `generate` and `evidence-run`. Documented in
+  [line_annotations_v1.md](line_annotations_v1.md), including the seed-101
+  gold finding. Status: in review.
+- `S10b` — Project-authored training line corpus: a large original Hebrew line
+  corpus with a train/eval split, provenance documentation, and corpus checks,
+  consumable through `--text-corpus`. Status: planned.
+- `S10c` — Page-level gold completeness: put every drawn text element (stamp
+  words, `אישור` captions, marginal notes) into `logical_order` and line
+  annotations, and keep stamps and marginalia out of the body text band, behind
+  a `GENERATOR_VERSION` bump with fixture review. Motivated by the `S10a`
+  seed-101 finding (200 unlisted drawn items on 80/80 pages; stamp ring over
+  line ends on 55 of 240 printed-family lines). Status: planned.
+
+Exit criteria:
+
+- A candidate batch can emit validated line geometry whose lines rebuild
+  `logical_order` exactly.
+- External corpora are identified by content hash, never by local path.
+- Page-level answer keys cover all drawn text.

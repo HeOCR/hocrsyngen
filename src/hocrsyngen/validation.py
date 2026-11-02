@@ -18,6 +18,11 @@ from hocrsyngen.generator import (
     template_catalog,
 )
 from hocrsyngen.io import sha256_file
+from hocrsyngen.line_annotations import (
+    LINE_ANNOTATIONS_FILENAME,
+    LineAnnotationsError,
+    validate_line_annotations,
+)
 from hocrsyngen.manifest import (
     GENERATION_MANIFEST_VERSION,
     PROJECT_SYNTHETIC_LICENSE,
@@ -62,6 +67,11 @@ def validate_batch(batch_dir: Path) -> ValidationResult:
         for page_index, page in enumerate(sample["pages"]):
             _validate_page(root, page, sample_index, page_index)
             page_count += 1
+    if (root / LINE_ANNOTATIONS_FILENAME).exists():
+        try:
+            validate_line_annotations(root, payload)
+        except LineAnnotationsError as exc:
+            raise BatchValidationError(str(exc)) from exc
     return ValidationResult(sample_count=len(payload["samples"]), page_count=page_count)
 
 
