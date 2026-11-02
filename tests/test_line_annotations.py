@@ -206,6 +206,48 @@ def test_segment_hits_box_and_mark_ownership() -> None:
     assert recorder.final_lines(CANVAS_SIZE)[0].occluded is True
 
 
+LONG_CORPUS_LINES = [
+    "הבקשה התקבלה והועברה לטיפול המזכיר התורן בשבוע שעבר במשרד.",
+    "הרישום הועבר לעיון ועד הקהילה בשבוע הבא לאחר בדיקה נוספת.",
+    "התשלום נרשם בספר הקופה ונחתם בידי הגזבר ובידי המזכיר הראשי.",
+    "נמסר כי הרשימה עודכנה לאחר בדיקת המסמכים שהגיעו מן הארכיון.",
+    "האסמכתה נשמרה יחד עם מסמכי החשבון הקודם בתיק הרישום המרכזי.",
+    "הערה זו נוספה בשולי המסמך לצורך הבהרה ונבדקה בידי הוועדה.",
+]
+
+
+def test_capped_body_segments_are_dropped_from_page_and_gold_alike(tmp_path: Path) -> None:
+    """Archive cards keep 7 wrapped body segments and ledgers 10 rows.
+
+    Segments past the cap are neither drawn nor in logical_order, so the
+    round trip holds even when long source lines lose their tails.
+    """
+
+    corpus = tmp_path / "long.txt"
+    corpus.write_text("\n".join(LONG_CORPUS_LINES) + "\n", encoding="utf-8")
+    output_dir = tmp_path / "capped"
+    generate_batch(4, 3, output_dir, ["printed_letter", "handwritten_note", "archive_card", "ledger"],
+                   text_corpus_path=corpus, emit_line_annotations=True)
+    assert validate_batch(output_dir).sample_count == 4
+
+    manifest = _load(output_dir / "generation_manifest.json")
+    pages = _load(output_dir / LINE_ANNOTATIONS_FILENAME)["pages"]
+    wrapped = [line for page in pages[:2] for line in page["lines"] if line["logical_join"] == "space"]
+    assert wrapped, "long lines must wrap on printed and handwritten pages"
+
+    archive_body = [line["text"] for line in pages[2]["lines"] if line["region"] == "body"]
+    ledger_rows = [line for line in pages[3]["lines"] if line["region"] == "table_cells" and line["logical_join"] == "cell"]
+    assert len(archive_body) == 7
+    assert len(ledger_rows) == 10 * 4
+    for sample in manifest["samples"][2:]:
+        gold = sample["text"]["logical_order"].replace("\n", " ")
+        sampled_words = {word for line in LONG_CORPUS_LINES for word in line.split()}
+        # The caps drop words that the source lines contained ...
+        assert not sampled_words <= set(gold.replace(" | ", " ").split())
+    # ... and every annotated segment is text that is in gold verbatim.
+    assert all(text in manifest["samples"][2]["text"]["logical_order"].split("\n") for text in archive_body)
+
+
 def _gray(path: Path) -> Image.Image:
     return Image.open(path).convert("L")
 
@@ -290,6 +332,9 @@ def _rewrite(path: Path, mutate) -> None:
         (lambda p: p["pages"][2]["lines"][1].update(logical_line_index=0), "more than one segment"),
         (lambda p: p["pages"][2]["lines"][0].update(logical_join="space"), "continues before its first segment"),
         (lambda p: p["pages"][0]["lines"][0].update(logical_join="cell"), "must be null outside logical_order"),
+        (lambda p: p["pages"][0]["lines"][0]["baseline"].reverse(), "left-to-right"),
+        (lambda p: p["pages"][0]["lines"][0].update(text="\u200fנבדק"), "bidi control"),
+        (lambda p: p["pages"][0]["lines"][0].update(text="נבדק "), "surrounding whitespace"),
         (lambda p: p["pages"][0].update(page_sha256="f" * 64), "page_sha256"),
         (lambda p: p["pages"][0]["lines"][0].update(region="margin_scribble"), "schema violation"),
     ],

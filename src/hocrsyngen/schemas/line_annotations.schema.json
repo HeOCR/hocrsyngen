@@ -99,7 +99,7 @@
           "minimum": 0
         },
         "logical_line_index": {
-          "description": "Index into text.logical_order.split(\"\\n\") of the line this segment belongs to; null for drawn text that logical_order does not contain (stamp words, signature captions, marginal notes).",
+          "description": "Index into text.logical_order.split(\"\\n\") of the line this segment belongs to; null means drawn but not in page gold (stamp words, signature captions, marginal notes; see roadmap S10c).",
           "type": ["integer", "null"],
           "minimum": 0
         },

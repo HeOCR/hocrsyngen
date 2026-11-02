@@ -695,8 +695,12 @@ Planned PR breakdown:
   fixture review, or declare it an explicitly excluded region that page-level
   scoring masks out. Stamp occlusion of body text stays as realistic noise and
   is exposed through the `S10a` `occluded` flag. Motivated by the `S10a`
-  seed-101 finding: 200 drawn lines (931 characters, about 7% of scored
-  characters) on 80/80 pages are missing from `logical_order`. Status: planned;
+  seed-101 finding: 200 drawn items (931 characters, about 7% of scored
+  characters) on 80/80 pages are missing from `logical_order`. Also set body
+  capacity rules: `archive_card` keeps 7 and `ledger` keeps 10 wrapped body
+  segments, so long corpus lines lose their tails (consistently on page and in
+  gold). Uncapped printed and handwritten bodies need a documented line-length
+  or line-count limit before long external corpora are used. Status: planned;
   scheduled by the coordinating team lead.
 
 Exit criteria:

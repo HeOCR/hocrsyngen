@@ -66,7 +66,7 @@ Line fields:
 | Field | Meaning |
 | --- | --- |
 | `line_index` | `0..n-1` in drawing order. |
-| `logical_line_index` | Index into `sample.text.logical_order.split("\n")`, or `null` for drawn text that `logical_order` does not contain (see below). Non-decreasing over the non-null lines. |
+| `logical_line_index` | Index into `sample.text.logical_order.split("\n")`. `null` means drawn but not in page gold (see below and roadmap `S10c`). Non-decreasing over the non-null lines. |
 | `logical_join` | How this segment continues its logical line: `"space"` (wrapped body text, joined with one space) or `"cell"` (ledger cell, joined with `" \| "`). `null` on the first segment of a logical line and on every line with `logical_line_index: null`. |
 | `occluded` | `true` when a stamp ring, an overlay stroke (ledger tick or correction, marginal stroke), or an overlay text box intersects this line's text box. |
 | `region` | `title`, `body`, `footer`, `identifier_area`, `table_cells`, `stamp_area`, `signature_area`, or `margin` (the `template_catalog.v2` page-region vocabulary). |
@@ -114,6 +114,29 @@ The wrap rule assumes source lines have no repeated internal whitespace, which
 holds for corpora read through the generator's line loader (lines are
 stripped, and wrapping splits on whitespace).
 
+## Body Capacity And Truncation
+
+The sidecar holds only segments that were actually drawn, each with its own
+text. Segments that are never drawn appear nowhere.
+
+- `printed_letter` and `handwritten_note` families draw every wrapped segment,
+  with no cap. `logical_order` holds the unwrapped source line, and the
+  continuation segments carry `logical_join: "space"`.
+- `archive_card` families keep the first 7 wrapped body segments. `ledger`
+  keeps the first 10 wrapped detail segments, one per row. Both build
+  `logical_order` from those kept segments, one logical line per segment or
+  row. Text past the cap is dropped from the page and from gold alike, so the
+  round trip holds and no validation exemption is needed. The cost is corpus
+  utilisation: long source lines lose their tails on these templates. With
+  lines of about 55–60 characters, a ledger detail cell wraps each source line
+  into roughly 3 rows. 5 sampled lines then need about 15 rows, so only the
+  first 10 survive.
+- Uncapped templates assume source lines short enough for the body band. About
+  16 printed lines fit before the signature captions, which is far more than 4
+  source lines of 60 characters need. A much longer external line could run
+  into the captions or off the page. Points are clamped into the page, but such
+  corpora are out of scope until `S10c` sets explicit capacity rules.
+
 ## Drawn Text Outside `logical_order`
 
 Some text is drawn on the page but is not part of `logical_order`. It is still
@@ -145,6 +168,15 @@ analysis. A line is occluded when:
 Occlusion is realistic and stays in the data. Body text under a stamp remains
 in gold, and evaluators can split scores on the flag.
 
+On seed 101 the flag marks 62 printed-family body or title lines:
+
+- 59 lines are crossed by the stamp ring's centreline;
+- 3 more lie within the ring's 2 px stroke half-width;
+- 28 of the 62 also overlap the stamp word's text box.
+
+An earlier ring-sampling estimate of 55 counted only the inward-drawn stroke.
+No handwritten-family line is marked.
+
 ## Validation
 
 `hocrsyngen validate` checks `line_annotations.json` whenever it is present:
@@ -153,8 +185,10 @@ in gold, and evaluators can split scores on the flag.
 - manifest hash;
 - page ids, hashes, and dimensions in manifest order;
 - contiguous `line_index`;
-- NFC text;
-- in-page coordinates;
+- NFC text with no surrounding whitespace and no control or bidi control
+  characters;
+- in-page coordinates, and baselines whose x never decreases from first to
+  last point;
 - `logical_join` / `logical_line_index` consistency;
 - the `logical_order` rebuild above.
 

@@ -21,6 +21,9 @@ LINE_ANNOTATIONS_COORDINATE_SPACE = "final_page_pixels"
 # A line continuing a logical_order line names how it joins the previous
 # segment: wrapped body text joins with a space, ledger cells with " | ".
 LOGICAL_JOIN_SEPARATORS = {"space": " ", "cell": " | "}
+# Bidi controls must never reach line text: the page draw path relies on
+# Pillow/raqm reordering logical-order text, not on embedded controls.
+BIDI_CONTROL_CHARACTERS = frozenset("\u200e\u200f\u061c\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069")
 
 
 class LineAnnotationsError(ValueError):
@@ -171,8 +174,16 @@ def _validate_page_lines(page: dict[str, Any], logical_order: str, where: str) -
             if logical_line_index < previous_logical_index:
                 raise LineAnnotationsError(f"{line_where}.logical_line_index must not decrease.")
             previous_logical_index = logical_line_index
-        if unicodedata.normalize("NFC", line["text"]) != line["text"]:
+        text = line["text"]
+        if unicodedata.normalize("NFC", text) != text:
             raise LineAnnotationsError(f"{line_where}.text must be NFC-normalized.")
+        if text != text.strip():
+            raise LineAnnotationsError(f"{line_where}.text must not have surrounding whitespace.")
+        if any(unicodedata.category(character) == "Cc" or character in BIDI_CONTROL_CHARACTERS for character in text):
+            raise LineAnnotationsError(f"{line_where}.text must not contain control or bidi control characters.")
+        baseline_xs = [x for x, _y in line["baseline"]]
+        if baseline_xs[0] >= baseline_xs[-1] or baseline_xs != sorted(baseline_xs):
+            raise LineAnnotationsError(f"{line_where}.baseline must run left-to-right in pixel x.")
         for key in ("polygon", "baseline"):
             for x, y in line[key]:
                 if not (0 <= x < width and 0 <= y < height):
