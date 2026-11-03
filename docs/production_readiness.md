@@ -248,3 +248,6 @@ Use a dry-run flow before any real dataset release decision:
 
 This rehearsal should prove integration behavior and expose review gaps. It
 should not publish or export release-ready dataset payloads.
+
+Ledger cell fit is planned as `S11b` in `docs/roadmap.md`: independently validate
+newly generated ledger pages before using their text as visible-page gold.

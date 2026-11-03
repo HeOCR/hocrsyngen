@@ -762,3 +762,12 @@ Exit criteria:
 - Every annotated line belongs to exactly one typed region whose polygon
   contains it, and region reading order agrees with `logical_order`.
 - Region annotations never change page bytes or gold.
+
+### S11b — Ledger cell fit (planned)
+
+Prevent text in generated ledger cells from crossing column boundaries. Reserve
+adequate width for numeric balances and reject an external corpus token that
+cannot fit in its detail cell; preserve logical text and explicit truncation
+reporting. Verify with mixed Hebrew/Latin and wide-token regression fixtures.
+The change affects newly generated ledger pixels and does not retroactively
+validate earlier batches.
