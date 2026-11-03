@@ -4,6 +4,15 @@ Generator-output changes for `hocrsyngen`, keyed by `GENERATOR_VERSION` (the
 `generator_version` recorded on every manifest sample). Roadmap notations refer
 to [docs/roadmap.md](docs/roadmap.md).
 
+## S13a: mixed-script text corpora (generator version unchanged, `s11b-ledger-fit-v1`)
+
+- New packaged text only: `texts/hebrew_mixed_lines_train_v1.txt` and
+  `texts/hebrew_mixed_lines_eval_v1.txt`, documented in
+  [docs/mixed_script_text_corpus_card.md](docs/mixed_script_text_corpus_card.md).
+  Use them with `--text-corpus`.
+- No generator code changes. Pages generated from the existing packaged
+  corpora are byte-identical, and the default corpus is unchanged.
+
 ## s10c-gold-complete-v1 (S10c)
 
 - Page-level gold is complete. `logical_order` now includes every drawn text

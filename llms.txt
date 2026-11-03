@@ -37,6 +37,7 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `src/hocrsyngen/data/contracts/generation_manifest_v1/fixture-batch/`: downstream integration fixture.
 - `src/hocrsyngen/data/synthetic/fonts/manifest.yaml`: governed packaged font registry.
 - `src/hocrsyngen/data/synthetic/texts/hebrew_lines.txt`: packaged Hebrew text corpus.
+- `src/hocrsyngen/data/synthetic/texts/hebrew_mixed_lines_*_v1.txt`: S13a mixed Hebrew/Latin/digit train and eval corpora (`docs/mixed_script_text_corpus_card.md`).
 - `tests/`: contract, generation, validation, installation, and wheel packaging tests.
 - `docs/production_readiness.md`: current readiness state, explicit missing production pieces, high-lift quality work, and external hocrgen dependencies.
 - `docs/handwriting_research_acceptance_criteria.md`: S5a handwriting research boundaries, reproducibility, licensing, review, evaluation, and stop/reject gates.

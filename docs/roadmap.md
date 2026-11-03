@@ -81,6 +81,12 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
     R4. `S11a` adds region geometry and region reading order to the
     `hocrsyngen_line_annotations.v1` sidecar, without changing page bytes,
     gold, or the manifest.
+11. Advance Phase S13 mixed-script training text for the next `heocr-engine`
+    recognizer run (R3d). `S13a` adds packaged mixed Hebrew/Latin/digit train
+    and eval corpora, documented in
+    [mixed_script_text_corpus_card.md](mixed_script_text_corpus_card.md),
+    without changing generator code, page bytes for existing corpora, or the
+    manifest.
 
 ## Current Baseline After S7a
 
@@ -807,3 +813,36 @@ JPEG/manifest/text with paired output and verify identical geometry; detect
 recorded truncation and occlusion deterministically under user thresholds. Run
 regression and full CI plus a 28-page smoke and visual inspection. Results do
 not claim real OCR accuracy.
+
+## Phase S13 — Mixed-Script Training Text
+
+Current status: `open`.
+
+Objective: give HeOCR's recognizer training text that looks like the
+mixed-direction lines of tender-style documents: Hebrew sentences with Latin
+words and acronyms, alphanumeric codes, dates, numbers with units,
+percentages, currency, reserved-domain emails and URLs, parenthesised English
+terms and version strings. The S10b train corpus has Latin in only 382 of
+9,359 lines. The corpora are consumed through `--text-corpus` (S10a) and stay
+disjoint from every evaluation text, including `hocrgen`'s mixed-script
+evaluation fixture (`HeOCR/hocrgen` PR #97).
+
+Planned PR breakdown:
+
+- `S13a` — Mixed-script training and eval corpora:
+  `hebrew_mixed_lines_train_v1.txt` and `hebrew_mixed_lines_eval_v1.txt`,
+  agent-authored, with a coverage spec, a corpus card, and tests. The tests
+  cover leakage against all evaluation text (the `hocrgen` fixture through a
+  hash-only fixture pinned at `c8fb74e`), NFC and logical order, the S10b
+  no-loss wrapping rule, privacy rules, and minimum coverage per token class.
+  No generator code changes. Documented in
+  [mixed_script_text_corpus_card.md](mixed_script_text_corpus_card.md).
+  Status: in review.
+
+Exit criteria:
+
+- A recognizer run can train on mixed-script lines and evaluate on held-out
+  mixed-script lines that share no line, skeleton, or word 3-gram with
+  evaluation text.
+- Every corpus token renders inside every template region that receives
+  corpus text, with both packaged fonts.
