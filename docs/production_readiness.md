@@ -250,5 +250,8 @@ This rehearsal should prove integration behavior and expose review gaps. It
 should not publish or export release-ready dataset payloads.
 
 Ledger cell fit `S11b` merged in PR #78. Independently validate newly generated
-ledger pages before using their text as visible-page gold. `S12a` provides a sidecar-based generator quality check with optional
-thresholds; its counts are not release decisions.
+ledger pages before using their text as visible-page gold. `S12a` (PR #81)
+provides sidecar-based quality counts with optional thresholds; `S12b` (PR #80)
+guards archive-card body fit, and `S12c` (PR #82) adds opt-in paired
+pre-photometric images. Their counts and paired images are not release
+decisions or proof of clean gold.
