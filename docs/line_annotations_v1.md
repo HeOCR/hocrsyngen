@@ -376,3 +376,11 @@ with this sidecar:
 
 `S10a` deliberately left `logical_order` and the manifest unchanged. `S10c`
 fixed the gold under the new generator version `s10c-gold-complete-v1`.
+
+## Ledger cell fit (S11b)
+
+The ledger detail column is narrower to leave room for balance numbers. A corpus
+containing a token wider than that column fails generation with a clear error;
+tokens are not silently split or clipped. Wrapped segments beyond the ten-row
+capacity are still counted in `truncated_segments`, and gold records only drawn
+segments. Existing batches do not inherit this fix; regenerate and validate them.

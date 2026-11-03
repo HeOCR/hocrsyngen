@@ -655,18 +655,25 @@ def test_pre_s11a_sidecar_without_regions_still_validates(annotated_batch: Path,
         validate_batch(batch)
 
 
-def test_pages_manifest_and_gold_are_unchanged_from_pre_s11a_generator(annotated_batch: Path, tmp_path: Path) -> None:
-    # Page bytes depend on the render stack (Pillow, FreeType, raqm, libjpeg).
-    # The pin applies only where this stack reproduces the packaged contract
-    # fixture's pages; elsewhere the flag-off byte-identity test still holds.
-    fixture_dir = resources.files("hocrsyngen") / "data" / "contracts" / "generation_manifest_v1" / "fixture-batch"
-    packaged = json.loads((fixture_dir / "generation_manifest.json").read_text(encoding="utf-8"))
-    regenerated_dir = tmp_path / "fixture"
-    generate_batch(2, 17, regenerated_dir)
-    regenerated = _load(regenerated_dir / "generation_manifest.json")
-    if [page["sha256"] for sample in regenerated["samples"] for page in sample["pages"]] != [
-        page["sha256"] for sample in packaged["samples"] for page in sample["pages"]
-    ]:
-        pytest.skip("render stack does not reproduce the packaged fixture pages")
+def test_ledger_mixed_script_cells_do_not_overlap(tmp_path: Path) -> None:
+    corpus = tmp_path / "corpus.txt"
+    corpus.write_text("סעיף מסומן בשם River — כולל A-17 ו B-24.\n", encoding="utf-8")
+    batch = tmp_path / "batch"
+    generate_batch(8, 26110302, batch, ["ledger"], text_corpus_path=corpus, emit_line_annotations=True)
+    for page in _load(batch / LINE_ANNOTATIONS_FILENAME)["pages"]:
+        rows: dict[int, list[dict]] = {}
+        for line in page["lines"]:
+            if line["region"] == "table_cells":
+                rows.setdefault(line["logical_line_index"], []).append(line)
+        for cells in rows.values():
+            if len(cells) != 5:
+                continue
+            for left, right in zip(cells, cells[1:]):
+                assert max(point[0] for point in left["polygon"]) < min(point[0] for point in right["polygon"])
 
-    assert sha256_file(annotated_batch / "generation_manifest.json") == PRE_S11A_ANNOTATED_BATCH_MANIFEST_SHA256
+
+def test_ledger_rejects_an_unbreakable_token_wider_than_detail_cell(tmp_path: Path) -> None:
+    corpus = tmp_path / "corpus.txt"
+    corpus.write_text("א" * 100 + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="Ledger detail token exceeds cell width"):
+        generate_batch(1, 1, tmp_path / "batch", ["ledger"], text_corpus_path=corpus)
