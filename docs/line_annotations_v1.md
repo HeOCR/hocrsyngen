@@ -384,3 +384,19 @@ containing a token wider than that column fails generation with a clear error;
 tokens are not silently split or clipped. Wrapped segments beyond the ten-row
 capacity are still counted in `truncated_segments`, and gold records only drawn
 segments. Existing batches do not inherit this fix; regenerate and validate them.
+
+## Quality check (S12a)
+
+`hocrsyngen quality-check BATCH --format json` validates the batch and its
+mandatory line sidecar, then reports totals, per-template counts, affected page
+IDs and SHA-256 hashes of the manifest and sidecar. An empty batch explicitly
+reports `coverage: no_pages`. Optional `--max-truncated-segments N` and
+`--max-occluded-lines N` set non-negative integer ceilings; a count strictly
+above either ceiling returns status 1 while retaining the report on stdout.
+With no ceilings it only reports. Invalid inputs or missing/invalid sidecars
+return status 2. The report neither modifies the batch nor approves it.
+
+These are **recorded** flags: occlusion detection covers certain marks and
+overlays, not all text intersections (including main-flow overlaps); zero
+flags do not prove visible or accurate text. Validation and hashes identify
+and bind the files but do not authenticate whether annotations are true.

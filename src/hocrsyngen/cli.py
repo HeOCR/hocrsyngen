@@ -28,6 +28,7 @@ from hocrsyngen.generator import (
 from hocrsyngen.io import sha256_file
 from hocrsyngen.line_annotations import LINE_ANNOTATIONS_FILENAME
 from hocrsyngen.rendering_coverage import write_rendering_coverage_report
+from hocrsyngen.quality_check import quality_check
 from hocrsyngen.validation import BatchValidationError, validate_batch
 from hocrsyngen.wet_analysis import analyze_wet_test_run
 from hocrsyngen.wet_gallery import create_wet_gallery
@@ -892,6 +893,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format for the validation report.",
     )
+    quality = subparsers.add_parser("quality-check", help="Summarize recorded annotation quality signals.")
+    quality.add_argument("path", type=Path, help="Annotated batch directory.")
+    quality.add_argument("--max-truncated-segments", type=_non_negative_int)
+    quality.add_argument("--max-occluded-lines", type=_non_negative_int)
+    quality.add_argument("--format", choices=("text", "json"), default="text")
     wet_run = subparsers.add_parser(
         "wet-run", help="Run a deterministic wet-test artifact profile."
     )
@@ -1286,6 +1292,19 @@ def main(argv: list[str] | None = None) -> int:
                 )
             )
         return 0
+    if args.command == "quality-check":
+        try:
+            report = quality_check(args.path, max_truncated_segments=args.max_truncated_segments,
+                                   max_occluded_lines=args.max_occluded_lines)
+        except (BatchValidationError, ValueError, OSError) as exc:
+            parser.exit(2, f"hocrsyngen quality-check: {exc}\n")
+        if args.format == "json":
+            print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
+        else:
+            print(f"Recorded quality signals: {json.dumps(report['totals'], sort_keys=True)}")
+            print(f"Thresholds exceeded: {', '.join(report['exceeded']) or 'none'}")
+            print(report["limitation"])
+        return 1 if report["exceeded"] else 0
     if args.command == "validate":
         try:
             result = validate_batch(args.path)

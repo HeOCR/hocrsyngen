@@ -525,3 +525,8 @@ See `docs/testing_and_quality.md` for the canonical Python support policy.
 ## Credits
 
 Created by [Shay Palachy Affek ](http://www.shaypalachy.com/) [[GitHub](https://github.com/shaypal5)]
+
+For an annotated batch, `hocrsyngen quality-check BATCH --format json` reports
+recorded truncations and occlusion flags with optional operator thresholds. See
+[the quality-check contract](docs/line_annotations_v1.md#quality-check-s12a)
+for coverage and limitations.
