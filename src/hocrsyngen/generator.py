@@ -1360,7 +1360,9 @@ def _draw_ledger(
             recorder.add_region_box((table_left, table_top, table_right, table_bottom), owner=recorder.last_line_index())
 
     wrapped_lines: list[str] = []
-    detail_width = column_widths[3] - 28
+    # Right anchor is inset 22 px and can jitter left by 18 px. Leave
+    # another 4 px for the annotation padding, even at maximum drift.
+    detail_width = column_widths[3] - 22 - 18 - 4
     for line in body_lines:
         for token in line.split():
             left, _, right, _ = draw.textbbox((0, 0), token, font=body_font, direction="rtl")

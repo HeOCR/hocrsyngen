@@ -75,9 +75,9 @@ LETTER_BODY_WIDTH = CANVAS_SIZE[0] - (2 * PAPER_MARGIN) - 40
 # -/+10px jitter, see _draw_archive_card. It draws wrapped_lines[:7].
 ARCHIVE_CARD_BODY_WIDTH = (CANVAS_SIZE[0] - PAPER_MARGIN - 70 - 10) - (PAPER_MARGIN + 80 + 10) - 340
 ARCHIVE_CARD_ROW_CAP = 7
-# ledger: the "details" column cell (250px minus 28px padding), see _draw_ledger.
+# ledger: the "details" column cell (250px minus 44px padding), see _draw_ledger.
 # It draws wrapped_lines[:row_count] with row_count = 10.
-LEDGER_DETAIL_CELL_WIDTH = 250 - 28
+LEDGER_DETAIL_CELL_WIDTH = 250 - 44
 LEDGER_ROW_CAP = 10
 WRAPPING_BODIES = (
     # template_id, font, size, wrap width, rendered-row cap (None: draws every row)

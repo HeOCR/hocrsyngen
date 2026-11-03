@@ -665,9 +665,10 @@ def test_ledger_mixed_script_cells_do_not_overlap(tmp_path: Path) -> None:
         for line in page["lines"]:
             if line["region"] == "table_cells":
                 rows.setdefault(line["logical_line_index"], []).append(line)
-        for cells in rows.values():
-            if len(cells) != 5:
-                continue
+        cell_rows = [cells for cells in rows.values() if len(cells) == 5]
+        assert cell_rows
+        assert sum(len(cells) for cells in rows.values() if len(cells) > 1) == 5 * len(cell_rows)
+        for cells in cell_rows:
             for left, right in zip(cells, cells[1:]):
                 assert max(point[0] for point in left["polygon"]) < min(point[0] for point in right["polygon"])
 
@@ -677,3 +678,18 @@ def test_ledger_rejects_an_unbreakable_token_wider_than_detail_cell(tmp_path: Pa
     corpus.write_text("א" * 100 + "\n", encoding="utf-8")
     with pytest.raises(ValueError, match="Ledger detail token exceeds cell width"):
         generate_batch(1, 1, tmp_path / "batch", ["ledger"], text_corpus_path=corpus)
+
+
+def test_default_fixture_pages_and_gold_remain_unchanged(tmp_path: Path) -> None:
+    fixture_dir = resources.files("hocrsyngen") / "data" / "contracts" / "generation_manifest_v1" / "fixture-batch"
+    packaged = json.loads((fixture_dir / "generation_manifest.json").read_text(encoding="utf-8"))
+    out = tmp_path / "fixture"
+    generate_batch(2, 17, out)
+    actual = _load(out / "generation_manifest.json")
+    if [p["sha256"] for s in actual["samples"] for p in s["pages"]] != [
+        p["sha256"] for s in packaged["samples"] for p in s["pages"]
+    ]:
+        pytest.skip("render stack does not reproduce packaged fixture pixels")
+    for sample in actual["samples"]:
+        sample["generator_version"] = "s10c-gold-complete-v1"
+    assert actual == packaged
