@@ -693,3 +693,28 @@ def test_default_fixture_pages_and_gold_remain_unchanged(tmp_path: Path) -> None
     for sample in actual["samples"]:
         sample["generator_version"] = "s10c-gold-complete-v1"
     assert actual == packaged
+
+
+@pytest.mark.parametrize("persona", ["style_standard_v1", "style_open_drift_v1", "style_compact_steady_v1"])
+def test_ledger_details_remain_inside_columns_at_all_styles(tmp_path: Path, monkeypatch, persona: str) -> None:
+    corpus = tmp_path / "near-fit.txt"
+    corpus.write_text("אבגדהוזחטיכלמנ\n", encoding="utf-8")
+    actual_draw = generator_module._draw_rtl_text
+    records = []
+
+    def capture(draw, xy, text, **kwargs):
+        if kwargs.get("region") == "table_cells":
+            bbox = draw.textbbox(xy, text, font=kwargs["font"], anchor=kwargs.get("anchor", "ra"), direction="rtl")
+            records.append((text, kwargs.get("logical_join"), xy, bbox))
+        return actual_draw(draw, xy, text, **kwargs)
+
+    monkeypatch.setattr(generator_module, "_draw_rtl_text", capture)
+    for seed in range(8):
+        records.clear()
+        generate_batch(1, seed, tmp_path / f"batch-{seed}", ["ledger"], text_corpus_path=corpus, persona=persona)
+        detail_anchor = next(xy[0] for text, join, xy, _ in records if text == "פרטים")
+        left_edge = detail_anchor + 22 - 250
+        right_edge = detail_anchor + 22
+        details = [bbox for text, join, _, bbox in records if join == "cell" and text.startswith("אבג")]
+        assert details
+        assert all(left_edge <= box[0] and box[2] <= right_edge for box in details)

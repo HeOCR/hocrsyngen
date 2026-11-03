@@ -460,6 +460,9 @@ def test_packaged_generation_manifest_fixture_is_reproducible_from_stable_inputs
         for sample in packaged_manifest["samples"]
         for page in sample["pages"]
     } == EXPECTED_PACKAGED_FIXTURE_PAGE_SHA256
+    # The pinned two-page fixture predates S11b; these templates retain their pixels and gold.
+    for sample in regenerated_manifest["samples"]:
+        sample["generator_version"] = "s10c-gold-complete-v1"
     assert _stable_manifest_payload(regenerated_manifest) == _stable_manifest_payload(
         packaged_manifest
     )
