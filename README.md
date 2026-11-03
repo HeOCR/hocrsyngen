@@ -537,7 +537,9 @@ Created by [Shay Palachy Affek ](http://www.shaypalachy.com/) [[GitHub](https://
 The opt-in `generate --plain-evaluation --emit-line-annotations` repaints text
 at the original coordinates on an unmarked background before the usual scan
 degradation. Its manifest provenance records `composition_mode` as
-`plain_evaluation`; family IDs describe the source text placement, not a full
+`plain_evaluation`; consumers enforcing an older strict manifest schema must update
+their schema before accepting opt-in manifests. Default manifests are unchanged.
+Family IDs describe the source text placement, not a full
 original template. Its occlusion flag also rejects intersecting text bounding
 boxes and text clipped at the page edge. Truncation and flags must be screened
 before scoring, and flags do not replace visual verification of the images and
