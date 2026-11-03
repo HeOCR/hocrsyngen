@@ -206,6 +206,7 @@ def _format_generation_report_json(
     page_count: int,
     rendering_coverage_report_path: Path | None = None,
     line_annotations_path: Path | None = None,
+    paired_render_path: Path | None = None,
     text_corpus: dict[str, object] | None = None,
 ) -> str:
     payload: dict[str, object] = {
@@ -221,6 +222,8 @@ def _format_generation_report_json(
         )
     if line_annotations_path is not None:
         payload["line_annotations_path"] = str(line_annotations_path)
+    if paired_render_path is not None:
+        payload["paired_render_path"] = str(paired_render_path)
     if text_corpus is not None:
         payload["text_corpus"] = text_corpus
     return json.dumps(payload, ensure_ascii=False, indent=2)
@@ -871,6 +874,8 @@ def build_parser() -> argparse.ArgumentParser:
             "provenance.source_corpus external:sha256:<hex>."
         ),
     )
+    generate.add_argument("--emit-paired-render", action="store_true",
+                          help="Write hash-bound pre-photometric PNG pairs and a sidecar.")
     generate.add_argument(
         "--emit-line-annotations",
         action="store_true",
@@ -1258,6 +1263,7 @@ def main(argv: list[str] | None = None) -> int:
                 condition=args.condition,
                 text_corpus_path=args.text_corpus,
                 emit_line_annotations=args.emit_line_annotations,
+                emit_paired_render=args.emit_paired_render,
             )
             rendering_coverage_report_path = (
                 write_rendering_coverage_report(manifest, args.output)
@@ -1282,6 +1288,7 @@ def main(argv: list[str] | None = None) -> int:
                         if args.emit_line_annotations
                         else None
                     ),
+                    paired_render_path=(args.output / "paired_render.json" if args.emit_paired_render else None),
                     text_corpus=_text_corpus_record(args.text_corpus),
                 )
             )

@@ -60,6 +60,9 @@ S9 real-glyph composition work.
 Generated directories are deterministic candidate synthetic inputs for later
 `hocrgen` governance. They are not release-ready dataset payloads by themselves.
 
+Paired pre-photometric PNGs can be generated with `--emit-paired-render`; see
+[the paired-render contract](docs/paired_render.md).
+
 ## Project Documentation
 
 - [Documentation index](docs/README.md)
