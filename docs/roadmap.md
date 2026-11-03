@@ -790,3 +790,11 @@ Status: planned.
 
 `S12b` — Generation improvement: scope to be selected from the current
 independent quality audit; no implementation contract is assumed yet.
+
+`S12c` — Opt-in paired pre-photometric render. Retain the same composed page
+and geometric rotation as the existing degraded JPEG, while capturing a PNG
+before blur, grain and other photometric degradation. It is not a clean page:
+stamps, furniture, stains and other composition marks remain. Bind the optional
+pair to the page by hashes in a sidecar and validate it, preserve default output
+bytes, and cover reproducibility, same-frame geometry and tampering with
+fixture-backed tests. Status: planned.
