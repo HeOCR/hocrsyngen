@@ -33,7 +33,7 @@ def test_validation_rejects_tampered_asset_and_bindings(tmp_path):
     path = tmp_path / "paired_render.json"
     payload = json.loads(path.read_text())
     valid = path.read_bytes()
-    for field, value in (("source_sha256", "0" * 64), ("pair_path", "../outside.png"),
+    for field, value in (("source_sha256", "0" * 64), ("pair_path", "../outside.png"), ("pair_path", "assets//pair.png"),
                          ("pair_sha256", "0" * 64), ("width", 1)):
         altered = json.loads(valid)
         altered["pages"][0][field] = value

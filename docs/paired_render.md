@@ -18,3 +18,6 @@ benchmark; they are a controlled comparison of the photometric pipeline and
 encoding on the same synthetic composition. Exact bytes can vary across image
 libraries and platforms. Existing batches and default generation do not gain
 paired assets.
+
+A zero-count generation produces an empty, valid pair list; it is not evidence
+of image quality.

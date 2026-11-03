@@ -81,7 +81,7 @@ def validate_paired_render(root: Path, manifest: dict[str, Any]) -> None:
             if not isinstance(path, str) or not path or "\\" in path:
                 fail("Invalid paired render path")
             rel = PurePosixPath(path)
-            if rel.is_absolute() or any(part in (".", "..") for part in path.split("/")):
+            if rel.is_absolute() or any(part in ("", ".", "..") for part in path.split("/")):
                 fail("Invalid paired render path")
             asset = (root / path).resolve()
             if not asset.is_relative_to(root.resolve()) or asset in paths:
