@@ -23,11 +23,11 @@ from hocrsyngen.manifest import (
 )
 
 
-GENERATOR_VERSION = "s10c-gold-complete-v1"
+GENERATOR_VERSION = "s11b-ledger-fit-v1"
 # Earlier generator versions whose batches still validate. d4a-realism-v2 drew
 # the same pages but left stamp, signature-caption and marginal text out of
 # logical_order (S10c).
-PREVIOUS_GENERATOR_VERSIONS = ("d4a-realism-v2",)
+PREVIOUS_GENERATOR_VERSIONS = ("d4a-realism-v2", "s10c-gold-complete-v1")
 CANVAS_SIZE = (1200, 1600)
 PAPER_MARGIN = 96
 DEFAULT_TEMPLATE_IDS = ["printed_letter", "handwritten_note"]
@@ -1329,7 +1329,7 @@ def _draw_ledger(
     draw.rectangle((table_left, table_top, table_right, table_bottom), outline=edge, width=3)
     header_bottom = table_top + 70
     draw.line((table_left, header_bottom, table_right, header_bottom), fill=edge, width=3)
-    column_widths = [150, 170, 180, 310, table_right - table_left - 150 - 170 - 180 - 310]
+    column_widths = [150, 170, 180, 250, table_right - table_left - 150 - 170 - 180 - 250]
     column_edges = [table_left]
     for width in column_widths:
         column_edges.append(column_edges[-1] + width)
@@ -1360,8 +1360,14 @@ def _draw_ledger(
             recorder.add_region_box((table_left, table_top, table_right, table_bottom), owner=recorder.last_line_index())
 
     wrapped_lines: list[str] = []
-    detail_width = column_widths[3] - 28
+    # Right anchor is inset 22 px and can jitter left by 18 px. Leave
+    # another 4 px for the annotation padding, even at maximum drift.
+    detail_width = column_widths[3] - 22 - 18 - 4
     for line in body_lines:
+        for token in line.split():
+            left, _, right, _ = draw.textbbox((0, 0), token, font=body_font, direction="rtl")
+            if right - left > detail_width:
+                raise ValueError("Ledger detail token exceeds cell width; shorten the corpus token.")
         wrapped_lines.extend(_wrap_hebrew_text(draw, line, body_font, detail_width))
     rendered_body_lines = wrapped_lines[:row_count]
     if recorder is not None:

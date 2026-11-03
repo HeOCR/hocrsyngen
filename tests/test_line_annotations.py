@@ -655,18 +655,66 @@ def test_pre_s11a_sidecar_without_regions_still_validates(annotated_batch: Path,
         validate_batch(batch)
 
 
-def test_pages_manifest_and_gold_are_unchanged_from_pre_s11a_generator(annotated_batch: Path, tmp_path: Path) -> None:
-    # Page bytes depend on the render stack (Pillow, FreeType, raqm, libjpeg).
-    # The pin applies only where this stack reproduces the packaged contract
-    # fixture's pages; elsewhere the flag-off byte-identity test still holds.
+def test_ledger_mixed_script_cells_do_not_overlap(tmp_path: Path) -> None:
+    corpus = tmp_path / "corpus.txt"
+    corpus.write_text("סעיף מסומן בשם River — כולל A-17 ו B-24.\n", encoding="utf-8")
+    batch = tmp_path / "batch"
+    generate_batch(8, 26110302, batch, ["ledger"], text_corpus_path=corpus, emit_line_annotations=True)
+    for page in _load(batch / LINE_ANNOTATIONS_FILENAME)["pages"]:
+        rows: dict[int, list[dict]] = {}
+        for line in page["lines"]:
+            if line["region"] == "table_cells":
+                rows.setdefault(line["logical_line_index"], []).append(line)
+        cell_rows = [cells for cells in rows.values() if len(cells) == 5]
+        assert cell_rows
+        assert sum(len(cells) for cells in rows.values() if len(cells) > 1) == 5 * len(cell_rows)
+        for cells in cell_rows:
+            for left, right in zip(cells, cells[1:]):
+                assert max(point[0] for point in left["polygon"]) < min(point[0] for point in right["polygon"])
+
+
+def test_ledger_rejects_an_unbreakable_token_wider_than_detail_cell(tmp_path: Path) -> None:
+    corpus = tmp_path / "corpus.txt"
+    corpus.write_text("א" * 100 + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="Ledger detail token exceeds cell width"):
+        generate_batch(1, 1, tmp_path / "batch", ["ledger"], text_corpus_path=corpus)
+
+
+def test_default_fixture_pages_and_gold_remain_unchanged(tmp_path: Path) -> None:
     fixture_dir = resources.files("hocrsyngen") / "data" / "contracts" / "generation_manifest_v1" / "fixture-batch"
     packaged = json.loads((fixture_dir / "generation_manifest.json").read_text(encoding="utf-8"))
-    regenerated_dir = tmp_path / "fixture"
-    generate_batch(2, 17, regenerated_dir)
-    regenerated = _load(regenerated_dir / "generation_manifest.json")
-    if [page["sha256"] for sample in regenerated["samples"] for page in sample["pages"]] != [
-        page["sha256"] for sample in packaged["samples"] for page in sample["pages"]
+    out = tmp_path / "fixture"
+    generate_batch(2, 17, out)
+    actual = _load(out / "generation_manifest.json")
+    if [p["sha256"] for s in actual["samples"] for p in s["pages"]] != [
+        p["sha256"] for s in packaged["samples"] for p in s["pages"]
     ]:
-        pytest.skip("render stack does not reproduce the packaged fixture pages")
+        pytest.skip("render stack does not reproduce packaged fixture pixels")
+    for sample in actual["samples"]:
+        sample["generator_version"] = "s10c-gold-complete-v1"
+    assert actual == packaged
 
-    assert sha256_file(annotated_batch / "generation_manifest.json") == PRE_S11A_ANNOTATED_BATCH_MANIFEST_SHA256
+
+@pytest.mark.parametrize("persona", ["style_standard_v1", "style_open_drift_v1", "style_compact_steady_v1"])
+def test_ledger_details_remain_inside_columns_at_all_styles(tmp_path: Path, monkeypatch, persona: str) -> None:
+    corpus = tmp_path / "near-fit.txt"
+    corpus.write_text("אבגדהוזחטיכלמנ\n", encoding="utf-8")
+    actual_draw = generator_module._draw_rtl_text
+    records = []
+
+    def capture(draw, xy, text, **kwargs):
+        if kwargs.get("region") == "table_cells":
+            bbox = draw.textbbox(xy, text, font=kwargs["font"], anchor=kwargs.get("anchor", "ra"), direction="rtl")
+            records.append((text, kwargs.get("logical_join"), xy, bbox))
+        return actual_draw(draw, xy, text, **kwargs)
+
+    monkeypatch.setattr(generator_module, "_draw_rtl_text", capture)
+    for seed in range(8):
+        records.clear()
+        generate_batch(1, seed, tmp_path / f"batch-{seed}", ["ledger"], text_corpus_path=corpus, persona=persona)
+        detail_anchor = next(xy[0] for text, join, xy, _ in records if text == "פרטים")
+        left_edge = detail_anchor + 22 - 250
+        right_edge = detail_anchor + 22
+        details = [bbox for text, join, _, bbox in records if join == "cell" and text.startswith("אבג")]
+        assert details
+        assert all(left_edge <= box[0] and box[2] <= right_edge for box in details)
