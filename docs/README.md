@@ -23,7 +23,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
   dependencies before candidate batches become governed dataset inputs.
 - [rendering_coverage_reporting.md](rendering_coverage_reporting.md): design and implemented contract for opt-in Hebrew rendering coverage reports outside manifest v1.
 - [../CHANGELOG.md](../CHANGELOG.md): generator-output changes keyed by `generator_version`, including the S10c `s10c-gold-complete-v1` gold-completeness bump.
-- [line_annotations_v1.md](line_annotations_v1.md): S10a opt-in `hocrsyngen_line_annotations.v1` sidecar (per-line polygons and baselines in final-page pixels, `logical_order` reconstruction rule), `--text-corpus` provenance, and the seed-101 occlusion/unlisted-text gold finding.
+- [line_annotations_v1.md](line_annotations_v1.md): S10a opt-in `hocrsyngen_line_annotations.v1` sidecar (per-line polygons and baselines in final-page pixels, `logical_order` reconstruction rule, S11a region polygons and region reading order), `--text-corpus` provenance, and the seed-101 occlusion/unlisted-text gold finding.
 - [layout_metadata_design.md](layout_metadata_design.md): design direction for future document-layout metadata and hocrgen filtering boundaries.
 - [document_family_recipes.md](document_family_recipes.md): governed document-family recipes and their current catalog/manifest boundaries.
 - [visual_inspection_rubric.md](visual_inspection_rubric.md): human review criteria for S3 layout realism, Hebrew readability, artifacts, and candidate rejection.

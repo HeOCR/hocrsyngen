@@ -26,6 +26,7 @@ from hocrsyngen.generator import (
 from hocrsyngen.io import sha256_file
 from hocrsyngen.line_annotations import (
     LINE_ANNOTATIONS_FILENAME,
+    polygon_contains,
     reconstruct_logical_lines,
 )
 from hocrsyngen.validation import BatchValidationError, validate_batch
@@ -208,7 +209,7 @@ def test_segment_hits_box_and_mark_ownership() -> None:
 
     recorder = _LineRecorder()
     recorder.lines.append(
-        generator_module._RecordedLine("margin", "עותק", None, None, (0.0, 0.0, 40.0, 20.0), 15.0)
+        generator_module._RecordedLine("margin", "עותק", None, None, (0.0, 0.0, 40.0, 20.0), 15.0, "margin")
     )
     recorder.mark_polyline(((0, 18), (40, 18)), 2, owner=0)
     assert recorder.final_lines(CANVAS_SIZE)[0].occluded is False
@@ -349,6 +350,17 @@ def _rewrite(path: Path, mutate) -> None:
         (lambda p: p["pages"][0]["lines"][0].update(text="נבדק "), "surrounding whitespace"),
         (lambda p: p["pages"][0].update(page_sha256="f" * 64), "page_sha256"),
         (lambda p: p["pages"][0]["lines"][0].update(region="margin_scribble"), "schema violation"),
+        (lambda p: p["pages"][2]["lines"][0].update(region_index=1), "must have region 'title' and region_index 0"),
+        (lambda p: p["pages"][2]["regions"][0].update(type="body"), "must have region 'body'"),
+        (lambda p: p["pages"][2]["regions"][1]["line_indices"].insert(0, 0), "in another region"),
+        (lambda p: p["pages"][2]["regions"].pop(), "every line exactly once"),
+        (lambda p: p["pages"][2]["regions"][1].update(reading_order_index=2), "reading_order_index must be 1"),
+        (
+            lambda p: p["pages"][2]["regions"][2].update(polygon=p["pages"][2]["lines"][3]["polygon"]),
+            "does not contain line 4",
+        ),
+        (lambda p: p["pages"][0].pop("regions"), "every page or on none"),
+        (lambda p: p["pages"][0]["regions"][0].update(line_indices=[]), "schema violation"),
     ],
 )
 def test_validate_rejects_inconsistent_sidecar(
@@ -532,3 +544,129 @@ def test_previous_generator_version_batches_still_validate(annotated_batch: Path
         else:
             with pytest.raises(BatchValidationError, match="generator_version"):
                 validate_batch(batch)
+
+
+# Region type sequence (in region_index = reading order) per render family.
+EXPECTED_REGION_TYPES = {
+    "printed_letter": ["title", "body", "stamp_area", "signature_area", "signature_area", "signature_area", "footer"],
+    "handwritten_note": ["title", "body", "margin", "footer"],
+    "archive_card": ["title", "identifier_area", "body", "table_cells", "stamp_area", "footer"],
+    "ledger": ["title", "identifier_area", "table_cells", "footer"],
+}
+# Measured at bbcaf0e (s10c-gold-complete-v1, before S11a) for the
+# annotated_batch fixture. S11a adds sidecar fields only, so the manifest,
+# which pins every page sha256 and the logical_order gold, must not move.
+PRE_S11A_ANNOTATED_BATCH_MANIFEST_SHA256 = "58ab662d2cff74b2da42c3b835087ebee7018d8acb0269d07c8729df1efeec19"
+
+
+def _render_family(template_id: str) -> str:
+    return generator_module._recipe_for_template(template_id).render_template_id
+
+
+def test_regions_partition_lines_and_contain_their_polygons(annotated_batch: Path) -> None:
+    payload = _load(annotated_batch / LINE_ANNOTATIONS_FILENAME)
+    manifest = _load(annotated_batch / "generation_manifest.json")
+
+    for sample, page in zip(manifest["samples"], payload["pages"], strict=True):
+        regions, lines = page["regions"], page["lines"]
+        assert [region["type"] for region in regions] == EXPECTED_REGION_TYPES[
+            _render_family(sample["provenance"]["template_id"])
+        ]
+        assert [region["region_index"] for region in regions] == list(range(len(regions)))
+        owners = {line_index: region for region in regions for line_index in region["line_indices"]}
+        assert sorted(owners) == list(range(len(lines)))
+        assert sum(len(region["line_indices"]) for region in regions) == len(lines)
+        for line in lines:
+            region = owners[line["line_index"]]
+            assert line["region_index"] == region["region_index"]
+            assert line["region"] == region["type"]
+            # Pages are rotated; containment is checked on the rotated polygons.
+            assert polygon_contains(region["polygon"], line["polygon"])
+
+
+def test_region_reading_order_agrees_with_logical_order(annotated_batch: Path) -> None:
+    payload = _load(annotated_batch / LINE_ANNOTATIONS_FILENAME)
+    manifest = _load(annotated_batch / "generation_manifest.json")
+
+    for sample, page in zip(manifest["samples"], payload["pages"], strict=True):
+        regions = sorted(page["regions"], key=lambda region: region["reading_order_index"])
+        assert [region["reading_order_index"] for region in regions] == list(range(len(regions)))
+        walked = [page["lines"][line_index] for region in regions for line_index in region["line_indices"]]
+        assert [line["line_index"] for line in walked] == list(range(len(page["lines"])))
+        rebuilt = reconstruct_logical_lines(walked)
+        assert "\n".join(rebuilt[index] for index in sorted(rebuilt)) == sample["text"]["logical_order"]
+        # Each region covers a contiguous run of logical_order lines.
+        previous_last = -1
+        for region in regions:
+            logical = [page["lines"][line_index]["logical_line_index"] for line_index in region["line_indices"]]
+            assert logical[0] == previous_last + 1
+            assert sorted(set(logical)) == list(range(logical[0], logical[-1] + 1))
+            previous_last = logical[-1]
+
+
+def test_region_polygon_contains_lines_and_furniture_under_rotation() -> None:
+    recorder = _LineRecorder(rotation_degrees=7.0)
+    recorder.lines.append(
+        generator_module._RecordedLine("body", "שורה", 0, None, (300.0, 200.0, 900.0, 240.0), 232.0, "body")
+    )
+    recorder.lines.append(
+        generator_module._RecordedLine("body", "שנייה", 1, None, (500.0, 260.0, 900.0, 300.0), 292.0, "body")
+    )
+    recorder.lines.append(
+        generator_module._RecordedLine("stamp_area", "נבדק", 2, None, (150.0, 400.0, 210.0, 430.0), 425.0, "stamp_area")
+    )
+    ring = (80.0, 360.0, 280.0, 470.0)
+    recorder.add_region_box(ring, owner=2)
+
+    lines = recorder.final_lines(CANVAS_SIZE)
+    regions = recorder.final_regions(CANVAS_SIZE)
+    assert [(region.region_type, region.line_indices, region.reading_order_index) for region in regions] == [
+        ("body", (0, 1), 0),
+        ("stamp_area", (2,), 1),
+    ]
+    assert [line.region_index for line in lines] == [0, 0, 1]
+    for line in lines:
+        assert polygon_contains(regions[line.region_index].polygon, line.polygon, tolerance=0.0)
+    ring_corners = [
+        _rotated_point(corner, 7.0, CANVAS_SIZE)
+        for corner in ((ring[0], ring[1]), (ring[2], ring[1]), (ring[2], ring[3]), (ring[0], ring[3]))
+    ]
+    assert polygon_contains(regions[1].polygon, ring_corners)
+    assert not polygon_contains(regions[0].polygon, ring_corners)
+
+
+def test_pre_s11a_sidecar_without_regions_still_validates(annotated_batch: Path, tmp_path: Path) -> None:
+    batch = tmp_path / "pre-s11a"
+    for relative, data in _tree_bytes(annotated_batch).items():
+        target = batch / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+
+    def strip(payload: dict) -> None:
+        for page in payload["pages"]:
+            page.pop("regions")
+            for line in page["lines"]:
+                line.pop("region_index")
+
+    _rewrite(batch / LINE_ANNOTATIONS_FILENAME, strip)
+    assert validate_batch(batch).page_count == len(ALL_TEMPLATES)
+    _rewrite(batch / LINE_ANNOTATIONS_FILENAME, lambda p: p["pages"][0]["lines"][0].update(region_index=0))
+    with pytest.raises(BatchValidationError, match="page has no regions"):
+        validate_batch(batch)
+
+
+def test_pages_manifest_and_gold_are_unchanged_from_pre_s11a_generator(annotated_batch: Path, tmp_path: Path) -> None:
+    # Page bytes depend on the render stack (Pillow, FreeType, raqm, libjpeg).
+    # The pin applies only where this stack reproduces the packaged contract
+    # fixture's pages; elsewhere the flag-off byte-identity test still holds.
+    fixture_dir = resources.files("hocrsyngen") / "data" / "contracts" / "generation_manifest_v1" / "fixture-batch"
+    packaged = json.loads((fixture_dir / "generation_manifest.json").read_text(encoding="utf-8"))
+    regenerated_dir = tmp_path / "fixture"
+    generate_batch(2, 17, regenerated_dir)
+    regenerated = _load(regenerated_dir / "generation_manifest.json")
+    if [page["sha256"] for sample in regenerated["samples"] for page in sample["pages"]] != [
+        page["sha256"] for sample in packaged["samples"] for page in sample["pages"]
+    ]:
+        pytest.skip("render stack does not reproduce the packaged fixture pages")
+
+    assert sha256_file(annotated_batch / "generation_manifest.json") == PRE_S11A_ANNOTATED_BATCH_MANIFEST_SHA256

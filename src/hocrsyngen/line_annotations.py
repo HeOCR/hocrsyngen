@@ -39,7 +39,7 @@ def build_line_annotations(
     pages: list[dict[str, Any]] = []
     for sample in manifest.samples:
         document = documents_by_sample[sample.sample_id]
-        if document.lines is None:
+        if document.lines is None or document.regions is None:
             raise LineAnnotationsError(
                 f"Sample {sample.sample_id} was generated without line geometry recording."
             )
@@ -59,11 +59,22 @@ def build_line_annotations(
                             "logical_join": line.logical_join,
                             "occluded": line.occluded,
                             "region": line.region,
+                            "region_index": line.region_index,
                             "text": line.text,
                             "polygon": [list(point) for point in line.polygon],
                             "baseline": [list(point) for point in line.baseline],
                         }
                         for line_index, line in enumerate(document.lines)
+                    ],
+                    "regions": [
+                        {
+                            "region_index": region.region_index,
+                            "type": region.region_type,
+                            "polygon": [list(point) for point in region.polygon],
+                            "reading_order_index": region.reading_order_index,
+                            "line_indices": list(region.line_indices),
+                        }
+                        for region in document.regions
                     ],
                 }
             )
@@ -142,6 +153,9 @@ def validate_line_annotations(batch_dir: Path, manifest_payload: dict[str, Any])
         raise LineAnnotationsError(
             f"Line annotations cover {len(payload['pages'])} pages; manifest has {len(expected_pages)}."
         )
+    with_regions = {"regions" in page for page in payload["pages"]}
+    if len(with_regions) > 1:
+        raise LineAnnotationsError("Line annotations must give regions on every page or on none.")
     line_count = 0
     for page_index, (annotated, (sample, page)) in enumerate(zip(payload["pages"], expected_pages, strict=True)):
         where = f"pages[{page_index}]"
@@ -155,6 +169,7 @@ def validate_line_annotations(batch_dir: Path, manifest_payload: dict[str, Any])
             if annotated[key] != expected:
                 raise LineAnnotationsError(f"{where}.{key} does not match the manifest: {annotated[key]!r}")
         _validate_page_lines(annotated, sample["text"]["logical_order"], where)
+        _validate_page_regions(annotated, where)
         line_count += len(annotated["lines"])
     return line_count
 
@@ -205,6 +220,83 @@ def _validate_page_lines(page: dict[str, Any], logical_order: str, where: str) -
                 f"{where} lines for logical line {logical_line_index} rebuild {text!r}, "
                 f"expected {logical_lines[logical_line_index]!r}."
             )
+
+
+def _validate_page_regions(page: dict[str, Any], where: str) -> None:
+    """Check S11a regions; sidecars written before S11a have none."""
+
+    lines = page["lines"]
+    if "regions" not in page:
+        if any("region_index" in line for line in lines):
+            raise LineAnnotationsError(f"{where} lines carry region_index but the page has no regions.")
+        return
+    regions = page["regions"]
+    width, height = page["width"], page["height"]
+    owner: dict[int, int] = {}
+    reading_ordered: list[int] = []
+    next_reading_order_index = 0
+    for position, region in enumerate(regions):
+        region_where = f"{where}.regions[{position}]"
+        if region["region_index"] != position:
+            raise LineAnnotationsError(f"{region_where}.region_index must be {position}.")
+        for x, y in region["polygon"]:
+            if not (0 <= x < width and 0 <= y < height):
+                raise LineAnnotationsError(f"{region_where}.polygon point {[x, y]} is outside the page.")
+        line_indices = region["line_indices"]
+        if line_indices != sorted(set(line_indices)):
+            raise LineAnnotationsError(f"{region_where}.line_indices must be strictly increasing.")
+        members = []
+        for line_index in line_indices:
+            if not 0 <= line_index < len(lines) or line_index in owner:
+                raise LineAnnotationsError(
+                    f"{region_where}.line_indices names line {line_index}, which is missing or in another region."
+                )
+            owner[line_index] = position
+            line = lines[line_index]
+            if line.get("region_index") != position or line["region"] != region["type"]:
+                raise LineAnnotationsError(
+                    f"{region_where} line {line_index} must have region {region['type']!r} and region_index {position}."
+                )
+            if not polygon_contains(region["polygon"], line["polygon"]):
+                raise LineAnnotationsError(f"{region_where}.polygon does not contain line {line_index}'s polygon.")
+            members.append(line)
+        in_order = any(line["logical_line_index"] is not None for line in members)
+        expected_reading_order_index = next_reading_order_index if in_order else None
+        if region["reading_order_index"] != expected_reading_order_index:
+            raise LineAnnotationsError(
+                f"{region_where}.reading_order_index must be {expected_reading_order_index!r}."
+            )
+        if in_order:
+            if any(line["logical_line_index"] is None for line in members):
+                raise LineAnnotationsError(f"{region_where} mixes lines inside and outside logical_order.")
+            next_reading_order_index += 1
+            reading_ordered.extend(line_indices)
+    if sorted(owner) != list(range(len(lines))):
+        raise LineAnnotationsError(f"{where} regions must contain every line exactly once.")
+    # Reading regions in reading_order_index order and their lines in order
+    # must walk the logical_order lines in line_index order.
+    scored = [line["line_index"] for line in lines if line["logical_line_index"] is not None]
+    if reading_ordered != scored:
+        raise LineAnnotationsError(f"{where} region reading order disagrees with logical_order.")
+
+
+def polygon_contains(outer: Sequence[Sequence[int]], inner: Sequence[Sequence[int]], tolerance: float = 1.0) -> bool:
+    """True when every ``inner`` point lies in the convex ``outer`` polygon, within ``tolerance`` px."""
+
+    edges = list(zip(outer, [*outer[1:], outer[0]]))
+    # Orientation-free: a point is inside when it is on the same side of
+    # every edge as the polygon's interior.
+    area = sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in edges)
+    sign = 1 if area > 0 else -1
+    for x, y in inner:
+        for (x0, y0), (x1, y1) in edges:
+            length = ((x1 - x0) ** 2 + (y1 - y0) ** 2) ** 0.5
+            if length == 0:
+                continue
+            cross = (x1 - x0) * (y - y0) - (y1 - y0) * (x - x0)
+            if sign * cross / length < -tolerance:
+                return False
+    return True
 
 
 def _line_annotations_schema() -> dict[str, Any]:
