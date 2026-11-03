@@ -1,5 +1,10 @@
 # hocrsyngen Roadmap
 
+
+## S12d: plain evaluation composition
+
+Proposed opt-in text-only composition keeps original text positions and records its provenance. Its conservative layout flags support screening, not a release or human-gold decision. Default rendering remains unchanged.
+
 This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing on deterministic synthetic generation, manifest contracts, validation, rendering quality, and research tracks.
 
 ## Current Critical Path

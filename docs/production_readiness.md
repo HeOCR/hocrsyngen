@@ -1,5 +1,10 @@
 # Production Readiness Plan
 
+
+## S12d evaluation-only composition
+
+The proposed plain evaluation mode omits decorative furniture while retaining text coordinates and degradation. Bounding-box flags require downstream screening and image/reference inspection; they do not authenticate transcription or establish real-world accuracy.
+
 This document makes the current readiness state explicit. It records what is
 ready in `hocrsyngen`, what remains before generated batches can become
 governed dataset inputs, and which roadmap items should carry the work.

@@ -85,6 +85,7 @@ recognized. Line-level scoring through the optional
 - `degradation_preset`: non-empty governed degradation preset id.
 - `font_id`: non-empty governed packaged font id.
 - `source_corpus`: non-empty source corpus identifier.
+- `composition_mode`: optional `plain_evaluation` when text is repainted without page furniture; omitted for ordinary generation.
 
 ## Controls
 
