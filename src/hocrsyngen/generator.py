@@ -253,6 +253,8 @@ class _LineRecorder:
     # region polygon.
     region_boxes: list[tuple[Box, int]] = field(default_factory=list)
     rotation_degrees: float = 0.0
+    plain_evaluation: bool = False
+    text_draws: list = field(default_factory=list)
     # Wrapped body segments a capped renderer never drew (and so never put
     # into logical_order).
     truncated_segments: int = 0
@@ -309,7 +311,7 @@ class _LineRecorder:
         for other_index, other in enumerate(self.lines):
             if other_index == index:
                 continue
-            if line.region not in OVERLAY_TEXT_REGIONS and other.region not in OVERLAY_TEXT_REGIONS:
+            if not self.plain_evaluation and line.region not in OVERLAY_TEXT_REGIONS and other.region not in OVERLAY_TEXT_REGIONS:
                 continue
             if _boxes_overlap(line.box, other.box):
                 return True
@@ -347,6 +349,9 @@ class _LineRecorder:
             baseline = ((left, line.baseline_y), (right, line.baseline_y))
             rotated = [_rotated_point(point, self.rotation_degrees, size) for point in (*corners, *baseline)]
             clipped = any(x < 0 or y < 0 or x > width - 1 or y > height - 1 for x, y in rotated)
+            if self.plain_evaluation:
+                # Pixels clipped before rotation cannot reappear when the page rotates.
+                clipped = clipped or any(x < 0 or y < 0 or x > width - 1 or y > height - 1 for x, y in corners)
             lines.append(
                 LineGeometry(
                     region=line.region,
@@ -355,7 +360,7 @@ class _LineRecorder:
                     logical_join=line.logical_join,
                     polygon=tuple(_clamped_point(point, size) for point in rotated[:4]),
                     baseline=tuple(_clamped_point(point, size) for point in rotated[4:]),
-                    occluded=self._occluded(index),
+                    occluded=self._occluded(index) or (self.plain_evaluation and clipped),
                     clipped=clipped,
                     region_index=region_index[line.region_key],
                 )
@@ -555,6 +560,10 @@ def _draw_rtl_text(
             logical_join=logical_join,
             region_key=region_key,
         )
+    if recorder is not None and recorder.plain_evaluation:
+        if region is None or logical_line_index is None:
+            raise ValueError("plain evaluation requires every visible text line in the reference")
+        recorder.text_draws.append((xy, text, font, fill, anchor))
     draw.text(xy, _rtl_display_text(text), font=font, fill=fill, anchor=anchor, direction="rtl")
 
 
@@ -828,6 +837,14 @@ def _degrade(
     pair_capture: dict | None = None,
 ) -> Image.Image:
     parameters = _degradation_preset(preset)
+    if recorder is not None and recorder.plain_evaluation:
+        # Repaint the actual text at its original positions, without furniture.
+        image = Image.new("RGB", image.size, background)
+        clean_draw = ImageDraw.Draw(image)
+        for xy, text, font, fill, anchor in recorder.text_draws:
+            clean_draw.text(xy, _rtl_display_text(text), font=font, fill=fill[:3], anchor=anchor, direction="rtl")
+        recorder.marks.clear()
+        recorder.region_boxes.clear()
     angle = randomizer.uniform(-parameters.angle_range, parameters.angle_range)
     if recorder is not None:
         # Rotation is the only geometric degradation; blur, grain, contrast and
@@ -1675,6 +1692,7 @@ def generate_documents(
     condition: str | None = None,
     record_line_geometry: bool = False,
     emit_paired_render: bool = False,
+    plain_evaluation: bool = False,
 ) -> list[SyntheticDocument]:
     if seed < 0:
         raise ValueError("Synthetic generation seed must be non-negative.")
@@ -1717,7 +1735,7 @@ def generate_documents(
         asset_path = f"assets/{sample_id}/page_0001.jpg"
         path = output_dir / asset_path
         path.parent.mkdir(parents=True, exist_ok=True)
-        recorder = _LineRecorder() if record_line_geometry else None
+        recorder = _LineRecorder(plain_evaluation=plain_evaluation) if record_line_geometry or plain_evaluation else None
         pair_capture = {} if emit_paired_render else None
         if recipe.render_template_id == "archive_card":
             archive_render = _draw_archive_card(
@@ -1859,6 +1877,7 @@ def _generate_manifest_and_documents(
     condition: str | None = None,
     record_line_geometry: bool = False,
     emit_paired_render: bool = False,
+    plain_evaluation: bool = False,
 ) -> tuple[GenerationManifest, list[SyntheticDocument]]:
     template_ids = DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids
     font_manifest_path = font_manifest_path or default_font_manifest_path()
@@ -1875,6 +1894,7 @@ def _generate_manifest_and_documents(
         condition=condition,
         record_line_geometry=record_line_geometry,
         emit_paired_render=emit_paired_render,
+        plain_evaluation=plain_evaluation,
     )
     samples = [
         GeneratedSample(
@@ -1900,6 +1920,7 @@ def _generate_manifest_and_documents(
                 degradation_preset=document.degradation_preset,
                 font_id=document.font_id,
                 source_corpus=source_corpus,
+                composition_mode="plain_evaluation" if plain_evaluation else None,
             ),
             controls=SampleControls(persona=persona, condition=condition),
         )
@@ -1926,7 +1947,10 @@ def generate_batch(
     text_corpus_path: Path | None = None,
     emit_line_annotations: bool = False,
     emit_paired_render: bool = False,
+    plain_evaluation: bool = False,
 ) -> GenerationManifest:
+    if plain_evaluation and not emit_line_annotations:
+        raise ValueError("plain evaluation requires line annotations for quality screening")
     manifest, documents = _generate_manifest_and_documents(
         count,
         seed,
@@ -1937,6 +1961,7 @@ def generate_batch(
         condition=condition,
         record_line_geometry=emit_line_annotations,
         emit_paired_render=emit_paired_render,
+        plain_evaluation=plain_evaluation,
     )
     manifest_path = write_manifest(manifest, output_dir)
     if emit_line_annotations:

@@ -53,6 +53,7 @@ class SampleProvenance:
     degradation_preset: str
     font_id: str
     source_corpus: str
+    composition_mode: str | None = None
 
 
 @dataclass(frozen=True)
@@ -83,4 +84,8 @@ class GenerationManifest:
     synthetic_disclosure: str = SYNTHETIC_DISCLOSURE
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        result = asdict(self)
+        for sample in result["samples"]:
+            if sample["provenance"]["composition_mode"] is None:
+                del sample["provenance"]["composition_mode"]
+        return result

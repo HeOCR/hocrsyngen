@@ -200,8 +200,8 @@ def test_manifest_contract_doc_fields_match_schema_required_fields() -> None:
 
     provenance_schema = schema["$defs"]["provenance"]
     assert set(provenance_schema["required"]) == EXPECTED_PROVENANCE_FIELDS
-    assert set(provenance_schema["properties"]) == EXPECTED_PROVENANCE_FIELDS
-    assert _documented_fields("Provenance Fields") == EXPECTED_PROVENANCE_FIELDS
+    assert set(provenance_schema["properties"]) == EXPECTED_PROVENANCE_FIELDS | {"composition_mode"}
+    assert _documented_fields("Provenance Fields") == EXPECTED_PROVENANCE_FIELDS | {"composition_mode"}
 
     controls_schema = schema["$defs"]["controls"]
     assert set(controls_schema["required"]) == EXPECTED_CONTROL_FIELDS

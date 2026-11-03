@@ -875,6 +875,7 @@ def build_parser() -> argparse.ArgumentParser:
             "provenance.source_corpus external:sha256:<hex>."
         ),
     )
+    generate.add_argument("--plain-evaluation", action="store_true", help="Render text only at original positions for synthetic evaluation.")
     generate.add_argument("--emit-paired-render", action="store_true",
                           help="Write hash-bound pre-photometric PNG pairs and a sidecar.")
     generate.add_argument(
@@ -1270,6 +1271,7 @@ def main(argv: list[str] | None = None) -> int:
                 text_corpus_path=args.text_corpus,
                 emit_line_annotations=args.emit_line_annotations,
                 emit_paired_render=args.emit_paired_render,
+                plain_evaluation=args.plain_evaluation,
             )
             rendering_coverage_report_path = (
                 write_rendering_coverage_report(manifest, args.output)
