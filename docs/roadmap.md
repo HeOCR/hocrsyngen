@@ -786,7 +786,7 @@ in the Python API, must be rejected. The report is based on recorded
 annotations: flags do not establish visibility, correctness, quality acceptance
 or release eligibility; schema and hash binding do not authenticate them.
 No regeneration, silent filtering, manifest changes or governance behavior.
-Status: planned.
+Status: implemented by S12a.
 
 `S12b` — Archive-card detail fit: prevent wide unbreakable body tokens from
 crossing into labels, with deterministic mixed-script and width-boundary

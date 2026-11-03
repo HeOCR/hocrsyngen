@@ -512,6 +512,11 @@ dataset data. `hocrgen` should ingest or validate the fixture manifest,
 preserve the relative asset contract, and then apply its own governance,
 privacy, review, dedupe, split, cap, benchmark, release, and export gates.
 
+For an annotated batch, `hocrsyngen quality-check BATCH --format json` reports
+recorded truncations and occlusion flags with optional operator thresholds. See
+[the quality-check contract](docs/line_annotations_v1.md#quality-check-s12a)
+for coverage and limitations.
+
 ## Development
 
 ```bash
