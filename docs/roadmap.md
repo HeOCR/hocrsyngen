@@ -792,13 +792,13 @@ in the Python API, must be rejected. The report is based on recorded
 annotations: flags do not establish visibility, correctness, quality acceptance
 or release eligibility; schema and hash binding do not authenticate them.
 No regeneration, silent filtering, manifest changes or governance behavior.
-Status: implemented by S12a.
+Status: done in PR #81.
 
 `S12b` — Archive-card detail fit: prevent wide unbreakable body tokens from
 crossing into labels, with deterministic mixed-script and width-boundary
 regressions. Reject or handle oversized tokens without silently dropping or
 misrepresenting rendered text; retain default contract boundaries. This fixes
-a reproduced seed-17 body/label overlap. Status: planned.
+a reproduced seed-17 body/label overlap. Status: done in PR #80.
 
 `S12c` — Opt-in paired pre-photometric render. Retain the same composed page
 and geometric rotation as the existing degraded JPEG, while capturing a PNG
@@ -806,13 +806,19 @@ before blur, grain and other photometric degradation. It is not a clean page:
 stamps, furniture, stains and other composition marks remain. Bind the optional
 pair to the page by hashes in a sidecar and validate it, preserve default output
 bytes, and cover reproducibility, same-frame geometry and tampering with
-fixture-backed tests. Status: planned.
+fixture-backed tests. Status: done in PR #82.
 
 S12 pass acceptance: reproduce and prevent the archive overflow; preserve default
 JPEG/manifest/text with paired output and verify identical geometry; detect
 recorded truncation and occlusion deterministically under user thresholds. Run
 regression and full CI plus a 28-page smoke and visual inspection. Results do
 not claim real OCR accuracy.
+
+Combined 28-page smoke covered all seven templates with paired and unpaired
+outputs: validation passed; manifests, line annotations and 28 JPEGs matched
+byte-for-byte. A visual sample per template confirmed corresponding
+compositions; this is not a full text audit. The quality check recorded 30
+truncated segments and 20 occluded lines; zero ceilings returned nonzero.
 
 ## Phase S13 — Mixed-Script Training Text
 
@@ -842,7 +848,7 @@ Planned PR breakdown:
 Exit criteria:
 
 - A recognizer run can train on mixed-script lines and evaluate on held-out
-  mixed-script lines that share no line, skeleton, or word 3-gram with
-  evaluation text.
+  mixed-script lines that share no line or skeleton with train, while train
+  shares no line or word 3-gram with any other evaluation text.
 - Every corpus token renders inside every template region that receives
   corpus text, with both packaged fonts.
