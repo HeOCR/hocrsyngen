@@ -801,3 +801,9 @@ stamps, furniture, stains and other composition marks remain. Bind the optional
 pair to the page by hashes in a sidecar and validate it, preserve default output
 bytes, and cover reproducibility, same-frame geometry and tampering with
 fixture-backed tests. Status: planned.
+
+S12 pass acceptance: reproduce and prevent the archive overflow; preserve default
+JPEG/manifest/text with paired output and verify identical geometry; detect
+recorded truncation and occlusion deterministically under user thresholds. Run
+regression and full CI plus a 28-page smoke and visual inspection. Results do
+not claim real OCR accuracy.
