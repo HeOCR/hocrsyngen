@@ -1190,7 +1190,10 @@ def _draw_archive_card(
     wrapped_lines: list[str] = []
     max_width = card_right - card_left - 340
     for line in body_lines:
-        wrapped_lines.extend(_wrap_hebrew_text(draw, line, body_font, max_width))
+        segments = _wrap_hebrew_text(draw, line, body_font, max_width)
+        for segment in segments:
+            _require_segment_fits(draw, segment, body_font, max_width)
+        wrapped_lines.extend(segments)
     rendered_body_lines = wrapped_lines[:7]
     if recorder is not None:
         recorder.truncated_segments = len(wrapped_lines) - len(rendered_body_lines)
