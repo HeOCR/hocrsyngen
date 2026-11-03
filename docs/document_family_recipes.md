@@ -44,6 +44,11 @@ synthetic archive stamp. These elements are generator controls and visual
 features only. They are not real-source provenance, release eligibility,
 authorship, identity, or archive-origin claims.
 
+Archive body text is wrapped within the detail column. If an unbreakable
+word is too wide to fit, generation raises an error rather than crossing into
+the label column. This input guard does not change valid page renders or prove
+that other page furniture never overlaps text.
+
 `archive_card` is available for explicit generation:
 
 ```bash
