@@ -788,8 +788,11 @@ or release eligibility; schema and hash binding do not authenticate them.
 No regeneration, silent filtering, manifest changes or governance behavior.
 Status: planned.
 
-`S12b` — Generation improvement: scope to be selected from the current
-independent quality audit; no implementation contract is assumed yet.
+`S12b` — Archive-card detail fit: prevent wide unbreakable body tokens from
+crossing into labels, with deterministic mixed-script and width-boundary
+regressions. Reject or handle oversized tokens without silently dropping or
+misrepresenting rendered text; retain default contract boundaries. This fixes
+a reproduced seed-17 body/label overlap. Status: planned.
 
 `S12c` — Opt-in paired pre-photometric render. Retain the same composed page
 and geometric rotation as the existing degraded JPEG, while capturing a PNG
