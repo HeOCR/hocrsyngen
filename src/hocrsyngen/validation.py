@@ -73,6 +73,16 @@ def validate_batch(batch_dir: Path) -> ValidationResult:
             validate_line_annotations(root, payload)
         except LineAnnotationsError as exc:
             raise BatchValidationError(str(exc)) from exc
+    from hocrsyngen.paired_render import FILENAME, PairedRenderError, validate_paired_render
+
+    pair_sidecar = root / FILENAME
+    if pair_sidecar.is_symlink():
+        raise BatchValidationError("Paired render sidecar must be a local file, not a symlink")
+    if pair_sidecar.exists():
+        try:
+            validate_paired_render(root, payload)
+        except PairedRenderError as exc:
+            raise BatchValidationError(str(exc)) from exc
     return ValidationResult(sample_count=len(payload["samples"]), page_count=page_count)
 
 

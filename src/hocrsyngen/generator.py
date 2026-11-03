@@ -94,6 +94,7 @@ class SyntheticDocument:
     lines: tuple[LineGeometry, ...] | None = None
     regions: tuple[RegionGeometry, ...] | None = None
     truncated_segments: int | None = None
+    paired_asset: dict | None = None
 
 
 @dataclass(frozen=True)
@@ -824,6 +825,7 @@ def _degrade(
     preset: str,
     condition_bundle: ConditionBundle,
     recorder: _LineRecorder | None = None,
+    pair_capture: dict | None = None,
 ) -> Image.Image:
     parameters = _degradation_preset(preset)
     angle = randomizer.uniform(-parameters.angle_range, parameters.angle_range)
@@ -832,11 +834,14 @@ def _degrade(
         # brightness keep pixel positions.
         recorder.rotation_degrees = angle
     degraded = image.rotate(angle, resample=Image.Resampling.BICUBIC, expand=False, fillcolor=background)
-    degraded = degraded.filter(
-        ImageFilter.GaussianBlur(
-            radius=randomizer.uniform(*parameters.blur_range) + condition_bundle.blur_delta
-        )
-    )
+    radius = randomizer.uniform(*parameters.blur_range) + condition_bundle.blur_delta
+    if pair_capture is not None:
+        pair_capture.update(image=degraded.copy(), rotation_degrees=angle, blur_radius=radius,
+            grain_passes=parameters.grain_passes, grain_alpha=0.08 * condition_bundle.grain_alpha_scale,
+            contrast=parameters.contrast * condition_bundle.contrast_scale,
+            brightness=parameters.brightness * condition_bundle.brightness_scale,
+            jpeg_quality=parameters.jpeg_quality)
+    degraded = degraded.filter(ImageFilter.GaussianBlur(radius=radius))
     for _ in range(parameters.grain_passes):
         degraded = _apply_grain(degraded, randomizer, alpha=0.08 * condition_bundle.grain_alpha_scale)
     degraded = ImageEnhance.Contrast(degraded).enhance(parameters.contrast * condition_bundle.contrast_scale)
@@ -1137,6 +1142,7 @@ def _draw_archive_card(
     style_bundle: StyleBundle,
     condition_bundle: ConditionBundle,
     recorder: _LineRecorder | None = None,
+    pair_capture: dict | None = None,
 ) -> ArchiveCardRender:
     recipe = _recipe_for_template(template_id)
     background = (246, 241, 230)
@@ -1255,7 +1261,7 @@ def _draw_archive_card(
     ]
     return ArchiveCardRender(
         image=_degrade(
-            image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder
+            image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder, pair_capture
         ),
         rendered_body_lines=rendered_body_lines,
         footer_text=footer_text,
@@ -1286,6 +1292,7 @@ def _draw_ledger(
     style_bundle: StyleBundle,
     condition_bundle: ConditionBundle,
     recorder: _LineRecorder | None = None,
+    pair_capture: dict | None = None,
 ) -> LedgerRender:
     recipe = _recipe_for_template(template_id)
     background = (246, 241, 230)
@@ -1436,7 +1443,7 @@ def _draw_ledger(
     ]
     return LedgerRender(
         image=_degrade(
-            image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder
+            image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder, pair_capture
         ),
         rendered_body_lines=rendered_body_lines,
         footer_text=footer_text,
@@ -1492,6 +1499,7 @@ def _draw_document(
     style_bundle: StyleBundle,
     condition_bundle: ConditionBundle,
     recorder: _LineRecorder | None = None,
+    pair_capture: dict | None = None,
 ) -> DocumentRender:
     recipe = _recipe_for_template(template_id)
     form_layout = recipe.render_template_id == "printed_letter"
@@ -1615,7 +1623,7 @@ def _draw_document(
 
     return DocumentRender(
         image=_degrade(
-            image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder
+            image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder, pair_capture
         ),
         rendered_body_lines=rendered_body_lines,
         logical_lines=[title, *rendered_body_lines, *annotation_lines, footer],
@@ -1663,6 +1671,7 @@ def generate_documents(
     persona: str | None = None,
     condition: str | None = None,
     record_line_geometry: bool = False,
+    emit_paired_render: bool = False,
 ) -> list[SyntheticDocument]:
     if seed < 0:
         raise ValueError("Synthetic generation seed must be non-negative.")
@@ -1706,6 +1715,7 @@ def generate_documents(
         path = output_dir / asset_path
         path.parent.mkdir(parents=True, exist_ok=True)
         recorder = _LineRecorder() if record_line_geometry else None
+        pair_capture = {} if emit_paired_render else None
         if recipe.render_template_id == "archive_card":
             archive_render = _draw_archive_card(
                 randomizer,
@@ -1717,6 +1727,7 @@ def generate_documents(
                 style_bundle,
                 condition_bundle,
                 recorder,
+                pair_capture,
             )
             image = archive_render.image
             logical_text = unicodedata.normalize("NFC", "\n".join(archive_render.logical_lines))
@@ -1733,6 +1744,7 @@ def generate_documents(
                 style_bundle,
                 condition_bundle,
                 recorder,
+                pair_capture,
             )
             image = ledger_render.image
             logical_text = unicodedata.normalize("NFC", "\n".join(ledger_render.logical_lines))
@@ -1749,6 +1761,7 @@ def generate_documents(
                 style_bundle,
                 condition_bundle,
                 recorder,
+                pair_capture,
             )
             image = document_render.image
             logical_text = unicodedata.normalize("NFC", "\n".join(document_render.logical_lines))
@@ -1756,6 +1769,12 @@ def generate_documents(
             document_footer = footer
         degradation_preset = _degradation_preset(recipe.degradation_preset)
         image.save(path, format="JPEG", quality=degradation_preset.jpeg_quality, optimize=True)
+        paired_asset = None
+        if pair_capture is not None:
+            pair_path = path.with_name("page_0001_pre_photometric.png")
+            pair_capture.pop("image").save(pair_path, format="PNG")
+            paired_asset = {"path": pair_path.relative_to(output_dir).as_posix(),
+                            "sha256": sha256_file(pair_path), **pair_capture}
         documents.append(
             SyntheticDocument(
                 sample_id=sample_id,
@@ -1775,6 +1794,7 @@ def generate_documents(
                 lines=recorder.final_lines(image.size) if recorder is not None else None,
                 regions=recorder.final_regions(image.size) if recorder is not None else None,
                 truncated_segments=recorder.truncated_segments if recorder is not None else None,
+                paired_asset=paired_asset,
             )
         )
     return documents
@@ -1835,6 +1855,7 @@ def _generate_manifest_and_documents(
     persona: str | None = None,
     condition: str | None = None,
     record_line_geometry: bool = False,
+    emit_paired_render: bool = False,
 ) -> tuple[GenerationManifest, list[SyntheticDocument]]:
     template_ids = DEFAULT_TEMPLATE_IDS if template_ids is None else template_ids
     font_manifest_path = font_manifest_path or default_font_manifest_path()
@@ -1850,6 +1871,7 @@ def _generate_manifest_and_documents(
         persona=persona,
         condition=condition,
         record_line_geometry=record_line_geometry,
+        emit_paired_render=emit_paired_render,
     )
     samples = [
         GeneratedSample(
@@ -1900,6 +1922,7 @@ def generate_batch(
     condition: str | None = None,
     text_corpus_path: Path | None = None,
     emit_line_annotations: bool = False,
+    emit_paired_render: bool = False,
 ) -> GenerationManifest:
     manifest, documents = _generate_manifest_and_documents(
         count,
@@ -1910,6 +1933,7 @@ def generate_batch(
         persona=persona,
         condition=condition,
         record_line_geometry=emit_line_annotations,
+        emit_paired_render=emit_paired_render,
     )
     manifest_path = write_manifest(manifest, output_dir)
     if emit_line_annotations:
@@ -1917,4 +1941,8 @@ def generate_batch(
         from hocrsyngen.line_annotations import write_line_annotations
 
         write_line_annotations(manifest, documents, manifest_path)
+    if emit_paired_render:
+        from hocrsyngen.paired_render import write_paired_render
+
+        write_paired_render(manifest, documents, manifest_path)
     return manifest

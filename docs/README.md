@@ -62,3 +62,5 @@ Coding agents should also read [AGENTS.md](../AGENTS.md), [llms.txt](../llms.txt
 ## Credits
 
 Created by [Shay Palachy Affek ](http://www.shaypalachy.com/) [[GitHub](https://github.com/shaypal5)]
+
+- [paired_render.md](paired_render.md): optional same-frame pre-photometric image pairs and validation.
