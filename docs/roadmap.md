@@ -610,7 +610,7 @@ Planned PR breakdown:
 - `S8i` — Regression promotion and schema/CI decision: promote confirmed
   wet-test findings into small deterministic automated tests, and only then
   decide whether wet-test artifact schemas or a CI smoke profile are stable
-  enough to adopt.
+  enough to adopt. Status: done in PR #67.
 - `S8j` — Evidence-run downstream import readiness: let `evidence-run` select
   governed templates with repeatable `--template-id`, record the resolved
   `template_ids`, and emit the downstream-defined
@@ -620,7 +620,7 @@ Planned PR breakdown:
   hocrsyngen-preflight` validate an 80-sample printed/handwritten-like evidence
   root against its release/import model without manifest v1 changes. Release
   eligibility stays `false`; admission, caps, and synthetic target-scale
-  closure remain `hocrgen` work.
+  closure remain `hocrgen` work. Status: done in PR #72.
 
 Deliverables:
 
@@ -755,7 +755,7 @@ Planned PR breakdown:
   - The seed-101 evidence batch and a seed-17 seven-template batch are
     byte-identical to `bbcaf0e` apart from the sidecar.
   - Documented in [line_annotations_v1.md](line_annotations_v1.md#regions-s11a).
-  - Status: in review.
+  - Status: done in PR #76.
 
 Exit criteria:
 
@@ -763,7 +763,7 @@ Exit criteria:
   contains it, and region reading order agrees with `logical_order`.
 - Region annotations never change page bytes or gold.
 
-### S11b — Ledger cell fit (planned)
+### S11b — Ledger cell fit (done in PR #78)
 
 Prevent text in generated ledger cells from crossing column boundaries. Reserve
 adequate width for numeric balances and reject an external corpus token that
@@ -771,3 +771,22 @@ cannot fit in its detail cell; preserve logical text and explicit truncation
 reporting. Verify with mixed Hebrew/Latin and wide-token regression fixtures.
 The change affects newly generated ledger pixels and does not retroactively
 validate earlier batches.
+
+
+## Phase S12 — Generator quality controls
+
+`S12a` — Add an offline, deterministic quality check for a validated batch
+with the line annotations sidecar. Report total and per-template counts of
+truncated source segments, occlusion-flagged lines, affected pages and stable
+page identifiers, plus the manifest and sidecar SHA-256 hashes. The command
+must fail closed when the sidecar is absent or invalid. Optional explicit
+nonnegative maximum thresholds cause a nonzero result when exceeded; report
+only when omitted. Zero is a valid threshold. Invalid values, including bools
+in the Python API, must be rejected. The report is based on recorded
+annotations: flags do not establish visibility, correctness, quality acceptance
+or release eligibility; schema and hash binding do not authenticate them.
+No regeneration, silent filtering, manifest changes or governance behavior.
+Status: planned.
+
+`S12b` — Generation improvement: scope to be selected from the current
+independent quality audit; no implementation contract is assumed yet.
