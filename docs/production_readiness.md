@@ -143,7 +143,7 @@ produce large quality or operational gains.
 | `hocrgen` adapter handoff checklist | `S6g` | Done in PR #54; turns the S6a-S6f evidence contracts into an external downstream adapter consumption checklist without implementing adapter behavior or schemas in this repo. |
 | Recognizer training-data support | `S10a` through `S10c` | `S10a` adds the opt-in `hocrsyngen_line_annotations.v1` sidecar (line polygons and baselines in final-page pixels) and `--text-corpus` so batches can become line-level training data for `heocr-engine` R3 without manifest v1 changes. `S10b` adds a large project-authored training corpus. `S10c` makes page-level gold complete: drawn stamp, caption and marginal text joins `logical_order` in a documented reading order, under generator version `s10c-gold-complete-v1`, and body capacity rules keep all text on the page. |
 | Segmentation training-data support | `S11a` | `S11a` adds typed region polygons, region reading order, and line-to-region back-references to the line annotations sidecar, so `heocr-engine` R4 can train a layout segmenter on regions. Pages, gold, and the manifest are unchanged. |
-| Wet-testing and generator-quality evidence | `S8a` through `S8j` | Active S8 work; `S8a` defines developer-owned smoke/review/soak wet-test evidence, `S8b` adds the deterministic smoke run artifact generator, `S8c` adds the candidate evidence-run wrapper, `S8d` adds the human-first static gallery, `S8e` adds deterministic warning metrics, `S8f` adds the human review worksheet template and validator, `S8g` adds the bounded LLM triage packet export, and `S8h` adds the `wet-report` command that aggregates run metadata, analysis warnings, optional human review, and optional LLM triage notes into a single developer-facing generator-quality report with a hardcoded non-release statement, without creating release-governance behavior, LLM dependencies, network calls, or manifest v1 changes. |
+| Wet-testing and generator-quality evidence | `S8a` through `S8j` | `S8a`–`S8j` merged; `S8a` defines developer-owned smoke/review/soak wet-test evidence, `S8b` adds the deterministic smoke run artifact generator, `S8c` adds the candidate evidence-run wrapper, `S8d` adds the human-first static gallery, `S8e` adds deterministic warning metrics, `S8f` adds the human review worksheet template and validator, `S8g` adds the bounded LLM triage packet export, and `S8h` adds the `wet-report` command that aggregates run metadata, analysis warnings, optional human review, and optional LLM triage notes into a single developer-facing generator-quality report with a hardcoded non-release statement, without creating release-governance behavior, LLM dependencies, network calls, or manifest v1 changes. |
 
 ## Current Planning Track
 
@@ -249,5 +249,6 @@ Use a dry-run flow before any real dataset release decision:
 This rehearsal should prove integration behavior and expose review gaps. It
 should not publish or export release-ready dataset payloads.
 
-Ledger cell fit is planned as `S11b` in `docs/roadmap.md`: independently validate
-newly generated ledger pages before using their text as visible-page gold.
+Ledger cell fit `S11b` merged in PR #78. Independently validate newly generated
+ledger pages before using their text as visible-page gold. `S12a` plans a
+sidecar-based generator quality check; its counts are not release decisions.
