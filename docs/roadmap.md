@@ -77,6 +77,10 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
    v1 or default output bytes. `S10b` adds the project-authored training and
    eval corpora. `S10c` makes page-level gold complete under generator version
    `s10c-gold-complete-v1` (see [CHANGELOG.md](../CHANGELOG.md)).
+10. Advance Phase S11 segmentation training-data support for `heocr-engine`
+    R4. `S11a` adds region geometry and region reading order to the
+    `hocrsyngen_line_annotations.v1` sidecar, without changing page bytes,
+    gold, or the manifest.
 
 ## Current Baseline After S7a
 
@@ -717,7 +721,7 @@ Planned PR breakdown:
   | handwritten_note_heavy_wear | 20 | 100 → 120 | 2,798 → 2,884 (2,387 → 2,473) | +86 (+3.1%) |
   | TOTAL | 80 | 440 → 640 | 12,939 → 13,870 (11,051 → 11,982) | +931 (+7.2%) |
 
-  Status: in review.
+  Status: done in PR #75.
 
 Exit criteria:
 
@@ -726,3 +730,35 @@ Exit criteria:
 - Page-level gold covers every drawn character.
 - External corpora are identified by content hash, never by local path.
 - Page-level answer keys cover all drawn text.
+
+## Phase S11 — Segmentation Training-Data Support
+
+Current status: `open`.
+
+Objective: let candidate batches train a layout segmenter (for example a
+blla-style model from `ketos segtrain`, `HeOCR/heocr-engine` roadmap R4) with
+region geometry and region reading order, through the same opt-in, hash-bound
+sidecar, without changing page bytes, gold, or the manifest.
+
+Planned PR breakdown:
+
+- `S11a` — Region geometry in the line annotations sidecar. Each page gains a
+  `regions` list (`region_index`, `type`, `polygon`, `reading_order_index`,
+  `line_indices`), and each line gains a `region_index` back-reference.
+  - A region polygon is the padded, rotated box around the region's line text
+    boxes and its drawn furniture: stamp ring, ledger table frame, signature
+    rule, marginal underline.
+  - The three printed-letter signature blocks are separate regions, right to
+    left.
+  - The change is additive under the same schema id, and `GENERATOR_VERSION`
+    is not bumped.
+  - The seed-101 evidence batch and a seed-17 seven-template batch are
+    byte-identical to `bbcaf0e` apart from the sidecar.
+  - Documented in [line_annotations_v1.md](line_annotations_v1.md#regions-s11a).
+  - Status: in review.
+
+Exit criteria:
+
+- Every annotated line belongs to exactly one typed region whose polygon
+  contains it, and region reading order agrees with `logical_order`.
+- Region annotations never change page bytes or gold.

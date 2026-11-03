@@ -92,6 +92,7 @@ class SyntheticDocument:
     logical_text: str
     # Final-page line geometry; populated only when generation records it.
     lines: tuple[LineGeometry, ...] | None = None
+    regions: tuple[RegionGeometry, ...] | None = None
     truncated_segments: int | None = None
 
 
@@ -170,6 +171,9 @@ class DocumentRender:
 
 
 LINE_POLYGON_PADDING = 4
+# Region polygons pad their pre-rotation box by twice the line padding, so
+# every line polygon sits at least 4 px inside its region polygon.
+REGION_POLYGON_PADDING = 8
 OVERLAY_TEXT_REGIONS = frozenset({"stamp_area", "margin", "signature_area"})
 LOGICAL_JOIN_SPACE = "space"
 LOGICAL_JOIN_CELL = "cell"
@@ -199,6 +203,24 @@ class LineGeometry:
     occluded: bool
     # True when the unclamped polygon left the page and was clamped to it.
     clipped: bool = False
+    region_index: int | None = None
+
+
+@dataclass(frozen=True)
+class RegionGeometry:
+    """One laid-out text region in final-page pixel coordinates.
+
+    ``polygon`` is the pre-rotation box around the region's line text boxes
+    and its drawn furniture (stamp ring, ledger frame, signature rule,
+    marginal underline), padded and mapped through the page rotation like line
+    polygons. ``line_indices`` index the reading-ordered ``lines``.
+    """
+
+    region_index: int
+    region_type: str
+    polygon: tuple[tuple[int, int], ...]
+    reading_order_index: int | None
+    line_indices: tuple[int, ...]
 
 
 @dataclass(frozen=True)
@@ -209,6 +231,9 @@ class _RecordedLine:
     logical_join: str | None
     box: Box
     baseline_y: float
+    # Lines sharing a key form one region; the key defaults to the region
+    # type, so only separate blocks of one type (signature columns) set it.
+    region_key: str
 
 
 @dataclass
@@ -223,6 +248,9 @@ class _LineRecorder:
 
     lines: list[_RecordedLine] = field(default_factory=list)
     marks: list[tuple[tuple[Point, ...], float, int | None]] = field(default_factory=list)
+    # Drawn region furniture as (box, owner line index); it widens the owner's
+    # region polygon.
+    region_boxes: list[tuple[Box, int]] = field(default_factory=list)
     rotation_degrees: float = 0.0
     # Wrapped body segments a capped renderer never drew (and so never put
     # into logical_order).
@@ -239,12 +267,18 @@ class _LineRecorder:
         region: str,
         logical_line_index: int | None,
         logical_join: str | None,
+        region_key: str | None = None,
     ) -> None:
         if anchor != "ra":
             raise ValueError(f"Line geometry recording supports anchor 'ra' only, got {anchor!r}")
         box = draw.textbbox(xy, _rtl_display_text(text), font=font, anchor=anchor, direction="rtl")
         baseline_y = xy[1] + font.getmetrics()[0]
-        self.lines.append(_RecordedLine(region, text, logical_line_index, logical_join, box, baseline_y))
+        self.lines.append(
+            _RecordedLine(region, text, logical_line_index, logical_join, box, baseline_y, region_key or region)
+        )
+
+    def add_region_box(self, box: Box, *, owner: int) -> None:
+        self.region_boxes.append((box, owner))
 
     def mark_polyline(self, points: Sequence[Point], width: float, *, owner: int | None = None) -> None:
         self.marks.append((tuple(points), width, owner))
@@ -280,8 +314,25 @@ class _LineRecorder:
                 return True
         return False
 
+    def _reading_order(self) -> list[int]:
+        # Logical (reading) order; drawing order differs where an annotation
+        # such as a stamp is drawn before the text it follows.
+        return sorted(
+            range(len(self.lines)),
+            key=lambda index: (
+                self.lines[index].logical_line_index is None,
+                self.lines[index].logical_line_index or 0,
+            ),
+        )
+
+    def _region_keys(self) -> list[str]:
+        """Region keys in region_index order: by each region's first line in reading order."""
+
+        return list(dict.fromkeys(self.lines[index].region_key for index in self._reading_order()))
+
     def final_lines(self, size: tuple[int, int]) -> tuple[LineGeometry, ...]:
         width, height = size
+        region_index = {key: position for position, key in enumerate(self._region_keys())}
         lines: list[LineGeometry] = []
         for index, line in enumerate(self.lines):
             left, top, right, bottom = line.box
@@ -305,16 +356,41 @@ class _LineRecorder:
                     baseline=tuple(_clamped_point(point, size) for point in rotated[4:]),
                     occluded=self._occluded(index),
                     clipped=clipped,
+                    region_index=region_index[line.region_key],
                 )
             )
-        # Emit in logical (reading) order; drawing order differs where an
-        # annotation such as a stamp is drawn before the text it follows.
-        return tuple(
-            sorted(
-                lines,
-                key=lambda line: (line.logical_line_index is None, line.logical_line_index or 0),
+        return tuple(lines[index] for index in self._reading_order())
+
+    def final_regions(self, size: tuple[int, int]) -> tuple[RegionGeometry, ...]:
+        order = self._reading_order()
+        regions: list[RegionGeometry] = []
+        next_reading_order_index = 0
+        for region_index, key in enumerate(self._region_keys()):
+            members = [index for index in order if self.lines[index].region_key == key]
+            boxes = [self.lines[index].box for index in members]
+            boxes.extend(box for box, owner in self.region_boxes if owner in members)
+            pad = REGION_POLYGON_PADDING
+            left = min(box[0] for box in boxes) - pad
+            top = min(box[1] for box in boxes) - pad
+            right = max(box[2] for box in boxes) + pad
+            bottom = max(box[3] for box in boxes) + pad
+            corners = ((left, top), (right, top), (right, bottom), (left, bottom))
+            reading_order_index: int | None = None
+            if any(self.lines[index].logical_line_index is not None for index in members):
+                reading_order_index = next_reading_order_index
+                next_reading_order_index += 1
+            regions.append(
+                RegionGeometry(
+                    region_index=region_index,
+                    region_type=self.lines[members[0]].region,
+                    polygon=tuple(
+                        _clamped_point(_rotated_point(point, self.rotation_degrees, size), size) for point in corners
+                    ),
+                    reading_order_index=reading_order_index,
+                    line_indices=tuple(order.index(index) for index in members),
+                )
             )
-        )
+        return tuple(regions)
 
 
 def _ellipse_points(box: Box, start: float, end: float, segments: int) -> tuple[Point, ...]:
@@ -463,6 +539,7 @@ def _draw_rtl_text(
     region: str | None = None,
     logical_line_index: int | None = None,
     logical_join: str | None = None,
+    region_key: str | None = None,
 ) -> None:
     _require_raqm()
     if recorder is not None and region is not None:
@@ -475,6 +552,7 @@ def _draw_rtl_text(
             region=region,
             logical_line_index=logical_line_index,
             logical_join=logical_join,
+            region_key=region_key,
         )
     draw.text(xy, _rtl_display_text(text), font=font, fill=fill, anchor=anchor, direction="rtl")
 
@@ -1000,6 +1078,8 @@ def _draw_stamp(
         draw, (center_x + 62, center_y - 13), STAMP_TEXT, font=font, fill=color,
         recorder=recorder, region="stamp_area", logical_line_index=logical_line_index,
     )
+    if recorder is not None:
+        recorder.add_region_box(ellipse, owner=recorder.last_line_index())
     return STAMP_TEXT
 
 
@@ -1029,6 +1109,7 @@ def _draw_marginalia(
     if recorder is not None:
         # The stroke underlines the note just drawn.
         recorder.mark_polyline(((x, y + 44), (x + 120, y + 32)), 2, owner=recorder.last_line_index())
+        recorder.add_region_box((x - 1, y + 31, x + 121, y + 45), owner=recorder.last_line_index())
     for _ in range(2):
         sx = x + randomizer.randint(5, 95)
         sy = y + randomizer.randint(60, 140)
@@ -1152,6 +1233,10 @@ def _draw_archive_card(
         draw, (stamp_x + 48, stamp_y - 14), "ארכיון", font=stamp_font, fill=stamp_ink,
         recorder=recorder, region="stamp_area", logical_line_index=labels_start + len(labels),
     )
+    if recorder is not None:
+        recorder.add_region_box(
+            (stamp_x - 92, stamp_y - 42, stamp_x + 92, stamp_y + 42), owner=recorder.last_line_index()
+        )
 
     footer_text = f"{footer} - {archive_id}"
     _draw_rtl_text(
@@ -1271,6 +1356,8 @@ def _draw_ledger(
             draw, (x, table_top + 22), header, font=label_font, fill=label_ink,
             recorder=recorder, region="table_cells", logical_line_index=3 + header_index,
         )
+        if recorder is not None and header_index == 0:
+            recorder.add_region_box((table_left, table_top, table_right, table_bottom), owner=recorder.last_line_index())
 
     wrapped_lines: list[str] = []
     detail_width = column_widths[3] - 28
@@ -1514,7 +1601,11 @@ def _draw_document(
             _draw_rtl_text(
                 draw, (x, y + 12), SIGNATURE_CAPTION, font=annotation_font, fill=(104, 92, 76, 255),
                 recorder=recorder, region="signature_area", logical_line_index=annotation_index + 1 + column,
+                region_key=f"signature_area:{column}",
             )
+            if recorder is not None:
+                # Each signature block is its own region: rule plus caption.
+                recorder.add_region_box((x - 120, y - 1, x, y + 1), owner=recorder.last_line_index())
 
     return DocumentRender(
         image=_degrade(
@@ -1676,6 +1767,7 @@ def generate_documents(
                 generator_version=GENERATOR_VERSION,
                 logical_text=logical_text,
                 lines=recorder.final_lines(image.size) if recorder is not None else None,
+                regions=recorder.final_regions(image.size) if recorder is not None else None,
                 truncated_segments=recorder.truncated_segments if recorder is not None else None,
             )
         )

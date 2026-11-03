@@ -3,7 +3,9 @@
 `S10a` adds an opt-in per-line geometry sidecar so generated pages can become
 line-level recognizer training data (for example Kraken/ketos). It is written
 next to `generation_manifest.json` and does not change manifest v1, its schema,
-the packaged contract fixture, or any page asset.
+the packaged contract fixture, or any page asset. `S11a` adds region geometry
+and region reading order (see Regions) so a layout segmenter can be trained on
+the same pages.
 
 ```bash
 hocrsyngen generate --count 80 --seed 101 --output out/batch \
@@ -26,8 +28,8 @@ one manifest by content hash (`generation_manifest_sha256`) and to each page by
 
 ## Payload
 
-Three lines of seed-101 sample 0 (`printed_letter`, generator
-`s10c-gold-complete-v1`):
+Three lines and three of the seven regions of seed-101 sample 0
+(`printed_letter`, generator `s10c-gold-complete-v1`):
 
 ```json
 {
@@ -44,14 +46,22 @@ Three lines of seed-101 sample 0 (`printed_letter`, generator
       "truncated_segments": 0,
       "lines": [
         {"line_index": 0, "logical_line_index": 0, "logical_join": null, "occluded": false,
-         "region": "title", "text": "מכתב מנהלי",
+         "region": "title", "region_index": 0, "text": "מכתב מנהלי",
          "polygon": [[775, 123], [1082, 122], [1082, 172], [775, 173]], "baseline": [[779, 167], [1078, 166]]},
         {"line_index": 1, "logical_line_index": 1, "logical_join": null, "occluded": true,
-         "region": "body", "text": "בדיקת אותיות סופיות ךםןףץ נשמרה ברשימת הבקרה.",
+         "region": "body", "region_index": 1, "text": "בדיקת אותיות סופיות ךםןףץ נשמרה ברשימת הבקרה.",
          "polygon": [[218, 256], [1104, 252], [1104, 289], [218, 293]], "baseline": [[222, 283], [1100, 279]]},
         {"line_index": 5, "logical_line_index": 5, "logical_join": null, "occluded": false,
-         "region": "stamp_area", "text": "נבדק",
+         "region": "stamp_area", "region_index": 2, "text": "נבדק",
          "polygon": [[337, 324], [398, 324], [398, 350], [337, 350]], "baseline": [[341, 342], [394, 342]]}
+      ],
+      "regions": [
+        {"region_index": 0, "type": "title", "reading_order_index": 0, "line_indices": [0],
+         "polygon": [[771, 119], [1086, 118], [1086, 176], [771, 177]]},
+        {"region_index": 1, "type": "body", "reading_order_index": 1, "line_indices": [1, 2, 3, 4],
+         "polygon": [[214, 252], [1108, 248], [1109, 497], [215, 501]]},
+        {"region_index": 2, "type": "stamp_area", "reading_order_index": 2, "line_indices": [5],
+         "polygon": [[219, 265], [445, 264], [445, 392], [219, 393]]}
       ]
     }
   ]
@@ -75,6 +85,7 @@ Line fields:
 | `logical_join` | How this segment continues its logical line: `"space"` (wrapped body text, joined with one space) or `"cell"` (ledger cell, joined with `" \| "`). `null` on the first segment of a logical line and on every line with `logical_line_index: null`. |
 | `occluded` | `true` when a stamp ring, an overlay stroke (ledger tick or correction, marginal stroke), or an overlay text box intersects this line's text box. |
 | `region` | `title`, `body`, `footer`, `identifier_area`, `table_cells`, `stamp_area`, `signature_area`, or `margin` (the `template_catalog.v2` page-region vocabulary). |
+| `region_index` | `S11a`: index into the page's `regions` of the one region holding this line. Present exactly when the page has `regions`. |
 | `text` | NFC-normalized, logical-order Hebrew, exactly as drawn. |
 | `polygon`, `baseline` | See Coordinates. |
 
@@ -94,6 +105,70 @@ Line fields:
   would flip the extracted line image.
 - Points are clamped into the page. No line in the seed-101 evidence batch
   needed clamping.
+
+## Regions (S11a)
+
+Each page lists its laid-out text regions in `regions`, so a segmenter (for
+example `ketos segtrain`) can learn region types and region reading order next
+to line geometry.
+
+| Field | Meaning |
+| --- | --- |
+| `region_index` | `0..n-1` in reading order: regions sorted by their first `line_index`. |
+| `type` | The region name its lines carry in `region`. |
+| `polygon` | See Region Polygons. Four points clockwise from the top-left corner, integer final-page pixels. |
+| `reading_order_index` | Position of the region in `logical_order` reading order, `0..k-1`. `null` only for a region whose lines all have `logical_line_index: null`; no current template has one, so today it equals `region_index`. |
+| `line_indices` | Strictly increasing `line_index` values of the region's lines. |
+
+What a region is:
+
+- Lines of one region type form one region, except where the generator lays
+  out separate blocks of one type. Today that is only the three printed-letter
+  signature blocks, which are three `signature_area` regions in reading order
+  right to left.
+- Regions per render family, in `region_index` order:
+
+  | Family | Regions |
+  | --- | --- |
+  | `printed_letter` | `title`, `body`, `stamp_area`, 3 × `signature_area`, `footer` |
+  | `handwritten_note` | `title`, `body`, `margin`, `footer` |
+  | `archive_card` | `title`, `identifier_area` (card id and date), `body`, `table_cells` (the four field labels), `stamp_area`, `footer` |
+  | `ledger` | `title`, `identifier_area` (ledger id and date), `table_cells` (header row and every row cell), `footer` (footer text and page number) |
+
+- Reading the regions in `reading_order_index` order, and each region's
+  `line_indices` in order, visits every line in `line_index` order. Each
+  region therefore covers a contiguous run of `logical_order` lines, and the
+  `logical_order` rebuild works region by region.
+
+### Region Polygons
+
+A region polygon is the pre-rotation axis-aligned box around:
+
+- the text bounding boxes of its lines;
+- the region furniture the generator draws for it, where there is any. That is
+  the stamp ring (printed letters, archive cards), the ledger table frame, each
+  signature rule, and the marginal note's underline stroke;
+
+padded by 8 px and mapped through the page rotation like line polygons, then
+clamped into the page. Line polygons pad by 4 px, so every line polygon lies at
+least 4 px inside its region polygon before rounding. `validate` checks
+containment with 1 px tolerance.
+
+Why this choice:
+
+- Only the stamp ring, ledger frame, and signature rules are drawn boxes. The
+  body, title, identifier, label, and footer areas have no drawn outline: the
+  layout fixes their right anchor and wrap width but not a box. A "layout
+  column" box would be a guess, so those regions use their lines' extent.
+- The archive card's ruled columns are not used as region boxes: its stamp ring
+  crosses the column rule and its footer sits inside the body column.
+- The handwritten note's two scribble arcs under the margin note are overlay
+  marks, not text, and are not part of the margin region.
+
+Overlap: regions overlap only where the page itself overlaps. On printed
+letters the stamp region lies over the left end of the body region, as the
+stamp ring does on the page. On the seed-17 seven-template batch and the
+seed-101 evidence batch, no two other regions' polygons intersect.
 
 ## Rebuilding `logical_order`
 
@@ -202,7 +277,33 @@ No handwritten-family line is marked.
 - in-page coordinates, and baselines whose x never decreases from first to
   last point;
 - `logical_join` / `logical_line_index` consistency;
-- the `logical_order` rebuild above.
+- the `logical_order` rebuild above;
+- regions (S11a), when present. Either every page has `regions` and every line
+  a `region_index`, or none do. `region_index` must be contiguous. Every line
+  must be in exactly one region, of the same type, and its back-reference must
+  match. Each region polygon must contain its line polygons (1 px tolerance).
+  `reading_order_index` must follow the rule above, and the regions must walk
+  the lines in `line_index` order.
+
+## Schema Id And Compatibility
+
+`S11a` keeps the schema id `hocrsyngen_line_annotations.v1`. The change is
+purely additive: `regions` on pages and `region_index` on lines. Every S10
+field keeps its meaning and value, and removing the two new fields from an
+S11a sidecar gives exactly the sidecar the previous code wrote for the same
+batch.
+
+- The JSON schema lists both fields as optional, so `validate` still accepts
+  sidecars written before `S11a`. The writer always emits them.
+- The schema is closed (`additionalProperties: false`), so a hocrsyngen build
+  from before `S11a` rejects an S11a sidecar in `validate`. Validate a batch
+  with the hocrsyngen version that wrote it, or a newer one.
+- `heocr-engine` `prepare-kraken-data` reads only the fields it needs and
+  ignores the new ones. Its main branch (`51dc868`) accepts S11a sidecars
+  unchanged.
+- `GENERATOR_VERSION` is not bumped. Page bytes, `logical_order`, and the
+  manifest are unchanged, which matches `S10a`, which also added the sidecar
+  without a version bump.
 
 ## External Text Corpora
 
@@ -230,6 +331,10 @@ Recording geometry never draws from the generator's random stream:
   `c4b4ca4ed5b92080c0a4d13c4fa2da505080da11b37203ecb0d4fa1bcb164ec3`.
   Its pages are byte-identical to the `d4a-realism-v2` batch (manifest
   `9b6e54f7…`).
+- Recording regions (`S11a`) draws nothing and never uses the random stream.
+  The seed-101 evidence batch and a seed-17, 28-sample, seven-template batch
+  are byte-identical to `bbcaf0e` (before `S11a`) except for
+  `line_annotations.json`. The manifest sha256 is still `c4b4ca4e…`.
 
 ## Gold Finding (seed 101, `d4a-realism-v2`; resolved in `S10c`)
 

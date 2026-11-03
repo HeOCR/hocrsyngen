@@ -26,6 +26,16 @@ to [docs/roadmap.md](docs/roadmap.md).
   Its page assets are unchanged.
 - Validation still accepts `d4a-realism-v2` batches.
 
+### S11a: sidecar regions (same generator version)
+
+- `line_annotations.json` pages gain `regions` (typed region polygons and
+  region reading order), and lines gain `region_index`. The schema id stays
+  `hocrsyngen_line_annotations.v1`, and the change is additive. See
+  [line_annotations_v1.md](docs/line_annotations_v1.md#regions-s11a).
+- Page images, `logical_order`, and the manifest are unchanged, so
+  `GENERATOR_VERSION` stays `s10c-gold-complete-v1`. The seed-101 evidence
+  manifest is still `c4b4ca4e…`.
+
 ## d4a-realism-v2
 
 - Baseline before `S10c`. Drawn stamp, caption, and marginal text was absent
