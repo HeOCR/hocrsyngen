@@ -91,7 +91,10 @@ This roadmap is specific to `hocrsyngen`. It complements `hocrgen` by focusing o
     and eval corpora, documented in
     [mixed_script_text_corpus_card.md](mixed_script_text_corpus_card.md),
     without changing generator code, page bytes for existing corpora, or the
-    manifest.
+    manifest. `S13b` adds typeset Hebrew train and eval corpora that use em
+    and en dashes, geresh and gershayim, typographic quotes and the ellipsis
+    (HeOCR/hocrsyngen#87), documented in
+    [typographic_text_corpus_card.md](typographic_text_corpus_card.md).
 
 ## Current Baseline After S7a
 
@@ -848,6 +851,16 @@ Planned PR breakdown:
   no-loss wrapping rule, privacy rules, and minimum coverage per token class.
   No generator code changes. Documented in
   [mixed_script_text_corpus_card.md](mixed_script_text_corpus_card.md).
+  Status: done (PR #84).
+- `S13b` — Typographic punctuation corpora (#87):
+  `hebrew_typographic_lines_train_v1.txt` and
+  `hebrew_typographic_lines_eval_v1.txt`, agent-authored typeset Hebrew in
+  which em and en dashes, geresh, gershayim, typographic quotes, the ellipsis
+  and semicolons occur at realistic rates. The S10b and S13a corpora reject
+  these characters and stay byte-identical. Tests cover the same leakage,
+  order, wrapping and privacy rules as S13a, plus mark placement, rate bands
+  and a glyph check in both packaged fonts. No generator code changes.
+  Documented in [typographic_text_corpus_card.md](typographic_text_corpus_card.md).
   Status: in review.
 
 Exit criteria:

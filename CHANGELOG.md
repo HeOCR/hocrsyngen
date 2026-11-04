@@ -4,6 +4,17 @@ Generator-output changes for `hocrsyngen`, keyed by `GENERATOR_VERSION` (the
 `generator_version` recorded on every manifest sample). Roadmap notations refer
 to [docs/roadmap.md](docs/roadmap.md).
 
+## S13b: typographic punctuation corpora (generator version unchanged, `s11b-ledger-fit-v1`)
+
+- New packaged text only: `texts/hebrew_typographic_lines_train_v1.txt` and
+  `texts/hebrew_typographic_lines_eval_v1.txt`, documented in
+  [docs/typographic_text_corpus_card.md](docs/typographic_text_corpus_card.md).
+  They add em dash, en dash, geresh, gershayim, typographic quotes and the
+  ellipsis, which no earlier packaged corpus contains (#87). Use them with
+  `--text-corpus`.
+- No generator code changes. The existing packaged corpora are byte-identical,
+  so are pages generated from them, and the default corpus is unchanged.
+
 ## S13a: mixed-script text corpora (generator version unchanged, `s11b-ledger-fit-v1`)
 
 - New packaged text only: `texts/hebrew_mixed_lines_train_v1.txt` and

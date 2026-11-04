@@ -38,6 +38,7 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `src/hocrsyngen/data/synthetic/fonts/manifest.yaml`: governed packaged font registry.
 - `src/hocrsyngen/data/synthetic/texts/hebrew_lines.txt`: packaged Hebrew text corpus.
 - `src/hocrsyngen/data/synthetic/texts/hebrew_mixed_lines_*_v1.txt`: S13a mixed Hebrew/Latin/digit train and eval corpora (`docs/mixed_script_text_corpus_card.md`).
+- `src/hocrsyngen/data/synthetic/texts/hebrew_typographic_lines_*_v1.txt`: S13b typeset Hebrew train and eval corpora with em/en dashes, geresh/gershayim, typographic quotes and ellipses (`docs/typographic_text_corpus_card.md`).
 - `tests/`: contract, generation, validation, installation, and wheel packaging tests.
 - `docs/production_readiness.md`: current readiness state, explicit missing production pieces, high-lift quality work, and external hocrgen dependencies.
 - `docs/handwriting_research_acceptance_criteria.md`: S5a handwriting research boundaries, reproducibility, licensing, review, evaluation, and stop/reject gates.
