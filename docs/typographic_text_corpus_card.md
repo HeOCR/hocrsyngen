@@ -366,6 +366,9 @@ floors are about 75% of train and 60% of eval):
 - **One quotation convention per style.** Quotes use `“…”` and `„…”` with `”`
   closing. Other conventions are not covered, for example gershayim used as
   quotation marks, or `”…“` as some Israeli typesetting uses.
+- **No maqaf.** Maqaf `־` (U+05BE) is excluded here, as in S10b and S13a,
+  although real typeset Hebrew uses it in hyphenated compounds and before
+  numbers. It is a known gap for a later corpus.
 - **No distribution claim.** Rates are chosen to be realistic and are tested;
   they describe this corpus only.
 - **Synthetic only.** The corpus is not a substitute for real-scan evaluation.
