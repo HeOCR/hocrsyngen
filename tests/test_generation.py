@@ -487,7 +487,7 @@ def test_stable_seed_manifest_identity_and_output_layout_drift_guard(tmp_path: P
         assert page["media_type"] == "image/jpeg"
         assert (page["width"], page["height"]) == CANVAS_SIZE
         assert (output_dir / Path(*asset_path.parts)).is_file()
-        assert sample["generator_version"] == "s11b-ledger-fit-v1"
+        assert sample["generator_version"] == "s14a-ledger-wrap-v1"
         assert sample["provenance"]["seed"] == 29
         assert sample["provenance"]["recipe_id"] == sample["recipe_id"]
         assert sample["provenance"]["source_corpus"] == "packaged:synthetic/texts/hebrew_lines.txt"
@@ -1368,7 +1368,7 @@ def test_synthetic_generation_uses_packaged_fonts_and_curated_text(tmp_path: Pat
     )
 
     assert {document.path.suffix for document in documents} == {".jpg"}
-    assert {document.generator_version for document in documents} == {"s11b-ledger-fit-v1"}
+    assert {document.generator_version for document in documents} == {"s14a-ledger-wrap-v1"}
     assert {document.template_id: document.font_id for document in documents} == {
         "printed_letter": "alef-regular",
         "handwritten_note": "gveret-levin-regular",

@@ -23,11 +23,12 @@ from hocrsyngen.manifest import (
 )
 
 
-GENERATOR_VERSION = "s11b-ledger-fit-v1"
+GENERATOR_VERSION = "s14a-ledger-wrap-v1"
 # Earlier generator versions whose batches still validate. d4a-realism-v2 drew
 # the same pages but left stamp, signature-caption and marginal text out of
-# logical_order (S10c).
-PREVIOUS_GENERATOR_VERSIONS = ("d4a-realism-v2", "s10c-gold-complete-v1")
+# logical_order (S10c). s11b-ledger-fit-v1 dropped most wrapped ledger detail
+# rows past the 10-row table (S14a).
+PREVIOUS_GENERATOR_VERSIONS = ("d4a-realism-v2", "s10c-gold-complete-v1", "s11b-ledger-fit-v1")
 CANVAS_SIZE = (1200, 1600)
 PAPER_MARGIN = 96
 DEFAULT_TEMPLATE_IDS = ["printed_letter", "handwritten_note"]
@@ -1289,6 +1290,31 @@ def _draw_archive_card(
     )
 
 
+# Ledger column widths from the left: row number, date, amount, details. The
+# balance column takes the rest of the table (144 px, +/- 12 px of table
+# jitter). Number, date and amount hold short fixed-format values, so S14a
+# gives their spare width to the wrapped details column.
+LEDGER_COLUMN_WIDTHS = (130, 140, 110, 360)
+# s11b-ledger-fit-v1 widths. They still set how many row draws a ledger page
+# takes from the shared random stream; see _draw_ledger.
+S11B_LEDGER_COLUMN_WIDTHS = (150, 170, 180, 250)
+# A cell's right anchor is inset 22 px and can jitter left by 18 px. Leave
+# another 4 px for the annotation padding, even at maximum drift.
+LEDGER_CELL_INSET = 22 + 18 + 4
+
+
+def _ledger_row_draws(randomizer: random.Random, standard: StyleBundle) -> tuple[int, int, int, int, int, int]:
+    """Draw one ledger row's jitter and cell values: y, x, amount, balance, day, month."""
+    return (
+        randomizer.randint(*standard.printed_y_jitter),
+        randomizer.randint(0, standard.printed_x_jitter),
+        randomizer.randint(12, 980),
+        randomizer.randint(100, 4980),
+        randomizer.randint(1, 28),
+        randomizer.randint(1, 12),
+    )
+
+
 def _draw_ledger_tick(
     draw: ImageDraw.ImageDraw,
     x: int,
@@ -1356,7 +1382,7 @@ def _draw_ledger(
     draw.rectangle((table_left, table_top, table_right, table_bottom), outline=edge, width=3)
     header_bottom = table_top + 70
     draw.line((table_left, header_bottom, table_right, header_bottom), fill=edge, width=3)
-    column_widths = [150, 170, 180, 250, table_right - table_left - 150 - 170 - 180 - 250]
+    column_widths = [*LEDGER_COLUMN_WIDTHS, table_right - table_left - sum(LEDGER_COLUMN_WIDTHS)]
     column_edges = [table_left]
     for width in column_widths:
         column_edges.append(column_edges[-1] + width)
@@ -1387,9 +1413,7 @@ def _draw_ledger(
             recorder.add_region_box((table_left, table_top, table_right, table_bottom), owner=recorder.last_line_index())
 
     wrapped_lines: list[str] = []
-    # Right anchor is inset 22 px and can jitter left by 18 px. Leave
-    # another 4 px for the annotation padding, even at maximum drift.
-    detail_width = column_widths[3] - 22 - 18 - 4
+    detail_width = column_widths[3] - LEDGER_CELL_INSET
     for line in body_lines:
         for token in line.split():
             left, _, right, _ = draw.textbbox((0, 0), token, font=body_font, direction="rtl")
@@ -1403,20 +1427,13 @@ def _draw_ledger(
     logical_rows: list[str] = []
     standard = STYLE_BUNDLES["style_standard_v1"]
     for index, line in enumerate(rendered_body_lines):
-        y_offset = _map_jitter(
-            randomizer.randint(*standard.printed_y_jitter),
-            standard.printed_y_jitter,
-            style_bundle.printed_y_jitter,
-        )
-        x_offset = _map_jitter(
-            randomizer.randint(0, standard.printed_x_jitter),
-            (0, standard.printed_x_jitter),
-            (0, style_bundle.printed_x_jitter),
-        )
+        y_draw, x_draw, amount_draw, balance_draw, day, month = _ledger_row_draws(randomizer, standard)
+        y_offset = _map_jitter(y_draw, standard.printed_y_jitter, style_bundle.printed_y_jitter)
+        x_offset = _map_jitter(x_draw, (0, standard.printed_x_jitter), (0, style_bundle.printed_x_jitter))
         y = header_bottom + 24 + index * row_height + y_offset
-        amount = f"{randomizer.randint(12, 980):,}"
-        balance = f"{randomizer.randint(100, 4980):,}"
-        row_date = f"{randomizer.randint(1, 28):02d}/{randomizer.randint(1, 12):02d}"
+        amount = f"{amount_draw:,}"
+        balance = f"{balance_draw:,}"
+        row_date = f"{day:02d}/{month:02d}"
         row_number = f"{index + 1:02d}"
         fill_value = max(18, min(78, 33 + style_bundle.ink_delta + condition_bundle.ink_delta))
         row_ink = (fill_value, max(16, fill_value - 4), max(12, fill_value - 9), 255)
@@ -1439,6 +1456,13 @@ def _draw_ledger(
             if recorder is not None:
                 recorder.mark_polyline(((column_edges[3] + 16, y + 36), (column_edges[4] - 26, y + 30)), 2)
         logical_rows.append(" | ".join(values))
+    # Later pages of a mixed batch draw from the same random stream. Take the
+    # row draws s11b took (one per wrapped segment, up to row_count), so the
+    # wider details column changes ledger pages only.
+    s11b_width = S11B_LEDGER_COLUMN_WIDTHS[3] - LEDGER_CELL_INSET
+    s11b_rows = min(row_count, sum(len(_wrap_hebrew_text(draw, line, body_font, s11b_width)) for line in body_lines))
+    for _ in range(s11b_rows - len(rendered_body_lines)):
+        _ledger_row_draws(randomizer, standard)
 
     footer_text = f"{footer} - {ledger_id}"
     footer_index = 3 + len(headers) + len(rendered_body_lines)

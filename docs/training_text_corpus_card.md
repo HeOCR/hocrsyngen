@@ -195,6 +195,10 @@ ledger pages drop trailing rows:
   That is the chance that 5 sampled lines wrap to more than 10 rows; see
   `scripts/text_corpus_stats.py`.
 - **The 19 seed-101 reference lines:** **99.96%**.
+- **Later versions:** `s11b-ledger-fit-v1` narrowed the cell to 206 px, and
+  a 200-page ledger batch truncated on 68.0% of pages.
+  `s14a-ledger-wrap-v1` widens it to 316 px, and the same batch truncates on
+  5.0% (#85).
 
 Only drawn rows enter the ledger's page text and the S10a line annotations.
 Line-level training data stays consistent; page-level ledger text is

@@ -11,7 +11,7 @@ import pytest
 from PIL import Image, ImageDraw
 
 import hocrsyngen.generator as generator_module
-from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
+from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path, synthetic_data_path
 from hocrsyngen.cli import main
 from hocrsyngen.generator import (
     CANVAS_SIZE,
@@ -695,26 +695,83 @@ def test_default_fixture_pages_and_gold_remain_unchanged(tmp_path: Path) -> None
     assert actual == packaged
 
 
+LEDGER_HEADERS = ["מס'", "תאריך", "סכום", "פרטים", "יתרה"]
+
+
 @pytest.mark.parametrize("persona", ["style_standard_v1", "style_open_drift_v1", "style_compact_steady_v1"])
-def test_ledger_details_remain_inside_columns_at_all_styles(tmp_path: Path, monkeypatch, persona: str) -> None:
+def test_ledger_cells_remain_inside_columns_at_all_styles(tmp_path: Path, monkeypatch, persona: str) -> None:
     corpus = tmp_path / "near-fit.txt"
-    corpus.write_text("אבגדהוזחטיכלמנ\n", encoding="utf-8")
+    # 300 px in 30 px Alef; the details cell leaves 316 px for text.
+    corpus.write_text("אבגדהוזחטיכלמנסעפצקר\n", encoding="utf-8")
     actual_draw = generator_module._draw_rtl_text
     records = []
 
     def capture(draw, xy, text, **kwargs):
         if kwargs.get("region") == "table_cells":
             bbox = draw.textbbox(xy, text, font=kwargs["font"], anchor=kwargs.get("anchor", "ra"), direction="rtl")
-            records.append((text, kwargs.get("logical_join"), xy, bbox))
+            records.append((text, kwargs["logical_line_index"], xy, bbox))
         return actual_draw(draw, xy, text, **kwargs)
 
     monkeypatch.setattr(generator_module, "_draw_rtl_text", capture)
     for seed in range(8):
         records.clear()
         generate_batch(1, seed, tmp_path / f"batch-{seed}", ["ledger"], text_corpus_path=corpus, persona=persona)
-        detail_anchor = next(xy[0] for text, join, xy, _ in records if text == "פרטים")
-        left_edge = detail_anchor + 22 - 250
-        right_edge = detail_anchor + 22
-        details = [bbox for text, join, _, bbox in records if join == "cell" and text.startswith("אבג")]
-        assert details
-        assert all(left_edge <= box[0] and box[2] <= right_edge for box in details)
+        rights = [next(xy[0] for text, _, xy, _ in records if text == header) + 22 for header in LEDGER_HEADERS]
+        lefts = [rights[0] - generator_module.LEDGER_COLUMN_WIDTHS[0], *rights[:-1]]
+        rows: dict[int, list[tuple[int, int, int, int]]] = {}
+        for _, index, _, bbox in records:
+            if index >= 3 + len(LEDGER_HEADERS):
+                rows.setdefault(index, []).append(bbox)
+        assert rows
+        for cells in rows.values():
+            for box, left, right in zip(cells, lefts, rights, strict=True):
+                assert left <= box[0] and box[2] <= right
+
+
+@pytest.mark.parametrize("corpus_name", ["hebrew_lines_train_v1.txt", "hebrew_mixed_lines_train_v1.txt"])
+def test_ledger_truncation_rate_is_bounded_on_training_corpora(tmp_path: Path, corpus_name: str) -> None:
+    """Wrapped detail rows past the 10-row table are truncated on few pages.
+
+    Pages with truncated_segments > 0 among these 40 (S10b, S13a corpus):
+    s10c-gold-complete-v1 6 and 10, s11b-ledger-fit-v1 29 and 38, S14a 4
+    and 1. The bound leaves room for shaping differences between Pillow
+    builds and does not depend on image bytes.
+    """
+
+    corpus = synthetic_data_path(f"texts/{corpus_name}")
+    documents = generate_documents(
+        40, 14101, ["ledger"], default_font_manifest_path(), corpus, tmp_path, record_line_geometry=True
+    )
+    assert sum(1 for document in documents if document.truncated_segments) <= 8
+
+
+def test_ledger_layout_leaves_other_template_pages_unchanged(tmp_path: Path, monkeypatch) -> None:
+    """Pages after a ledger keep their s11b output in a mixed batch.
+
+    All pages share one random stream. The ledger takes s11b's row draws
+    whatever its column widths, so drawing it with the s11b columns changes
+    ledger pages only.
+    """
+
+    corpus = synthetic_data_path("texts/hebrew_mixed_lines_train_v1.txt")
+    generate_batch(14, 14102, tmp_path / "s14a", ALL_TEMPLATES, text_corpus_path=corpus, emit_line_annotations=True)
+    monkeypatch.setattr(generator_module, "LEDGER_COLUMN_WIDTHS", generator_module.S11B_LEDGER_COLUMN_WIDTHS)
+    generate_batch(14, 14102, tmp_path / "s11b", ALL_TEMPLATES, text_corpus_path=corpus, emit_line_annotations=True)
+
+    batches = {}
+    for name in ("s14a", "s11b"):
+        manifest = _load(tmp_path / name / "generation_manifest.json")
+        pages = _load(tmp_path / name / LINE_ANNOTATIONS_FILENAME)["pages"]
+        batches[name] = [
+            (sample["provenance"]["template_id"], sample["pages"], sample["text"], page)
+            for sample, page in zip(manifest["samples"], pages, strict=True)
+        ]
+    ledger_pages = 0
+    for s14a, s11b in zip(batches["s14a"], batches["s11b"], strict=True):
+        if s14a[0] == "ledger":
+            ledger_pages += 1
+            assert s14a[1:] != s11b[1:]
+            assert s14a[3]["truncated_segments"] <= s11b[3]["truncated_segments"]
+        else:
+            assert s14a[1:] == s11b[1:]
+    assert ledger_pages == 2
