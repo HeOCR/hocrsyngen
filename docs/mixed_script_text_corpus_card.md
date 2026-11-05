@@ -216,6 +216,10 @@ Only drawn rows enter page text and the line sidecar, so line-level training
 data stays consistent. The fix belongs in ledger row capacity, not shorter
 lines.
 
+`s14a-ledger-wrap-v1` widens the details cell to 316 px (#85). On a 200-page
+ledger batch from this train file, pages with truncation fall from 89.0% to
+4.5%.
+
 **Smoke batches.** Seed 1313 rendered 28 train pages and seed 1314 rendered
 14 eval pages, across all seven governed templates.
 

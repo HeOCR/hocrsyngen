@@ -385,6 +385,15 @@ tokens are not silently split or clipped. Wrapped segments beyond the ten-row
 capacity are still counted in `truncated_segments`, and gold records only drawn
 segments. Existing batches do not inherit this fix; regenerate and validate them.
 
+## Ledger details width (S14a)
+
+S11b's narrower detail column made most ledger pages truncate wrapped rows
+(#85). `s14a-ledger-wrap-v1` takes the spare width of the number, date and
+amount columns for the details column, which now wraps at 316 px. The balance
+column keeps its S11b fit. Truncation falls to about 5% of ledger pages on the
+S10b and S13a train corpora; the ten-row capacity and the
+`truncated_segments` rule are unchanged. See [CHANGELOG.md](../CHANGELOG.md).
+
 ## Quality check (S12a)
 
 `hocrsyngen quality-check BATCH --format json` validates the batch and its
