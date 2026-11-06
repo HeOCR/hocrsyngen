@@ -9,13 +9,16 @@ public domain under CC0 1.0 Universal (SPDX: CC0-1.0):
 - S13a: hebrew_mixed_lines_train_v1.txt, hebrew_mixed_lines_eval_v1.txt
 - S13b: hebrew_typographic_lines_train_v1.txt,
   hebrew_typographic_lines_eval_v1.txt
+- Seed-101 reference: hebrew_lines.txt
 
-The text was authored by AI agents (Claude Opus 5.5 sessions run in Claude
-Code) for HeOCR. See each corpus card under docs/ for provenance.
+The S10b, S13a and S13b text was authored by AI agents (Claude Opus 5.5
+sessions run in Claude Code) for HeOCR. See each corpus card under docs/ for
+provenance. The maintainer confirmed hebrew_lines.txt as project-authored on
+2026-11-06.
 
-This dedication does not cover hebrew_lines.txt, the package code, or the
-fonts. The code is under the repository's MIT license, and each font is under
-the license file next to it in ../fonts/.
+This dedication does not cover the package code or the fonts. The code is
+under the repository's MIT license, and each font is under the license file
+next to it in ../fonts/.
 
 See docs/decisions/0008-cc0-for-project-authored-text-corpora.md.
 

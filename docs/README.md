@@ -50,7 +50,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [decisions/](decisions/): accepted ADR-style design decisions, including persona/style/condition semantics.
 - [decisions/0005-persona-style-condition-semantics.md](decisions/0005-persona-style-condition-semantics.md): normative semantics and forbidden-claim boundaries for synthetic persona, style, and condition controls.
 - [decisions/0007-third-party-public-domain-training-text.md](decisions/0007-third-party-public-domain-training-text.md): maintainer decisions allowing outside public-domain training text (Israel PD enough, US PD recorded per entry, mix share a hyperparameter, translations need author and translator PD).
-- [decisions/0008-cc0-for-project-authored-text-corpora.md](decisions/0008-cc0-for-project-authored-text-corpora.md): maintainer decision dedicating the project-authored S10b, S13a and S13b text corpora to the public domain under CC0 1.0; code stays MIT.
+- [decisions/0008-cc0-for-project-authored-text-corpora.md](decisions/0008-cc0-for-project-authored-text-corpora.md): maintainer decision dedicating the project-authored S10b, S13a and S13b text corpora, and (by amendment) `hebrew_lines.txt`, to the public domain under CC0 1.0; code stays MIT.
 - [decisions/0006-real-glyph-provenance-boundary.md](decisions/0006-real-glyph-provenance-boundary.md): decision that real writer identity belongs in `sample.provenance` (not `controls.persona`), preserving ADR 0005's forbidden-claims boundary for S9 real-glyph composition.
 
 ## Suggested Reading Order

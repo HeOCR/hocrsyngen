@@ -102,9 +102,7 @@ forms and notices.
 Project-authored synthetic text, dedicated to the public domain under CC0 1.0
 (`CC0-1.0`; see `texts/LICENSE-CC0-1.0.txt` and
 [ADR 0008](decisions/0008-cc0-for-project-authored-text-corpora.md)). The package code stays
-under the repository license (MIT). The eval-only reference
-`texts/hebrew_lines.txt` is not covered by the dedication and stays under the
-repository license. Samples generated from the corpus carry the manifest
+under the repository license (MIT). Samples generated from the corpus carry the manifest
 licence tag `PROJECT-SYNTHETIC`. No third-party text is included, so no
 third-party licence applies.
 

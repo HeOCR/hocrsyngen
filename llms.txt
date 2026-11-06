@@ -39,7 +39,7 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `src/hocrsyngen/data/synthetic/texts/hebrew_lines.txt`: packaged Hebrew text corpus.
 - `src/hocrsyngen/data/synthetic/texts/hebrew_mixed_lines_*_v1.txt`: S13a mixed Hebrew/Latin/digit train and eval corpora (`docs/mixed_script_text_corpus_card.md`).
 - `src/hocrsyngen/data/synthetic/texts/hebrew_typographic_lines_*_v1.txt`: S13b typeset Hebrew train and eval corpora with em/en dashes, geresh/gershayim, typographic quotes and ellipses (`docs/typographic_text_corpus_card.md`).
-- `src/hocrsyngen/data/synthetic/texts/LICENSE-CC0-1.0.txt`: CC0 1.0 dedication for the S10b, S13a and S13b text corpora; code stays MIT (ADR 0008).
+- `src/hocrsyngen/data/synthetic/texts/LICENSE-CC0-1.0.txt`: CC0 1.0 dedication for the S10b, S13a and S13b text corpora and `hebrew_lines.txt`; code stays MIT (ADR 0008).
 - `tests/`: contract, generation, validation, installation, and wheel packaging tests.
 - `docs/pby_public_domain_text_intake_plan.md`: S15a plan for Project Ben-Yehuda public-domain training text as an external pinned `--text-corpus` file (ADR 0007).
 - `docs/production_readiness.md`: current readiness state, explicit missing production pieces, high-lift quality work, and external hocrgen dependencies.
