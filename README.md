@@ -530,6 +530,17 @@ on Ubuntu and macOS for Python 3.11 and 3.12.
 
 See `docs/testing_and_quality.md` for the canonical Python support policy.
 
+## License
+
+- **Code:** MIT ([LICENSE](LICENSE)).
+- **Fonts:** each under the licence file beside it in
+  `src/hocrsyngen/data/synthetic/fonts/`.
+- **Project-authored training and evaluation text (S10b, S13a, S13b):**
+  dedicated to the public domain under CC0 1.0. See
+  `src/hocrsyngen/data/synthetic/texts/LICENSE-CC0-1.0.txt` for the files it
+  covers, and
+  [ADR 0008](docs/decisions/0008-cc0-for-project-authored-text-corpora.md).
+
 ## Credits
 
 Created by [Shay Palachy Affek ](http://www.shaypalachy.com/) [[GitHub](https://github.com/shaypal5)]

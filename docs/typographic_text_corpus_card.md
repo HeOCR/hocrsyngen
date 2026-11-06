@@ -211,8 +211,11 @@ notes, card fields, ledger details, minutes, notices and reference prose.
 
 ## License
 
-Project-authored synthetic text under the repository license (MIT). Samples
-generated from it carry `PROJECT-SYNTHETIC`. No third-party text is included.
+Project-authored synthetic text, dedicated to the public domain under CC0 1.0
+(`CC0-1.0`; see `texts/LICENSE-CC0-1.0.txt` and
+[ADR 0008](decisions/0008-cc0-for-project-authored-text-corpora.md)). The package code stays
+under the repository license (MIT). Samples generated from it carry
+`PROJECT-SYNTHETIC`. No third-party text is included.
 
 ## Normalisation And Character Set
 
