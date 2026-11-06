@@ -535,7 +535,8 @@ See `docs/testing_and_quality.md` for the canonical Python support policy.
 - **Code:** MIT ([LICENSE](LICENSE)).
 - **Fonts:** each under the licence file beside it in
   `src/hocrsyngen/data/synthetic/fonts/`.
-- **Project-authored training and evaluation text (S10b, S13a, S13b):**
+- **Project-authored training and evaluation text (S10b, S13a, S13b and the
+  seed-101 reference `hebrew_lines.txt`):**
   dedicated to the public domain under CC0 1.0. See
   `src/hocrsyngen/data/synthetic/texts/LICENSE-CC0-1.0.txt` for the files it
   covers, and
