@@ -870,3 +870,37 @@ Exit criteria:
   shares no line or word 3-gram with any other evaluation text.
 - Every corpus token renders inside every template region that receives
   corpus text, with both packaged fonts.
+
+## Phase S15 — Public-Domain Training Text
+
+Current status: `planned`.
+
+Objective: add real public-domain Hebrew text from Project Ben-Yehuda to
+recognizer training, under the maintainer decisions in
+[ADR 0007](decisions/0007-third-party-public-domain-training-text.md). Text is
+an external, pinned corpus passed with `--text-corpus`; `hocrsyngen` stays
+network-free and its packaged corpora are unchanged. (`S14a` is already used by
+the `s14a-ledger-wrap-v1` generator fix.)
+
+Planned PR breakdown:
+
+- `S15a` — Intake plan: per-entry rights fields (`pd_israel`, `pd_us`, PBY's
+  flag, creator death years, first publication year), what the catalogue can
+  and cannot fill, text location, a proposed manifest licence value for
+  `hocrgen` governance, attribution, real-scan eval exclusion, line-cutting and
+  the niqqud split. Documented in
+  [pby_public_domain_text_intake_plan.md](pby_public_domain_text_intake_plan.md).
+  Docs only. Status: in review.
+- `S15b` — Offline intake builder and pinned creator death years, in the
+  repository the maintainer picks; emits corpus variants, the rights and line
+  indexes, the eval exclusion list and the corpus card.
+- `S15c` — Corpus-card input and manifest licence handling, once `hocrgen`
+  governance has chosen an option.
+- `S15d` — Training ablation in `heocr-engine` with and without PBY lines.
+
+Exit criteria:
+
+- Every PBY line used in training traces to a work with sourced rights fields,
+  and `pd_israel` is true for all of them.
+- A US-PD variant can be built from the same index without re-reading the dump.
+- `hocrgen` can exclude every PBY training work from real-scan evaluation.

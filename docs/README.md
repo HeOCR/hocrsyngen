@@ -26,6 +26,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [line_annotations_v1.md](line_annotations_v1.md): S10a opt-in `hocrsyngen_line_annotations.v1` sidecar (per-line polygons and baselines in final-page pixels, `logical_order` reconstruction rule, S11a region polygons and region reading order), `--text-corpus` provenance, and the seed-101 occlusion/unlisted-text gold finding.
 - [mixed_script_text_corpus_card.md](mixed_script_text_corpus_card.md): S13a packaged mixed Hebrew/Latin/digit train and eval corpora for tender-style lines: coverage spec, font limits, provenance, leakage against all evaluation text (including a hash-only `hocrgen` fixture), and statistics.
 - [typographic_text_corpus_card.md](typographic_text_corpus_card.md): S13b packaged typeset Hebrew train and eval corpora with em and en dashes, geresh and gershayim, typographic quotes, ellipses and semicolons at realistic rates: character set, placement rules, font check, provenance, leakage and statistics.
+- [pby_public_domain_text_intake_plan.md](pby_public_domain_text_intake_plan.md): S15a plan for Project Ben-Yehuda public-domain training text: per-work Israel/US rights fields, catalogue gaps, external pinned `--text-corpus` location, proposed manifest licence value for `hocrgen` governance, attribution, real-scan eval exclusion, line-cutting and niqqud split.
 - [layout_metadata_design.md](layout_metadata_design.md): design direction for future document-layout metadata and hocrgen filtering boundaries.
 - [document_family_recipes.md](document_family_recipes.md): governed document-family recipes and their current catalog/manifest boundaries.
 - [visual_inspection_rubric.md](visual_inspection_rubric.md): human review criteria for S3 layout realism, Hebrew readability, artifacts, and candidate rejection.
@@ -48,6 +49,7 @@ This directory holds human-facing design, architecture, specification, roadmap, 
 - [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.
 - [decisions/](decisions/): accepted ADR-style design decisions, including persona/style/condition semantics.
 - [decisions/0005-persona-style-condition-semantics.md](decisions/0005-persona-style-condition-semantics.md): normative semantics and forbidden-claim boundaries for synthetic persona, style, and condition controls.
+- [decisions/0007-third-party-public-domain-training-text.md](decisions/0007-third-party-public-domain-training-text.md): maintainer decisions allowing outside public-domain training text (Israel PD enough, US PD recorded per entry, mix share a hyperparameter, translations need author and translator PD).
 - [decisions/0006-real-glyph-provenance-boundary.md](decisions/0006-real-glyph-provenance-boundary.md): decision that real writer identity belongs in `sample.provenance` (not `controls.persona`), preserving ADR 0005's forbidden-claims boundary for S9 real-glyph composition.
 
 ## Suggested Reading Order
