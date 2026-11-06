@@ -52,7 +52,8 @@ eval-only seed-101 reference, because no record said who wrote it. Its history:
   agent).
 - 1 line was added in G2a (`3fd8c58`, 2026-05-03).
 
-No third-party text was identified. On 2026-11-06 the maintainer confirmed the
-file as project-authored, and it is now covered by the CC0 1.0 dedication. Its
+No third-party text was identified. On 2026-11-06 the maintainer confirmed
+both that the file is project-authored and that it contains no third-party
+text, so it is covered by the CC0 1.0 dedication in full. Its
 bytes are unchanged (sha256 `ac7e1dc2…`), so its `source_corpus` id and every
 manifest that names it stay the same.

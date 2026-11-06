@@ -13,8 +13,8 @@ public domain under CC0 1.0 Universal (SPDX: CC0-1.0):
 
 The S10b, S13a and S13b text was authored by AI agents (Claude Opus 5.5
 sessions run in Claude Code) for HeOCR. See each corpus card under docs/ for
-provenance. The maintainer confirmed hebrew_lines.txt as project-authored on
-2026-11-06.
+provenance. On 2026-11-06 the maintainer confirmed that hebrew_lines.txt is
+project-authored and contains no third-party text.
 
 This dedication does not cover the package code or the fonts. The code is
 under the repository's MIT license, and each font is under the license file
