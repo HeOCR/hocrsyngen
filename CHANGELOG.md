@@ -4,6 +4,19 @@ Generator-output changes for `hocrsyngen`, keyed by `GENERATOR_VERSION` (the
 `generator_version` recorded on every manifest sample). Roadmap notations refer
 to [docs/roadmap.md](docs/roadmap.md).
 
+## s16b-glyph-compose-v1 (S16b)
+
+- New, separate output: `hocrsyngen compose-glyph-pages` writes
+  `printed_book_glyph_page` samples with `generator_version`
+  `s16b-glyph-compose-v1`, composed from an external `printed_glyph_bank.v1`
+  (see [docs/glyph_page_composition.md](docs/glyph_page_composition.md)).
+- `GENERATOR_VERSION` stays `s14a-ledger-wrap-v1`: every font-rendered
+  template, the default `generate` output and the packaged contract fixture
+  are byte-identical. `templates` output is unchanged unless
+  `--include-composed` is passed.
+- `validate` accepts `s16b-glyph-compose-v1` only on composed templates, and
+  requires a valid `glyph_provenance.json` for them.
+
 ## s14a-ledger-wrap-v1 (S14a)
 
 - `ledger` pages truncate wrapped detail rows far less often (#85). The row

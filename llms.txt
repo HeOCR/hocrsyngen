@@ -27,6 +27,9 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `src/hocrsyngen/wet_analysis.py`: S8e deterministic wet-test warning metrics over existing wet-test runs outside manifest v1.
 - `src/hocrsyngen/wet_review.py`: S8f human review worksheet template generator and worksheet validator over existing wet-test runs outside manifest v1.
 - `src/hocrsyngen/wet_run_artifact.py`: shared loader and helpers for `wet_test_run.v1` artifacts used by wet-gallery, wet-analyze, and wet-review-* commands.
+- `src/hocrsyngen/glyph_bank.py`: S16b loader and validator for external `printed_glyph_bank.v1` glyph banks (`docs/printed_glyph_bank_v1.md`).
+- `src/hocrsyngen/glyph_compose.py`: S16b real-glyph printed book page composer (`compose-glyph-pages`), size bands, bidi placement, gold checks, and the `glyph_provenance.json` sidecar writer and validator (`docs/glyph_page_composition.md`).
+- `src/hocrsyngen/schemas/printed_glyph_bank.schema.json`, `glyph_provenance.schema.json`: S16 glyph bank and composed-page provenance contracts.
 - `src/hocrsyngen/validation.py`: batch validation, schema validation, asset integrity checks.
 - `src/hocrsyngen/schemas/generation_manifest.schema.json`: serialized manifest contract.
 - `src/hocrsyngen/schemas/rendering_coverage_report.schema.json`: serialized rendering coverage report contract.
@@ -69,6 +72,7 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `hocrsyngen contracts export`
 - `hocrsyngen generate`
 - `hocrsyngen validate`
+- `hocrsyngen compose-glyph-pages --glyph-bank BANK --count N --seed S --output OUT` (S16b; governed template `printed_book_glyph_page`, listed by `templates --include-composed`)
 - `hocrsyngen wet-run --profile smoke`
 - `hocrsyngen wet-gallery RUN_ROOT --output RUN_ROOT/gallery`
 - `hocrsyngen wet-analyze RUN_ROOT --format json`

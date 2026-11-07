@@ -45,10 +45,10 @@
           "minLength": 1
         },
         "layout_style": {
-          "enum": ["printed_form", "handwritten_note", "multi_region_page", "tabular"]
+          "enum": ["printed_form", "handwritten_note", "multi_region_page", "tabular", "printed_book_page"]
         },
         "font_style": {
-          "enum": ["printed", "handwritten_like"]
+          "enum": ["printed", "handwritten_like", "real_glyph"]
         },
         "font_id": {
           "type": "string",
@@ -59,10 +59,10 @@
           "minLength": 1
         },
         "document_family": {
-          "enum": ["letter", "notebook_note", "archive_card", "ledger"]
+          "enum": ["letter", "notebook_note", "archive_card", "ledger", "book_page"]
         },
         "base_family": {
-          "enum": ["printed_letter", "handwritten_note", "archive_card", "ledger"]
+          "enum": ["printed_letter", "handwritten_note", "archive_card", "ledger", "printed_book_glyph_page"]
         },
         "page_regions": {
           "$ref": "#/$defs/string_id_array"

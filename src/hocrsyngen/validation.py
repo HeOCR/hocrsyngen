@@ -12,7 +12,10 @@ import jsonschema
 from PIL import Image, UnidentifiedImageError
 
 from hocrsyngen.generator import (
+    COMPOSED_TEMPLATE_CATALOG,
+    COMPOSED_TEMPLATE_IDS,
     GENERATOR_VERSION,
+    GLYPH_COMPOSER_VERSION,
     PREVIOUS_GENERATOR_VERSIONS,
     GOVERNED_TEMPLATE_IDS,
     TemplateCatalogEntry,
@@ -73,6 +76,7 @@ def validate_batch(batch_dir: Path) -> ValidationResult:
             validate_line_annotations(root, payload)
         except LineAnnotationsError as exc:
             raise BatchValidationError(str(exc)) from exc
+    _validate_glyph_provenance(root, payload)
     from hocrsyngen.paired_render import FILENAME, PairedRenderError, validate_paired_render
 
     pair_sidecar = root / FILENAME
@@ -84,6 +88,25 @@ def validate_batch(batch_dir: Path) -> ValidationResult:
         except PairedRenderError as exc:
             raise BatchValidationError(str(exc)) from exc
     return ValidationResult(sample_count=len(payload["samples"]), page_count=page_count)
+
+
+def _validate_glyph_provenance(root: Path, payload: dict[str, Any]) -> None:
+    from hocrsyngen.glyph_compose import GLYPH_PROVENANCE_FILENAME, GlyphProvenanceError, validate_glyph_provenance
+
+    sidecar = root / GLYPH_PROVENANCE_FILENAME
+    composed = any(sample["provenance"]["template_id"] in COMPOSED_TEMPLATE_IDS for sample in payload["samples"])
+    if sidecar.is_symlink():
+        raise BatchValidationError("Glyph provenance sidecar must be a local file, not a symlink")
+    if not sidecar.exists():
+        if composed:
+            raise BatchValidationError(
+                f"Batch has real-glyph composed samples but no {GLYPH_PROVENANCE_FILENAME}."
+            )
+        return
+    try:
+        validate_glyph_provenance(root, payload)
+    except GlyphProvenanceError as exc:
+        raise BatchValidationError(str(exc)) from exc
 
 
 def _load_manifest_payload(manifest_path: Path) -> dict[str, Any]:
@@ -145,7 +168,12 @@ def _validate_sample_constants(
         raise BatchValidationError(
             f"{location}.synthetic_disclosure does not match the hocrsyngen v1 disclosure."
         )
-    if sample["generator_version"] not in (GENERATOR_VERSION, *PREVIOUS_GENERATOR_VERSIONS):
+    if sample["provenance"]["template_id"] in COMPOSED_TEMPLATE_IDS:
+        if sample["generator_version"] != GLYPH_COMPOSER_VERSION:
+            raise BatchValidationError(
+                f"{location}.generator_version must be {GLYPH_COMPOSER_VERSION} for a real-glyph composed template."
+            )
+    elif sample["generator_version"] not in (GENERATOR_VERSION, *PREVIOUS_GENERATOR_VERSIONS):
         raise BatchValidationError(
             f"{location}.generator_version must be {GENERATOR_VERSION} "
             f"or a previous version ({', '.join(PREVIOUS_GENERATOR_VERSIONS)})."
@@ -161,7 +189,7 @@ def _validate_sample_constants(
 
 def _load_governed_template_catalog() -> dict[str, TemplateCatalogEntry]:
     try:
-        entries = template_catalog(GOVERNED_TEMPLATE_IDS)
+        entries = [*template_catalog(GOVERNED_TEMPLATE_IDS), *COMPOSED_TEMPLATE_CATALOG]
     except (OSError, ValueError) as exc:
         raise BatchValidationError(
             f"Could not load governed template catalog: {exc}"
