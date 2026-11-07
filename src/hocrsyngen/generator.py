@@ -40,6 +40,22 @@ GOVERNED_TEMPLATE_IDS = [
     "handwritten_note_heavy_wear",
     "archive_card_faded_scan",
 ]
+# Printed book pages (R4f): dense justified prose, two columns, commentary
+# blocks in Rashi script around a main text, and framed title pages, each also
+# as a low-resolution (about 960 px wide) scan like a Wikisource page image.
+# Generated and validated like the governed templates, but kept out of
+# GOVERNED_TEMPLATE_IDS (the hocrgen contract) until hocrgen governs them.
+BOOK_TEMPLATE_IDS = [
+    "book_page",
+    "book_page_thumbnail_scan",
+    "book_page_two_column",
+    "book_page_two_column_thumbnail_scan",
+    "commentary_page",
+    "commentary_page_thumbnail_scan",
+    "book_title_page",
+    "book_title_page_thumbnail_scan",
+]
+SUPPORTED_TEMPLATE_IDS = [*GOVERNED_TEMPLATE_IDS, *BOOK_TEMPLATE_IDS]
 
 # S16b: templates composed from a real-glyph bank by ``hocrsyngen
 # compose-glyph-pages`` (``glyph_compose.py``), not rendered from fonts. They
@@ -57,6 +73,10 @@ HANDWRITTEN_TITLES = ["פנקס הערות", "רישום קצר", "הודעה פ
 ARCHIVE_CARD_TITLES = ["כרטיס ארכיון", "רישום כרטסת", "תיק מסווג"]
 LEDGER_TITLES = ["פנקס חשבונות", "רישום תנועות", "יומן גבייה"]
 FOOTER_LABELS = ["סימן", "רישום", "עמוד"]
+BOOK_RUNNING_TITLES = ["תולדות הדורות", "מאמרים ופרקים", "דברי הימים", "ספר הזכרונות", "קובץ מאמרים", "פירוש על התורה"]
+BOOK_CHAPTER_TITLES = ["הקדמה", "פרק ראשון", "פרק שני", "מבוא", "שער שלישי", "סימן ה"]
+BOOK_TITLE_PAGE_LINES = ["חלק ראשון", "והוא כולל", "מאת המחבר", "נדפס בשנית", "עם הגהות והערות"]
+BOOK_TITLE_PAGE_IMPRINTS = ["ירושלים, שנת תרס\"ה", "ווילנא, שנת תרנ\"ב", "ווארשא, תר\"ע", "ברלין, שנת תרפ\"ג"]
 
 
 @dataclass(frozen=True)
@@ -81,6 +101,8 @@ class SyntheticRecipe:
     paper_tone: str
     line_count: int
     capability_metadata: TemplateCapabilityMetadata
+    # A second font a layout draws with (Rashi-script commentary), by style.
+    secondary_font_style: str | None = None
 
 
 @dataclass(frozen=True)
@@ -129,6 +151,9 @@ class DegradationPreset:
     brightness: float
     grain_passes: int
     jpeg_quality: int
+    # Downsample to this width and back, keeping pixel positions: the detail
+    # of a small scan, such as a Wikisource page image, at the canvas size.
+    resample_width: int | None = None
 
 
 @dataclass(frozen=True)
@@ -285,6 +310,23 @@ class _LineRecorder:
             raise ValueError(f"Line geometry recording supports anchor 'ra' only, got {anchor!r}")
         box = draw.textbbox(xy, _rtl_display_text(text), font=font, anchor=anchor, direction="rtl")
         baseline_y = xy[1] + font.getmetrics()[0]
+        self.lines.append(
+            _RecordedLine(region, text, logical_line_index, logical_join, box, baseline_y, region_key or region)
+        )
+
+    def record_box(
+        self,
+        box: Box,
+        baseline_y: float,
+        text: str,
+        *,
+        region: str,
+        logical_line_index: int | None,
+        logical_join: str | None,
+        region_key: str | None = None,
+    ) -> None:
+        """Record a line drawn word by word (justified), from the union of its word boxes."""
+
         self.lines.append(
             _RecordedLine(region, text, logical_line_index, logical_join, box, baseline_y, region_key or region)
         )
@@ -634,6 +676,23 @@ DEGRADATION_PRESETS: dict[str, DegradationPreset] = {
         grain_passes=3,
         jpeg_quality=78,
     ),
+    "book_scan_soft": DegradationPreset(
+        angle_range=0.7,
+        blur_range=(0.2, 0.6),
+        contrast=0.94,
+        brightness=0.98,
+        grain_passes=1,
+        jpeg_quality=84,
+    ),
+    "book_scan_thumbnail": DegradationPreset(
+        angle_range=0.9,
+        blur_range=(0.15, 0.45),
+        contrast=0.92,
+        brightness=0.98,
+        grain_passes=1,
+        jpeg_quality=80,
+        resample_width=960,
+    ),
 }
 
 
@@ -836,6 +895,63 @@ def composed_template_entry(template_id: str) -> RichTemplateCatalogEntry:
     raise ValueError(f"Unsupported composed template_id: {template_id}")
 
 
+BOOK_PAGE_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="book_page",
+    base_family="book_page",
+    page_regions=("identifier_area", "title", "body", "footer"),
+    annotation_types=(),
+    identifier_types=("running_header", "page_number"),
+    layout_density="dense",
+    review_features=("has_stable_regions", "has_justified_prose", "has_running_header"),
+)
+BOOK_TWO_COLUMN_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="book_page",
+    base_family="book_page_two_column",
+    page_regions=("identifier_area", "title", "body"),
+    annotation_types=(),
+    identifier_types=("running_header", "page_number"),
+    layout_density="dense",
+    review_features=("has_stable_regions", "has_justified_prose", "has_columns"),
+)
+COMMENTARY_PAGE_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="book_page",
+    base_family="commentary_page",
+    page_regions=("identifier_area", "body", "margin"),
+    annotation_types=("commentary_block",),
+    identifier_types=("running_header", "page_number"),
+    layout_density="dense",
+    review_features=("has_stable_regions", "has_commentary_blocks", "has_rashi_script"),
+)
+BOOK_TITLE_PAGE_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="book_page",
+    base_family="book_title_page",
+    page_regions=("title", "body", "footer"),
+    annotation_types=("frame",),
+    identifier_types=("imprint",),
+    layout_density="sparse",
+    review_features=("has_stable_regions", "has_centred_lines", "has_frame"),
+)
+# template id -> (render template, recipe id, font style, degradation preset,
+# body source lines, capability, secondary font style)
+_BOOK_RECIPES = {
+    "book_page": ("book_page", "book_page_prose_v1", "book_serif", "book_scan_soft", 60, BOOK_PAGE_CAPABILITY, None),
+    "book_page_thumbnail_scan": ("book_page", "book_page_prose_thumbnail_v1", "book_serif_alt",
+                                 "book_scan_thumbnail", 60, BOOK_PAGE_CAPABILITY, None),
+    "book_page_two_column": ("book_page_two_column", "book_page_two_column_v1", "book_serif_alt", "book_scan_soft", 90,
+                             BOOK_TWO_COLUMN_CAPABILITY, None),
+    "book_page_two_column_thumbnail_scan": ("book_page_two_column", "book_page_two_column_thumbnail_v1", "book_serif",
+                                            "book_scan_thumbnail", 90, BOOK_TWO_COLUMN_CAPABILITY, None),
+    "commentary_page": ("commentary_page", "commentary_page_rashi_v1", "book_serif", "book_scan_soft", 70,
+                        COMMENTARY_PAGE_CAPABILITY, "rashi"),
+    "commentary_page_thumbnail_scan": ("commentary_page", "commentary_page_rashi_thumbnail_v1", "book_serif_alt",
+                                       "book_scan_thumbnail", 70, COMMENTARY_PAGE_CAPABILITY, "rashi"),
+    "book_title_page": ("book_title_page", "book_title_page_frame_v1", "book_serif", "book_scan_soft", 6,
+                        BOOK_TITLE_PAGE_CAPABILITY, None),
+    "book_title_page_thumbnail_scan": ("book_title_page", "book_title_page_frame_thumbnail_v1", "book_serif_alt",
+                                       "book_scan_thumbnail", 6, BOOK_TITLE_PAGE_CAPABILITY, None),
+}
+
+
 def _condition_bundle(condition: str | None) -> ConditionBundle:
     if condition is None:
         return CONDITION_BUNDLES["condition_standard_v1"]
@@ -902,6 +1018,10 @@ def _degrade(
     degraded = degraded.filter(ImageFilter.GaussianBlur(radius=radius))
     for _ in range(parameters.grain_passes):
         degraded = _apply_grain(degraded, randomizer, alpha=0.08 * condition_bundle.grain_alpha_scale)
+    # After the grain: a small page image averages scan noise away too.
+    if parameters.resample_width is not None:
+        small = (parameters.resample_width, round(degraded.height * parameters.resample_width / degraded.width))
+        degraded = degraded.resize(small, Image.Resampling.LANCZOS).resize(degraded.size, Image.Resampling.BICUBIC)
     degraded = ImageEnhance.Contrast(degraded).enhance(parameters.contrast * condition_bundle.contrast_scale)
     degraded = ImageEnhance.Brightness(degraded).enhance(parameters.brightness * condition_bundle.brightness_scale)
     return degraded
@@ -991,6 +1111,20 @@ def _recipe_for_template(template_id: str) -> SyntheticRecipe:
             paper_tone="printed",
             line_count=3,
             capability_metadata=ARCHIVE_CARD_CAPABILITY,
+        )
+    if template_id in _BOOK_RECIPES:
+        render_template_id, recipe_id, font_style, preset, line_count, capability, secondary = _BOOK_RECIPES[template_id]
+        return SyntheticRecipe(
+            template_id=template_id,
+            render_template_id=render_template_id,
+            recipe_id=recipe_id,
+            layout_style="printed_book",
+            font_style=font_style,
+            degradation_preset=preset,
+            paper_tone="printed",
+            line_count=line_count,
+            capability_metadata=capability,
+            secondary_font_style=secondary,
         )
     raise ValueError(f"Unsupported synthetic template_id: {template_id}")
 
@@ -1730,6 +1864,350 @@ def _draw_document(
     )
 
 
+@dataclass(frozen=True)
+class BookRender:
+    image: Image.Image
+    rendered_body_lines: list[str]
+    footer_text: str
+    logical_lines: list[str]
+
+
+@dataclass
+class _BookLine:
+    """One planned line: its words, right edge, top y, font, and the gap between words (justified when wider)."""
+
+    words: list[str]
+    right: float
+    y: float
+    font: ImageFont.FreeTypeFont
+    gap: float
+    region: str
+    region_key: str
+    unit: int
+    joins_previous: bool
+    fill: tuple[int, int, int, int]
+
+
+def _hebrew_numeral(value: int) -> str:
+    """A Hebrew page numeral (1-499) with gershayim, as printed in older books."""
+
+    letters = [(400, "ת"), (300, "ש"), (200, "ר"), (100, "ק"), (90, "צ"), (80, "פ"), (70, "ע"), (60, "ס"), (50, "נ"),
+               (40, "מ"), (30, "ל"), (20, "כ"), (10, "י"), (9, "ט"), (8, "ח"), (7, "ז"), (6, "ו"), (5, "ה"), (4, "ד"),
+               (3, "ג"), (2, "ב"), (1, "א")]
+    out = ""
+    for number, letter in letters:
+        while value >= number:
+            if value in (15, 16):
+                out += "ט" + ("ו" if value == 15 else "ז")
+                value = 0
+                break
+            out += letter
+            value -= number
+    return out[:-1] + "\"" + out[-1] if len(out) > 1 else out + "'"
+
+
+def _word_widths(draw: ImageDraw.ImageDraw, words: list[str], font: ImageFont.FreeTypeFont) -> list[float]:
+    return [draw.textlength(word, font=font, direction="rtl") for word in words]
+
+
+def _flow_paragraphs(
+    draw: ImageDraw.ImageDraw,
+    randomizer: random.Random,
+    paragraphs: list[str],
+    columns: list[tuple[float, float, float, float, str]],
+    font: ImageFont.FreeTypeFont,
+    leading: int,
+    region: str,
+    first_unit: int,
+    fill: tuple[int, int, int, int],
+    *,
+    indent: int,
+    justify: bool = True,
+) -> tuple[list[_BookLine], list[str]]:
+    """Wrap paragraphs and flow them down the columns (right, top, width, bottom, region key), right column first.
+
+    Returns the planned lines and the drawn text of each paragraph that got at least one line.
+    """
+
+    space = draw.textlength(" ", font=font, direction="rtl")
+    ascent, descent = font.getmetrics()
+    planned: list[_BookLine] = []
+    drawn: list[str] = []
+    column, y = 0, columns[0][1]
+    for paragraph in paragraphs:
+        first_width = columns[column][2] - indent
+        segments = _wrap_hebrew_text(draw, paragraph, font, int(first_width))
+        # Re-wrap the rest at the full width once the first (indented) line is known.
+        if len(segments) > 1:
+            rest_words = paragraph.split()[len(segments[0].split(" ")):]
+            segments = [segments[0], *_wrap_hebrew_text(draw, " ".join(rest_words), font, int(columns[column][2]))]
+        used: list[str] = []
+        for position, segment in enumerate(segments):
+            while y + ascent + descent > columns[column][3]:
+                column += 1
+                if column == len(columns):
+                    break
+                y = columns[column][1]
+            if column == len(columns):
+                break
+            right, _top, width, _bottom, key = columns[column]
+            words = segment.split(" ")
+            line_width = width - (indent if position == 0 else 0)
+            natural = sum(_word_widths(draw, words, font)) + space * (len(words) - 1)
+            last = position == len(segments) - 1
+            gap = space
+            if justify and not last and len(words) > 1 and natural < line_width:
+                stretched = space + (line_width - natural) / (len(words) - 1)
+                gap = stretched if stretched <= 4 * space else space
+            planned.append(_BookLine(words, right - (indent if position == 0 else 0), y, font, gap, region, key,
+                                     first_unit + len(drawn), position > 0, fill))
+            used.append(segment)
+            y += leading
+        if used:
+            drawn.append(" ".join(used))
+        if column == len(columns):
+            break
+        y += randomizer.choice((0, 0, leading // 3))
+    return planned, drawn
+
+
+def _draw_book_lines(draw: ImageDraw.ImageDraw, lines: list[_BookLine], recorder: _LineRecorder | None) -> None:
+    for line in lines:
+        widths = _word_widths(draw, line.words, line.font)
+        x = line.right
+        left, top, right, bottom = math.inf, math.inf, -math.inf, -math.inf
+        for word, width in zip(line.words, widths, strict=True):
+            box = draw.textbbox((x, line.y), word, font=line.font, anchor="ra", direction="rtl")
+            left, top, right, bottom = min(left, box[0]), min(top, box[1]), max(right, box[2]), max(bottom, box[3])
+            draw.text((x, line.y), word, font=line.font, fill=line.fill, anchor="ra", direction="rtl")
+            x -= width + line.gap
+        if recorder is not None:
+            recorder.record_box(
+                (left, top, right, bottom), line.y + line.font.getmetrics()[0], " ".join(line.words),
+                region=line.region, logical_line_index=line.unit,
+                logical_join=LOGICAL_JOIN_SPACE if line.joins_previous else None, region_key=line.region_key,
+            )
+
+
+def _centred_line(
+    draw: ImageDraw.ImageDraw, text: str, font: ImageFont.FreeTypeFont, centre: float, y: float, max_width: float,
+    region: str, unit: int, fill: tuple[int, int, int, int], region_key: str | None = None,
+) -> _BookLine:
+    segment = _wrap_hebrew_text(draw, text, font, int(max_width))[0]
+    width = draw.textlength(segment, font=font, direction="rtl")
+    return _BookLine(segment.split(" "), centre + width / 2, y, font, draw.textlength(" ", font=font, direction="rtl"),
+                     region, region_key or region, unit, False, fill)
+
+
+def _draw_scan_edges(draw: ImageDraw.ImageDraw, randomizer: random.Random) -> None:
+    """Dark strips along one or two page edges, as on a book scanned open."""
+
+    if randomizer.random() < 0.35:
+        width, height = CANVAS_SIZE
+        for side in randomizer.sample(("left", "right", "top", "bottom"), k=randomizer.randint(1, 2)):
+            band = randomizer.randint(8, 34)
+            shade = randomizer.randint(40, 110)
+            box = {"left": (0, 0, band, height), "right": (width - band, 0, width, height),
+                   "top": (0, 0, width, band), "bottom": (0, height - band, width, height)}[side]
+            draw.rectangle(box, fill=(shade, shade - 4, shade - 10, 255))
+
+
+def _book_paragraphs(randomizer: random.Random, body_lines: list[str]) -> list[str]:
+    paragraphs, position = [], 0
+    while position < len(body_lines):
+        size = randomizer.randint(2, 6)
+        paragraphs.append(" ".join(line.strip() for line in body_lines[position:position + size] if line.strip()))
+        position += size
+    return [paragraph for paragraph in paragraphs if paragraph]
+
+
+def _draw_book_page(
+    randomizer: random.Random,
+    title: str,
+    body_lines: list[str],
+    footer: str,
+    font_path: Path,
+    secondary_font_path: Path | None,
+    template_id: str,
+    style_bundle: StyleBundle,
+    condition_bundle: ConditionBundle,
+    recorder: _LineRecorder | None = None,
+    pair_capture: dict | None = None,
+) -> BookRender:
+    """Printed book pages: running header, justified prose (one or two columns), footnotes, commentary, title page.
+
+    The whole page is planned before it is drawn, so logical_order follows reading order: header, title, body
+    columns right to left, commentary blocks, footnotes, then a bottom page number.
+    """
+
+    recipe = _recipe_for_template(template_id)
+    if recorder is not None and recorder.plain_evaluation:
+        raise ValueError("plain evaluation does not support book templates")
+    layout = recipe.render_template_id
+    background = (244, 238, 224)
+    image = _paper_background(randomizer, CANVAS_SIZE, recipe.paper_tone).convert("RGBA")
+    draw = ImageDraw.Draw(image)
+    width, height = CANVAS_SIZE
+    ink = style_bundle.ink_delta + condition_bundle.ink_delta + randomizer.randint(-6, 6)
+    fill = (max(10, 28 + ink), max(8, 24 + ink), max(6, 20 + ink), 255)
+    faint = (max(10, 60 + ink), max(8, 54 + ink), max(6, 46 + ink), 255)
+    left_margin = randomizer.randint(70, 140)
+    right_margin = randomizer.randint(70, 140)
+    top = randomizer.randint(60, 120)
+    bottom = height - randomizer.randint(70, 130)
+    text_right, text_left = width - right_margin, left_margin
+    text_width = text_right - text_left
+    centre = (text_right + text_left) / 2
+    page_number = randomizer.randint(3, 480)
+    page_label = _hebrew_numeral(page_number) if randomizer.random() < 0.5 else str(page_number)
+    rules: list[tuple[float, float, float, float]] = []
+    lines: list[_BookLine] = []
+    units: list[str] = []
+    rendered_body: list[str] = []
+
+    if layout == "book_title_page":
+        inset = randomizer.randint(50, 100)
+        frame = (inset, inset, width - inset, height - inset)
+        draw.rectangle(frame, outline=fill, width=randomizer.randint(2, 4))
+        if randomizer.random() < 0.6:
+            inner = (frame[0] + 12, frame[1] + 12, frame[2] - 12, frame[3] - 12)
+            draw.rectangle(inner, outline=fill, width=1)
+        inner_width = width - 2 * inset - 80
+        y = inset + randomizer.randint(120, 260)
+        big = _load_font(font_path, randomizer.randint(76, 112))
+        lines.append(_centred_line(draw, title, big, width / 2, y, inner_width, "title", len(units), fill))
+        units.append(" ".join(lines[-1].words))
+        y += big.getmetrics()[0] + big.getmetrics()[1] + randomizer.randint(60, 130)
+        for text in [*randomizer.sample(BOOK_TITLE_PAGE_LINES, k=2), *body_lines[:randomizer.randint(1, 3)]]:
+            font = _load_font(font_path, randomizer.randint(30, 52))
+            lines.append(_centred_line(draw, text, font, width / 2, y, inner_width, "body", len(units), fill))
+            units.append(" ".join(lines[-1].words))
+            rendered_body.append(units[-1])
+            y += font.getmetrics()[0] + font.getmetrics()[1] + randomizer.randint(28, 70)
+        imprint_font = _load_font(font_path, randomizer.randint(30, 44))
+        imprint_y = height - inset - randomizer.randint(130, 200)
+        lines.append(_centred_line(draw, randomizer.choice(BOOK_TITLE_PAGE_IMPRINTS), imprint_font, width / 2,
+                                   imprint_y, inner_width, "footer", len(units), fill))
+        units.append(" ".join(lines[-1].words))
+    else:
+        body_size = randomizer.randint(20, 32) if layout == "book_page_two_column" else randomizer.randint(22, 40)
+        if layout == "commentary_page":
+            body_size = randomizer.randint(34, 44)
+        body_font = _load_font(font_path, body_size)
+        leading = max(1, round(_conditioned_line_height(round(body_size * randomizer.uniform(1.18, 1.5)),
+                                                        condition_bundle)))
+        y = top
+        bottom_number = randomizer.random() < 0.3
+        if not bottom_number or randomizer.random() < 0.5:
+            header_font = _load_font(font_path, max(18, round(body_size * randomizer.uniform(0.7, 0.95))))
+            lines.append(_centred_line(draw, randomizer.choice(BOOK_RUNNING_TITLES), header_font, centre, y,
+                                       text_width * 0.6, "identifier_area", len(units), fill, "header"))
+            units.append(" ".join(lines[-1].words))
+            if not bottom_number:
+                number_width = draw.textlength(page_label, font=header_font, direction="rtl")
+                number_right = text_right if randomizer.random() < 0.5 else text_left + number_width
+                lines.append(_BookLine([page_label], number_right, y, header_font, 0, "identifier_area", "header",
+                                       len(units), False, fill))
+                units.append(page_label)
+            y += header_font.getmetrics()[0] + header_font.getmetrics()[1] + randomizer.randint(10, 20)
+            if randomizer.random() < 0.5:
+                rules.append((text_left, y, text_right, y))
+                y += randomizer.randint(8, 16)
+            y += randomizer.randint(8, 30)
+        if layout != "commentary_page" and randomizer.random() < 0.3:
+            title_font = _load_font(font_path, round(body_size * randomizer.uniform(1.3, 1.9)))
+            lines.append(_centred_line(draw, randomizer.choice(BOOK_CHAPTER_TITLES), title_font, centre, y,
+                                       text_width, "title", len(units), fill))
+            units.append(" ".join(lines[-1].words))
+            y += title_font.getmetrics()[0] + title_font.getmetrics()[1] + randomizer.randint(16, 40)
+        body_bottom = bottom - (60 if bottom_number else 0)
+        paragraphs = _book_paragraphs(randomizer, body_lines)
+        footnotes: list[str] = []
+        if layout == "book_page" and randomizer.random() < 0.35:
+            count = randomizer.randint(1, 3)
+            footnotes, paragraphs = paragraphs[-count:], paragraphs[:-count]
+        if layout == "commentary_page":
+            rashi_font = _load_font(secondary_font_path or font_path, randomizer.randint(19, 26))
+            rashi_leading = round(rashi_font.size * randomizer.uniform(1.15, 1.35))
+            gutter = randomizer.randint(18, 36)
+            main_width = text_width * randomizer.uniform(0.42, 0.56)
+            side = (text_width - main_width - 2 * gutter) / 2
+            main_right = text_right - side - gutter
+            main_bottom = y + (body_bottom - y) * randomizer.uniform(0.35, 0.55)
+            main_lines, main_drawn = _flow_paragraphs(
+                draw, randomizer, paragraphs[:2], [(main_right, y, main_width, main_bottom, "body")], body_font,
+                leading, "body", len(units), fill, indent=0)
+            lines.extend(main_lines)
+            units.extend(main_drawn)
+            rendered_body.extend(main_drawn)
+            main_end = (main_lines[-1].y + leading) if main_lines else y
+            half = (text_width - gutter) / 2
+            blocks = [(text_right, y, side, main_end, "margin:0"),
+                      (text_left + side, y, side, main_end, "margin:1"),
+                      (text_right, main_end + gutter, half, body_bottom, "margin:2"),
+                      (text_left + half, main_end + gutter, half, body_bottom, "margin:3")]
+            commentary = paragraphs[2:] or paragraphs[:1]
+            for position, block in enumerate(blocks):
+                block_paragraphs = commentary[position * 3:position * 3 + 3] or commentary[-1:]
+                block_lines, block_drawn = _flow_paragraphs(
+                    draw, randomizer, block_paragraphs, [block], rashi_font, rashi_leading, "margin", len(units),
+                    fill, indent=0)
+                lines.extend(block_lines)
+                units.extend(block_drawn)
+        else:
+            footnote_font = _load_font(font_path, max(16, round(body_size * randomizer.uniform(0.68, 0.8))))
+            footnote_leading = round(footnote_font.size * randomizer.uniform(1.15, 1.35))
+            footnote_top = body_bottom
+            if footnotes:
+                lines_needed = 0
+                for note in footnotes:
+                    lines_needed += len(_wrap_hebrew_text(draw, note, footnote_font, int(text_width)))
+                footnote_top = body_bottom - min(lines_needed, 8) * footnote_leading
+                rules.append((text_right - text_width * 0.3, footnote_top - 14, text_right, footnote_top - 14))
+            if layout == "book_page_two_column":
+                gutter = randomizer.randint(28, 60)
+                column_width = (text_width - gutter) / 2
+                columns = [(text_right, y, column_width, footnote_top - 20, "body:0"),
+                           (text_left + column_width, y, column_width, footnote_top - 20, "body:1")]
+                if randomizer.random() < 0.5:
+                    rules.append((centre, y, centre, footnote_top - 30))
+            else:
+                columns = [(text_right, y, text_width, footnote_top - 20, "body")]
+            indent = randomizer.choice((0, body_size, 2 * body_size))
+            body, drawn = _flow_paragraphs(draw, randomizer, paragraphs, columns, body_font, leading, "body",
+                                           len(units), fill, indent=indent)
+            lines.extend(body)
+            units.extend(drawn)
+            rendered_body.extend(drawn)
+            if footnotes:
+                notes, notes_drawn = _flow_paragraphs(
+                    draw, randomizer, footnotes, [(text_right, footnote_top, text_width, body_bottom, "footer")],
+                    footnote_font, footnote_leading, "footer", len(units), faint, indent=0)
+                lines.extend(notes)
+                units.extend(notes_drawn)
+        if bottom_number:
+            number_font = _load_font(font_path, max(18, round(body_size * 0.85)))
+            lines.append(_centred_line(draw, page_label, number_font, centre, bottom - 30, text_width,
+                                       "identifier_area", len(units), fill, "page_number"))
+            units.append(page_label)
+
+    _draw_scan_edges(draw, randomizer)
+    for rule in rules:
+        draw.line(rule, fill=faint, width=randomizer.randint(1, 2))
+    _draw_book_lines(draw, lines, recorder)
+    if recorder is not None:
+        recorder.truncated_segments = 0
+    return BookRender(
+        image=_degrade(
+            image.convert("RGB"), randomizer, background, recipe.degradation_preset, condition_bundle, recorder,
+            pair_capture,
+        ),
+        rendered_body_lines=rendered_body,
+        footer_text=page_label,
+        logical_lines=units,
+    )
+
+
 def _select_font(fonts: list[dict[str, str]], template_id: str) -> dict[str, str]:
     target_style = _recipe_for_template(template_id).font_style
     for font in fonts:
@@ -1746,6 +2224,8 @@ def _select_title(template_id: str, index: int) -> str:
         titles = ARCHIVE_CARD_TITLES
     elif render_template_id == "ledger":
         titles = LEDGER_TITLES
+    elif template_id in BOOK_TEMPLATE_IDS:
+        titles = BOOK_RUNNING_TITLES
     else:
         titles = PRINTED_TITLES
     return titles[index % len(titles)]
@@ -1794,12 +2274,20 @@ def generate_documents(
         raise ValueError(f"Synthetic text corpus is empty: {text_corpus_path}")
     font_entries_by_template: dict[str, dict[str, str]] = {}
     font_paths_by_template: dict[str, Path] = {}
+    secondary_font_paths: dict[str, Path] = {}
     for template_id in dict.fromkeys(template_ids):
         font_entry = _select_font(fonts, template_id)
         font_path = _font_path(font_manifest_path, font_entry)
         _validate_font(font_path)
         font_entries_by_template[template_id] = font_entry
         font_paths_by_template[template_id] = font_path
+        secondary_style = _recipe_for_template(template_id).secondary_font_style
+        if secondary_style is not None:
+            secondary = next((font for font in fonts if font.get("style") == secondary_style), None)
+            if secondary is None:
+                raise ValueError(f"No synthetic font registered for style: {secondary_style}")
+            secondary_font_paths[template_id] = _font_path(font_manifest_path, secondary)
+            _validate_font(secondary_font_paths[template_id])
     output_dir.mkdir(parents=True, exist_ok=True)
 
     documents: list[SyntheticDocument] = []
@@ -1834,6 +2322,24 @@ def generate_documents(
             logical_text = unicodedata.normalize("NFC", "\n".join(archive_render.logical_lines))
             document_body = "\n".join(archive_render.rendered_body_lines)
             document_footer = archive_render.footer_text
+        elif template_id in BOOK_TEMPLATE_IDS:
+            book_render = _draw_book_page(
+                randomizer,
+                title,
+                body_lines,
+                footer,
+                font_path,
+                secondary_font_paths.get(template_id),
+                template_id,
+                style_bundle,
+                condition_bundle,
+                recorder,
+                pair_capture,
+            )
+            image = book_render.image
+            logical_text = unicodedata.normalize("NFC", "\n".join(book_render.logical_lines))
+            document_body = "\n".join(book_render.rendered_body_lines)
+            document_footer = book_render.footer_text
         elif recipe.render_template_id == "ledger":
             ledger_render = _draw_ledger(
                 randomizer,

@@ -777,6 +777,12 @@ Exit criteria:
   contains it, and region reading order agrees with `logical_order`.
 - Region annotations never change page bytes or gold.
 
+- `S11c` — Printed book page templates for HeOCR R4f. Eight templates: single- and two-column justified prose,
+  commentary blocks in Rashi script around a main text, and framed title pages, each also as a 960 px thumbnail
+  scan. They carry typed regions and tight line polygons, are generated and validated like the governed templates,
+  and stay out of `GOVERNED_TEMPLATE_IDS`. Three OFL fonts are added. Documented in
+  [book_page_templates.md](book_page_templates.md). Status: in review.
+
 ### S11b — Ledger cell fit (done in PR #78)
 
 Prevent text in generated ledger cells from crossing column boundaries. Reserve

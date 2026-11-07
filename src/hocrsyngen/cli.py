@@ -16,6 +16,7 @@ from hocrsyngen.generator import (
     DEFAULT_TEMPLATE_IDS,
     GENERATOR_VERSION,
     GOVERNED_TEMPLATE_IDS,
+    SUPPORTED_TEMPLATE_IDS,
     RichTemplateCatalogEntry,
     SUPPORTED_CONDITION_BUNDLE_IDS,
     SUPPORTED_STYLE_BUNDLE_IDS,
@@ -847,7 +848,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--template-id",
         action="append",
         dest="template_ids",
-        choices=GOVERNED_TEMPLATE_IDS,
+        choices=SUPPORTED_TEMPLATE_IDS,
         help="Template id to include. May be provided more than once.",
     )
     generate.add_argument(

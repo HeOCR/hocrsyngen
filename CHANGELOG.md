@@ -17,6 +17,17 @@ to [docs/roadmap.md](docs/roadmap.md).
 - `validate` accepts `s16b-glyph-compose-v1` only on composed templates, and
   requires a valid `glyph_provenance.json` for them.
 
+## S11c: printed book page templates (same generator version)
+
+- Eight new templates: `book_page`, `book_page_two_column`, `commentary_page` and `book_title_page`, each also as a
+  `_thumbnail_scan` variant (960 px round trip). Two new degradation presets are added (`book_scan_soft`,
+  `book_scan_thumbnail`), and three OFL fonts (Frank Ruhl Libre, David Libre, Noto Rashi Hebrew). See
+  [book_page_templates.md](docs/book_page_templates.md).
+- They are supported by `generate --template-id` and `validate`, but are not governed templates, so `templates`,
+  `contracts` and the hocrgen contract are unchanged.
+- The governed templates' pages and manifests are byte-identical, so `GENERATOR_VERSION` stays
+  `s14a-ledger-wrap-v1`.
+
 ## s14a-ledger-wrap-v1 (S14a)
 
 - `ledger` pages truncate wrapped detail rows far less often (#85). The row
