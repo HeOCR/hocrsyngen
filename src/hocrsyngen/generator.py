@@ -57,6 +57,14 @@ BOOK_TEMPLATE_IDS = [
 ]
 SUPPORTED_TEMPLATE_IDS = [*GOVERNED_TEMPLATE_IDS, *BOOK_TEMPLATE_IDS]
 
+# S16b: templates composed from a real-glyph bank by ``hocrsyngen
+# compose-glyph-pages`` (``glyph_compose.py``), not rendered from fonts. They
+# are governed for validation but are not ``generate`` templates, and the
+# ``templates`` command lists them only with ``--include-composed``.
+GLYPH_COMPOSER_VERSION = "s16b-glyph-compose-v1"
+PRINTED_BOOK_GLYPH_TEMPLATE_ID = "printed_book_glyph_page"
+COMPOSED_TEMPLATE_IDS = [PRINTED_BOOK_GLYPH_TEMPLATE_ID]
+
 STAMP_TEXT = "נבדק"
 SIGNATURE_CAPTION = "אישור"
 SIGNATURE_CAPTION_COUNT = 3
@@ -855,6 +863,38 @@ LEDGER_CAPABILITY = TemplateCapabilityMetadata(
 )
 
 
+PRINTED_BOOK_GLYPH_CAPABILITY = TemplateCapabilityMetadata(
+    document_family="book_page",
+    base_family="printed_book_glyph_page",
+    page_regions=("title", "body", "footer"),
+    annotation_types=(),
+    identifier_types=("page_number",),
+    layout_density="dense",
+    review_features=(
+        "has_stable_regions",
+        "has_real_glyph_provenance",
+    ),
+)
+COMPOSED_TEMPLATE_CATALOG = (
+    RichTemplateCatalogEntry(
+        template_id=PRINTED_BOOK_GLYPH_TEMPLATE_ID,
+        recipe_id="printed_book_glyph_page_v1",
+        layout_style="printed_book_page",
+        font_style="real_glyph",
+        font_id="real_glyph_bank",
+        degradation_preset="book_scan_glyph_v1",
+        capability_metadata=PRINTED_BOOK_GLYPH_CAPABILITY,
+    ),
+)
+
+
+def composed_template_entry(template_id: str) -> RichTemplateCatalogEntry:
+    for entry in COMPOSED_TEMPLATE_CATALOG:
+        if entry.template_id == template_id:
+            return entry
+    raise ValueError(f"Unsupported composed template_id: {template_id}")
+
+
 BOOK_PAGE_CAPABILITY = TemplateCapabilityMetadata(
     document_family="book_page",
     base_family="book_page",
@@ -1107,6 +1147,7 @@ def template_catalog(
     template_ids: list[str] | None = None,
     *,
     font_manifest_path: Path | None = None,
+    include_composed: bool = False,
 ) -> list[TemplateCatalogEntry]:
     template_ids = GOVERNED_TEMPLATE_IDS if template_ids is None else template_ids
     font_manifest_path = font_manifest_path or default_font_manifest_path()
@@ -1131,6 +1172,18 @@ def template_catalog(
                 degradation_preset=recipe.degradation_preset,
             )
         )
+    if include_composed:
+        catalog.extend(
+            TemplateCatalogEntry(
+                template_id=entry.template_id,
+                recipe_id=entry.recipe_id,
+                layout_style=entry.layout_style,
+                font_style=entry.font_style,
+                font_id=entry.font_id,
+                degradation_preset=entry.degradation_preset,
+            )
+            for entry in COMPOSED_TEMPLATE_CATALOG
+        )
     return catalog
 
 
@@ -1138,6 +1191,7 @@ def rich_template_catalog(
     template_ids: list[str] | None = None,
     *,
     font_manifest_path: Path | None = None,
+    include_composed: bool = False,
 ) -> list[RichTemplateCatalogEntry]:
     template_ids = GOVERNED_TEMPLATE_IDS if template_ids is None else template_ids
     catalog = template_catalog(template_ids, font_manifest_path=font_manifest_path)
@@ -1155,6 +1209,8 @@ def rich_template_catalog(
                 capability_metadata=recipes[entry.template_id].capability_metadata,
             )
         )
+    if include_composed:
+        rich_catalog.extend(COMPOSED_TEMPLATE_CATALOG)
     return rich_catalog
 
 

@@ -910,3 +910,36 @@ Exit criteria:
   and `pd_israel` is true for all of them.
 - A US-PD variant can be built from the same index without re-reading the dump.
 - `hocrgen` can exclude every PBY training work from real-scan evaluation.
+
+## Phase S16 — Real-Glyph Printed Book Pages
+
+Current status: `open`.
+
+Objective: close the real-print gap (CER 0.898 on 38 real scanned printed pages
+against 0.020 on font-rendered synthetic pages) by composing training pages
+from glyph images cut out of public-domain printed book scans, with exact
+gold. The glyph harvester lives in `hocrgen`; `hocrsyngen` reads its output
+through a file contract only.
+
+Planned PR breakdown:
+
+- `S16a` — Glyph bank contract `printed_glyph_bank.v1`: index, per-glyph
+  records with crop, ink mask, baseline and source x-height, paper patches,
+  per-style metrics, rights and leakage rules. Documented in
+  [printed_glyph_bank_v1.md](printed_glyph_bank_v1.md), with the JSON schema in
+  `src/hocrsyngen/schemas/printed_glyph_bank.schema.json`.
+- `S16b` — Composer: `hocrsyngen compose-glyph-pages`, governed template
+  `printed_book_glyph_page`, generator version `s16b-glyph-compose-v1`, line
+  annotations and the `glyph_provenance.json` sidecar checked by `validate`.
+  Documented in [glyph_page_composition.md](glyph_page_composition.md).
+  Status: in review.
+- `S16c` — Visual review and calibration on a full harvested bank, then an
+  `heocr-engine` training ablation with and without composed pages, scored on
+  the real printed reference pages.
+
+Exit criteria:
+
+- Composed pages validate, and every line's gold is its placed glyph sequence.
+- Every composed page records the bank styles, licences and attribution it
+  used.
+- A training run that adds composed pages lowers real printed-page CER.

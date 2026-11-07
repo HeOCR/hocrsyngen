@@ -812,6 +812,14 @@ def build_parser() -> argparse.ArgumentParser:
             "catalog shape; v2 adds richer layout metadata."
         ),
     )
+    templates.add_argument(
+        "--include-composed",
+        action="store_true",
+        help=(
+            "Also list templates composed from external glyph banks "
+            "(compose-glyph-pages), which generate cannot render."
+        ),
+    )
     generate = subparsers.add_parser(
         "generate", help="Generate a deterministic synthetic fixture batch."
     )
@@ -887,6 +895,54 @@ def build_parser() -> argparse.ArgumentParser:
             "(line_annotations.json) with per-line polygons and baselines in "
             "final-page pixels, without changing generation_manifest.json v1."
         ),
+    )
+    compose_glyph_pages = subparsers.add_parser(
+        "compose-glyph-pages",
+        help=(
+            "Compose scanned printed book pages from a printed_glyph_bank.v1 "
+            "directory (S16b), with line annotations and glyph provenance."
+        ),
+    )
+    compose_glyph_pages.add_argument(
+        "--glyph-bank", type=Path, required=True, help="printed_glyph_bank.v1 directory."
+    )
+    compose_glyph_pages.add_argument(
+        "--count", type=_non_negative_int, required=True, help="Number of pages to compose."
+    )
+    compose_glyph_pages.add_argument(
+        "--seed", type=_non_negative_int, required=True, help="Deterministic composition seed."
+    )
+    compose_glyph_pages.add_argument("--output", type=Path, required=True, help="Output batch directory.")
+    compose_glyph_pages.add_argument(
+        "--text-corpus",
+        type=Path,
+        help=(
+            "UTF-8 Hebrew line corpus (one line per row); defaults to the packaged "
+            "S13b typographic train corpus. Recorded as provenance.source_corpus."
+        ),
+    )
+    compose_glyph_pages.add_argument(
+        "--min-glyph-score",
+        type=float,
+        default=0.0,
+        help="Use only glyphs whose quality.score is at least this value (0..1).",
+    )
+    compose_glyph_pages.add_argument(
+        "--style-id",
+        action="append",
+        dest="style_ids",
+        help="Bank style id to draw pages from. May be provided more than once; default all styles.",
+    )
+    compose_glyph_pages.add_argument(
+        "--provenance-glyph-ids",
+        action="store_true",
+        help="List the unique bank glyph ids of every page in glyph_provenance.json.",
+    )
+    compose_glyph_pages.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="json",
+        help="Output format for the composition summary (default json).",
     )
     validate = subparsers.add_parser(
         "validate", help="Validate a generated hocrsyngen fixture batch."
@@ -1235,10 +1291,11 @@ def main(argv: list[str] | None = None) -> int:
         raise AssertionError(f"Unhandled contracts command: {args.contract_command}")
     if args.command == "templates":
         try:
+            catalog_options = {"include_composed": True} if args.include_composed else {}
             catalog = (
-                rich_template_catalog()
+                rich_template_catalog(**catalog_options)
                 if args.catalog_version == "v2"
-                else template_catalog()
+                else template_catalog(**catalog_options)
             )
         except FileNotFoundError as exc:
             parser.error(
@@ -1300,6 +1357,34 @@ def main(argv: list[str] | None = None) -> int:
                     paired_render_path=(args.output / "paired_render.json" if args.emit_paired_render else None),
                     text_corpus=_text_corpus_record(args.text_corpus),
                 )
+            )
+        return 0
+    if args.command == "compose-glyph-pages":
+        from hocrsyngen.glyph_bank import GlyphBankError
+        from hocrsyngen.glyph_compose import GlyphCompositionError, compose_glyph_batch
+
+        _require_text_corpus_file(parser, "compose-glyph-pages", args.text_corpus)
+        try:
+            result = compose_glyph_batch(
+                args.glyph_bank,
+                args.count,
+                args.seed,
+                args.output,
+                text_corpus_path=args.text_corpus,
+                min_glyph_score=args.min_glyph_score,
+                style_ids=args.style_ids,
+                include_glyph_ids=args.provenance_glyph_ids,
+            )
+        except (GlyphBankError, GlyphCompositionError, OSError) as exc:
+            parser.error(f"compose-glyph-pages: {exc}")
+        if args.format == "json":
+            print(json.dumps(result.report, ensure_ascii=False, indent=2))
+        else:
+            report = result.report
+            print(
+                f"Composed {report['pages']} pages, {report['lines']} lines and {report['chars']} characters "
+                f"from bank {report['bank_id']} into {args.output}; styles: "
+                + ", ".join(f"{style['style_id']}={style['pages']}" for style in report["styles"])
             )
         return 0
     if args.command == "quality-check":

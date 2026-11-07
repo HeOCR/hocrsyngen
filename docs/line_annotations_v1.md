@@ -123,9 +123,10 @@ to line geometry.
 What a region is:
 
 - Lines of one region type form one region, except where the generator lays
-  out separate blocks of one type. Today that is only the three printed-letter
+  out separate blocks of one type. That is the three printed-letter
   signature blocks, which are three `signature_area` regions in reading order
-  right to left.
+  right to left, and on S16b composed book pages the running header, the
+  section heading and each body column.
 - Regions per render family, in `region_index` order:
 
   | Family | Regions |
@@ -134,6 +135,7 @@ What a region is:
   | `handwritten_note` | `title`, `body`, `margin`, `footer` |
   | `archive_card` | `title`, `identifier_area` (card id and date), `body`, `table_cells` (the four field labels), `stamp_area`, `footer` |
   | `ledger` | `title`, `identifier_area` (ledger id and date), `table_cells` (header row and every row cell), `footer` (footer text and page number) |
+  | `printed_book_glyph_page` (S16b) | `title` (running header: page number and/or short title), `title` (section heading, when drawn), one `body` per text column, right column first, `footer` (page number) |
 
 - Reading the regions in `reading_order_index` order, and each region's
   `line_indices` in order, visits every line in `line_index` order. Each

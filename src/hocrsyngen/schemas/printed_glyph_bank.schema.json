@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://heocr.org/hocrsyngen/printed_glyph_bank.schema.json",
+  "title": "printed_glyph_bank.v1 index (printed_glyph_bank.json); $defs/glyph is one glyphs.jsonl record",
+  "type": "object",
+  "required": [
+    "schema",
+    "bank_id",
+    "created_by",
+    "glyph_count",
+    "glyphs_sha256",
+    "sources",
+    "exclusions",
+    "styles"
+  ],
+  "properties": {
+    "schema": {"const": "printed_glyph_bank.v1"},
+    "bank_id": {"type": "string", "pattern": "^pgb-[A-Za-z0-9._-]+$"},
+    "created_by": {
+      "type": "object",
+      "required": ["tool", "version", "config_sha256"],
+      "properties": {
+        "tool": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "config_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "glyph_count": {"type": "integer", "minimum": 0},
+    "glyphs_sha256": {"$ref": "#/$defs/sha256"},
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["source_id", "licence"],
+        "properties": {
+          "source_id": {"$ref": "#/$defs/id"},
+          "snapshot": {"type": "string"},
+          "licence": {"type": "string", "minLength": 1, "description": "Free-text rights summary of the source; each style's licence field is the normative one."},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "exclusions": {"type": "array", "items": {"type": "string"}},
+    "styles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/style"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "licence": {"enum": ["PD", "CC0-1.0", "CC-BY-4.0"]},
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._/-]+$"
+    },
+    "triple": {
+      "type": "array",
+      "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}],
+      "items": false,
+      "minItems": 3
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "x_height_px",
+        "line_pitch_px",
+        "letter_gap_px",
+        "word_gap_px",
+        "text_block_width_px",
+        "page_size_px",
+        "ink_gray",
+        "paper_gray"
+      ],
+      "properties": {
+        "x_height_px": {"type": "number", "exclusiveMinimum": 0},
+        "line_pitch_px": {"type": "number", "exclusiveMinimum": 0},
+        "letter_gap_px": {"$ref": "#/$defs/triple"},
+        "word_gap_px": {"$ref": "#/$defs/triple"},
+        "text_block_width_px": {"type": "number", "exclusiveMinimum": 0},
+        "page_size_px": {
+          "type": "array",
+          "prefixItems": [
+            {"type": "integer", "minimum": 1},
+            {"type": "integer", "minimum": 1}
+          ],
+          "items": false,
+          "minItems": 2
+        },
+        "ink_gray": {"type": "number", "minimum": 0, "maximum": 255},
+        "paper_gray": {"type": "number", "minimum": 0, "maximum": 255}
+      }
+    },
+    "style": {
+      "type": "object",
+      "required": [
+        "style_id",
+        "source_id",
+        "work_id",
+        "licence",
+        "attribution",
+        "born_digital",
+        "metrics",
+        "paper_patches",
+        "glyph_count"
+      ],
+      "properties": {
+        "style_id": {"$ref": "#/$defs/id"},
+        "source_id": {"$ref": "#/$defs/id"},
+        "work_id": {"type": "string", "minLength": 1},
+        "licence": {"$ref": "#/$defs/licence"},
+        "attribution": {"type": ["string", "null"]},
+        "born_digital": {"type": "boolean"},
+        "metrics": {"$ref": "#/$defs/metrics"},
+        "paper_patches": {
+          "description": "Ink-free paper patches; may be empty (the composer then synthesises grain, or uses white paper for bitonal styles).",
+          "type": "array",
+          "minItems": 0,
+          "items": {"$ref": "#/$defs/relativePath"}
+        },
+        "glyph_count": {"type": "integer", "minimum": 0},
+        "char_counts": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "glyph": {
+      "type": "object",
+      "required": [
+        "glyph_id",
+        "style_id",
+        "char",
+        "asset_path",
+        "mask_path",
+        "size",
+        "ink_box",
+        "baseline_y",
+        "source",
+        "quality"
+      ],
+      "properties": {
+        "glyph_id": {"$ref": "#/$defs/id"},
+        "style_id": {"$ref": "#/$defs/id"},
+        "char": {"type": "string", "minLength": 1, "maxLength": 1},
+        "asset_path": {"$ref": "#/$defs/relativePath"},
+        "mask_path": {"$ref": "#/$defs/relativePath"},
+        "size": {
+          "type": "array",
+          "prefixItems": [
+            {"type": "integer", "minimum": 1},
+            {"type": "integer", "minimum": 1}
+          ],
+          "items": false,
+          "minItems": 2
+        },
+        "ink_box": {
+          "type": "array",
+          "prefixItems": [
+            {"type": "integer", "minimum": 0},
+            {"type": "integer", "minimum": 0},
+            {"type": "integer", "minimum": 1},
+            {"type": "integer", "minimum": 1}
+          ],
+          "items": false,
+          "minItems": 4
+        },
+        "baseline_y": {"type": "integer"},
+        "x_height_px": {"type": "number", "exclusiveMinimum": 0},
+        "source": {
+          "type": "object",
+          "required": ["page_id"],
+          "properties": {
+            "page_id": {"type": "string", "minLength": 1},
+            "box_in_source": {
+              "type": "array",
+              "items": {"type": "integer"},
+              "minItems": 4,
+              "maxItems": 4
+            },
+            "word_index": {"type": "integer", "minimum": 0},
+            "position_in_word": {"type": "integer", "minimum": 0}
+          }
+        },
+        "quality": {
+          "type": "object",
+          "required": ["score"],
+          "properties": {
+            "method": {"type": "string"},
+            "score": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        }
+      }
+    }
+  }
+}
