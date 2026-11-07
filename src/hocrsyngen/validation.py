@@ -12,9 +12,10 @@ import jsonschema
 from PIL import Image, UnidentifiedImageError
 
 from hocrsyngen.generator import (
+    BOOK_TEMPLATE_IDS,
     GENERATOR_VERSION,
-    PREVIOUS_GENERATOR_VERSIONS,
     GOVERNED_TEMPLATE_IDS,
+    PREVIOUS_GENERATOR_VERSIONS,
     TemplateCatalogEntry,
     template_catalog,
 )
@@ -59,7 +60,9 @@ def validate_batch(batch_dir: Path) -> ValidationResult:
     payload = _load_manifest_payload(manifest_path)
     _validate_manifest_schema(payload)
     _validate_manifest_constants(payload)
-    governed_templates = _load_governed_template_catalog()
+    governed_templates = _load_governed_template_catalog(
+        {sample["provenance"]["template_id"] for sample in payload["samples"]}
+    )
 
     page_count = 0
     for sample_index, sample in enumerate(payload["samples"]):
@@ -159,9 +162,11 @@ def _validate_sample_constants(
     )
 
 
-def _load_governed_template_catalog() -> dict[str, TemplateCatalogEntry]:
+def _load_governed_template_catalog(used_template_ids: set[str]) -> dict[str, TemplateCatalogEntry]:
+    # The governed templates always; a book template only when the batch uses it.
+    template_ids = [*GOVERNED_TEMPLATE_IDS, *(t for t in BOOK_TEMPLATE_IDS if t in used_template_ids)]
     try:
-        entries = template_catalog(GOVERNED_TEMPLATE_IDS)
+        entries = template_catalog(template_ids)
     except (OSError, ValueError) as exc:
         raise BatchValidationError(
             f"Could not load governed template catalog: {exc}"

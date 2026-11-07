@@ -7,3 +7,15 @@ fonts:
     file: GveretLevin-Regular.ttf
     style: handwritten_like
     notes: Open Hebrew handwriting-style font used for note-like synthetic documents.
+  - id: frank-ruhl-libre
+    file: FrankRuhlLibre-wght.ttf
+    style: book_serif
+    notes: Open Hebrew book serif (variable weight, Regular instance) for printed book pages.
+  - id: david-libre-regular
+    file: DavidLibre-Regular.ttf
+    style: book_serif_alt
+    notes: Open Hebrew book serif for printed book pages.
+  - id: noto-rashi-hebrew
+    file: NotoRashiHebrew-wght.ttf
+    style: rashi
+    notes: Open Hebrew Rashi-script font (variable weight, Regular instance) for commentary blocks.
