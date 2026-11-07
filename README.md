@@ -429,6 +429,11 @@ The governed template contract currently packaged with `hocrsyngen` is:
 | `handwritten_note_heavy_wear` | `handwritten_note_marginalia_heavy_wear_v1` | `notebook_scan_heavy_wear` | `handwritten_like` | `gveret-levin-regular` |
 | `archive_card_faded_scan` | `archive_card_identifier_faded_scan_v1` | `archive_scan_faded` | `printed` | `alef-regular` |
 
+Printed book page templates (S11c: prose, two columns, Rashi-script commentary,
+title pages, and 960 px thumbnail variants) are generated and validated the
+same way, but are not part of the governed contract. See
+[docs/book_page_templates.md](docs/book_page_templates.md).
+
 The packaged font id is resolved from the packaged default
 `data/synthetic/fonts/manifest.yaml` by matching each governed recipe's font
 style. Validation is anchored to this default governed catalog; custom Python
