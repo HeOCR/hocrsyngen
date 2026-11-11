@@ -943,3 +943,19 @@ Exit criteria:
 - Every composed page records the bank styles, licences and attribution it
   used.
 - A training run that adds composed pages lowers real printed-page CER.
+
+## Phase S17 — Real-Texture Synthetic Lines
+
+Current status: `open`.
+
+Objective: synthetic training lines that help Tesseract on real print when added to real lines. R5 showed that synthetic lines alone make it worse. The eight candidate ideas, the evidence behind them and the judging rules are in [s17_real_texture_synthesis_ideas.md](s17_real_texture_synthesis_ideas.md).
+
+Planned work:
+
+- `S17a` — Scan-ifier: an image-to-image model trained on `bynli_lines_v2` render/real pairs, style-conditioned. The code is exploratory and stays outside `src/hocrsyngen/`.
+- Later S17 items follow that document's order.
+
+Exit criteria:
+
+- An R7-recipe run with S17 lines added beats the same run without them on held-out real dev, with the interval excluding zero.
+
