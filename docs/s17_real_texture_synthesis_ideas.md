@@ -12,7 +12,7 @@ S16 composed training pages from glyphs cut out of real printed scans. The resul
   - Reading order and missed regions together cost about 0.01 CER.
   - One rabbinic responsa print (*Hut ha-Meshulash*, 1820, dense small type, 137 ״/׳ marks on one page) is 4 of 38 pages and about 45% of all errors.
   - Two books make up most of the error on the 10 hard pages: a fully pointed liturgical print (704 marks on 896 letters on one page) and the title pages of a Hasidic print.
-  - In-domain, R7's main residual error is short deletions (1–19 letters inside lines it reads).
+  - On pages, R7's in-domain residual error is mostly short deletions (1–19 letters inside lines it reads). On dev line crops, though, R7 drops no more than R6 (0.0030 against 0.0029), so the page-level excess is not a line-recognizer regression.
 
 **Working hypothesis:** synthetic data can help only if it keeps real scan texture, or if it targets one of these gaps. It should always be added to R7-style real lines, never used alone.
 
@@ -35,7 +35,7 @@ Each entry gives the gap it targets and what would make it fail.
    - *Guard:* the works behind the scored Seliḥot page (Open Siddur Project) stay out of every text source.
 6. **Hallucination vaccine.** Cut ornaments, frames, vignettes, printer's marks, stains and bleed-through from PD title pages. Train on those crops labelled empty, and on real lines with ornaments pasted beside them.
    - *Targets:* insertions (0.021 CER) and title pages; one page was read as 371 letters against a reference of 225.
-7. **Deletion drills.** Synthesize the conditions that likely cause R7's short deletions: tight letter spacing, touching letters, broken type, faint thin letters (י ו ן), and small type at low pixel height. Measure deletions on dev crops (psm 13) before and after. This ties into the R8 deletion item.
+7. **Deletion drills.** Synthesize the conditions under which letters may be dropped inside read lines: tight letter spacing, touching letters, broken type, faint thin letters (י ו ן), and small type at low pixel height, as in rabbinic books. The page-level short deletions are measured, but on dev crops R7 deletes no more than R6, so first check whether the page deletions survive on psm 13 line crops of the hard prints. Build drills only for conditions that do.
 8. **Physical print-and-scan loop (wild).** Print synthetic rabbinic and pointed pages built from the idea-3 banks on cheap paper. Age them (sun, coffee, folding), then scan them on flatbeds and phones, possibly as a volunteer campaign. A few hundred pages are a realism ground truth for ideas 1 and 7, not a training set.
 
 Left out on purpose: transcribing unlabelled rabbinic scans with a large vision-language model. It is not synthetic, and it breaks the rule that labels are edition text, never OCR output. It needs its own decision.
@@ -44,12 +44,13 @@ Left out on purpose: transcribing unlabelled rabbinic scans with a large vision-
 
 - Always as an add-on to R7's real lines, against an R7-recipe control run on the same lines.
 - Checkpoint selection and the verdict use held-out real dev, which includes at least one held-out rabbinic Index once R8's dev set exists. Never the 38 scored pages (heocr-engine decision 0012).
-- No text from a scored work, in any edition, enters a text source. This uses the same 6-gram check as the R7 line set.
+- No text from a scored work, in any edition, enters a text source.
+- No scan of a scored work is used as a style crop, glyph source or paper patch. That covers the audit2 Indexes and all their editions, the release `test` split, and held-out dev Indexes, and applies to S17a's exploratory runs too. This uses the same 6-gram check as the R7 line set.
 - Inputs follow the legal strategy and decisions 0014–0016. Code for learned models (ideas 1 and 3) stays outside `src/hocrsyngen/`, per [learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md).
 
 ## Order
 
-1. Ideas 2 and 7 first. They are cheap and they test the real-texture hypothesis directly.
-2. Idea 1, which has the largest upside (S17a, started 2026-11-11).
+1. Idea 1 (S17a, the scan-ifier) is first, at the maintainer's request (2026-11-11). It has the largest upside.
+2. Ideas 2 and 7 are the next cheap checks. They test the real-texture hypothesis directly.
 3. Ideas 3–6 once R8's rabbinic dev set exists.
 4. Idea 8 only if ideas 1 or 7 need a realism ground truth.
