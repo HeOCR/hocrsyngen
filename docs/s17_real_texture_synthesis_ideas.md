@@ -44,8 +44,8 @@ Left out on purpose: transcribing unlabelled rabbinic scans with a large vision-
 
 - Always as an add-on to R7's real lines, against an R7-recipe control run on the same lines.
 - Checkpoint selection and the verdict use held-out real dev, which includes at least one held-out rabbinic Index once R8's dev set exists. Never the 38 scored pages (heocr-engine decision 0012).
-- No text from a scored work, in any edition, enters a text source.
-- No scan of a scored work is used as a style crop, glyph source or paper patch. That covers the audit2 Indexes and all their editions, the release `test` split, and held-out dev Indexes, and applies to S17a's exploratory runs too. This uses the same 6-gram check as the R7 line set.
+- No text from a scored work, in any edition, enters a text source. This uses the same 6-gram check as the R7 line set.
+- No scan of a scored work is used as a style crop, glyph source or paper patch. That covers the audit2 Indexes and all their editions, the release `test` split, and held-out dev Indexes, and applies to S17a's exploratory runs too.
 - Inputs follow the legal strategy and decisions 0014–0016. Code for learned models (ideas 1 and 3) stays outside `src/hocrsyngen/`, per [learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md).
 
 ## Order
