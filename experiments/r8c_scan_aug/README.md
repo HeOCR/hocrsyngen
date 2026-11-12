@@ -105,3 +105,45 @@ Brainin IA stays a known R8b weakness: one scan of one book, already on the R8b 
 The degraded dev copies and their score_lines folders went to the Trash; `scan_aug.py` can rebuild them from hocrsyngen `3b55d4a`. The kept files are `diagnostics/step0_report.json`, `diagnostics/ia_he_het_sheet.png` and `diagnostics/step0_outputs/`, which holds each set's raw lstmeval outputs and codes.json.
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
+
+## Option 3 (read-only): where R8b learned "near-closed ה → ח" (2026-11-12)
+
+**Method:** `scripts/he_het_labels.py`, written to `diagnostics/he_het_labels.json`.
+- Up to 300 seeded lines per training book: 23,373 lines over 95 books.
+- Each line was read with stock `tessdata_best` heb, which never trained on HeOCR data.
+- ה/ח substitutions against the label were counted per book.
+- The s17a lines are the control, since their labels are exact by construction.
+
+| Source | lines | ח read as ה, per 1k ח | ה read as ח, per 1k ה |
+|---|---|---|---|
+| s17a add-on (control) | 300 | 49 | 2.9 |
+| bynli (v2) | 8,181 | 67 | 4.4 |
+| bynli_lines_v3 | 4,500 | 75 | 5.0 |
+| reshumotlines_v1 | 10,381 | 1.3 | 0 |
+
+**Reading the rates:**
+- The reader's own bias is about 49 per 1k ח, which is the control.
+- Three books stand far above it:
+
+  | Book | ח read as ה, per 1k ח | train lines |
+  |---|---|---|
+  | sipurim00nombuoft | 515 | 1,291 |
+  | NLI 990020308000205171 | 465 | 6,076 |
+  | mabeothayehudims00raff | 310 | 4,137 |
+
+- Next come miyarketetevel 147, tserorperaim 146, hegyoneshpinozah 136 and agadothatanaim 105.
+- **Not label noise.** On the spot sheet (`diagnostics/het_open_sheet.png`) the labels match the print. These faces draw ח with a small gap at the top left, so a correct ח looks like ה.
+- That is the mirror image of Brainin IA's ה, whose gap nearly closes.
+- So R8b learned, correctly from its data, that an ה-like shape with a narrow gap can be ח.
+
+**Which books look like IA:** `diagnostics/measure_books.json`, Euclidean distance over z-scored medians of band, contrast, bg_std, texture, speckle, sharpness, stroke and gap.
+- Of the 10 train books nearest to Brainin IA, 3 are open-ח books: hegyoneshpinozah 136, agadothatanaim 105 and mabeothayehudims 310.
+- sipurim ranks 11th.
+- So the open-ח faces sit in the same size and sharpness range as IA.
+
+**Conclusion:** this is a real typeface ambiguity, not a data error, so the next round has no label fix to make. If it matters later, options are:
+- per-face balance, so open-ח books don't dominate the IA-like size range;
+- more train books whose ה has a narrow gap;
+- leaving it as a known limit.
+
+— synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
