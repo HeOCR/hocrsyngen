@@ -12,6 +12,7 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `src/hocrsyngen/schemas/`: JSON schemas for serialized contracts.
 - `src/hocrsyngen/data/synthetic/`: governed packaged fonts and Hebrew text corpus.
 - `src/hocrsyngen/data/contracts/`: packaged downstream contract fixtures.
+- `experiments/`: research scripts outside the package, never imported or packaged: `learned_generation_v0/s17a_scanifier/` (S17a scan-ifier and add-on recipe; Torch) and `r8c_scan_aug/` (R8c procedural scan augmentation).
 - `tests/`: CLI, generation, validation, installation, and package-resource tests.
 - `docs/`: architecture, scope, specs, roadmap, research, testing, and decisions.
 
