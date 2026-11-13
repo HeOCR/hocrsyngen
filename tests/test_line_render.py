@@ -228,3 +228,15 @@ def test_weight_applies_to_variable_faces_only(tmp_path):
     s = render_lines([{"id": "a", "text": "שלום"}], tmp_path / "o", seed=1, fonts=["alef-regular"], weight_range=(700, 700))
     r = json.loads((tmp_path / "o" / "manifest.jsonl").read_text())
     assert r["weight"] is None and r["font"]["variable_weight"] is False and s["rendered"] == 1
+
+
+def test_refuses_combining_marks_the_face_lacks_and_keeps_niqqud_it_has(tmp_path):
+    # None of the enabled faces has te'amim (U+0591-U+05AF); all have the basic niqqud. A line with a ta'am must be
+    # refused (the mark would vanish from the image while the label keeps it); a pointed line must render.
+    rows = [{"id": "taam", "text": "בְּרֵאשִׁ֖ית בָּרָא"}, {"id": "niqqud", "text": "שָׁלוֹם עוֹלָם"}]
+    for f in governed_faces():
+        s = render_lines(rows, tmp_path / f, seed=1, fonts=[f])
+        ref = {r["id"]: r for r in s["refused"]}
+        assert set(ref) == {"taam"} and ref["taam"]["reason"] == "font_missing_chars", (f, s["refused"])
+        assert "\u0596" in ref["taam"]["chars"]
+        assert (tmp_path / f / "lines" / "niqqud.png").exists()

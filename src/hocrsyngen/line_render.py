@@ -225,10 +225,13 @@ def band_ratio(path: str, weight: int | None, band_def: str = DEFAULT_BAND_DEF) 
 
 @lru_cache(maxsize=8192)
 def _covers(path: str, ch: str) -> bool:
-    """False if `ch` would be drawn as the face's .notdef glyph."""
-    if ch.isspace() or unicodedata.category(ch) in ("Cf", "Mn"):
+    """False if the face has no glyph for `ch` (it would be drawn as .notdef, or a combining mark would be dropped
+    while the label keeps it). Checked with Pillow's BASIC layout, which maps each character through the face's cmap
+    without HarfBuzz mark handling, against the .notdef bitmap. Combining marks (niqqud, te'amim) are checked like any
+    other character; only whitespace and format controls (Cf, e.g. RLM) are exempt."""
+    if ch.isspace() or unicodedata.category(ch) == "Cf":
         return True
-    f = _font(path, 48)
+    f = ImageFont.truetype(path, 48, layout_engine=ImageFont.Layout.BASIC)
     def mask(c: str) -> bytes:
         m = f.getmask(c, mode="L")
         return bytes(m) + m.size[0].to_bytes(4, "big") + m.size[1].to_bytes(4, "big")
