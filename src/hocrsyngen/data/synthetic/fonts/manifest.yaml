@@ -39,3 +39,51 @@ fonts:
     license_file: LICENSE-NotoRashiHebrew-OFL.txt
     sha256: 4da0058f46aa66f9a334967a640a1e56abb642eba3c1c3fc5080f6282c9eb126
     line_render: false
+  - id: noto-sans-hebrew
+    file: NotoSansHebrew-wdth-wght.ttf
+    style: modern_sans
+    notes: Open Hebrew modern face for render-lines. Noto Sans Hebrew 3.001, variable wght 100-900 and wdth 62.5-100. From google/fonts commit 3cb0866aebe5de40156f418a1750cb329e81ebdb, ofl/notosanshebrew/NotoSansHebrew[wdth,wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-NotoSansHebrew-OFL.txt
+    sha256: 7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88
+    line_render: true
+  - id: noto-serif-hebrew
+    file: NotoSerifHebrew-wdth-wght.ttf
+    style: modern_serif
+    notes: Open Hebrew modern face for render-lines. Noto Serif Hebrew 2.004, variable wght 100-900 and wdth 62.5-100. From google/fonts commit 3cb0866aebe5de40156f418a1750cb329e81ebdb, ofl/notoserifhebrew/NotoSerifHebrew[wdth,wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-NotoSerifHebrew-OFL.txt
+    sha256: 93caef921360788dc3b0e32136bb26f16bc57717ec482d48fc7fd43820617165
+    line_render: true
+  - id: assistant
+    file: Assistant-wght.ttf
+    style: modern_sans
+    notes: Open Hebrew modern face for render-lines. Assistant 3.000, variable wght 200-800; no te'amim. From google/fonts commit 3cb0866aebe5de40156f418a1750cb329e81ebdb, ofl/assistant/Assistant[wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-Assistant-OFL.txt
+    sha256: 1c3b393884f8fb133a1b17f41d26178adae1050a4f86d7a429d1b5658c314fa3
+    line_render: true
+  - id: heebo
+    file: Heebo-wght.ttf
+    style: modern_sans
+    notes: Open Hebrew modern face for render-lines. Heebo 3.100, variable wght 100-900; no te'amim. From google/fonts commit 3cb0866aebe5de40156f418a1750cb329e81ebdb, ofl/heebo/Heebo[wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-Heebo-OFL.txt
+    sha256: 18f930b583fa8fe6b40b2f8263b7ac6afbac07adc91a12467874e7467d3ace30
+    line_render: true
+  - id: rubik
+    file: Rubik-wght.ttf
+    style: modern_sans
+    notes: Open Hebrew modern face for render-lines. Rubik 2.300 (roman only), variable wght 300-900; no te'amim, no rafe U+05BF. From google/fonts commit 3cb0866aebe5de40156f418a1750cb329e81ebdb, ofl/rubik/Rubik[wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-Rubik-OFL.txt
+    sha256: 1b3a7437ba2af80e465e773ed60c5036d1ba6ace492d89046dbcf18fb31e4e88
+    line_render: true
+  - id: miriam-libre
+    file: MiriamLibre-wght.ttf
+    style: modern_sans
+    notes: Open Hebrew modern face for render-lines. Miriam Libre 2.000, variable wght 400-700; no te'amim, no rafe U+05BF. From google/fonts commit 3cb0866aebe5de40156f418a1750cb329e81ebdb, ofl/miriamlibre/MiriamLibre[wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-MiriamLibre-OFL.txt
+    sha256: 9ea850118d552d25e1fb8242cbd429a5801c691b6ce218458e1a039045114bb8
+    line_render: true
