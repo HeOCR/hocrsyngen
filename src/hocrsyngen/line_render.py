@@ -18,8 +18,9 @@ Rules:
 - Fonts are assigned by a seeded balanced permutation over groups (or lines when there is no ``group``); counts differ
   by at most one. Lines of a group share face, size and weight, so a sitting reads like one document.
 - Every random choice derives from (seed, group or line id), so a line renders identically in any batch.
-- Each record carries the measured ink band (``ink_band_px``) and ``dark_density``; ``--band-range`` targets the band
-  directly, converted to a font size per face.
+- Each record carries two ink-band measures: ``ink_band_px_otsu2pct`` / ``ink_band_frac_otsu2pct`` (the R9 face-stats
+  definition) and ``ink_band_px`` / ``dark_density`` (p5-p95 letter body). ``--band-range`` targets one of them
+  (``--band-def``, default otsu2pct), converted to a font size per face.
 """
 from __future__ import annotations
 
@@ -169,14 +170,57 @@ def measure_band(img: Image.Image, ink: int, paper: int) -> dict:
     return {"ink_band_px": y1 - y0 + 1, "dark_density": round(inside / max(1, (y1 - y0 + 1) * (bbox[2] - bbox[0])), 4)}
 
 
+def _otsu(img: Image.Image) -> int:
+    hist = img.histogram()[:256]
+    total = sum(hist); sum_all = sum(i * h for i, h in enumerate(hist))
+    w = m = 0.0; best, t = -1.0, 0
+    for i, h in enumerate(hist):
+        w += h; m += i * h
+        if w == 0 or w == total:
+            continue
+        b = (sum_all * w / total - m) ** 2 / (w * (total - w) / total)
+        if b > best:
+            best, t = b, i
+    return t
+
+
+def measure_band_otsu2pct(img: Image.Image) -> dict:
+    """The R9 face-stats definition (tasks/r9-new-printed/face_stats/per_face_stats.py, as r8c measure.py): ink =
+    pixels <= the Otsu threshold of the line image; band = rows from the first to the last row whose ink share is above
+    2% (ascenders and descenders included); ink_band_frac = ink share inside the band rows x the columns from the first
+    to the last ink column of those rows."""
+    t = _otsu(img)
+    w, h = img.size
+    data = img.point(lambda v: 255 if v <= t else 0).tobytes()
+    rows = [data[y * w:(y + 1) * w].count(255) for y in range(h)]
+    hit = [y for y, n in enumerate(rows) if n > 0.02 * w]
+    if not hit:
+        return {"ink_band_px_otsu2pct": 0, "ink_band_frac_otsu2pct": 0.0}
+    y0, y1 = hit[0], hit[-1]
+    cols = [x for x in range(w) if any(data[y * w + x] for y in range(y0, y1 + 1))]
+    x0, x1 = cols[0], cols[-1]
+    inside = sum(data[y * w + x0:y * w + x1 + 1].count(255) for y in range(y0, y1 + 1))
+    return {"ink_band_px_otsu2pct": y1 - y0 + 1,
+            "ink_band_frac_otsu2pct": round(inside / ((y1 - y0 + 1) * (x1 - x0 + 1)), 4)}
+
+
+BAND_DEFS = {"otsu2pct": "ink_band_px_otsu2pct", "p5p95": "ink_band_px"}
+DEFAULT_BAND_DEF = "otsu2pct"
+
+
+def line_measures(img: Image.Image, ink: int, paper: int) -> dict:
+    return {**measure_band(img, ink, paper), **measure_band_otsu2pct(img)}
+
+
 @lru_cache(maxsize=256)
-def band_ratio(path: str, weight: int | None) -> float:
-    """ink_band_px per px of font size for this face (and weight), measured on CALIBRATION_TEXT at 100 px, no preset."""
+def band_ratio(path: str, weight: int | None, band_def: str = DEFAULT_BAND_DEF) -> float:
+    """Band px per px of font size for this face (and weight) under `band_def`, measured on CALIBRATION_TEXT at
+    100 px with no preset."""
     f = _font(path, 100, weight)
     l, t, r, b = f.getbbox(CALIBRATION_TEXT, direction="rtl")
     img = Image.new("L", (r - l + 20, b - t + 20), 255)
     ImageDraw.Draw(img).text((10 - l, 10 - t), CALIBRATION_TEXT, font=f, fill=0, direction="rtl")
-    return measure_band(img, 0, 255)["ink_band_px"] / 100.0
+    return line_measures(img, 0, 255)[BAND_DEFS[band_def]] / 100.0
 
 
 @lru_cache(maxsize=8192)
@@ -291,12 +335,14 @@ def render_lines(
     size_range: tuple[int, int] | None = None,
     band_range: tuple[int, int] | None = None,
     weight_range: tuple[int, int] = (400, 400),
+    band_def: str = DEFAULT_BAND_DEF,
     manifest_path: Path | None = None,
 ) -> dict:
     """Render `lines` ({id, text[, group]} in logical order) into `output`. Returns the summary dict.
 
-    Size: either `size_range` (font px, sampled) or `band_range` (target ink band px, sampled, converted per face
-    with band_ratio so every face lands in the same band); default size_range (24, 72).
+    Size: either `size_range` (font px, sampled) or `band_range` (target ink band px under `band_def`, sampled,
+    converted per face with band_ratio so every face lands in the same band); default size_range (24, 72).
+    band_def: "otsu2pct" (default; R9 face-stats: rows with > 2% Otsu ink, first to last) or "p5p95" (letter body).
     Weight: sampled from `weight_range` and clipped to each variable face's axis; static faces keep their own weight.
     Lines sharing a `group` share face, size/band and weight (sampled once per group); faces are balanced over
     groups, or over lines when no group is given. Degradation is drawn per line."""
@@ -305,6 +351,8 @@ def render_lines(
         raise ValueError(f"unknown preset {preset!r}; choose one of {sorted(LINE_PRESETS)}")
     if size_range is not None and band_range is not None:
         raise ValueError("give size_range or band_range, not both")
+    if band_def not in BAND_DEFS:
+        raise ValueError(f"unknown band_def {band_def!r}; choose one of {sorted(BAND_DEFS)}")
     mode = "band" if band_range is not None else "size"
     lo, hi = band_range if band_range is not None else (size_range or (24, 72))
     if not (4 <= lo <= hi <= 400):
@@ -346,10 +394,10 @@ def render_lines(
             grng = _line_rng(seed, key[r["id"]] + ":style")
             target = grng.randint(lo, hi)
             weight, variable = face_weight(face, grng.randint(wlo, whi))
-            size = target if mode == "size" else max(6, round(target / band_ratio(str(face.path), weight)))
+            size = target if mode == "size" else max(6, round(target / band_ratio(str(face.path), weight, band_def)))
             rng = _line_rng(seed, r["id"])
             img, params = render_line(text, face, size, preset, rng, weight)
-            band = measure_band(img, params["ink"], params["paper"])
+            band = line_measures(img, params["ink"], params["paper"])
             img.save(out / "lines" / f"{r['id']}.png")
             (out / "lines" / f"{r['id']}.gt.txt").write_text(text + "\n", encoding="utf-8")
             counts[face.id] += 1
@@ -362,6 +410,7 @@ def render_lines(
                 "font": {"id": face.id, "file": face.file, "sha256": face.sha256, "license": face.license,
                          "license_file": face.license_file, "variable_weight": variable},
                 "size_px": size, "size_mode": mode, "target_band_px": target if mode == "band" else None,
+                "band_def": band_def if mode == "band" else None,
                 "weight": weight, **band,
                 "preset": preset, "preset_params": params,
                 "seed": seed, "line_seed": f"sha256({seed}:{r['id']})", "style_seed": f"sha256({seed}:{key[r['id']]}:style)",
@@ -375,7 +424,7 @@ def render_lines(
     summary = {"schema": LINE_RENDER_SCHEMA, "lines_in": len(rows), "rendered": sum(counts.values()),
                "refused": refused, "by_font": counts, "preset": preset,
                "preset_definition": asdict(LINE_PRESETS[preset]), "size_mode": mode, f"{mode}_range": [lo, hi],
-               "weight_range": [wlo, whi], "groups": len({r["group"] for r in rows if r.get("group")}), "seed": seed,
+               "weight_range": [wlo, whi], "band_def": band_def if mode == "band" else None, "groups": len({r["group"] for r in rows if r.get("group")}), "seed": seed,
                "font_manifest_sha256": _sha256(mpath), "hocrsyngen_version": version, "synthetic": "rendered"}
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     return summary

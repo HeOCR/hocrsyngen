@@ -973,6 +973,9 @@ def build_parser() -> argparse.ArgumentParser:
                             help="Font size range in px, sampled per group or line (default 24 72).")
     size_group.add_argument("--band-range", nargs=2, type=_positive_int, metavar=("MIN", "MAX"),
                             help="Target ink-band height range in px; converted to a font size per face.")
+    render_lines_p.add_argument("--band-def", choices=("otsu2pct", "p5p95"), default="otsu2pct",
+                                help="Band definition for --band-range: otsu2pct (default; rows with > 2%% Otsu ink, as R9 "
+                                     "face stats) or p5p95 (letter body).")
     render_lines_p.add_argument("--weight-range", nargs=2, type=_positive_int, default=(400, 400), metavar=("MIN", "MAX"),
                                 help="Weight range for faces with a weight axis (default 400 400); static faces keep theirs.")
     render_lines_p.add_argument("--list-fonts", action="store_true", help="Print the governed faces as JSON and exit.")
@@ -1423,7 +1426,7 @@ def main(argv: list[str] | None = None) -> int:
                                    preset=args.preset,
                                    size_range=tuple(args.size_range) if args.size_range else None,
                                    band_range=tuple(args.band_range) if args.band_range else None,
-                                   weight_range=tuple(args.weight_range))
+                                   weight_range=tuple(args.weight_range), band_def=args.band_def)
         except (ValueError, RuntimeError, OSError) as exc:
             parser.error(f"render-lines: {exc}")
         if args.format == "json":

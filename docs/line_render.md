@@ -9,14 +9,14 @@ It is separate from `generate`, which builds template pages and samples its own 
 ```bash
 hocrsyngen render-lines --input lines.jsonl --output out/ --seed 20261113 \
   [--font frank-ruhl-libre --font david-libre-regular ...] [--preset modern_print_scan_v1] \
-  [--size-range 24 72 | --band-range 27 34] [--weight-range 400 400]
+  [--size-range 24 72 | --band-range 27 34 [--band-def otsu2pct|p5p95]] [--weight-range 400 400]
 hocrsyngen render-lines --list-fonts
 ```
 
 - **`--input`:** UTF-8 JSONL, one `{"id": ..., "text": ..., "group": ...}` per physical line, with text in logical order. `group` is optional, e.g. a sitting id. Ids must be filename-safe (`[A-Za-z0-9_.-]`, at most 200 characters) and unique.
 - **Size:** give one of the two.
   - `--size-range`: font px, the default being 24–72.
-  - `--band-range`: target ink-band px. It is converted to a font size per face (and weight) by measuring a calibration line, so every face lands in the same band.
+  - `--band-range`: target ink-band px under `--band-def`. It is converted to a font size per face (and weight) by measuring a fixed calibration line, so every face lands in the same band on typical text.
 - **`--weight-range`:** sampled, then clipped to each variable face's weight axis. Static faces keep their own weight, recorded as `weight: null`.
 - **Groups:** lines that share a `group` share face, size or band, and weight, so a sitting reads like one document. Degradation is still drawn per line.
 - **Python:** `hocrsyngen.line_render.render_lines(lines, output, seed=..., fonts=..., preset=..., size_range=... | band_range=..., weight_range=...)` does the same and returns the summary. The CLI is the stable surface. Pin the commit you used.
@@ -30,7 +30,18 @@ hocrsyngen render-lines --list-fonts
 | `manifest.jsonl` | one `hocrsyngen_line_render.v1` record per line: `group`, `font_id`, `font` {id, file, sha256, license, license_file, variable_weight}, `size_px`, `size_mode`, `target_band_px`, `weight`, `ink_band_px`, `dark_density`, `preset`, `preset_params` (the values drawn for that line), `seed`, `line_seed`, `style_seed`, `synthetic: "rendered"`, `label_order: "logical"`, width and height |
 | `summary.json` | lines in and rendered, `refused` (id, reason; per line, never silent), counts per font, number of groups, the preset definition, size or band range, weight range, seed, the font manifest's sha256 and the package version |
 
-**Ink band.** "Dark" means below the midpoint of that line's ink and paper grey. `ink_band_px` is the rows between the 5th and 95th percentile of dark-pixel rows, which is about the letter body: ascenders, descenders and specks are trimmed. `dark_density` is the dark pixels inside the band divided by band height × horizontal ink extent. Both are measured on the final, degraded image. Check this definition against your own before you compare numbers.
+**Ink band.** Every line records two definitions, both measured on the final, degraded image.
+
+- **`otsu2pct`, the default for `--band-def`:** `ink_band_px_otsu2pct` and `ink_band_frac_otsu2pct`.
+  - This is the R9 face-stats definition (`tasks/r9-new-printed/face_stats/per_face_stats.py`, from r8c `measure.py`). Ink is a pixel at or below the line's Otsu threshold.
+  - The band runs from the first to the last row with more than 2% ink, so ascenders, descenders, brackets and quotes are included.
+  - The density is the ink share inside the band rows, times the first-to-last ink columns.
+  - On 12 rendered lines it gives exactly the same band and density as `per_face_stats.measure()`.
+- **`p5p95`:** `ink_band_px` and `dark_density`.
+  - Dark is below the midpoint of the line's ink and paper grey.
+  - The band is the rows between the 5th and 95th percentile of dark-pixel rows, about the letter body.
+
+Band targeting fixes the font size from a typical calibration line. Each line's actual band then varies with its content, as on a real scan: a line with brackets, digits or quotes has a taller `otsu2pct` band than its target. Select on the recorded per-line band if you need a hard cut.
 
 ## Rules
 

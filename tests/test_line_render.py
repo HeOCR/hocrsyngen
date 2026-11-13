@@ -197,13 +197,26 @@ def test_groups_share_face_size_and_weight_and_balance_over_groups(tmp_path):
 
 def test_band_range_lands_every_face_in_the_target_band(tmp_path):
     rows = [{"id": f"b{i}", "text": "הוועדה דנה בהצעת החוק לתיקון פקודת המסים"} for i in range(12)]
-    s = render_lines(rows, tmp_path / "o", seed=4, preset="none", band_range=(27, 34))
-    man = [json.loads(l) for l in (tmp_path / "o" / "manifest.jsonl").read_text().splitlines()]
-    assert s["size_mode"] == "band" and len({r["font_id"] for r in man}) == 3
-    for r in man:
-        assert 27 <= r["target_band_px"] <= 34
-        assert abs(r["ink_band_px"] - r["target_band_px"]) <= 3, r
-        assert 0 < r["dark_density"] < 1
+    for bd, field in (("otsu2pct", "ink_band_px_otsu2pct"), ("p5p95", "ink_band_px")):
+        s = render_lines(rows, tmp_path / bd, seed=4, preset="none", band_range=(27, 34), band_def=bd)
+        man = [json.loads(l) for l in (tmp_path / bd / "manifest.jsonl").read_text().splitlines()]
+        assert s["size_mode"] == "band" and s["band_def"] == bd and len({r["font_id"] for r in man}) == 3
+        for r in man:
+            assert 27 <= r["target_band_px"] <= 34 and r["band_def"] == bd
+            assert abs(r[field] - r["target_band_px"]) <= 3, r
+            assert 0 < r["dark_density"] < 1 and 0 < r["ink_band_frac_otsu2pct"] < 1
+
+
+def test_otsu2pct_matches_the_r9_face_stats_definition():
+    # Hand-built line: 10 rows of solid ink (cols 5-24) on a 100x30 white image, plus one row with 1 ink pixel (1% < 2%).
+    from hocrsyngen.line_render import measure_band_otsu2pct
+    img = Image.new("L", (100, 30), 255)
+    for y in range(10, 20):
+        for x in range(5, 25):
+            img.putpixel((x, y), 0)
+    img.putpixel((30, 25), 0)
+    m = measure_band_otsu2pct(img)
+    assert m["ink_band_px_otsu2pct"] == 10 and m["ink_band_frac_otsu2pct"] == 1.0
 
 
 def test_weight_applies_to_variable_faces_only(tmp_path):
