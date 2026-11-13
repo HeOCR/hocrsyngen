@@ -3,19 +3,39 @@ fonts:
     file: Alef-Regular.ttf
     style: printed
     notes: Open Hebrew sans-serif used for printed synthetic documents.
+    license: OFL-1.1
+    license_file: LICENSE-Alef-OFL.txt
+    sha256: a32adcc953ac356906901778460083dc207d4560cb586fd9ea24ec5b186969ed
+    line_render: true
   - id: gveret-levin-regular
     file: GveretLevin-Regular.ttf
     style: handwritten_like
     notes: Open Hebrew handwriting-style font used for note-like synthetic documents.
+    license: OFL-1.1
+    license_file: LICENSE-GveretLevin-OFL.txt
+    sha256: 05c443395d48b97f43469da4fb08772a4c612fda306348577dbc40a1267912b1
+    line_render: false
   - id: frank-ruhl-libre
     file: FrankRuhlLibre-wght.ttf
     style: book_serif
     notes: Open Hebrew book serif (variable weight, Regular instance) for printed book pages.
+    license: OFL-1.1
+    license_file: LICENSE-FrankRuhlLibre-OFL.txt
+    sha256: f9bf26966681037aae894b031bd0dcf2c1bfdfa128dd0640cf276fe62a338a43
+    line_render: true
   - id: david-libre-regular
     file: DavidLibre-Regular.ttf
     style: book_serif_alt
     notes: Open Hebrew book serif for printed book pages.
+    license: OFL-1.1
+    license_file: LICENSE-DavidLibre-OFL.txt
+    sha256: 923f06e0f6dc84e1649d8cc5d5e12a8d663adf6aba83ba15baa5d559fb47b86e
+    line_render: true
   - id: noto-rashi-hebrew
     file: NotoRashiHebrew-wght.ttf
     style: rashi
     notes: Open Hebrew Rashi-script font (variable weight, Regular instance) for commentary blocks.
+    license: OFL-1.1
+    license_file: LICENSE-NotoRashiHebrew-OFL.txt
+    sha256: 4da0058f46aa66f9a334967a640a1e56abb642eba3c1c3fc5080f6282c9eb126
+    line_render: false

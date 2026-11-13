@@ -444,6 +444,10 @@ packaged governed templates, when the sample-level `recipe_id` differs from
 `provenance.recipe_id`, or when the provenance recipe, degradation preset, or
 font id does not match the packaged contract for that template.
 
+### Render given lines (`render-lines`)
+
+`hocrsyngen render-lines --input lines.jsonl --output out/ --seed N` renders caller-supplied lines (`{"id", "text"}`, logical order). It uses only the governed faces in `data/synthetic/fonts/manifest.yaml` (`line_render: true`, licence and sha256 checked) and a line-level preset (`modern_print_scan_v1` by default, its `_medium` and `_small_inky` variants, or `none`). Lines can share a `group` (one face, size and weight per group), and `--band-range` targets the ink-band height per face. It writes `lines/<id>.png`, logical `lines/<id>.gt.txt`, and a `manifest.jsonl` that records font, licence, sha256, preset, seed and `synthetic: "rendered"` for every line. See [docs/line_render.md](docs/line_render.md).
+
 ## Contract Fixture for hocrgen Integration
 
 `hocrsyngen` packages a canonical generated batch fixture at:
