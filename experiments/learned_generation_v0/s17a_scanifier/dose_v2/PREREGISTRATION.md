@@ -68,6 +68,19 @@ The arm's checkpoint is the one with the lowest line_fold_v1 CER from `score_lin
 - **The win stands** only if Δ = CER(retrained control) − CER(arm) still has its 95% unit-cluster lower bound above 0 on OLB v1_dev "all".
 - If the arm loses or the result is unresolved, there is no confirmation run. The result is reported, and S17a dose stays at v1.1.
 
+### Training-list overlap (added before training, heocr-lead 2026-11-13)
+
+- **Official check.** eval's `check_train_overlap.py` (word 6-grams after folding, every target) runs on the whole final arm list. Under eval's rule, only that check makes a list CLEAN.
+- **New dose lines.** Any `s17a2_*` line that hits is dropped before training. The official run must then show **0 hits in the new part**.
+- **Inherited part.** This is R8b `train_main.list`. It stays in the arm as it is, because the released control trained on exactly the same lines and both sides share the same exposure.
+  - Its hits must be exactly those of `train_main.list` rechecked with the fixed checker. Nothing new may come in through the inherited part.
+  - The hits are listed in the report.
+- **The decision rule above is unchanged.**
+- **Secondary view, reported but not deciding.** The deltas with exposed dev lines removed:
+  - on the OLB gate, the 11 lines that share a 6-gram with the training list (the "excluded" views);
+  - per guard book, the lines that share a word 6-gram with the arm's training list.
+- **Confirmation run, if there is one.** Both the retrained control and the arm train on R8b `train_main.list` cleaned with the fixed checker (the arm adds the same dose lines). They are scored on exposure-free lines. The adoption decision therefore rests on clean lists.
+
 ## Reported alongside, not deciding
 
 - **Gate statistics** per sub-rule, and acceptance per style book and per character class.

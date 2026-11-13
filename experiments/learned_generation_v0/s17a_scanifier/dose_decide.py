@@ -11,6 +11,8 @@ Delta = CER(control) - CER(arm): positive means the arm is better. 95% paired cl
 - Guard: Kevar and Yedi'ot held-out lines (the .full sets restricted to the .heldout lists), Brainin IA (brainin_v3),
   Brainin NLI, Silman. Clusters = scan page (book + cNNNN from the file name). Loss = upper bound < 0.
 - Report-only: bodek, reshumot_dev, rab_dev, ws_dev (CER and the same page/line interval, no rule).
+- Secondary (lead 2026-11-13, not deciding): each guard book again without dev lines sharing a word 6-gram with
+  ARM_TRAIN_LIST (guard_exposure_removed); OLB's "excluded" views are the same idea.
 Decision: arm wins iff OLB win and no guard loss.
 """
 import argparse, hashlib, json, random, re, sys
@@ -110,10 +112,17 @@ def main():
     unresolved = bool((va["delta_control_minus_arm"] > 0) != (ve["delta_control_minus_arm"] > 0))
     olb_win = va["arm_better"] and not unresolved
 
-    rep["guard"] = {}
+    rep["guard"] = {}; rep["guard_exposure_removed"] = {}
     for b, (sn, ho) in GUARD.items():
         keep = set((L / f"{ho}.list").read_text().split()) if ho else None
-        rep["guard"][b] = boot([(k, n, e) for k, n, e, _ in set_items(sn, models, P, keep)], models)
+        its = set_items(sn, models, P, keep)
+        rep["guard"][b] = boot([(k, n, e) for k, n, e, _ in its], models)
+        # secondary (not deciding): drop dev lines that share a word 6-gram with the arm's training list
+        clean = [(k, n, e) for k, n, e, c in its if not (N.grams(c["ref_lstm_order"][::-1]) & tg)]
+        r = boot(clean, models) if clean else None
+        if r:
+            r["exposed_lines_removed"] = len(its) - len(clean)
+        rep["guard_exposure_removed"][b] = r
     losses = [b for b, r in rep["guard"].items() if r["arm_worse"]]
     rep["report_only"] = {b: boot([(k, n, e) for k, n, e, _ in set_items(sn, models, P)], models) for b, sn in REPORT.items()}
     rep["decision"] = {"olb_win": olb_win, "olb_unresolved": unresolved, "guard_losses": losses,
@@ -122,8 +131,10 @@ def main():
     json.dump(rep, open(a.out, "w"), indent=1)
     for v, r in rep["olb"]["views"].items():
         print(f"olb {v:15s} {r['lines']:5d}/{r['clusters']:3d}  ctl {r['cer'][a.control]:.3f}  arm {r['cer'][a.arm]:.3f}  d {r['delta_control_minus_arm']:+.3f} {r['ci95']}")
-    for g in ("guard", "report_only"):
+    for g in ("guard", "guard_exposure_removed", "report_only"):
         for b, r in rep[g].items():
+            if r is None:
+                continue
             print(f"{g[:6]} {b:13s} {r['lines']:5d}/{r['clusters']:4d}  ctl {r['cer'][a.control]:.3f}  arm {r['cer'][a.arm]:.3f}  d {r['delta_control_minus_arm']:+.3f} {r['ci95']}")
     print(rep["decision"])
 
