@@ -47,7 +47,8 @@ PYTHONPATH=src python -m hocrsyngen.cli validate out/fixture-batch --format json
 
 ## Stable Public Surfaces
 
-- CLI commands: `templates`, `contracts`, `contracts export`, `generate`, `validate`, `compose-glyph-pages`.
+- CLI commands: `templates`, `contracts`, `contracts export`, `generate`, `validate`, `compose-glyph-pages`, `render-lines`.
+- Line render record: `hocrsyngen_line_render.v1` (`render-lines` manifest.jsonl; see `docs/line_render.md`).
 - Serialized manifest contract: `generation_manifest.json` v1.
 - Packaged fixture id: `generation_manifest_v1_fixture_batch`.
 - Treat private helpers and module internals as implementation details unless documented otherwise.

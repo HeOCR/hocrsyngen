@@ -956,6 +956,30 @@ def build_parser() -> argparse.ArgumentParser:
         default="text",
         help="Output format for the validation report.",
     )
+    render_lines_p = subparsers.add_parser(
+        "render-lines",
+        help="Render given text lines (JSONL of {id, text}, logical order) to line images, labels and per-line provenance.",
+    )
+    render_lines_p.add_argument("--input", type=Path, help="UTF-8 JSONL, one {\"id\", \"text\"} per line.")
+    render_lines_p.add_argument("--output", type=Path, help="Output directory (lines/, manifest.jsonl, summary.json).")
+    render_lines_p.add_argument("--seed", type=_non_negative_int, help="Run seed; each line derives its own from (seed, id).")
+    render_lines_p.add_argument("--font", action="append", dest="fonts",
+                                help="Governed font id (repeatable). Default: every face with line_render: true.")
+    render_lines_p.add_argument("--preset", default="modern_print_scan_v1",
+                                help="Line degradation preset: modern_print_scan_v1 (default, light), "
+                                     "modern_print_scan_v1_medium, modern_print_scan_v1_small_inky, none.")
+    size_group = render_lines_p.add_mutually_exclusive_group()
+    size_group.add_argument("--size-range", nargs=2, type=_positive_int, metavar=("MIN", "MAX"),
+                            help="Font size range in px, sampled per group or line (default 24 72).")
+    size_group.add_argument("--band-range", nargs=2, type=_positive_int, metavar=("MIN", "MAX"),
+                            help="Target ink-band height range in px; converted to a font size per face.")
+    render_lines_p.add_argument("--band-def", choices=("otsu2pct", "p5p95"), default="otsu2pct",
+                                help="Band definition for --band-range: otsu2pct (default; rows with > 2%% Otsu ink, as R9 "
+                                     "face stats) or p5p95 (letter body).")
+    render_lines_p.add_argument("--weight-range", nargs=2, type=_positive_int, default=(400, 400), metavar=("MIN", "MAX"),
+                                help="Weight range for faces with a weight axis (default 400 400); static faces keep theirs.")
+    render_lines_p.add_argument("--list-fonts", action="store_true", help="Print the governed faces as JSON and exit.")
+    render_lines_p.add_argument("--format", choices=("text", "json"), default="json", help="Summary output format.")
     quality = subparsers.add_parser("quality-check", help="Summarize recorded annotation quality signals.")
     quality.add_argument("path", type=Path, help="Annotated batch directory.")
     quality.add_argument("--max-truncated-segments", type=_non_negative_int)
@@ -1386,6 +1410,30 @@ def main(argv: list[str] | None = None) -> int:
                 f"from bank {report['bank_id']} into {args.output}; styles: "
                 + ", ".join(f"{style['style_id']}={style['pages']}" for style in report["styles"])
             )
+        return 0
+    if args.command == "render-lines":
+        from .line_render import governed_faces, read_lines, render_lines  # noqa: PLC0415
+        try:
+            if args.list_fonts:
+                faces = governed_faces()
+                print(json.dumps({k: {"file": f.file, "sha256": f.sha256, "license": f.license,
+                                      "license_file": f.license_file, "style": f.style} for k, f in faces.items()},
+                                 ensure_ascii=False, indent=1))
+                return 0
+            if args.input is None or args.output is None or args.seed is None:
+                parser.error("render-lines: --input, --output and --seed are required")
+            summary = render_lines(read_lines(args.input), args.output, seed=args.seed, fonts=args.fonts,
+                                   preset=args.preset,
+                                   size_range=tuple(args.size_range) if args.size_range else None,
+                                   band_range=tuple(args.band_range) if args.band_range else None,
+                                   weight_range=tuple(args.weight_range), band_def=args.band_def)
+        except (ValueError, RuntimeError, OSError) as exc:
+            parser.error(f"render-lines: {exc}")
+        if args.format == "json":
+            print(json.dumps(summary, ensure_ascii=False, indent=1))
+        else:
+            print(f"rendered {summary['rendered']} of {summary['lines_in']} lines; refused {len(summary['refused'])}; "
+                  f"by font {summary['by_font']}")
         return 0
     if args.command == "quality-check":
         try:
