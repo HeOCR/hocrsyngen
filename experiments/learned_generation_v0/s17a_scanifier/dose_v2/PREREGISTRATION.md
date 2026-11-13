@@ -61,6 +61,13 @@ The arm's checkpoint is the one with the lowest line_fold_v1 CER from `score_lin
 - Otherwise the arm does not win, and the report gives the deltas as they are.
 - No other set, view or checkpoint can turn a loss into a win after the fact.
 
+### Confirmation run (added before training, heocr-lead 2026-11-13)
+
+- If the arm wins under the rule above, R9 adopts the extra lines only after a confirmation run.
+- The confirmation run retrains a control: main-fold's recipe on `train_main.list` reshuffled with a different seed. It is selected the same way (line_fold_v1 CER on sel.list). The arm is then re-scored against both controls.
+- **The win stands** only if Δ = CER(retrained control) − CER(arm) still has its 95% unit-cluster lower bound above 0 on OLB v1_dev "all".
+- If the arm loses or the result is unresolved, there is no confirmation run. The result is reported, and S17a dose stays at v1.1.
+
 ## Reported alongside, not deciding
 
 - **Gate statistics** per sub-rule, and acceptance per style book and per character class.
