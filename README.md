@@ -543,7 +543,9 @@ See `docs/testing_and_quality.md` for the canonical Python support policy.
 
 - **Code:** MIT ([LICENSE](LICENSE)).
 - **Fonts:** each under the licence file beside it in
-  `src/hocrsyngen/data/synthetic/fonts/`.
+  `src/hocrsyngen/data/synthetic/fonts/`. All are SIL OFL-1.1: Alef, David Libre, Frank Ruhl Libre, Gveret Levin,
+  Noto Rashi Hebrew, and (from google/fonts, commit recorded in `fonts/manifest.yaml`) Noto Sans Hebrew, Noto Serif
+  Hebrew, Assistant, Heebo, Rubik and Miriam Libre.
 - **Project-authored training and evaluation text (S10b, S13a, S13b and the
   seed-101 reference `hebrew_lines.txt`):**
   dedicated to the public domain under CC0 1.0. See

@@ -48,7 +48,15 @@ Band targeting fixes the font size from a typical calibration line. Each line's 
 - **Governed faces only.**
   - A face is usable only if `data/synthetic/fonts/manifest.yaml` lists it with `line_render: true`, a `license` id, a `license_file` next to it and a `sha256`.
   - The renderer checks each font file against its sha256 and refuses any face that doesn't match or isn't listed.
-  - Today's faces are Alef, David Libre and Frank Ruhl Libre (OFL-1.1). Gveret Levin and Noto Rashi stay in the manifest for `generate`, but are off for line rendering.
+  - Nine faces are enabled, all OFL-1.1.
+    - Alef, David Libre and Frank Ruhl Libre came with the package.
+    - Noto Sans Hebrew, Noto Serif Hebrew, Assistant, Heebo, Rubik and Miriam Libre come from google/fonts at commit `3cb0866aebe5de40156f418a1750cb329e81ebdb`. Each file was checked against its git blob, each has its `OFL.txt` as `LICENSE-<Family>-OFL.txt`, and the source path is in the manifest notes.
+  - Gveret Levin and Noto Rashi stay in the manifest for `generate`, but are off for line rendering.
+  - **Coverage.** Every enabled face has the 27 letters, the basic niqqud (U+05B0–05BC, 05C1, 05C2, 05C7), the digits and common punctuation, including ־ ׳ ״ – —.
+    - Only the two Noto faces have te'amim.
+    - Rafe (U+05BF) is missing from Alef, Rubik and Miriam Libre.
+    - A line with a mark its face lacks is refused.
+  - **Default weights.** Several variable faces default to a light instance (Assistant 200, Noto Sans Hebrew 100, Rubik 300). The default `--weight-range 400 400` renders them at regular weight.
 - **Bidi** is resolved by Pillow's libraqm backend with an RTL base direction:
   - digit and Latin runs stay left to right;
   - paired brackets are mirrored.

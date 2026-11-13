@@ -13,6 +13,7 @@ from hocrsyngen.assets import default_font_manifest_path
 from hocrsyngen.cli import main
 from hocrsyngen.line_render import (
     LINE_PRESETS,
+    missing_chars,
     governed_faces,
     read_lines,
     render_line,
@@ -22,6 +23,12 @@ from hocrsyngen.line_render import (
 pytestmark = pytest.mark.skipif(not features.check("raqm"), reason="needs Pillow with libraqm (see AGENTS.md)")
 
 SIZE = 40
+# Added from google/fonts 3cb0866 (OFL-1.1); see the font manifest notes.
+NEW_FACES = ("noto-sans-hebrew", "noto-serif-hebrew", "assistant", "heebo", "rubik", "miriam-libre")
+LETTERS = "".join(chr(c) for c in range(0x05D0, 0x05EB))
+NIQQUD = "".join(chr(c) for c in list(range(0x05B0, 0x05BD)) + [0x05C1, 0x05C2, 0x05C7])
+DIGITS = "0123456789"
+PUNCT = ".,:;!?\"'()[]-/%–—״׳־"
 
 
 def _template(face, ch):
@@ -176,7 +183,7 @@ def test_cli_render_lines_and_list_fonts(tmp_path, capsys):
     assert s["rendered"] == 4 and s["by_font"] == {"alef-regular": 4} and s["size_range"] == [30, 30] and s["size_mode"] == "size"
     assert main(["render-lines", "--list-fonts"]) == 0
     faces = json.loads(capsys.readouterr().out)
-    assert set(faces) == {"alef-regular", "david-libre-regular", "frank-ruhl-libre"}
+    assert set(faces) == {"alef-regular", "david-libre-regular", "frank-ruhl-libre"} | set(NEW_FACES)
     with pytest.raises(SystemExit):
         main(["render-lines", "--input", str(inp), "--output", str(tmp_path / "o2"), "--seed", "2", "--font", "gveret-levin-regular"])
 
@@ -200,7 +207,7 @@ def test_band_range_lands_every_face_in_the_target_band(tmp_path):
     for bd, field in (("otsu2pct", "ink_band_px_otsu2pct"), ("p5p95", "ink_band_px")):
         s = render_lines(rows, tmp_path / bd, seed=4, preset="none", band_range=(27, 34), band_def=bd)
         man = [json.loads(l) for l in (tmp_path / bd / "manifest.jsonl").read_text().splitlines()]
-        assert s["size_mode"] == "band" and s["band_def"] == bd and len({r["font_id"] for r in man}) == 3
+        assert s["size_mode"] == "band" and s["band_def"] == bd and len({r["font_id"] for r in man}) == min(12, len(governed_faces()))
         for r in man:
             assert 27 <= r["target_band_px"] <= 34 and r["band_def"] == bd
             assert abs(r[field] - r["target_band_px"]) <= 3, r
@@ -231,12 +238,34 @@ def test_weight_applies_to_variable_faces_only(tmp_path):
 
 
 def test_refuses_combining_marks_the_face_lacks_and_keeps_niqqud_it_has(tmp_path):
-    # None of the enabled faces has te'amim (U+0591-U+05AF); all have the basic niqqud. A line with a ta'am must be
-    # refused (the mark would vanish from the image while the label keeps it); a pointed line must render.
+    # A line with a ta'am must be refused on a face without te'amim (the mark would vanish from the image while the
+    # label keeps it) and rendered on a face that has them (the two Noto faces); a pointed line renders everywhere.
     rows = [{"id": "taam", "text": "בְּרֵאשִׁ֖ית בָּרָא"}, {"id": "niqqud", "text": "שָׁלוֹם עוֹלָם"}]
+    with_teamim = {"noto-sans-hebrew", "noto-serif-hebrew"}
     for f in governed_faces():
         s = render_lines(rows, tmp_path / f, seed=1, fonts=[f])
         ref = {r["id"]: r for r in s["refused"]}
-        assert set(ref) == {"taam"} and ref["taam"]["reason"] == "font_missing_chars", (f, s["refused"])
-        assert "\u0596" in ref["taam"]["chars"]
+        if f in with_teamim:
+            assert not ref and (tmp_path / f / "lines" / "taam.png").exists(), (f, s["refused"])
+        else:
+            assert set(ref) == {"taam"} and ref["taam"]["reason"] == "font_missing_chars", (f, s["refused"])
+            assert "\u0596" in ref["taam"]["chars"]
         assert (tmp_path / f / "lines" / "niqqud.png").exists()
+
+
+@pytest.mark.parametrize("face_id", NEW_FACES)
+def test_new_face_is_governed_and_covers_letters_niqqud_digits_punctuation(face_id):
+    face = governed_faces()[face_id]
+    assert face.license == "OFL-1.1" and face.license_file.startswith("LICENSE-")
+    for name, chars in (("letters", LETTERS), ("niqqud", NIQQUD), ("digits", DIGITS), ("punct", PUNCT)):
+        assert missing_chars(face, chars) == [], (face_id, name, missing_chars(face, chars))
+
+
+@pytest.mark.parametrize("face_id", NEW_FACES)
+def test_new_face_renders_the_bidi_lines_in_visual_order(face_id):
+    img, face = _plain("א 12 (ב)", face_id)
+    x = {c: _best_x(img, _template(face, c)) for c in ("א", "ב", "1", "2", "(", ")")}
+    assert x["("] < x["ב"] < x[")"] < x["1"] < x["2"] < x["א"], (face_id, x)
+    img, face = _plain("ש ABC ת", face_id)
+    x = {c: _best_x(img, _template(face, c)) for c in ("ש", "A", "B", "C", "ת")}
+    assert x["ת"] < x["A"] < x["B"] < x["C"] < x["ש"], (face_id, x)
