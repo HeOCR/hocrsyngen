@@ -14,6 +14,7 @@ Delta = CER(control) - CER(arm): positive means the arm is better. 95% paired cl
 - Secondary (lead 2026-11-13, not deciding): each guard book again without dev lines sharing a word 6-gram with
   ARM_TRAIN_LIST (guard_exposure_removed); OLB's "excluded" views are the same idea.
 Decision: arm wins iff OLB win and no guard loss.
+Stock tessdata_best heb (--stock) is a CER column on the same lines; it never enters an interval or the decision.
 """
 import argparse, hashlib, json, random, re, sys
 from collections import defaultdict
@@ -48,7 +49,7 @@ def boot(items, models, seed=0):
     nr = np.random.default_rng(seed)
     idx = nr.integers(0, len(cl), size=(B, len(cl)))
     W = np.stack([np.bincount(i, minlength=len(cl)) for i in idx])
-    nb = W @ n; ctl, arm = models
+    nb = W @ n; ctl, arm = models[:2]  # any further model (stock) gets a CER column only, never the interval
     dd = 100 * (W @ E[ctl]) / nb - 100 * (W @ E[arm]) / nb
     lo, hi = np.percentile(dd, [2.5, 97.5])
     return {"lines": len(items), "clusters": len(cl), "chars": int(n.sum()), "cer": cer,
@@ -79,12 +80,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("arm"); ap.add_argument("train_list"); ap.add_argument("out")
     ap.add_argument("--control", default="r8b-main-fold")
+    ap.add_argument("--stock", default="stock-best", help="report-only CER column (tessdata_best heb); '' to skip")
     a = ap.parse_args()
-    models = [a.control, a.arm]
+    models = [a.control, a.arm] + ([a.stock] if a.stock else [])
     P = json.load(open(S.PROFILES / f"{PROFILE}.json"))
     rep = {"prereg": "hocrsyngen cafb637 experiments/learned_generation_v0/s17a_scanifier/dose_v2/PREREGISTRATION.md",
            "profile": PROFILE, "profile_sha256": hashlib.sha256((S.PROFILES / f"{PROFILE}.json").read_bytes()).hexdigest(),
-           "models": {"control": a.control, "arm": a.arm}, "bootstrap": {"B": B, "seed": 0}}
+           "models": {"control": a.control, "arm": a.arm, "stock_report_only": a.stock or None}, "bootstrap": {"B": B, "seed": 0}}
 
     # primary: OLB dev, unit clusters
     rows = {str(OLB.resolve() / (r["image"][:-4] + ".lstmf")): r for r in map(json.loads, (OLB / "manifest.jsonl").read_text().splitlines())}
@@ -130,12 +132,12 @@ def main():
                        "verdict": "unresolved (back to lead)" if unresolved else ("ARM WINS" if olb_win and not losses else "arm does not win")}
     json.dump(rep, open(a.out, "w"), indent=1)
     for v, r in rep["olb"]["views"].items():
-        print(f"olb {v:15s} {r['lines']:5d}/{r['clusters']:3d}  ctl {r['cer'][a.control]:.3f}  arm {r['cer'][a.arm]:.3f}  d {r['delta_control_minus_arm']:+.3f} {r['ci95']}")
+        print(f"olb {v:15s} {r['lines']:5d}/{r['clusters']:3d}  ctl {r['cer'][a.control]:.3f}  arm {r['cer'][a.arm]:.3f}  d {r['delta_control_minus_arm']:+.3f} {r['ci95']}  stock {r['cer'].get(a.stock, float('nan')):.3f}")
     for g in ("guard", "guard_exposure_removed", "report_only"):
         for b, r in rep[g].items():
             if r is None:
                 continue
-            print(f"{g[:6]} {b:13s} {r['lines']:5d}/{r['clusters']:4d}  ctl {r['cer'][a.control]:.3f}  arm {r['cer'][a.arm]:.3f}  d {r['delta_control_minus_arm']:+.3f} {r['ci95']}")
+            print(f"{g[:6]} {b:13s} {r['lines']:5d}/{r['clusters']:4d}  ctl {r['cer'][a.control]:.3f}  arm {r['cer'][a.arm]:.3f}  d {r['delta_control_minus_arm']:+.3f} {r['ci95']}  stock {r['cer'].get(a.stock, float('nan')):.3f}")
     print(rep["decision"])
 
 

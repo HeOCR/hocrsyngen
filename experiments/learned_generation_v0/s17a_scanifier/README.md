@@ -91,4 +91,12 @@ Rights notes:
 
 **Cleanup:** the run's local intermediates (`addon_gen/`, `pairs_full/`, `pairs_v2/`) stay in the workspace until this PR merges. They then go to the Trash. The released add-on and `last.pt` are kept.
 
+## Dose arm (s17a_addon_v2, 2026-11-13): no win
+
+A second set of 18,553 S17a lines, added to R8b's list, was tested against the released r8b-main-fold under a rule written down before training ([dose_v2/PREREGISTRATION.md](dose_v2/PREREGISTRATION.md)). **The arm does not win.**
+- On OLB Reshumot dev "all", Δ is +0.019 with a 95% CI of [−0.037, +0.052], which includes 0.
+- Silman is a guard loss: Δ is −0.046, CI [−0.070, −0.023].
+
+The S17a dose stays at v1.1, with no confirmation run. The full tables, with a stock tessdata_best column, are in [dose_v2/RESULTS.md](dose_v2/RESULTS.md). The pipeline is `make_texts_v2.py`, `restore_styles.py`, `export_addon_v2.py`, `gate_sheets.py`, `build_dose_list.py` and `dose_decide.py`.
+
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
