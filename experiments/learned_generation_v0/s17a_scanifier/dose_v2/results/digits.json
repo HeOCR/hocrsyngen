@@ -1,0 +1,32 @@
+{
+ "v1.1_accepted": {
+  "lines": 18627,
+  "lines_with_digit": 770,
+  "share_lines_with_digit": 0.0413,
+  "digits_per_1k_chars": 3.345
+ },
+ "v2_generated": {
+  "lines": 20000,
+  "lines_with_digit": 481,
+  "share_lines_with_digit": 0.024,
+  "digits_per_1k_chars": 1.824
+ },
+ "v2_accepted": {
+  "lines": 18553,
+  "lines_with_digit": 411,
+  "share_lines_with_digit": 0.0222,
+  "digits_per_1k_chars": 1.622
+ },
+ "v2_gate2_on_digit_lines": {
+  "lines": 481,
+  "gate2_rejected": 4,
+  "gate2_only": 3,
+  "gate2_rate": 0.0083
+ },
+ "v2_gate2_on_no_digit_lines": {
+  "lines": 19519,
+  "gate2_rejected": 11,
+  "gate2_only": 11,
+  "gate2_rate": 0.0006
+ }
+}

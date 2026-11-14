@@ -1,0 +1,60 @@
+{
+ "n": 20000,
+ "accepted": 18553,
+ "gate1_rejected": 1433,
+ "gate1_by_rule": {
+  "glyph_no_ink": 636,
+  "ink_outside": 837,
+  "stray_cc": 725
+ },
+ "gate2_rejected": 15,
+ "gate2_only": 14,
+ "by_style_book": {
+  "990017640460205171": "657/692",
+  "990020466440205171": "628/655",
+  "ademataidibruivr00benyuoft": "641/707",
+  "agadothatanaim11bach": "658/696",
+  "anshekayruan00pozn": "655/711",
+  "atn3681.0001.001.umich.edu": "615/676",
+  "berashadsky-sipurim-1910": "665/722",
+  "citron-ahorei-hapargod-1923": "643/669",
+  "frank-agadot-hazohar-1924": "705/740",
+  "hegyoneshpinozah00rubi": "618/667",
+  "igrothaasirmeiha00drey": "642/718",
+  "imanuelharomimon0000tche": "600/639",
+  "kolsifreperetsbe01smoluoft": "597/653",
+  "kolsifreperetsbe03smoluoft": "605/673",
+  "kolsifreperetsbe05smoluoft": "674/745",
+  "ldpd_15772050_000": "674/711",
+  "maamarmagenetsin00mode": "624/698",
+  "mabeothayehudims00raff": "641/684",
+  "maloketravseadya00bornuoft": "667/712",
+  "masaleeretsyirae00lewi": "598/659",
+  "mimitsrayimhusef00fran": "604/658",
+  "mishnatrishonimt0000klat": "656/694",
+  "miyarketetevel008800": "659/716",
+  "motsaegolahzikhr00rabbuoft": "614/678",
+  "peereakhmemedina00gree": "595/646",
+  "reginahashkenazi00ginsuoft": "672/704",
+  "sepherhayyeyehud01mode": "636/688",
+  "sifrehazikhronot00mont": "634/670",
+  "tchernowitz-hamadpis-1927": "676/719"
+ },
+ "by_class": {
+  "digit": "411/481",
+  "letter": "18553/20000",
+  "punct": "16483/17925"
+ },
+ "params": {
+  "DIL": 3,
+  "OUT_FRAC": 0.06,
+  "COVER": 0.3,
+  "STRAY_MAX": 0,
+  "WIN": 16,
+  "LOC_PX": 6,
+  "LOC_FRAC": 0.03,
+  "SPECK": 6,
+  "GROSS": 0.25,
+  "best": "tasks/r5-tesseract-ft/models/best"
+ }
+}
