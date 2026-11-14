@@ -21,6 +21,7 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `src/hocrsyngen/cli.py`: public CLI commands and machine-readable reports.
 - `src/hocrsyngen/generator.py`: deterministic rendering, templates, richer template catalog metadata, degradation, font/text selection.
 - `src/hocrsyngen/manifest.py`: manifest dataclasses and constants.
+- `src/hocrsyngen/line_render.py`: `render-lines`: caller-supplied lines rendered with governed (sha256- and licence-checked) faces, line-level presets, per-line provenance (`docs/line_render.md`).
 - `src/hocrsyngen/rendering_coverage.py`: opt-in rendering coverage report builder and sidecar writer.
 - `src/hocrsyngen/line_annotations.py`: S10a opt-in `line_annotations.json` builder, writer, and validator outside manifest v1, with S11a region geometry.
 - `src/hocrsyngen/wet_run.py`: S8b deterministic wet-test smoke run artifact writer outside manifest v1.
