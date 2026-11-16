@@ -22,7 +22,7 @@ downstream of `hocrsyngen` are governance and release repositories.
 | `HeOCR/hletterscript` | Per-writer Hebrew letter-glyph image dataset (LFS-stored) with rights inherited from upstream scans. Currently `v0.0.0-rc` with empty indexes. | Future S9 input substrate for `hocrsyngen` real-glyph composition. Not consumed today. |
 | `HeOCR/hocrsyngen` (this repo) | Deterministic candidate synthetic Hebrew OCR/HTR page generation, manifest v1, validation, contract fixtures, and generator-quality evidence. | — |
 | `HeOCR/hocrgen` | Dataset orchestration, governance, validation, review, dedupe, caps, release assembly, export, and publication. Consumes `hocrsyngen` only through installed CLI, manifest v1, and the packaged contract fixture. | Downstream. Must never be imported by `hocrsyngen`. |
-| `HeOCR/HeOCR` and `HeOCR/HeOCRsynth` | Public real and synthetic dataset payloads and releases. | Further downstream. |
+| `HeOCR/heocr-datasets` and `HeOCR/HeOCRsynth` | Public real and synthetic dataset payloads and releases. | Further downstream. |
 
 Today `hocrsyngen` composes pages only from packaged TTF fonts shipped under
 `src/hocrsyngen/data/synthetic/fonts/`. Real-glyph composition from
