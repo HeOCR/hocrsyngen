@@ -12,7 +12,12 @@ from PIL import Image, ImageChops, ImageFont, ImageStat, features
 from hocrsyngen.assets import default_font_manifest_path
 from hocrsyngen.cli import main
 from hocrsyngen.line_render import (
+    CALIBRATION_TEXT,
     LINE_PRESETS,
+    _calibration_band,
+    band_ratio,
+    band_size,
+    face_weight,
     missing_chars,
     governed_faces,
     read_lines,
@@ -25,6 +30,11 @@ pytestmark = pytest.mark.skipif(not features.check("raqm"), reason="needs Pillow
 SIZE = 40
 # Added from google/fonts 3cb0866 (OFL-1.1); see the font manifest notes.
 NEW_FACES = ("noto-sans-hebrew", "noto-serif-hebrew", "assistant", "heebo", "rubik", "miriam-libre")
+# Office faces from google/fonts 7af0d90 (OFL-1.1): metric-compatible stand-ins for Arial, Times and Courier, plus Open Sans.
+OFFICE_FACES = ("arimo", "tinos-regular", "tinos-bold", "cousine-regular", "cousine-bold", "open-sans")
+# Signs a face lacks, by the coverage check recorded in the manifest notes.
+KNOWN_GAPS = {"open-sans": {"\u05f3", "\u05f4"}}
+OFFICE_SIGNS = "₪%" + "0123456789"
 LETTERS = "".join(chr(c) for c in range(0x05D0, 0x05EB))
 NIQQUD = "".join(chr(c) for c in list(range(0x05B0, 0x05BD)) + [0x05C1, 0x05C2, 0x05C7])
 DIGITS = "0123456789"
@@ -183,7 +193,7 @@ def test_cli_render_lines_and_list_fonts(tmp_path, capsys):
     assert s["rendered"] == 4 and s["by_font"] == {"alef-regular": 4} and s["size_range"] == [30, 30] and s["size_mode"] == "size"
     assert main(["render-lines", "--list-fonts"]) == 0
     faces = json.loads(capsys.readouterr().out)
-    assert set(faces) == {"alef-regular", "david-libre-regular", "frank-ruhl-libre"} | set(NEW_FACES)
+    assert set(faces) == {"alef-regular", "david-libre-regular", "frank-ruhl-libre"} | set(NEW_FACES) | set(OFFICE_FACES)
     with pytest.raises(SystemExit):
         main(["render-lines", "--input", str(inp), "--output", str(tmp_path / "o2"), "--seed", "2", "--font", "gveret-levin-regular"])
 
@@ -203,11 +213,15 @@ def test_groups_share_face_size_and_weight_and_balance_over_groups(tmp_path):
 
 
 def test_band_range_lands_every_face_in_the_target_band(tmp_path):
-    rows = [{"id": f"b{i}", "text": "הוועדה דנה בהצעת החוק לתיקון פקודת המסים"} for i in range(12)]
+    # The calibration line itself: otsu2pct counts a row only above 2% of the line's ink columns, so the band of a
+    # shorter line can differ by several px on some faces (an ascender row drops in or out). The band is defined on
+    # the calibration line, and every face must land within 3 px of the target there.
+    n = len(governed_faces())
+    rows = [{"id": f"b{i}", "text": CALIBRATION_TEXT} for i in range(n)]
     for bd, field in (("otsu2pct", "ink_band_px_otsu2pct"), ("p5p95", "ink_band_px")):
         s = render_lines(rows, tmp_path / bd, seed=4, preset="none", band_range=(27, 34), band_def=bd)
         man = [json.loads(l) for l in (tmp_path / bd / "manifest.jsonl").read_text().splitlines()]
-        assert s["size_mode"] == "band" and s["band_def"] == bd and len({r["font_id"] for r in man}) == min(12, len(governed_faces()))
+        assert s["size_mode"] == "band" and s["band_def"] == bd and len({r["font_id"] for r in man}) == n
         for r in man:
             assert 27 <= r["target_band_px"] <= 34 and r["band_def"] == bd
             assert abs(r[field] - r["target_band_px"]) <= 3, r
@@ -241,7 +255,7 @@ def test_refuses_combining_marks_the_face_lacks_and_keeps_niqqud_it_has(tmp_path
     # A line with a ta'am must be refused on a face without te'amim (the mark would vanish from the image while the
     # label keeps it) and rendered on a face that has them (the two Noto faces); a pointed line renders everywhere.
     rows = [{"id": "taam", "text": "בְּרֵאשִׁ֖ית בָּרָא"}, {"id": "niqqud", "text": "שָׁלוֹם עוֹלָם"}]
-    with_teamim = {"noto-sans-hebrew", "noto-serif-hebrew"}
+    with_teamim = {"noto-sans-hebrew", "noto-serif-hebrew", "arimo", "tinos-regular", "tinos-bold", "cousine-regular", "cousine-bold"}
     for f in governed_faces():
         s = render_lines(rows, tmp_path / f, seed=1, fonts=[f])
         ref = {r["id"]: r for r in s["refused"]}
@@ -269,3 +283,43 @@ def test_new_face_renders_the_bidi_lines_in_visual_order(face_id):
     img, face = _plain("ש ABC ת", face_id)
     x = {c: _best_x(img, _template(face, c)) for c in ("ש", "A", "B", "C", "ת")}
     assert x["ת"] < x["A"] < x["B"] < x["C"] < x["ש"], (face_id, x)
+
+
+@pytest.mark.parametrize("face_id", OFFICE_FACES)
+def test_office_face_is_governed_and_covers_what_office_print_needs(face_id):
+    face = governed_faces()[face_id]
+    assert face.license == "OFL-1.1" and face.license_file.startswith("LICENSE-")
+    gaps = KNOWN_GAPS.get(face_id, set())
+    for name, chars in (("letters", LETTERS), ("niqqud", NIQQUD), ("digits", DIGITS), ("office", OFFICE_SIGNS),
+                        ("punct", "".join(c for c in PUNCT if c not in gaps))):
+        assert missing_chars(face, chars) == [], (face_id, name, missing_chars(face, chars))
+    # the recorded gaps are real, so the manifest note stays true
+    assert set(missing_chars(face, "".join(sorted(gaps)))) == gaps
+
+
+@pytest.mark.parametrize("face_id", OFFICE_FACES)
+def test_office_face_renders_numbers_and_shekel_in_visual_order(face_id):
+    img, face = _plain("א 12 (ב)", face_id)
+    x = {c: _best_x(img, _template(face, c)) for c in ("א", "ב", "1", "2", "(", ")")}
+    assert x["("] < x["ב"] < x[")"] < x["1"] < x["2"] < x["א"], (face_id, x)
+    img, face = _plain("ש ABC ת", face_id)
+    x = {c: _best_x(img, _template(face, c)) for c in ("ש", "A", "B", "C", "ת")}
+    assert x["ת"] < x["A"] < x["B"] < x["C"] < x["ש"], (face_id, x)
+    # an amount with a percent sign: the number keeps its digit order, % follows it on its right
+    img, face = _plain("שיעור 35% בלבד", face_id)
+    x = {c: _best_x(img, _template(face, c)) for c in ("3", "5", "%", "ש")}
+    assert x["3"] < x["5"] < x["%"] < x["ש"], (face_id, x)
+
+
+def test_band_size_keeps_the_ratio_guess_when_it_lands_and_searches_when_a_hinted_face_misses():
+    faces = governed_faces()
+    # an older face: the guess from the 100 px ratio is kept, so its earlier output is unchanged
+    f = faces["frank-ruhl-libre"]
+    for t in (24, 30, 36):
+        assert band_size(str(f.path), 400, t) == max(6, round(t / band_ratio(str(f.path), 400)))
+    # Cousine Bold is hinted and static: the ratio guess misses the band at small sizes, the search lands it
+    f = faces["cousine-bold"]
+    w, _ = face_weight(f, 400)
+    guess = max(6, round(27 / band_ratio(str(f.path), w)))
+    assert abs(_calibration_band(str(f.path), guess, w, "otsu2pct") - 27) > 2
+    assert abs(_calibration_band(str(f.path), band_size(str(f.path), w, 27), w, "otsu2pct") - 27) <= 2

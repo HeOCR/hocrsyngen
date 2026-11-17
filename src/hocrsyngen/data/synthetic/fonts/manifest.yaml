@@ -87,3 +87,51 @@ fonts:
     license_file: LICENSE-MiriamLibre-OFL.txt
     sha256: 9ea850118d552d25e1fb8242cbd429a5801c691b6ce218458e1a039045114bb8
     line_render: true
+  - id: arimo
+    file: Arimo-wght.ttf
+    style: office_sans
+    notes: Open office face, metric-compatible with Arial, for office-print pages. Arimo 1.341, variable wght 400-700; Hebrew letters, niqqud, te'amim, geresh and gershayim. From google/fonts commit 7af0d90b4d532ffa4b041937b560c6df4e7b1e95, ofl/arimo/Arimo[wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-Arimo-OFL.txt
+    sha256: e43898b143ec826ac8cb4034816458a7047fbe0836558de2a1f8c6223ae3e0ca
+    line_render: true
+  - id: tinos-regular
+    file: Tinos-Regular.ttf
+    style: office_serif
+    notes: Open office face, metric-compatible with Times New Roman, for office-print pages. Tinos 1.340 Regular (static); Hebrew letters, niqqud, te'amim, geresh and gershayim. From google/fonts commit 7af0d90b4d532ffa4b041937b560c6df4e7b1e95, ofl/tinos/Tinos-Regular.ttf (git blob verified). google/fonts ofl/tinos has no OFL.txt at that commit, so the licence text is OFL.txt from the upstream commit google/fonts pins, googlefonts/tinos 3b4482a99b80ea5fc75f187b1be3120a3f5905b3 (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-Tinos-OFL.txt
+    sha256: 60a0e8ef0c04dd5dd69ffe91025fa2ae5836cbd35600a82ba031977557e2cb61
+    line_render: true
+  - id: tinos-bold
+    file: Tinos-Bold.ttf
+    style: office_serif
+    notes: Tinos 1.340 Bold (static), same source and licence text as tinos-regular. From google/fonts commit 7af0d90b4d532ffa4b041937b560c6df4e7b1e95, ofl/tinos/Tinos-Bold.ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-Tinos-OFL.txt
+    sha256: 393269dbab8899f938db19783eca5eac92eb431f7ae0ab45b8349ca895f1a06b
+    line_render: true
+  - id: cousine-regular
+    file: Cousine-Regular.ttf
+    style: office_mono
+    notes: Open office face, metric-compatible with Courier New, for office-print pages. Cousine 1.241 Regular (static); Hebrew letters, niqqud, te'amim, geresh and gershayim. From google/fonts commit 7af0d90b4d532ffa4b041937b560c6df4e7b1e95, ofl/cousine/Cousine-Regular.ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-Cousine-OFL.txt
+    sha256: 1da22250675fc4c42fcf3a9736c44bc0570516105331443b663fd5cfbd1412fe
+    line_render: true
+  - id: cousine-bold
+    file: Cousine-Bold.ttf
+    style: office_mono
+    notes: Cousine 1.241 Bold (static), same source as cousine-regular. From google/fonts commit 7af0d90b4d532ffa4b041937b560c6df4e7b1e95, ofl/cousine/Cousine-Bold.ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-Cousine-OFL.txt
+    sha256: 17c8a7245156d2253531c9e529474937b09d9f641c5ae7695c5e33f22822eef4
+    line_render: true
+  - id: open-sans
+    file: OpenSans-wdth-wght.ttf
+    style: office_sans
+    notes: Open office sans for office-print pages. Open Sans 3.003, variable wght 300-800 and wdth 75-100; Hebrew letters and niqqud, but no te'amim, no rafe U+05BF and no geresh or gershayim (U+05F3, U+05F4), so lines with those signs are refused on this face. From google/fonts commit 7af0d90b4d532ffa4b041937b560c6df4e7b1e95, ofl/opensans/OpenSans[wdth,wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-OpenSans-OFL.txt
+    sha256: 36643644f318a812aab2d2ed3bb98f8cf0872527f835fe9398d95fe6b9adb878
+    line_render: true

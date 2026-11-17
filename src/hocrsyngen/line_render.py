@@ -216,11 +216,37 @@ def line_measures(img: Image.Image, ink: int, paper: int) -> dict:
 def band_ratio(path: str, weight: int | None, band_def: str = DEFAULT_BAND_DEF) -> float:
     """Band px per px of font size for this face (and weight) under `band_def`, measured on CALIBRATION_TEXT at
     100 px with no preset."""
-    f = _font(path, 100, weight)
+    return _calibration_band(path, 100, weight, band_def) / 100.0
+
+
+@lru_cache(maxsize=4096)
+def _calibration_band(path: str, size: int, weight: int | None, band_def: str) -> int:
+    """Band px of CALIBRATION_TEXT drawn at `size` px with no preset."""
+    f = _font(path, size, weight)
     l, t, r, b = f.getbbox(CALIBRATION_TEXT, direction="rtl")
     img = Image.new("L", (r - l + 20, b - t + 20), 255)
     ImageDraw.Draw(img).text((10 - l, 10 - t), CALIBRATION_TEXT, font=f, fill=0, direction="rtl")
-    return line_measures(img, 0, 255)[BAND_DEFS[band_def]] / 100.0
+    return line_measures(img, 0, 255)[BAND_DEFS[band_def]]
+
+
+BAND_SEARCH_TOLERANCE_PX = 2
+BAND_SEARCH_SPAN = 0.25
+
+
+def band_size(path: str, weight: int | None, target: int, band_def: str = DEFAULT_BAND_DEF) -> int:
+    """Font size whose calibration line lands in a `target` px band.
+
+    The first guess scales the 100 px ratio (band_ratio). It is kept when the calibration line, drawn at that size,
+    is within BAND_SEARCH_TOLERANCE_PX of the target, which holds for every face before the office faces, so their
+    output is unchanged. A hinted static face can change its proportions at small sizes (Cousine Bold misses by 7 px
+    under otsu2pct); then the sizes within BAND_SEARCH_SPAN of the guess are measured and the closest band wins
+    (ties: the size nearest the guess, then the smaller)."""
+    guess = max(6, round(target / band_ratio(path, weight, band_def)))
+    if abs(_calibration_band(path, guess, weight, band_def) - target) <= BAND_SEARCH_TOLERANCE_PX:
+        return guess
+    span = max(2, round(guess * BAND_SEARCH_SPAN))
+    sizes = range(max(6, guess - span), guess + span + 1)
+    return min(sizes, key=lambda s: (abs(_calibration_band(path, s, weight, band_def) - target), abs(s - guess), s))
 
 
 @lru_cache(maxsize=8192)
@@ -397,7 +423,7 @@ def render_lines(
             grng = _line_rng(seed, key[r["id"]] + ":style")
             target = grng.randint(lo, hi)
             weight, variable = face_weight(face, grng.randint(wlo, whi))
-            size = target if mode == "size" else max(6, round(target / band_ratio(str(face.path), weight, band_def)))
+            size = target if mode == "size" else band_size(str(face.path), weight, target, band_def)
             rng = _line_rng(seed, r["id"])
             img, params = render_line(text, face, size, preset, rng, weight)
             band = line_measures(img, params["ink"], params["paper"])
