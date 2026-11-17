@@ -10,7 +10,7 @@ import numgap as G
 RUN = DB / "runs" / sys.argv[2]; reader = sys.argv[3]
 rj = j(RUN / "run.json"); recs = {x["item"]: x for x in rj["results"][reader]}
 SEP = re.compile(r"[.,/]")
-P = lambda gs, gap: r"(?<![\d.,/])" + gap.join(map(re.escape, gs)) + r"(?![\d])"
+P = lambda gs, gap: r"(?<![\d.,/])" + ("(?:" + gap + ")").join(map(re.escape, gs)) + r"(?![\d])"  # gap grouped: an ungrouped | split the whole pattern (pipeline, 2026-11-18)
 for cell, cases in G.CELLS.items():
     c = Counter(); tot = 0
     for item in [i for i in recs if i.rsplit("/", 1)[0] in cases]:

@@ -1,6 +1,6 @@
 # Office print v0: synthetic training data for a model that beats stock heb on modern office print
 
-**Status:** approved by heocr-lead (2026-11-18), re-aimed at numbers after the diagnosis (§2.2.1). Training waits for scheduler slots.
+**Status:** approved by heocr-lead (2026-11-18), re-aimed at numbers after the diagnosis (§2.2.1, corrected). Training waits for scheduler slots.
 **Task:** heocr-lead, 2026-11-18, approved by Shay. It serves decisions 0019 and 0020, the `heocr` pipeline's OCR route.
 **Owner:** synth-gen. heocr-eval owns every gate, split and overlap check. Data-collection owns the real lines.
 
@@ -48,33 +48,30 @@ The class counts per cell go to the lead and to pipeline. **If most of the gap i
 
 The scripts are [`diagnosis/numgap.py`](diagnosis/numgap.py) and [`diagnosis/number_assembly.py`](diagnosis/number_assembly.py). They import eval's frozen `measures.py` (`NUM`, `fold`, `clean`) and build the reference as `gate.doc_units` does. They reproduce the gate's number recall exactly for every reader and cell: heocr 74.75 / 68.60 / 87.01, docling 77.61 / 70.44 / 95.02, pymupdf4llm 84.00. The outputs ([json](diagnosis/numgap_synth-2026-11-17-main.json), [txt](diagnosis/number_assembly_synth-2026-11-17-main.txt)) hold counts only.
 
-**The gap is mostly number assembly, not recognition and not missing regions.**
-- **What fails.** Most of heocr's missed numbers are dates (`dd.mm.yyyy`), section numbers (`3.1`) and multi-level section numbers (`1.2.3`).
-- **What the output holds.** For almost all of them, every digit group is there, but **with whitespace between the groups and in reversed order**. This is Tesseract's right-to-left word reordering, after the line was split into separate words at the dots. Stock does the same.
-- **What is truly missing.** Numbers with no digit group in the output at all are rare: 8 dates in T5, 4 in T4, 12 in tables.
+**Correction (2026-11-18, found by pipeline).** The first version of this result, commit `8ab3fc5`, said most misses were digit groups reversed with spaces, worth about 20 points. That was a regex bug in `number_assembly.py`: an ungrouped `|` in the gap pattern split the whole pattern into alternatives, so a single group next to any whitespace counted as a match. With the gap grouped, reversed-and-spaced numbers are rare (31 in T5, 16 in T4, 0 in tables), and a rejoin would gain well under 1 point. pipeline reproduced the fixed counts on its own run (`full-m59`). The table below is the fixed probe. `numgap.py`'s classes (misread, absent, split) never used that pattern and stand as they were.
 
-| Cell | Ref numbers | heocr misses | Reversed with spaces (dates, sections) | NR if all of those were joined (upper bound) | Other misses (ints, amounts, %) | Target (best baseline − 1 pt) |
-|---|---|---|---|---|---|---|
-| T5 | 8,032 | 2,028 | 1,636 (20.4 pt) | 95.1 | 320 (4.0 pt) | 83.0 |
-| T4 | 3,596 | 1,129 | 932 (25.9 pt) | 94.5 | 178 (5.0 pt) | 69.4 |
-| Scanned tables | 5,103 | 663 | 167 (3.3 pt) | 90.3 | 416 (8.2 pt) | 94.0 |
+**What the misses are (heocr, fixed probe):**
 
-**What follows:**
-1. **A pipeline fix comes first:** rejoining a numeric run that Tesseract split and reversed in an RTL line. It is cheap and deterministic, and by this bound it closes T5 and T4 on its own. It belongs to pipeline (HeOCR/heocr) and is reported to them. It needs its own false-join check, so it must not glue separate numbers.
-2. **The recogniser part is real but smaller:**
-   - the spaces it puts inside numbers (that is what lets Tesseract split them), which the training labels teach it not to do;
-   - wrong digits in table cells: in tables the other misses are 8.2 pt, while reversed numbers are only 3.3 pt. A perfect joiner still leaves tables at 90.3, below 94.0, so tables need better digit reading too.
-3. **This plan continues, re-aimed:**
-   - lines dense in dates, section numbers and amounts, labelled with no space inside a number;
-   - table cells with short integers, amounts and percentages;
-   - every gain is measured with heocr's joiner on and off, so the model's own share is visible.
+| Cell | Misses / ref | Multi-level sections `1.2.3`, groups apart | Decimals or sections `3.1`, dots dropped | `3.1`, groups apart | Dates, groups apart or partial | Reversed (no space / with space) | Other shapes (ints, amounts, %) |
+|---|---|---|---|---|---|---|---|
+| T5 | 2,028 / 8,032 | 537 | 343 | 203 | 390 | 91 / 31 | 320 |
+| T4 | 1,129 / 3,596 | 358 | 223 | 145 | 85 | 49 / 16 | 178 |
+| Scanned tables | 663 / 5,103 | 1 | 0 | 0 | 234 | 0 / 0 | 416 |
 
+- **"Groups apart"** means every digit group of the number is somewhere on the page, but not together. This fits what pipeline sees on OCR'd pages: a multi-level label cut down to its last piece (`2.2.4.` read as `4.`), and dots lost inside a label (`3.1` read as `31`).
+- **Truly absent numbers,** with no group anywhere, are rare (T5: 20 sections and 17 dates).
+- **At pipeline's later segment-tokens run,** T5 misses are already 1,082 + 740 (sets B + C), with 16 + 18 reversed with spaces.
+
+**What follows (pipeline, 2026-11-18; the lever moves from spaces to labels):**
+1. **The recogniser is the lever,** above all **line-initial section labels** (`1.`, `1.1`, `2.2.4.`, `(א)`, `12.4.1`) and **dots inside numbers** (`3.1`, `17.11.2026`). These are what this plan's numbered-structure and number-density parts train (§3, §4).
+2. **A rejoin in heocr is not the fix.** pipeline's token segmentation already changes the counts, so every arm is scored at a fixed heocr commit, with pipeline's segmentation at that commit.
+3. **Tables need digit reading in cells:** short integers, amounts and %, the 416 other misses. Dates there are partial (234).
 ### 2.3 Development rule (fixed in the arm-registration PR, before either arm trains)
 
 - **Checkpoint selection:** line_fold_v1 CER on `office_val` (§5.3), my synthetic held-out set, as the R-series does.
 - **Arm decision, at document level:** sets B and C, scored with eval's D-bench scorer (`gate.doc_units` / `report.py --synth`, `line_fold_v1`), with heocr at a fixed commit and the arm's model in the OCR route.
-  - **Rejoin on and off (lead, 2026-11-18).** pipeline is adding a deterministic rejoin of split, reversed numeric runs (§2.2.1). Every arm, and stock, is scored twice, with heocr's rejoin on and with it off, at fixed heocr commits. The model's own share is the gain with the rejoin off. The deciding figure is the one with the rejoin on, because that is how heocr will ship.
-  - The arm **qualifies for eval's amendment run** if, on all three cells, `gate.py`'s rule holds against every baseline's recorded outputs, with the rejoin on.
+  - **Fixed heocr commits, two of them.** pipeline's number handling is changing fast (§2.2.1). Every arm, and stock, is scored with heocr at the commit this plan's diagnosis used (`7f5e99e`) and at the latest heocr main when the arm finishes. The model's own share is the gain at `7f5e99e`. The deciding figure is the one at the latest main, because that is how heocr will ship. This replaces "rejoin on and off": the rejoin it assumed turned out not to be the lever (§2.2.1 correction).
+  - The arm **qualifies for eval's amendment run** if, on all three cells, `gate.py`'s rule holds against every baseline's recorded outputs, at the latest heocr main.
   - If no arm reaches that, an arm still counts as progress when its number recall beats heocr with stock inside on at least one cell (paired bootstrap over documents, lower bound above 0), and no gate measure gets worse beyond its margin in any cell. That is reported, and it is not sent to the gate.
   - B and C are what the cells are measured on, regenerated with new seeds at gate time. eval allows using them for selection, and notes that gains measured on them overstate real-world gains (§6a).
 - **Guards, at line level on real print, no loss against stock:** the R-series dev lists (`eval-domains/intermediates/r8b_score/lists`, dev only), scored with `score_lines.py` under `line_fold_v1`, never lstmeval BCER. They include OLB Reshumot dev v1_dev, Kevar and Yedi'ot held-out lines, Brainin IA, Brainin NLI and Silman. A loss means the whole 95% interval of CER(model) − CER(stock) lies above 0.
@@ -95,8 +92,8 @@ Generated page images come with exact line, cell and region boxes and the logica
 | Family | Content | Share of pages |
 |---|---|---|
 | **Running text** | legislation, regulation and notice text in paragraphs; justified and ragged-left; one and two columns; dates, section references (`סעיף 3.1`, `לפי 12(א)(2)`) and amounts inserted into the sentences (§4) | 25% |
-| **Numbered structure** | sections and sub-sections: `1.`, `1.1`, `1.1.1`, `(א)`, `(1)`, `א.`; hanging indents; definitions lists; תוספת/schedule blocks. Multi-level numbers are the most-missed shape (§2.2.1), so they lead the line: at line start in RTL, and also inside the sentence | 30% |
-| **Tables** | **ruled** (full grid, header-only, row lines only) and **unruled** (aligned columns). Cells hold amounts (`1,234,567.89`), ₪ before or after, %, dates (`dd.mm.yyyy`, `dd/mm/yy`, `d.m.yyyy`), quantities, item numbers and short Hebrew labels. Merged header cells, totals rows, and mixed RTL and LTR columns. **Short integers, amounts and percentages in single cells** are the table misses a rejoin can't fix (§2.2.1), so most cells are one number, cut as their own line crops with cell-border remnants | 35% |
+| **Numbered structure** | sections and sub-sections: `1.`, `1.1`, `1.1.1`, `(א)`, `(1)`, `א.`; hanging indents; definitions lists; תוספת/schedule blocks. Multi-level labels are the most-missed shape: they get cut down to their last piece, and dots get dropped (§2.2.1). So they lead the line, at line start in RTL, and also appear inside the sentence | 30% |
+| **Tables** | **ruled** (full grid, header-only, row lines only) and **unruled** (aligned columns). Cells hold amounts (`1,234,567.89`), ₪ before or after, %, dates (`dd.mm.yyyy`, `dd/mm/yy`, `d.m.yyyy`), quantities, item numbers and short Hebrew labels. Merged header cells, totals rows, and mixed RTL and LTR columns. **Short integers, amounts and percentages in single cells** are most of the table misses (§2.2.1), so most cells are one number, cut as their own line crops with cell-border remnants | 35% |
 | **Letter and tender front matter** | letterhead block, date line, `לכבוד`, subject line (`הנדון:`), reference numbers (`מכרז מס' 12/2026`), closing, signature area | 10% |
 
 - **On every page:**
@@ -135,7 +132,9 @@ Generated page images come with exact line, cell and region boxes and the logica
     - a number in parentheses;
     - two numbers separated only by a space or a dash;
     - `₪` or `ש"ח` before and after an amount.
-- **No space inside a number, in the label and on the page.** Every number is one token in the label, with the same separators the page shows (`1.2.3`, `17.11.2026`, `1,234.50`). It is drawn the same way, with no extra spacing after its dots. This is what should stop the model emitting the space that lets Tesseract split the number and reverse its groups.
+- **Whole numbers, with their dots, in the label and on the page.** Every number is one token in the label, with the same separators the page shows (`1.2.3`, `2.2.4.`, `17.11.2026`, `1,234.50`). It is drawn the same way. The misses to teach away are a label cut down to its last piece and a dot dropped inside a number (§2.2.1). So:
+  - multi-level labels sit at the line start, at the right edge in RTL, with the hanging indents and tab gaps of real numbered documents;
+  - some lines are given a tight first letter after the label, and some a wide tab gap.
   - **A test in `office_pages`** checks every label against the generator's number spans: no whitespace inside a span, and the logical digit order is kept.
   - **The gate also checks it:** a line whose stock read-back has a number span broken by whitespace still trains, because that is the error being taught away. The count is reported.
 - **Labels:** the logical string. Signs that stock's unicharset lacks are folded exactly as `line_fold_v1` folds them (`״`→`"`, `׳`→`'`, `־`→`-`). They are still drawn as real ״ and ׳ glyphs, so the model learns to read them.
@@ -222,7 +221,7 @@ Generated page images come with exact line, cell and region boxes and the logica
 
 1. **This plan**, reviewed by the lead.
 2. **Fonts PR:** Arimo, Tinos, Cousine and Open Sans (HeOCR/hocrsyngen#104; Shay's go given 2026-11-18).
-3. **Number-gap diagnosis (§2.2): done** (§2.2.1). The rest goes ahead re-aimed, in parallel with pipeline's rejoin (lead, 2026-11-18).
+3. **Number-gap diagnosis (§2.2): done** (§2.2.1, corrected after pipeline's review). The rest goes ahead re-aimed at line-initial labels, dots inside numbers and cell digits.
 4. **hocrsyngen PR, `office_pages`:**
    - the page families of §3;
    - the degradation models of §5.2;
