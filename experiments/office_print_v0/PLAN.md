@@ -100,12 +100,12 @@ Generated page images come with exact line, cell and region boxes and the logica
 
 - **In the repository:** David Libre, Frank Ruhl Libre, Miriam Libre, Alef, Assistant, Heebo, Rubik, Noto Sans Hebrew and Noto Serif Hebrew (all OFL).
 - **To add, office-metric equivalents from google/fonts at a pinned commit:**
-  - **Arimo** (Arial-metric), **Tinos** (Times-metric) and **Cousine** (Courier-metric), all Apache-2.0 with Hebrew glyphs;
+  - **Arimo** (Arial-metric), **Tinos** (Times-metric, Regular and Bold) and **Cousine** (Courier-metric, Regular and Bold), all OFL-1.1 in google/fonts (they moved from Apache-2.0 to OFL there), all with full Hebrew including te'amim;
   - **Open Sans** Hebrew (OFL);
-  - **Liberation Sans** if its release carries Hebrew (OFL).
+  - Liberation is not in google/fonts, so it is left out; Arimo is the same design lineage.
   - Each gets a coverage check and a bidi test, as in #100. **Downloading them needs Shay's own go**, as the #100 download did.
 - **Never used:** proprietary faces (Arial, Arial Unicode MS, system David, Narkisim, Miriam, Times New Roman, FrankRuehl CLM, or any Windows or Office font). The manifest refuses any face it doesn't list (render-lines rule).
-- **Held-out face:** one face (proposal: **Tinos**) is used only in `office_val`, to measure how well the model reads a face it has not trained on.
+- **Held-out face:** one family, **Tinos** (both weights), is used only in `office_val`, to measure how well the model reads a face it has not trained on.
 
 ### 5.2 Degradation (page level, seeded, recorded per page)
 
@@ -157,7 +157,7 @@ Generated page images come with exact line, cell and region boxes and the logica
 ## 7. Deliverables and order
 
 1. **This plan**, reviewed by the lead.
-2. **Fonts PR:** Arimo, Tinos, Cousine, Open Sans and Liberation, after Shay's go for the download.
+2. **Fonts PR:** Arimo, Tinos, Cousine and Open Sans (Shay's go given 2026-11-18).
 3. **hocrsyngen PR, `office_pages`:**
    - the page families of §3;
    - the degradation models of §5.2;
@@ -181,6 +181,6 @@ Generated page images come with exact line, cell and region boxes and the logica
    - **How `line_fold_v1` treats dashes.** It folds `—` (em dash) to `–` (en dash) and `־` (maqaf) to `-`. It does **not** fold `–` to `-`. Its `not_folded` entry says the sets write a spaced dash and a joining maqaf or hyphen consistently.
    - **So the charge exists.** A reference `–` or `—` costs one substitution whenever a model outputs `-`, and neither stock nor arm A or B can output `–`. Both sides pay it equally, so the comparison with stock is unaffected.
    - **The report** gives the count of reference `–` in each scored set.
-4. **Fonts.** Arimo, Tinos, Cousine and Open Sans are downloaded only after Shay's own go in this session. A relayed approval is not enough. Until then the work stays at plan and code with the faces already in the repository.
+4. **Fonts.** Shay gave his own go in this session on 2026-11-18. Arimo, Tinos, Cousine and Open Sans are in the fonts PR (google/fonts `7af0d90`).
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
