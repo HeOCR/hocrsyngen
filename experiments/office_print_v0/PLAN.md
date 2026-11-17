@@ -48,24 +48,26 @@ The class counts per cell go to the lead and to pipeline. **If most of the gap i
 
 The scripts are [`diagnosis/numgap.py`](diagnosis/numgap.py) and [`diagnosis/number_assembly.py`](diagnosis/number_assembly.py). They import eval's frozen `measures.py` (`NUM`, `fold`, `clean`) and build the reference as `gate.doc_units` does. They reproduce the gate's number recall exactly for every reader and cell: heocr 74.75 / 68.60 / 87.01, docling 77.61 / 70.44 / 95.02, pymupdf4llm 84.00. The outputs ([json](diagnosis/numgap_synth-2026-11-17-main.json), [txt](diagnosis/number_assembly_synth-2026-11-17-main.txt)) hold counts only.
 
-**Correction (2026-11-18, found by pipeline).** The first version of this result, commit `8ab3fc5`, said most misses were digit groups reversed with spaces, worth about 20 points. That was a regex bug in `number_assembly.py`: an ungrouped `|` in the gap pattern split the whole pattern into alternatives, so a single group next to any whitespace counted as a match. With the gap grouped, reversed-and-spaced numbers are rare (31 in T5, 16 in T4, 0 in tables), and a rejoin would gain well under 1 point. pipeline reproduced the fixed counts on its own run (`full-m59`). The table below is the fixed probe. `numgap.py`'s classes (misread, absent, split) never used that pattern and stand as they were.
+**Correction (2026-11-18, found by pipeline).** The first version of this result, commit `8ab3fc5`, said most misses were digit groups reversed with spaces, worth about 20 points. That was a regex bug in `number_assembly.py`: an ungrouped `|` in the gap pattern split the whole pattern into alternatives, so a single group next to any whitespace counted as a match. With the gap grouped, reversed-and-spaced numbers are rare (27 in T5, 12 in T4, 0 in tables, after the boundary fix below), and a rejoin would gain well under 1 point. pipeline reproduced the fixed counts on its own run (`full-m59`). The table below is the fixed probe. `numgap.py`'s classes (misread, absent, split) never used that pattern and stand as they were.
 
-**What the misses are (heocr, fixed probe):**
+**Known-string tests (lead, 2026-11-18).** `number_assembly.py` now checks its classifier against a table of invented known strings before every run, and `tests/test_office_print_diagnosis.py` runs the same table in CI. On the first run, the tests caught a second, smaller looseness: a group inside a longer number counted (`13` in `13.5`). Number boundaries now also exclude a neighbouring separator followed by a digit. The table below uses the tested classifier.
 
-| Cell | Misses / ref | Multi-level sections `1.2.3`, groups apart | Decimals or sections `3.1`, dots dropped | `3.1`, groups apart | Dates, groups apart or partial | Reversed (no space / with space) | Other shapes (ints, amounts, %) |
-|---|---|---|---|---|---|---|---|
-| T5 | 2,028 / 8,032 | 537 | 343 | 203 | 390 | 91 / 31 | 320 |
-| T4 | 1,129 / 3,596 | 358 | 223 | 145 | 85 | 49 / 16 | 178 |
-| Scanned tables | 663 / 5,103 | 1 | 0 | 0 | 234 | 0 / 0 | 416 |
+**What the misses are (heocr, tested probe):**
+
+| Cell | Misses / ref | Multi-level sections `1.2.3`, groups apart | `3.1`, dots dropped | `3.1`, groups apart | Dates, partial or apart | Dates, no group | Reversed (no space / with space) | Other shapes (ints, amounts, %) |
+|---|---|---|---|---|---|---|---|---|
+| T5 | 2,028 / 8,032 | 539 | 289 | 301 | 273 | 134 | 66 / 27 | 320 |
+| T4 | 1,129 / 3,596 | 357 | 190 | 212 | 51 | 47 | 28 / 12 | 178 |
+| Scanned tables | 663 / 5,103 | 0 | 0 | 0 | 155 | 91 | 0 / 0 | 416 |
 
 - **"Groups apart"** means every digit group of the number is somewhere on the page, but not together. This fits what pipeline sees on OCR'd pages: a multi-level label cut down to its last piece (`2.2.4.` read as `4.`), and dots lost inside a label (`3.1` read as `31`).
-- **Truly absent numbers,** with no group anywhere, are rare (T5: 20 sections and 17 dates).
+- **Truly absent numbers,** with no group anywhere, are mostly dates (134 in T5, 47 in T4, 91 in tables). Sections are rarely absent (23 / 17 / 1).
 - **At pipeline's later segment-tokens run,** T5 misses are already 1,082 + 740 (sets B + C), with 16 + 18 reversed with spaces.
 
 **What follows (pipeline, 2026-11-18; the lever moves from spaces to labels):**
 1. **The recogniser is the lever,** above all **line-initial section labels** (`1.`, `1.1`, `2.2.4.`, `(א)`, `12.4.1`) and **dots inside numbers** (`3.1`, `17.11.2026`). These are what this plan's numbered-structure and number-density parts train (§3, §4).
 2. **A rejoin in heocr is not the fix.** pipeline's token segmentation already changes the counts, so every arm is scored at a fixed heocr commit, with pipeline's segmentation at that commit.
-3. **Tables need digit reading in cells:** short integers, amounts and %, the 416 other misses. Dates there are partial (234).
+3. **Tables need digit reading in cells:** short integers, amounts and %, the 416 other misses. Their dates are partial (155) or absent (91).
 ### 2.3 Development rule (fixed in the arm-registration PR, before either arm trains)
 
 - **Checkpoint selection:** line_fold_v1 CER on `office_val` (§5.3), my synthetic held-out set, as the R-series does.
