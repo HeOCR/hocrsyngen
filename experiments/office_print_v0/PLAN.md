@@ -1,6 +1,6 @@
 # Office print v0: synthetic training data for a model that beats stock heb on modern office print
 
-**Status:** plan for review (heocr-lead). Nothing is generated or trained before the lead approves it.
+**Status:** approved by heocr-lead (2026-11-18), re-aimed at numbers after the diagnosis (§2.2.1). Training waits for scheduler slots.
 **Task:** heocr-lead, 2026-11-18, approved by Shay. It serves decisions 0019 and 0020, the `heocr` pipeline's OCR route.
 **Owner:** synth-gen. heocr-eval owns every gate, split and overlap check. Data-collection owns the real lines.
 
@@ -73,7 +73,8 @@ The scripts are [`diagnosis/numgap.py`](diagnosis/numgap.py) and [`diagnosis/num
 
 - **Checkpoint selection:** line_fold_v1 CER on `office_val` (§5.3), my synthetic held-out set, as the R-series does.
 - **Arm decision, at document level:** sets B and C, scored with eval's D-bench scorer (`gate.doc_units` / `report.py --synth`, `line_fold_v1`), with heocr at a fixed commit and the arm's model in the OCR route.
-  - The arm **qualifies for eval's amendment run** if, on all three cells, `gate.py`'s rule holds against every baseline's recorded outputs.
+  - **Rejoin on and off (lead, 2026-11-18).** pipeline is adding a deterministic rejoin of split, reversed numeric runs (§2.2.1). Every arm, and stock, is scored twice, with heocr's rejoin on and with it off, at fixed heocr commits. The model's own share is the gain with the rejoin off. The deciding figure is the one with the rejoin on, because that is how heocr will ship.
+  - The arm **qualifies for eval's amendment run** if, on all three cells, `gate.py`'s rule holds against every baseline's recorded outputs, with the rejoin on.
   - If no arm reaches that, an arm still counts as progress when its number recall beats heocr with stock inside on at least one cell (paired bootstrap over documents, lower bound above 0), and no gate measure gets worse beyond its margin in any cell. That is reported, and it is not sent to the gate.
   - B and C are what the cells are measured on, regenerated with new seeds at gate time. eval allows using them for selection, and notes that gains measured on them overstate real-world gains (§6a).
 - **Guards, at line level on real print, no loss against stock:** the R-series dev lists (`eval-domains/intermediates/r8b_score/lists`, dev only), scored with `score_lines.py` under `line_fold_v1`, never lstmeval BCER. They include OLB Reshumot dev v1_dev, Kevar and Yedi'ot held-out lines, Brainin IA, Brainin NLI and Silman. A loss means the whole 95% interval of CER(model) − CER(stock) lies above 0.
@@ -93,10 +94,10 @@ Generated page images come with exact line, cell and region boxes and the logica
 
 | Family | Content | Share of pages |
 |---|---|---|
-| **Running text** | legislation, regulation and notice text in paragraphs; justified and ragged-left; one and two columns | 30% |
-| **Numbered structure** | sections and sub-sections: `1.`, `1.1`, `1.1.1`, `(א)`, `(1)`, `א.`; hanging indents; definitions lists; תוספת/schedule blocks | 25% |
-| **Tables** | **ruled** (full grid, header-only, row lines only) and **unruled** (aligned columns). Cells hold amounts (`1,234,567.89`), ₪ before or after, %, dates (`dd.mm.yyyy`, `dd/mm/yy`, `d.m.yyyy`), quantities, item numbers and short Hebrew labels. Merged header cells, totals rows, and mixed RTL and LTR columns | 30% |
-| **Letter and tender front matter** | letterhead block, date line, `לכבוד`, subject line (`הנדון:`), reference numbers (`מכרז מס' 12/2026`), closing, signature area | 15% |
+| **Running text** | legislation, regulation and notice text in paragraphs; justified and ragged-left; one and two columns; dates, section references (`סעיף 3.1`, `לפי 12(א)(2)`) and amounts inserted into the sentences (§4) | 25% |
+| **Numbered structure** | sections and sub-sections: `1.`, `1.1`, `1.1.1`, `(א)`, `(1)`, `א.`; hanging indents; definitions lists; תוספת/schedule blocks. Multi-level numbers are the most-missed shape (§2.2.1), so they lead the line: at line start in RTL, and also inside the sentence | 30% |
+| **Tables** | **ruled** (full grid, header-only, row lines only) and **unruled** (aligned columns). Cells hold amounts (`1,234,567.89`), ₪ before or after, %, dates (`dd.mm.yyyy`, `dd/mm/yy`, `d.m.yyyy`), quantities, item numbers and short Hebrew labels. Merged header cells, totals rows, and mixed RTL and LTR columns. **Short integers, amounts and percentages in single cells** are the table misses a rejoin can't fix (§2.2.1), so most cells are one number, cut as their own line crops with cell-border remnants | 35% |
+| **Letter and tender front matter** | letterhead block, date line, `לכבוד`, subject line (`הנדון:`), reference numbers (`מכרז מס' 12/2026`), closing, signature area | 10% |
 
 - **On every page:**
   - headers and footers, page counters (`עמוד 3 מתוך 12`, `- 3 -`, `3/12`), and the occasional footnote rule;
@@ -120,12 +121,23 @@ Generated page images come with exact line, cell and region boxes and the logica
   - Per-line provenance comes from its manifest: `id`, `unit_id`, `source_id`, `entry_id`, `series`, `booklet_number`, `publish_date`, `page`, `printed_page_number`, `label_source`.
   - knesset-laws can be added later as a versioned source once it is published. Its OCR-layer text would need a label-noise check first.
 - **Same text twice.** The synthetic pages reuse anchor text in new layouts, fonts and degradation. Text is drawn by `unit_id`. Units held out for `office_val` (§5.3) are removed from the anchor and from the degraded anchor too, so no `office_val` text is ever trained.
-- **Number distribution, chosen on purpose:**
-  - at least 35% of table cells and 15% of running-text lines carry a number;
-  - dates are spread from 1990 to 2030;
-  - amounts run from 1 to 10^9, with and without decimals and thousands separators;
-  - ₪ comes before and after the number, and as `ש"ח`;
-  - percentages are integers and decimals.
+- **Number distribution, re-aimed by the diagnosis (§2.2.1; lead, 2026-11-18):**
+  - **Dense:** at least 60% of table cells and 40% of running-text and numbered lines carry a number. At least 20% of all lines hold two or more numbers, such as a section number and a date, or a date and an amount.
+  - **By shape,** in proportion to what is missed:
+    - multi-level section numbers (`1.2`, `1.2.3`, `12.4.1`) and decimals or sections (`3.1`): 30%;
+    - dates (`dd.mm.yyyy`, `d.m.yyyy`, `dd/mm/yy`, `dd.mm.yy`), spread from 1990 to 2030: 25%;
+    - amounts with thousands separators and decimals (1 to 10^9): 20%;
+    - short integers (1–3 digits): 15%;
+    - percentages (integer and decimal): 10%.
+  - **Contexts that trigger the split:**
+    - a number right after a Hebrew word or a prefix letter (`ב-1.1.2026`, `בסעיף 3.1`);
+    - a number at line start or line end in RTL;
+    - a number in parentheses;
+    - two numbers separated only by a space or a dash;
+    - `₪` or `ש"ח` before and after an amount.
+- **No space inside a number, in the label and on the page.** Every number is one token in the label, with the same separators the page shows (`1.2.3`, `17.11.2026`, `1,234.50`). It is drawn the same way, with no extra spacing after its dots. This is what should stop the model emitting the space that lets Tesseract split the number and reverse its groups.
+  - **A test in `office_pages`** checks every label against the generator's number spans: no whitespace inside a span, and the logical digit order is kept.
+  - **The gate also checks it:** a line whose stock read-back has a number span broken by whitespace still trains, because that is the error being taught away. The count is reported.
 - **Labels:** the logical string. Signs that stock's unicharset lacks are folded exactly as `line_fold_v1` folds them (`״`→`"`, `׳`→`'`, `־`→`-`). They are still drawn as real ״ and ׳ glyphs, so the model learns to read them.
   - The en dash `–` is left out of the label text: it is not in stock's unicharset, and adding it would need layer surgery. Labels write `-` instead. See §8.3 for how the scorer charges it.
   - The cost is that a reference `–` is charged, as it is for stock today. This is stated in the report.
@@ -210,7 +222,7 @@ Generated page images come with exact line, cell and region boxes and the logica
 
 1. **This plan**, reviewed by the lead.
 2. **Fonts PR:** Arimo, Tinos, Cousine and Open Sans (HeOCR/hocrsyngen#104; Shay's go given 2026-11-18).
-3. **Number-gap diagnosis (§2.2)** on sets B and C: misread, absent, or split/joined, per cell. It goes to the lead and pipeline. It decides whether the rest goes ahead as planned.
+3. **Number-gap diagnosis (§2.2): done** (§2.2.1). The rest goes ahead re-aimed, in parallel with pipeline's rejoin (lead, 2026-11-18).
 4. **hocrsyngen PR, `office_pages`:**
    - the page families of §3;
    - the degradation models of §5.2;
