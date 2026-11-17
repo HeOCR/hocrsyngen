@@ -54,18 +54,25 @@ The scripts are [`diagnosis/numgap.py`](diagnosis/numgap.py) and [`diagnosis/num
 
 **What the misses are (heocr, tested probe):**
 
-| Cell | Misses / ref | Multi-level sections `1.2.3`, groups apart | `3.1`, dots dropped | `3.1`, groups apart | Dates, partial or apart | Dates, no group | Reversed (no space / with space) | Other shapes (ints, amounts, %) |
+| Cell | Misses / ref | Multi-level sections `1.2.3`, groups apart | `3.1`, joined digits on the page (page-wide; aligned, almost none, see below) | `3.1`, groups apart | Dates, partial or apart | Dates, no group | Reversed (no space / with space) | Other shapes (ints, amounts, %) |
 |---|---|---|---|---|---|---|---|---|
 | T5 | 2,028 / 8,032 | 539 | 289 | 301 | 273 | 134 | 66 / 27 | 320 |
 | T4 | 1,129 / 3,596 | 357 | 190 | 212 | 51 | 47 | 28 / 12 | 178 |
 | Scanned tables | 663 / 5,103 | 0 | 0 | 0 | 155 | 91 | 0 / 0 | 416 |
 
-- **"Groups apart"** means every digit group of the number is somewhere on the page, but not together. This fits what pipeline sees on OCR'd pages: a multi-level label cut down to its last piece (`2.2.4.` read as `4.`), and dots lost inside a label (`3.1` read as `31`).
+- **These classes are page-wide, so they are upper bounds by class.** A group or a joined digit string is searched for anywhere on the page, so a stray `11` counts as `1.1` with its dot dropped.
+- **pipeline's line-aligned count (2026-11-18)** is the better guide for training targets. On set C T5, at heocr main, each missed `d.d` token was aligned word by word to its best-matching output line:
+  - only the last level read: **346**;
+  - another number, often with the first level dropped (`2.2.` for `1.2.2`): **100**;
+  - not a number: 20;
+  - a dot really dropped: **12**.
+  Dates read as non-numbers are 29 in T5 and 56 in tables. So "dots dropped inside numbers" is almost empty once misses are aligned to their place.
+- **"Groups apart"** means every digit group of the number is somewhere on the page, but not together. This fits what pipeline sees on OCR'd pages: a multi-level label cut down to its last piece (`2.2.4.` read as `4.`), and a first level lost (`2.2.` for `1.2.2`).
 - **Truly absent numbers,** with no group anywhere, are mostly dates (134 in T5, 47 in T4, 91 in tables). Sections are rarely absent (23 / 17 / 1).
 - **At pipeline's later segment-tokens run,** T5 misses are already 1,082 + 740 (sets B + C), with 16 + 18 reversed with spaces.
 
 **What follows (pipeline, 2026-11-18; the lever moves from spaces to labels):**
-1. **The recogniser is the lever,** above all **line-initial section labels** (`1.`, `1.1`, `2.2.4.`, `(א)`, `12.4.1`) and **dots inside numbers** (`3.1`, `17.11.2026`). These are what this plan's numbered-structure and number-density parts train (§3, §4).
+1. **The recogniser is the lever,** above all **line-initial multi-level section labels** (`1.1`, `2.2.4.`, `12.4.1`, `(א)`), which are read down to their last level or lose their first level. These are what this plan's numbered-structure part trains (§3). Dates read as something other than a number come second (§4).
 2. **A rejoin in heocr is not the fix.** pipeline's token segmentation already changes the counts, so every arm is scored at a fixed heocr commit, with pipeline's segmentation at that commit.
 3. **Tables need digit reading in cells:** short integers, amounts and %, the 416 other misses. Their dates are partial (155) or absent (91).
 ### 2.3 Development rule (fixed in the arm-registration PR, before either arm trains)
@@ -94,7 +101,7 @@ Generated page images come with exact line, cell and region boxes and the logica
 | Family | Content | Share of pages |
 |---|---|---|
 | **Running text** | legislation, regulation and notice text in paragraphs; justified and ragged-left; one and two columns; dates, section references (`סעיף 3.1`, `לפי 12(א)(2)`) and amounts inserted into the sentences (§4) | 25% |
-| **Numbered structure** | sections and sub-sections: `1.`, `1.1`, `1.1.1`, `(א)`, `(1)`, `א.`; hanging indents; definitions lists; תוספת/schedule blocks. Multi-level labels are the most-missed shape: they get cut down to their last piece, and dots get dropped (§2.2.1). So they lead the line, at line start in RTL, and also appear inside the sentence | 30% |
+| **Numbered structure** | sections and sub-sections: `1.`, `1.1`, `1.1.1`, `(א)`, `(1)`, `א.`; hanging indents; definitions lists; תוספת/schedule blocks. Multi-level labels are the most-missed shape: they get cut down to their last level, or lose their first level (§2.2.1). So they lead the line, at line start in RTL, and also appear inside the sentence | 30% |
 | **Tables** | **ruled** (full grid, header-only, row lines only) and **unruled** (aligned columns). Cells hold amounts (`1,234,567.89`), ₪ before or after, %, dates (`dd.mm.yyyy`, `dd/mm/yy`, `d.m.yyyy`), quantities, item numbers and short Hebrew labels. Merged header cells, totals rows, and mixed RTL and LTR columns. **Short integers, amounts and percentages in single cells** are most of the table misses (§2.2.1), so most cells are one number, cut as their own line crops with cell-border remnants | 35% |
 | **Letter and tender front matter** | letterhead block, date line, `לכבוד`, subject line (`הנדון:`), reference numbers (`מכרז מס' 12/2026`), closing, signature area | 10% |
 
@@ -123,18 +130,19 @@ Generated page images come with exact line, cell and region boxes and the logica
 - **Number distribution, re-aimed by the diagnosis (§2.2.1; lead, 2026-11-18):**
   - **Dense:** at least 60% of table cells and 40% of running-text and numbered lines carry a number. At least 20% of all lines hold two or more numbers, such as a section number and a date, or a date and an amount.
   - **By shape,** in proportion to what is missed:
-    - multi-level section numbers (`1.2`, `1.2.3`, `12.4.1`) and decimals or sections (`3.1`): 30%;
+    - **multi-level section labels at an RTL line start** (`1.1`, `1.2.2`, `2.2.4.`, `12.4.1`, plus `(א)` and `(1)` sub-levels): 35%. This is where heb keeps only the last level (`4.`) or drops the first (`2.2.` for `1.2.2`). Two to four levels, first levels from 1 to 40, with and without a trailing dot (lead and pipeline, 2026-11-18);
     - dates (`dd.mm.yyyy`, `d.m.yyyy`, `dd/mm/yy`, `dd.mm.yy`), spread from 1990 to 2030: 25%;
-    - amounts with thousands separators and decimals (1 to 10^9): 20%;
-    - short integers (1–3 digits): 15%;
+    - short integers (1–3 digits), mostly in table cells: 15%;
+    - amounts with thousands separators and decimals (1 to 10^9): 15%;
     - percentages (integer and decimal): 10%.
+    - Section references inside a sentence (`בסעיף 3.1`) stay in, but they are counted within the dates and amounts budget's contexts, not as a target of their own: aligned, they are rarely the miss.
   - **Contexts that trigger the split:**
     - a number right after a Hebrew word or a prefix letter (`ב-1.1.2026`, `בסעיף 3.1`);
     - a number at line start or line end in RTL;
     - a number in parentheses;
     - two numbers separated only by a space or a dash;
     - `₪` or `ש"ח` before and after an amount.
-- **Whole numbers, with their dots, in the label and on the page.** Every number is one token in the label, with the same separators the page shows (`1.2.3`, `2.2.4.`, `17.11.2026`, `1,234.50`). It is drawn the same way. The misses to teach away are a label cut down to its last piece and a dot dropped inside a number (§2.2.1). So:
+- **Whole numbers, with their dots, in the label and on the page.** Every number is one token in the label, with the same separators the page shows (`1.2.3`, `2.2.4.`, `17.11.2026`, `1,234.50`). It is drawn the same way. The misses to teach away are a line-initial label cut down to its last level, or missing its first level (§2.2.1). So:
   - multi-level labels sit at the line start, at the right edge in RTL, with the hanging indents and tab gaps of real numbered documents;
   - some lines are given a tight first letter after the label, and some a wide tab gap.
   - **A test in `office_pages`** checks every label against the generator's number spans: no whitespace inside a span, and the logical digit order is kept.
@@ -223,7 +231,7 @@ Generated page images come with exact line, cell and region boxes and the logica
 
 1. **This plan**, reviewed by the lead.
 2. **Fonts PR:** Arimo, Tinos, Cousine and Open Sans (HeOCR/hocrsyngen#104; Shay's go given 2026-11-18).
-3. **Number-gap diagnosis (§2.2): done** (§2.2.1, corrected after pipeline's review). The rest goes ahead re-aimed at line-initial labels, dots inside numbers and cell digits.
+3. **Number-gap diagnosis (§2.2): done** (§2.2.1, corrected after pipeline's review). The rest goes ahead re-aimed at line-initial multi-level labels, dates and cell digits.
 4. **hocrsyngen PR, `office_pages`:**
    - the page families of §3;
    - the degradation models of §5.2;
