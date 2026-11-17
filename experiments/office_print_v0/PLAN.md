@@ -87,7 +87,7 @@ Generated page images come with exact line, cell and region boxes and the logica
   - ₪ comes before and after the number, and as `ש"ח`;
   - percentages are integers and decimals.
 - **Labels:** the logical string. Signs that stock's unicharset lacks are folded exactly as `line_fold_v1` folds them (`״`→`"`, `׳`→`'`, `־`→`-`). They are still drawn as real ״ and ׳ glyphs, so the model learns to read them.
-  - The en dash `–` is left out of the label text: it is not in stock's unicharset, and adding it would need layer surgery.
+  - The en dash `–` is left out of the label text: it is not in stock's unicharset, and adding it would need layer surgery. Labels write `-` instead. See §8.3 for how the scorer charges it.
   - The cost is that a reference `–` is charged, as it is for stock today. This is stated in the report.
 - **Decontamination, before rendering and again on every final list:**
   - **Exclusion by provenance:** every text tied to eval's reserved sets. That covers the new print-and-scan pack, the mid-century set (test, dev, dev_retired), D-bench §5.1 synthetic documents and their templates, P-mod eval booklets, and all R-series and OLB dev lists. It also honours data-collection's DROPS chain (reshumotlines_v2 clean3, and the 19 vendor-hit lines).
@@ -150,8 +150,7 @@ Generated page images come with exact line, cell and region boxes and the logica
 - **Order:** seeded shuffle of the whole list, as lstmtraining reads in order. Add-ons are inserted at random positions.
 - **Arms.** Two, run in the two scheduler slots once they free up.
   - **A:** continue from **stock tessdata_best heb**, using its unicharset with no layer surgery. Training uses the full mix, lr 1e-4, one epoch, a snapshot every 20 minutes, the R-series recipe otherwise.
-  - **B:** the same as A without O1 and the degraded anchor, so it is real-only. It tells whether the synthetic part is what helps.
-  - (Alternative for B, the lead's call: continue from R8b main-fold on the full mix.)
+  - **B (lead's decision, §8):** the same as A without O1 and the degraded anchor, so it is real-only. Continued from stock, it tells whether the synthetic part is what helps.
 - **Compute:** about 286k iterations (one epoch), so about 4 h per arm on this machine (the dose arm ran 214,828 iterations in 2 h 51 min). Training runs **only through tasks/power-scheduler, on AC power, with at most 2 heavy jobs**. Both slots are busy now, so generation and lists come first.
 - **Registration.** The arm decision rule (§2.2) is pushed as its own commit before either arm starts, as in the S17a dose arm.
 
@@ -169,10 +168,19 @@ Generated page images come with exact line, cell and region boxes and the logica
 
 **Release:** if it passes, the model ships openly (Apache-2.0 weights, CC0 data), under the open-release rule. The synthetic data and recipe ship with it.
 
-## 8. Questions for the lead
+## 8. Decisions (heocr-lead, 2026-11-18)
 
-1. **Arm B.** Real-only from stock (attribution), or the full mix from R8b main-fold?
-2. **Degraded real Reshumot rasters.** These pages carry the publisher's embedded office fonts as glyph images. reshumotlines_v2 already trains on these rasters (R9), so this is the same input with added degradation. Please confirm it stays inside the iron rule, or send it to Shay.
-3. **The en dash.** Keep stock's unicharset (no `–`, charged as for stock), or add `–` with layer surgery? The second option changes the comparison with stock.
+1. **Arm B is real-only, continued from stock.** It is the clean ablation: A against B shows what the synthetic part adds. R8b main-fold lost to stock on modern T5, so it is not a base here.
+2. **Degraded real Reshumot rasters are inside the iron rule.**
+   - **Why:**
+     - They are faithful images of official §6 documents.
+     - The font software is never copied, embedded or redistributed: only page images are used, as with any scan of a printed page.
+     - R9 already trains on the same rasters under the legal strategy (2026-11-10).
+   - **If Shay later rules otherwise,** the degraded-anchor part and the clean3 rasters come out of the mix, and the arms are re-registered.
+3. **En dash: stock's character set is kept, with no layer surgery,** in v1.
+   - **How `line_fold_v1` treats dashes.** It folds `—` (em dash) to `–` (en dash) and `־` (maqaf) to `-`. It does **not** fold `–` to `-`. Its `not_folded` entry says the sets write a spaced dash and a joining maqaf or hyphen consistently.
+   - **So the charge exists.** A reference `–` or `—` costs one substitution whenever a model outputs `-`, and neither stock nor arm A or B can output `–`. Both sides pay it equally, so the comparison with stock is unaffected.
+   - **The report** gives the count of reference `–` in each scored set.
+4. **Fonts.** Arimo, Tinos, Cousine and Open Sans are downloaded only after Shay's own go in this session. A relayed approval is not enough. Until then the work stays at plan and code with the faces already in the repository.
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
