@@ -70,10 +70,16 @@ Generated page images come with exact line, cell and region boxes and the logica
 
 | Source | Use | Licence basis |
 |---|---|---|
-| **htext-cc0 legislation, regulations and Reshumot notices** (from heocr-htext) | running text, numbered sections, table labels | §6, not copyrightable; CC0 in htext |
+| **Reshumot law and regulation text: the train split of reshumotlines_v2 `clean3`** (data-collection; born-digital Sefer HaChukim and Kovetz HaTakanot, publisher glyph layer) | running text, numbered sections, table labels | §6 (laws and regulations), `pd_israel.basis = s6_official_text` |
 | **Generated tender-like structure** | section skeletons, table schemas, front matter, page counters | ours, CC0 |
 | **Generated numbers** | amounts, ₪, %, dates, quantities, reference numbers, phone and fax formats | ours, CC0 |
 
+- **Why this source and not htext (heocr-htext, 2026-11-18):**
+  - htext-cc0 holds no legislation yet. Its knesset-laws builder (1948–77, from an OCR text layer) is still an unreviewed plan (HeOCR/htext#6).
+  - reshumotlines_v2 is modern wording with exact labels from the glyph layer: 2.69M characters, 47.5% of lines with a digit, 14.6% numeric-heavy.
+  - Per-line provenance comes from its manifest: `id`, `unit_id`, `source_id`, `entry_id`, `series`, `booklet_number`, `publish_date`, `page`, `printed_page_number`, `label_source`.
+  - knesset-laws can be added later as a versioned source once it is published. Its OCR-layer text would need a label-noise check first.
+- **Same text twice.** The synthetic pages reuse anchor text in new layouts, fonts and degradation. Text is drawn by `unit_id`. Units held out for `office_val` (§5.3) are removed from the anchor and from the degraded anchor too, so no `office_val` text is ever trained.
 - **Number distribution, chosen on purpose:**
   - at least 35% of table cells and 15% of running-text lines carry a number;
   - dates are spread from 1990 to 2030;
@@ -122,7 +128,7 @@ Generated page images come with exact line, cell and region boxes and the logica
 ### 5.3 Held-out validation (dev and synthetic only, never test)
 
 - **office_val** (synthetic, selection): 2,000 pages, from:
-  - held-out htext works;
+  - held-out Reshumot units (by `unit_id`, about 5% of clean3 train text; removed from every training part);
   - generator seeds of their own;
   - the held-out face (Tinos);
   - one held-out table schema family;
