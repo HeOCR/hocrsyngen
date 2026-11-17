@@ -44,6 +44,31 @@ Synthetic data for the recogniser only helps if the missed numbers are **misread
 
 The class counts per cell go to the lead and to pipeline. **If most of the gap is absent, I report that before generating anything,** because the fix then belongs in heocr, not in the model.
 
+#### 2.2.1 Result (2026-11-18, synth-2026-11-17-main, heocr 7f5e99e; counts only)
+
+The scripts are [`diagnosis/numgap.py`](diagnosis/numgap.py) and [`diagnosis/number_assembly.py`](diagnosis/number_assembly.py). They import eval's frozen `measures.py` (`NUM`, `fold`, `clean`) and build the reference as `gate.doc_units` does. They reproduce the gate's number recall exactly for every reader and cell: heocr 74.75 / 68.60 / 87.01, docling 77.61 / 70.44 / 95.02, pymupdf4llm 84.00. The outputs ([json](diagnosis/numgap_synth-2026-11-17-main.json), [txt](diagnosis/number_assembly_synth-2026-11-17-main.txt)) hold counts only.
+
+**The gap is mostly number assembly, not recognition and not missing regions.**
+- **What fails.** Most of heocr's missed numbers are dates (`dd.mm.yyyy`), section numbers (`3.1`) and multi-level section numbers (`1.2.3`).
+- **What the output holds.** For almost all of them, every digit group is there, but **with whitespace between the groups and in reversed order**. This is Tesseract's right-to-left word reordering, after the line was split into separate words at the dots. Stock does the same.
+- **What is truly missing.** Numbers with no digit group in the output at all are rare: 8 dates in T5, 4 in T4, 12 in tables.
+
+| Cell | Ref numbers | heocr misses | Reversed with spaces (dates, sections) | NR if all of those were joined (upper bound) | Other misses (ints, amounts, %) | Target (best baseline − 1 pt) |
+|---|---|---|---|---|---|---|
+| T5 | 8,032 | 2,028 | 1,636 (20.4 pt) | 95.1 | 320 (4.0 pt) | 83.0 |
+| T4 | 3,596 | 1,129 | 932 (25.9 pt) | 94.5 | 178 (5.0 pt) | 69.4 |
+| Scanned tables | 5,103 | 663 | 167 (3.3 pt) | 90.3 | 416 (8.2 pt) | 94.0 |
+
+**What follows:**
+1. **A pipeline fix comes first:** rejoining a numeric run that Tesseract split and reversed in an RTL line. It is cheap and deterministic, and by this bound it closes T5 and T4 on its own. It belongs to pipeline (HeOCR/heocr) and is reported to them. It needs its own false-join check, so it must not glue separate numbers.
+2. **The recogniser part is real but smaller:**
+   - the spaces it puts inside numbers (that is what lets Tesseract split them), which the training labels teach it not to do;
+   - wrong digits in table cells: in tables the other misses are 8.2 pt, while reversed numbers are only 3.3 pt. A perfect joiner still leaves tables at 90.3, below 94.0, so tables need better digit reading too.
+3. **This plan continues, re-aimed:**
+   - lines dense in dates, section numbers and amounts, labelled with no space inside a number;
+   - table cells with short integers, amounts and percentages;
+   - every gain is measured with heocr's joiner on and off, so the model's own share is visible.
+
 ### 2.3 Development rule (fixed in the arm-registration PR, before either arm trains)
 
 - **Checkpoint selection:** line_fold_v1 CER on `office_val` (§5.3), my synthetic held-out set, as the R-series does.

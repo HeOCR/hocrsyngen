@@ -1,0 +1,57 @@
+== heocr T5  misses 2028
+   ('decimal_or_section', 'reversed_groups_with_space')         623
+   ('section_multi', 'reversed_groups_with_space')              583
+   ('date', 'reversed_groups_with_space')                       337
+   other_shapes                                                 320
+   ('decimal_or_section', 'reversed_groups_no_space')           91
+   ('date', 'some_groups_only')                                 46
+   ('date', 'groups_scattered')                                 17
+   ('date', 'no_group')                                         8
+   ('section_multi', 'reversed_groups_no_space')                2
+   ('date', 'same_order_with_space')                            1
+== heocr T4  misses 1129
+   ('decimal_or_section', 'reversed_groups_with_space')         418
+   ('section_multi', 'reversed_groups_with_space')              386
+   other_shapes                                                 178
+   ('date', 'reversed_groups_with_space')                       79
+   ('decimal_or_section', 'reversed_groups_no_space')           49
+   ('date', 'some_groups_only')                                 13
+   ('date', 'no_group')                                         4
+   ('date', 'same_order_with_space')                            1
+   ('date', 'groups_scattered')                                 1
+== heocr tables  misses 663
+   other_shapes                                                 416
+   ('date', 'reversed_groups_with_space')                       167
+   ('date', 'some_groups_only')                                 57
+   ('date', 'no_group')                                         12
+   ('date', 'groups_scattered')                                 10
+   ('section_multi', 'groups_scattered')                        1
+== stock T5  misses 4656
+   other_shapes                                                 2055
+   ('decimal_or_section', 'reversed_groups_with_space')         874
+   ('section_multi', 'reversed_groups_with_space')              697
+   ('date', 'reversed_groups_with_space')                       476
+   ('date', 'no_group')                                         238
+   ('date', 'some_groups_only')                                 236
+   ('decimal_or_section', 'reversed_groups_no_space')           31
+   ('date', 'same_order_with_space')                            23
+   ('date', 'groups_scattered')                                 23
+   ('decimal_or_section', 'groups_scattered')                   3
+== stock T4  misses 1951
+   other_shapes                                                 627
+   ('decimal_or_section', 'reversed_groups_with_space')         493
+   ('section_multi', 'reversed_groups_with_space')              428
+   ('date', 'reversed_groups_with_space')                       158
+   ('date', 'no_group')                                         141
+   ('date', 'some_groups_only')                                 59
+   ('decimal_or_section', 'reversed_groups_no_space')           21
+   ('date', 'same_order_with_space')                            21
+   ('decimal_or_section', 'groups_scattered')                   3
+== stock tables  misses 4381
+   other_shapes                                                 3191
+   ('date', 'no_group')                                         615
+   ('date', 'reversed_groups_with_space')                       438
+   ('date', 'some_groups_only')                                 94
+   ('date', 'same_order_with_space')                            41
+   ('section_multi', 'reversed_groups_with_space')              1
+   ('section_multi', 'groups_scattered')                        1
