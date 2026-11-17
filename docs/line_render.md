@@ -16,7 +16,7 @@ hocrsyngen render-lines --list-fonts
 - **`--input`:** UTF-8 JSONL, one `{"id": ..., "text": ..., "group": ...}` per physical line, with text in logical order. `group` is optional, e.g. a sitting id. Ids must be filename-safe (`[A-Za-z0-9_.-]`, at most 200 characters) and unique.
 - **Size:** give one of the two.
   - `--size-range`: font px, the default being 24–72.
-  - `--band-range`: target ink-band px under `--band-def`. It is converted to a font size per face (and weight) by measuring a fixed calibration line, so every face lands in the same band on typical text.
+  - `--band-range`: target ink-band px under `--band-def`. It is converted to a font size per face (and weight) by measuring a fixed calibration line, so every face lands in the same band on typical text. The first guess scales the band measured at 100 px. If the calibration line drawn at that size misses the target by more than 2 px, which happens on hinted static faces such as Cousine Bold, the nearby sizes are measured and the closest one is used. Every face before the office faces keeps its first guess, so its output is unchanged.
 - **`--weight-range`:** sampled, then clipped to each variable face's weight axis. Static faces keep their own weight, recorded as `weight: null`.
 - **Groups:** lines that share a `group` share face, size or band, and weight, so a sitting reads like one document. Degradation is still drawn per line.
 - **Python:** `hocrsyngen.line_render.render_lines(lines, output, seed=..., fonts=..., preset=..., size_range=... | band_range=..., weight_range=...)` does the same and returns the summary. The CLI is the stable surface. Pin the commit you used.
@@ -48,13 +48,15 @@ Band targeting fixes the font size from a typical calibration line. Each line's 
 - **Governed faces only.**
   - A face is usable only if `data/synthetic/fonts/manifest.yaml` lists it with `line_render: true`, a `license` id, a `license_file` next to it and a `sha256`.
   - The renderer checks each font file against its sha256 and refuses any face that doesn't match or isn't listed.
-  - Nine faces are enabled, all OFL-1.1.
+  - Fifteen faces are enabled, all OFL-1.1.
     - Alef, David Libre and Frank Ruhl Libre came with the package.
     - Noto Sans Hebrew, Noto Serif Hebrew, Assistant, Heebo, Rubik and Miriam Libre come from google/fonts at commit `3cb0866aebe5de40156f418a1750cb329e81ebdb`. Each file was checked against its git blob, each has its `OFL.txt` as `LICENSE-<Family>-OFL.txt`, and the source path is in the manifest notes.
+    - **Office faces** (styles `office_sans`, `office_serif`, `office_mono`): Arimo, Tinos Regular and Bold, Cousine Regular and Bold, and Open Sans, from google/fonts at commit `7af0d90b4d532ffa4b041937b560c6df4e7b1e95`, each checked against its git blob. Arimo, Tinos and Cousine are metric-compatible stand-ins for Arial, Times New Roman and Courier New, which are proprietary and never used. google/fonts has no `OFL.txt` for Tinos at that commit, so its licence text comes from the upstream commit google/fonts pins (googlefonts/tinos `3b4482a`), also blob-checked.
   - Gveret Levin and Noto Rashi stay in the manifest for `generate`, but are off for line rendering.
-  - **Coverage.** Every enabled face has the 27 letters, the basic niqqud (U+05B0–05BC, 05C1, 05C2, 05C7), the digits and common punctuation, including ־ ׳ ״ – —.
-    - Only the two Noto faces have te'amim.
-    - Rafe (U+05BF) is missing from Alef, Rubik and Miriam Libre.
+  - **Coverage.** Every enabled face has the 27 letters, the basic niqqud (U+05B0–05BC, 05C1, 05C2, 05C7), the digits and common punctuation, including ־ ׳ ״ – — (Open Sans without ׳ ״).
+    - Te'amim: the two Noto faces, Arimo, Tinos and Cousine.
+    - Rafe (U+05BF) is missing from Alef, Rubik, Miriam Libre and Open Sans.
+    - Open Sans also lacks geresh and gershayim (U+05F3, U+05F4).
     - A line with a mark its face lacks is refused.
   - **Default weights.** Several variable faces default to a light instance (Assistant 200, Noto Sans Hebrew 100, Rubik 300). The default `--weight-range 400 400` renders them at regular weight.
 - **Bidi** is resolved by Pillow's libraqm backend with an RTL base direction:
