@@ -1,0 +1,1539 @@
+{
+ "page": "P06",
+ "title": "old print",
+ "size_px": [
+  4961,
+  7016
+ ],
+ "lines": [
+  {
+   "id": "P06_0000",
+   "block": "p6_main",
+   "text": "מתחולל בטבע, מצערו של אומלל, מאחת מתקופות",
+   "box": [
+    1392,
+    567,
+    3566,
+    719
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0001",
+   "block": "p6_main",
+   "text": "השנה וכדומה. וכל מה שהאמניות האלה מתארות",
+   "box": [
+    1393,
+    730,
+    3566,
+    883
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0002",
+   "block": "p6_main",
+   "text": "ומחקות באופן יותר אמתי את הסמנים הרוחניים של",
+   "box": [
+    1392,
+    893,
+    3566,
+    1046
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0003",
+   "block": "p6_main",
+   "text": "החזיונות, את סמניהם הפועלים על העין או על האזן,",
+   "box": [
+    1393,
+    1057,
+    3566,
+    1209
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0004",
+   "block": "p6_main",
+   "text": "כן יותר קרובות הנה הרגשות המתעוררות בנו על ידן",
+   "box": [
+    1393,
+    1220,
+    3566,
+    1373
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0005",
+   "block": "p6_main",
+   "text": "אל הרגשות אשר יעוררו בנו החזיונות עצמם.",
+   "box": [
+    1392,
+    1383,
+    3566,
+    1536
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0006",
+   "block": "p6_main",
+   "text": "השירים, וכדומה, אשר לא יעוררו בנו רגשות, אין",
+   "box": [
+    1393,
+    1546,
+    3566,
+    1699
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0007",
+   "block": "p6_main",
+   "text": "אנחנו חושבים אותם ליצירות פיוטיות, למעשה ידי",
+   "box": [
+    1393,
+    1710,
+    3566,
+    1863
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0008",
+   "block": "p6_main",
+   "text": "אמן, אם גם שכלנו יכיר ויודה, כי השירים והציורים",
+   "box": [
+    1393,
+    1873,
+    3566,
+    2026
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0009",
+   "block": "p6_main",
+   "text": "האלה כתובים ומצוירים בדעה ובינה, ביגיעה רבה",
+   "box": [
+    1393,
+    2036,
+    3566,
+    2189
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0010",
+   "block": "p6_main",
+   "text": "ובחריצות יתרה, ועל המשורר או הציר היה להתגבר",
+   "box": [
+    1392,
+    2200,
+    3566,
+    2353
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0011",
+   "block": "p6_main",
+   "text": "על מכשולים ומעצורים עצומים. הרושם אשר",
+   "box": [
+    1393,
+    2363,
+    3566,
+    2516
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0012",
+   "block": "p6_main",
+   "text": "היצירה הפיוטית עושה עלינו נוסד על העבודה",
+   "box": [
+    1393,
+    2527,
+    3566,
+    2679
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0013",
+   "block": "p6_main",
+   "text": "האוטומטית של מרכזי-מוחנו; ואלה אחרונים",
+   "box": [
+    1393,
+    2690,
+    3566,
+    2843
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 14,
+   "weight": 500
+  },
+  {
+   "id": "P06_0014",
+   "block": "p6_comm_right",
+   "text": "את החיים בשירו! אך גם",
+   "box": [
+    3684,
+    567,
+    4441,
+    657
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0015",
+   "block": "p6_comm_right",
+   "text": "המתאונן יודה, כי לו עזב",
+   "box": [
+    3684,
+    664,
+    4441,
+    755
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0016",
+   "block": "p6_comm_right",
+   "text": "המשורר את החרוז והמשקל,",
+   "box": [
+    3684,
+    762,
+    4441,
+    852
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0017",
+   "block": "p6_comm_right",
+   "text": "את המליצה והשיר, ויתאר",
+   "box": [
+    3684,
+    859,
+    4441,
+    950
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0018",
+   "block": "p6_comm_right",
+   "text": "דברי בני האדם וחייהם כמו",
+   "box": [
+    3684,
+    957,
+    4441,
+    1047
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0019",
+   "block": "p6_comm_right",
+   "text": "שהם, אז לגעל נפש היה לנו",
+   "box": [
+    3684,
+    1054,
+    4441,
+    1145
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0020",
+   "block": "p6_comm_right",
+   "text": "לשבת בבית־המשחק",
+   "box": [
+    3684,
+    1152,
+    4441,
+    1242
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0021",
+   "block": "p6_comm_right",
+   "text": "(טהעאטער) שעות אחדות",
+   "box": [
+    3684,
+    1249,
+    4441,
+    1340
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0022",
+   "block": "p6_comm_right",
+   "text": "ולהאזין דברי אנשים, אשר",
+   "box": [
+    3684,
+    1347,
+    4441,
+    1437
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0023",
+   "block": "p6_comm_right",
+   "text": "נוכל כל זאת לשמוע בכל עת",
+   "box": [
+    3684,
+    1444,
+    4441,
+    1535
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0024",
+   "block": "p6_comm_right",
+   "text": "ובכל שעה בשוקים",
+   "box": [
+    3684,
+    1542,
+    4441,
+    1632
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0025",
+   "block": "p6_comm_right",
+   "text": "וברחובות עד כי יצא",
+   "box": [
+    3684,
+    1639,
+    4441,
+    1730
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0026",
+   "block": "p6_comm_right",
+   "text": "מאפינו. ורגש היופי והנעם",
+   "box": [
+    3684,
+    1737,
+    4441,
+    1827
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0027",
+   "block": "p6_comm_right",
+   "text": "אשר בנו (אסטהעטישעס",
+   "box": [
+    3684,
+    1834,
+    4441,
+    1925
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0028",
+   "block": "p6_comm_right",
+   "text": "געפיהל) יאלצנו להבין",
+   "box": [
+    3684,
+    1932,
+    4441,
+    2022
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0029",
+   "block": "p6_comm_right",
+   "text": "ולהודות, כי רק היופי הוא",
+   "box": [
+    3684,
+    2029,
+    4441,
+    2120
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0030",
+   "block": "p6_comm_right",
+   "text": "תכלית כל שירי חזיון",
+   "box": [
+    3684,
+    2127,
+    4441,
+    2217
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0031",
+   "block": "p6_comm_right",
+   "text": "והפאעזיא בכלל, וזולתה",
+   "box": [
+    3684,
+    2224,
+    4441,
+    2315
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0032",
+   "block": "p6_comm_right",
+   "text": "מותר להם אין מניב שפתים",
+   "box": [
+    3684,
+    2322,
+    4441,
+    2412
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0033",
+   "block": "p6_comm_right",
+   "text": "אשר כל רוח פאעזיא אין בו.",
+   "box": [
+    3684,
+    2419,
+    4441,
+    2510
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0034",
+   "block": "p6_comm_right",
+   "text": "כן גם המוזיק בנויה על",
+   "box": [
+    3684,
+    2517,
+    4441,
+    2607
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0035",
+   "block": "p6_comm_right",
+   "text": "מוסדות היופי. כל החוקרים",
+   "box": [
+    3684,
+    2614,
+    4441,
+    2705
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0036",
+   "block": "p6_comm_right",
+   "text": "יוכיחו כי המוזיק לקחה",
+   "box": [
+    3684,
+    2712,
+    4441,
+    2802
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0037",
+   "block": "p6_comm_right",
+   "text": "ראשיתה מקולות האדם לפי",
+   "box": [
+    3684,
+    2809,
+    4441,
+    2900
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0038",
+   "block": "p6_comm_right",
+   "text": "רגשותיו ומצבי נפשו השונים",
+   "box": [
+    3684,
+    2907,
+    4441,
+    2997
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0039",
+   "block": "p6_comm_left",
+   "text": "לרגעים, ולכן בלי ספק השיר",
+   "box": [
+    520,
+    567,
+    1275,
+    657
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0040",
+   "block": "p6_comm_left",
+   "text": "בפה הוא קודם לכלי שיר.",
+   "box": [
+    520,
+    664,
+    1275,
+    755
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0041",
+   "block": "p6_comm_left",
+   "text": "ואחרי כי קולותינו בעת",
+   "box": [
+    520,
+    762,
+    1275,
+    852
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0042",
+   "block": "p6_comm_left",
+   "text": "שאנחנו מרגישים רגשות",
+   "box": [
+    520,
+    859,
+    1275,
+    950
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0043",
+   "block": "p6_comm_left",
+   "text": "עדינות, כמו האהבה, הנעם",
+   "box": [
+    520,
+    957,
+    1275,
+    1047
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0044",
+   "block": "p6_comm_left",
+   "text": "או תוגה חרישית וכדומה,",
+   "box": [
+    520,
+    1054,
+    1275,
+    1145
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0045",
+   "block": "p6_comm_left",
+   "text": "המה נעימים ושאננים,",
+   "box": [
+    520,
+    1152,
+    1275,
+    1242
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0046",
+   "block": "p6_comm_left",
+   "text": "ומתקרבים יותר אל קולות",
+   "box": [
+    520,
+    1249,
+    1275,
+    1340
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0047",
+   "block": "p6_comm_left",
+   "text": "ההברה (וואקאל) בלי אמר",
+   "box": [
+    519,
+    1347,
+    1275,
+    1437
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0048",
+   "block": "p6_comm_left",
+   "text": "ודברים. לכן מצאו מקום גם",
+   "box": [
+    520,
+    1444,
+    1275,
+    1535
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0049",
+   "block": "p6_comm_left",
+   "text": "לכלי שיר, אשר יביעו רגשות",
+   "box": [
+    520,
+    1542,
+    1275,
+    1632
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0050",
+   "block": "p6_comm_left",
+   "text": "נפש האדם בלי אמר",
+   "box": [
+    520,
+    1639,
+    1275,
+    1730
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0051",
+   "block": "p6_comm_left",
+   "text": "ודברים, ורק אחרי אשר",
+   "box": [
+    520,
+    1737,
+    1275,
+    1827
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0052",
+   "block": "p6_comm_left",
+   "text": "נתרחבה חכמת המוזיק,",
+   "box": [
+    520,
+    1834,
+    1275,
+    1925
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0053",
+   "block": "p6_comm_left",
+   "text": "השכילו להוציא גם כל יתר",
+   "box": [
+    520,
+    1932,
+    1275,
+    2022
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0054",
+   "block": "p6_comm_left",
+   "text": "רחשי הנפש על ידי כלי שיר.",
+   "box": [
+    520,
+    2029,
+    1275,
+    2120
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0055",
+   "block": "p6_comm_left",
+   "text": "ואחרי אשר חכמת הזמרה",
+   "box": [
+    520,
+    2127,
+    1275,
+    2217
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0056",
+   "block": "p6_comm_left",
+   "text": "והשיר תכליתה רק להוציא",
+   "box": [
+    520,
+    2224,
+    1275,
+    2315
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0057",
+   "block": "p6_comm_left",
+   "text": "חוצה רגשות האדם (או",
+   "box": [
+    520,
+    2322,
+    1275,
+    2412
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0058",
+   "block": "p6_comm_left",
+   "text": "רבים) ועלילותיו בעברו",
+   "box": [
+    520,
+    2419,
+    1275,
+    2510
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0059",
+   "block": "p6_comm_left",
+   "text": "ממצב אחד למצב שני; לכן",
+   "box": [
+    520,
+    2517,
+    1275,
+    2607
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0060",
+   "block": "p6_comm_left",
+   "text": "גם פה נוכל לשאול: האם",
+   "box": [
+    520,
+    2614,
+    1275,
+    2705
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0061",
+   "block": "p6_comm_left",
+   "text": "אמנם נראה בהחיים",
+   "box": [
+    520,
+    2712,
+    1275,
+    2802
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0062",
+   "block": "p6_comm_left",
+   "text": "ובקולותינו ודברינו יופי רב",
+   "box": [
+    520,
+    2809,
+    1275,
+    2900
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0063",
+   "block": "p6_comm_left",
+   "text": "ונשגב כאשר נראה בהמוזיק,",
+   "box": [
+    520,
+    2907,
+    1275,
+    2997
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0064",
+   "block": "p6_comm_bottom",
+   "text": "אשר גם קולות וצעקות, כמו בעת מלחמה או כעס ורצח וכדומה, ימצאו יופי והרמוניא בהמוזיק, אשר לא נראה כזאת בהחיים? אך הן כל איש יורה, כי",
+   "box": [
+    520,
+    3143,
+    4441,
+    3233
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0065",
+   "block": "p6_comm_bottom",
+   "text": "לו לא בהקולות והצעקות האלה, כי אז צללו אזנים לשמוע אותן, ונאטם אזנינו ונתרחקנו מן המהומה הזאת. הן יספרו על בעטהאווען, כי פתגמו היה \"לו",
+   "box": [
+    519,
+    3240,
+    4441,
+    3331
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0066",
+   "block": "p6_comm_bottom",
+   "text": "יכולתי להביא את השאון בחוצות, רעש אופנים ודהרות סוסים, קול המון אנשים וכדומה, במשטר וסדרים, כי אז בראתי מוזיק נפלאה ונעימה!\" לא",
+   "box": [
+    520,
+    3338,
+    4441,
+    3428
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0067",
+   "block": "p6_comm_bottom",
+   "text": "אדע עד כמה יש נכונה בהפתגם הזה, אך זה הוא בלי ספק כי מטרת הקאמפאזיטאר הוא לגלות היופי בקולות רגשות האדם, להביאם בסדרים",
+   "box": [
+    519,
+    3435,
+    4441,
+    3526
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0068",
+   "block": "p6_comm_bottom",
+   "text": "והרמוניא ולהפליאנו ביפים, הפאעזיא והמוזיק מטרה אחת להם, לגלות ולחשוף את היופי בדברים ובקולות. ולכן נראה אותן על כל צעד הולכות שלובי",
+   "box": [
+    520,
+    3533,
+    4441,
+    3623
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0069",
+   "block": "p6_comm_bottom",
+   "text": "זרוע כשתי אחיות תאומות, ובהתלכדן יחדו אז עוד תוסיפנה לרומם נפשנו בהדר חין ערכן. 1 – והנה האיש אשר עיניו פקוחות יודה כי בכל זאת לא",
+   "box": [
+    519,
+    3630,
+    4441,
+    3721
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0070",
+   "block": "p6_comm_bottom",
+   "text": "יחטאו הפאעזיא והמוזיק נגד החיים, ולא יבראו חדשה; כי אם את אשר כבר היה יביאו בכור המחשבה ויוציאוהו מזוקק שבעתים, ורק אז תפקחנה",
+   "box": [
+    520,
+    3728,
+    4441,
+    3818
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0071",
+   "block": "p6_comm_bottom",
+   "text": "עינינו לראות את היופי השורר בהדברים והקולות בהחיים אם יערה עליהם רוח המליצה וההרמוניא ואם בפאעזיע ובמוזיק כך, על אחת כמה וכמה",
+   "box": [
+    519,
+    3825,
+    4441,
+    3916
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0072",
+   "block": "p6_comm_bottom",
+   "text": "בחכמת הציור ויצירת־פסל, אשר ההוד והיופי הם תכליתם ומטרתם, וכל האומר כי תעודתם רק להעתיק צלמי האנשים ומפעלות החיים כמו שהם מבלי",
+   "box": [
+    520,
+    3923,
+    4441,
+    4013
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0073",
+   "block": "p6_comm_bottom",
+   "text": "הוסיף להם שום חן ויופי, אינו אלא טועה; והוא כאומר וחדש מן הפאעזיא לדבר בלשון ההמון, או מן המוזיק לצרוח בקולות מקולות שונים בלי משטר",
+   "box": [
+    520,
+    4020,
+    4441,
+    4111
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0074",
+   "block": "p6_comm_bottom",
+   "text": "וערך, כאשר תקשבנה אזנינו יום יום. גם בחכמת הציור ויצירת־פסל יש הרמוניא וחרוז (ריטמוס, כדברי היונים הקדמונים) ותעודת החרשים והצירים,",
+   "box": [
+    519,
+    4118,
+    4441,
+    4208
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0075",
+   "block": "p6_comm_bottom",
+   "text": "כהמשוררים והמנצחים בנגינות, לקלות הלוט הלוט על פני היופי ולהציגו לעין השמש; ואחת היא אם יחצוב תמונה משיש, או יציר הציר בצבעים או בעט",
+   "box": [
+    519,
+    4215,
+    4441,
+    4306
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0076",
+   "block": "p6_comm_bottom",
+   "text": "עופרת: תמיד עליו להוסיף לוית חן ויופי עד מקום שידו מגעת, ולגלות ההרמוניא והפאעזיע השוררים ביצורי הבריאה הנפלאה, הנסתרים מעיני אנשים",
+   "box": [
+    519,
+    4313,
+    4441,
+    4403
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0077",
+   "block": "p6_comm_bottom",
+   "text": "אחרים והנגלות רק להם. ובזה לא יחטאו נגד החיים והטבע, כי אם עוד יגיעו למרום תעודתם. אם נוכח לדעת כי תעודת החכמות־היפות: הפאעזיע,",
+   "box": [
+    520,
+    4410,
+    4441,
+    4501
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0078",
+   "block": "p6_comm_bottom",
+   "text": "המוזיק, והקונסט היא היופי, אז עוד לא נשאל: מה תכלית החכמות האלה? כי היופי הוא תכלית בפני עצמה, כאשר האמת בההשכלה היא תכלית בפני",
+   "box": [
+    520,
+    4508,
+    4441,
+    4598
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0079",
+   "block": "p6_comm_bottom",
+   "text": "עצמה. אמנם אם נאמר כי היופי אך למותר, ותעודת כל החרשים והצירים להעתיק יצורי החיים כמו שהם, אז הן נשאל בצדק: מה תכליתם ומטרתם ומי",
+   "box": [
+    520,
+    4605,
+    4441,
+    4696
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0080",
+   "block": "p6_comm_bottom",
+   "text": "בקש זאת מהם לעמול ללא הועיל? אם נתבונן על כל האנטיקים הנשארים לנו מהחרשים והצירים הנפלאים הקדמונים, אז נראה כי רק היופי היה",
+   "box": [
+    520,
+    4703,
+    4441,
+    4793
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0081",
+   "block": "p6_comm_bottom",
+   "text": "מטרתם ותכליתם; ובכל זאת לא חטאו אף כמלא השערה נגד הטבע, רק שפכו עליה רוח חן ויופי, המושך לב ונפש כל רואיהם. וגם החן והיופי הזה לא",
+   "box": [
+    520,
+    4800,
+    4441,
+    4891
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0082",
+   "block": "p6_comm_bottom",
+   "text": "בראו מלבם כי אם אמנם מצאוהו בהטבע, המלאה חזיונות וציורים נפלאים. המטרה הזאת היתה גלויה וידועה לחרשי צירים של היונים הקדמונים, ולא",
+   "box": [
+    520,
+    4898,
+    4441,
+    4988
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0083",
+   "block": "p6_comm_bottom",
+   "text": "עלה על לב איש לפון בה. עד כמה היה רגש היופי נכבד ויקר בעיני היונים הקדמונים לא נוכל גם לשער בנפשנו. הדר הטבע הנפלאה בעללאדע",
+   "box": [
+    519,
+    4995,
+    4441,
+    5086
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0084",
+   "block": "p6_comm_bottom",
+   "text": "הרוממה, אשר הים יסוב אותה מכל אפסיה, ורוח צח שורר בה מראשית השנה ועד אחרית השנה, הוד בנין גו אנשיה אשר הצטיינו מעולם ביפים,",
+   "box": [
+    519,
+    5093,
+    4441,
+    5183
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0085",
+   "block": "p6_comm_bottom",
+   "text": "העירו ויעוררו בקרבם רגש היופי עד למאוד; והארץ הנפלאה ההיא הוציאה מקרבה משוררים נשגבים, מנצחי בנגינות וצירים וחרשים, אשר עד היום",
+   "box": [
+    519,
+    5190,
+    4441,
+    5281
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0086",
+   "block": "p6_comm_bottom",
+   "text": "יתפלא כל מבין על יצירי כפיהם. רגש היופי נתעורר בהם עוד יותר על ידי החרשים והצירים הנפלאים, כמו יוצרי־הפסל פהיריאס, פאליקלעטוס ועוד",
+   "box": [
+    520,
+    5288,
+    4441,
+    5378
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0087",
+   "block": "p6_comm_bottom",
+   "text": "ועוד, אשר לפי עדות ציצערא לא היה אז ערוך להם בכל ארצות תבל. אפלטון יאמר, כי להיוני היו ארבע תאוות אשר אליהן כלתה נפשו בימי חייו:",
+   "box": [
+    520,
+    5385,
+    4441,
+    5476
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0088",
+   "block": "p6_comm_bottom",
+   "text": "להיות בריא אולם, להיות יפה ואף נעים, להיות עשיר בצדק ומשפט, ולהיות טוב לב ומשתה תמיד בחברת מרעים וידידים. היופי היה יקר בעיניהם עד",
+   "box": [
+    519,
+    5483,
+    4441,
+    5573
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0089",
+   "block": "p6_comm_bottom",
+   "text": "מאד, עד כי הובילו שי (פריז) לאנשים או נשים אשר הצטינו ביפי הגו, בעיר עפעס הקימו מצבת־זכרון לאיש אחד פהיליפפ, אשר עלה ביפיו על רבים",
+   "box": [
+    519,
+    5580,
+    4441,
+    5671
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0090",
+   "block": "p6_comm_bottom",
+   "text": "מאחיו ובני עמו, וגם הביאו קרבנות לשמו, ויקדישו את המקום לתת שמה מנחות להאנשים היפים. עלמות עדינות ויפהפיות יצאו במחול משחקים,",
+   "box": [
+    519,
+    5678,
+    4441,
+    5768
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0091",
+   "block": "p6_comm_bottom",
+   "text": "ערומות כיום הולדן מבלי כל לבוש, לפני המונים המונים, ולא רק כי לא בושו ולא נכלמו, כי אם הראו לעין כל את יפין המלא כח עלומים, וישאו מתנות",
+   "box": [
+    520,
+    5775,
+    4441,
+    5866
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  },
+  {
+   "id": "P06_0092",
+   "block": "p6_comm_bottom",
+   "text": "מאת הממשלה על יפין. השופטים אשר נתנו היתרון לאחת על רעותה היו הצירים ויוצרי־פסל. יפהפיה אחת נגזר דינה למיתה, ורק בעבור יפיה נשארה",
+   "box": [
+    519,
+    5873,
+    4441,
+    5963
+   ],
+   "font": "NotoRashiHebrew-wght.ttf",
+   "size_pt": 9,
+   "weight": 400
+  }
+ ],
+ "markers": [
+  {
+   "dict": "DICT_4X4_50",
+   "id": 20,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     189
+    ],
+    [
+     472,
+     189
+    ],
+    [
+     472,
+     472
+    ],
+    [
+     189,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 21,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     189
+    ],
+    [
+     4772,
+     189
+    ],
+    [
+     4772,
+     472
+    ],
+    [
+     4489,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 22,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     6544
+    ],
+    [
+     4772,
+     6544
+    ],
+    [
+     4772,
+     6827
+    ],
+    [
+     4489,
+     6827
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 23,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     6544
+    ],
+    [
+     472,
+     6544
+    ],
+    [
+     472,
+     6827
+    ],
+    [
+     189,
+     6827
+    ]
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "center": [
+    1323,
+    6307
+   ],
+   "side_px": 307,
+   "angle_deg": 5.0,
+   "polygon": [
+    [
+     1183.46,
+     6140.71
+    ],
+    [
+     1489.29,
+     6167.46
+    ],
+    [
+     1462.54,
+     6473.29
+    ],
+    [
+     1156.71,
+     6446.54
+    ]
+   ]
+  }
+ ],
+ "wedge": [
+  {
+   "set": "strip",
+   "step": 0,
+   "ink_fraction": 0.0,
+   "grey": 255,
+   "box": [
+    1701,
+    6165,
+    1937,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 1,
+   "ink_fraction": 0.2,
+   "grey": 204,
+   "box": [
+    1937,
+    6165,
+    2173,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 2,
+   "ink_fraction": 0.4,
+   "grey": 153,
+   "box": [
+    2173,
+    6165,
+    2409,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 3,
+   "ink_fraction": 0.6,
+   "grey": 102,
+   "box": [
+    2409,
+    6165,
+    2645,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 4,
+   "ink_fraction": 0.8,
+   "grey": 51,
+   "box": [
+    2645,
+    6165,
+    2881,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 5,
+   "ink_fraction": 1.0,
+   "grey": 0,
+   "box": [
+    2881,
+    6165,
+    3117,
+    6401
+   ]
+  }
+ ],
+ "colour_patches": [],
+ "furniture": [
+  {
+   "kind": "qr",
+   "text": "HEOCR-CAL-V1-P06",
+   "box": [
+    614,
+    6118,
+    992,
+    6496
+   ]
+  },
+  {
+   "kind": "label",
+   "text": "HeOCR cal. pack v1 | P06 | calibration/dev only",
+   "box": [
+    3165,
+    6270,
+    4385,
+    6326
+   ]
+  },
+  {
+   "kind": "rule_box",
+   "box": [
+    1346,
+    520,
+    3613,
+    3025
+   ]
+  }
+ ],
+ "dpi": 600,
+ "pack": "HeOCR calibration pack v1",
+ "use": "calibration and dev only, never test"
+}

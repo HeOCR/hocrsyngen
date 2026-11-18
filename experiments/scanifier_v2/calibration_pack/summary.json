@@ -1,0 +1,51 @@
+{
+ "pages": {
+  "P01": {
+   "lines": 12,
+   "chars": 1064
+  },
+  "P02": {
+   "lines": 40,
+   "chars": 3116
+  },
+  "P03": {
+   "lines": 93,
+   "chars": 4870
+  },
+  "P04": {
+   "lines": 161,
+   "chars": 1565
+  },
+  "P05": {
+   "lines": 25,
+   "chars": 1038
+  },
+  "P06": {
+   "lines": 93,
+   "chars": 5386
+  },
+  "P07": {
+   "lines": 40,
+   "chars": 3062
+  },
+  "P08": {
+   "lines": 19,
+   "chars": 818
+  },
+  "P09": {
+   "lines": 40,
+   "chars": 3116
+  },
+  "P10": {
+   "lines": 93,
+   "chars": 4870
+  }
+ },
+ "pdf_sha256": {
+  "calibration_pack_v1.pdf": "8a7f4c8cf1505e9301e414c33eecfe7ca27dadafc629b0dc98ade1d5a73fadf9",
+  "calibration_pack_v1_thin.pdf": "a8a6e52bdaa7dc060743d2e70c917c83b88f5385b6bf333c3ccb0a6d26bd6280"
+ },
+ "text_sha256": "cd143ec8443b26056e84a29fc2ae5b6673f93e797f69fdbb747f6df0803cdf9f",
+ "dpi": 600,
+ "seed": 20261133
+}
