@@ -337,7 +337,7 @@ Nothing is regenerated and no `.lstmf` file changes; only the lists change.
 
 - **Machine:** one heocr-remote `cpu` pod (RunPod `cpu3c`, 32 vCPUs, 64 GB). Both arms run side by side on it, so they share the same hardware.
 - **Threads:** pinned at `OMP_THREAD_LIMIT=4` per arm.
-- **Tesseract:** 5.5.3, built on the pod from the upstream tag (commit `6951ffe1…`). Any other version is refused.
+- **Tesseract:** 5.5.3, built on the pod from the upstream tag (commit `db0ec62f…`; the annotated tag object is `6951ffe1…`). Any other version is refused.
 - **Before training:** the pod checks the starter sha256, both lists' sha256 and both labels sha256.
 - **Input category:** the real lines (anchor, degraded anchor, OLB) are Reshumot, PD-IL; US status is not asserted. They go under the `pd_scans` open root.
 - **Pulled back per arm:**
