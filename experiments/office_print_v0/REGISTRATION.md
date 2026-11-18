@@ -315,7 +315,8 @@ Nothing is regenerated and no `.lstmf` file changes; only the lists change.
 | **arm B: `lists_v2/arm_b.list`** | 255,143 | **`911443afb3035a7c5cff25865a37eaef655bd4e1f8d579eac6f628a3fb19100f`** | **`5d52e889d38362d31ffc2abf98892d1e837c70981349d1d604e83c54b86df3d2`** |
 
 - **Iterations:** both arms train for **255,143** iterations, one pass over arm A's list (replaces 260,980 in §3).
-- **Self-check:** `decontam.py` on both lists_v2 lists finds **0** hitting lines. eval's official CLEAN on the two hashes above is still the precondition (§5.2).
+- **Self-check:** `decontam.py` on both lists_v2 lists finds **0** hitting lines.
+- **eval's official CLEAN (§5.2), 2026-11-18, unit office_clean_v2b:** **CLEAN**, 0 hits on every target, for arm A (`79c92cf2…`), arm B (`911443af…`) and the office_val selection (`d77a7fa7…`).
 - **Labels stock's unicharset cannot encode,** which lstmtraining skips:
   - arm A: 1,352 lines (**0.53%**);
   - arm B: 501 distinct lines, 694 list lines (**0.27%**).
