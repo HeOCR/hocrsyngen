@@ -93,16 +93,25 @@ The gates keep what stays legible, so the accepted data under-represents the har
 - **Tinos (held out) loses more:** its thin serif strokes fail the photocopy gates more often, at 68.4% against 80.6% for the training faces. So office_val is somewhat cleaner than a draw of the same degradation on the training faces would be. Selection on office_val may therefore favour checkpoints that read cleaner copies.
 - **The stock-fails rule is not a bias toward stock:** it rejects only when the clean render reads well and the similarity has dropped (§2.2). Stock's own misreads of legible numbers stay in.
 
-### 2.6 Manifests (filled after the gates)
+### 2.6 Manifests (filled 2026-11-18 13:45)
+
+- **Where:** everything is under `tasks/office-print-v0/` on the training machine; `lists_v1/manifest.json` holds the counts, seeds and sha256s below.
+- **Format:** list entries are `.lstmf` paths, converted by R8b's `make_lstmf.py`, with labels in Tesseract's visual order. The logical labels stay beside each crop.
 
 | List | Lines | sha256 |
 |---|---|---|
-| O1 accepted (all) | — | — |
-| O1 sample | — | — |
-| degraded anchor (accepted) | — | — |
-| arm A list | — | — |
-| arm B list, iteration order | — | — |
-| office_val selection sample | — | — |
+| O1 accepted, all: `gen_v2/train/gates.jsonl` (accepted rows) | 123,486 of 129,716 | `d4afb0741c812d4d93da0b498fec93559a7ca0e76c7a8585c9f4425770e396ce` (gates file) |
+| O1 sample: `lists_v1/o1.list` | 120,000 | `43349d75de16f9dbb9c6b07dce64c58266f791043481045b5ca500a27351a6e2` |
+| degraded anchor: `anchor_deg_v2/manifest.jsonl` / `lists_v1/anchor_deg.list` | 35,848 of 41,000 accepted / first 35,000 | `58afe68ee128d1296453e349eb027f2fe6587882ef35a72d5e618c5be981bba7` / `95d4025619fba90efc5ecfa843d784319bb3d84415b0c2a62506a97ce311eb84` |
+| anchor (clean3 lstmf of `pool_train.jsonl`) | 45,980 | within the arm lists; clean3 list `5ba5d5f291ad3bac505fd98088d0bdf11e3ccaa4c105aac34b70e7f8864b99e5` |
+| OLB sample (arm A) | 60,000 | within `arm_a.list`; source `59b5d2d8…f869` |
+| **arm A list: `lists_v1/arm_a.list`** | **260,980** | **`1b8171958bcf46a8642193e0941ad78ccf954768438dab1b88c5d85088f5b7e9`** |
+| **arm B list, iteration order: `lists_v1/arm_b.list`** | **260,980** (all 182,883 real lines once, then 78,097 of a second shuffle) | **`e55ee2aa809be81706a2a980b429ec76e08ec46786ecc5e8194d0f15dd74fefe`** |
+| office_val selection: `lists_v1/office_val_sel.list` | 5,000 | `1c3efe44f8f2265a0ffdb883f02ea98ae5dc632ce7fed0d60037d90d3533f426` |
+| office_val gates: `gen_v2/office_val/gates.jsonl` | 107,222 of 117,293 accepted | `5148f558c8694122ba7a753f0f70ce33d56e8ee9b1bdaf59af3e4c28ee51416e` |
+
+- **Iterations:** both arms train for 260,980 iterations, one pass over each list in its order.
+- **Next:** these two lists go to eval for the official CLEAN (§5.2).
 
 ## 3. Arms
 
