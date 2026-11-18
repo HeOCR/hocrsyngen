@@ -79,6 +79,20 @@ No office_val unit appears in any training part.
   - no word list or dawg is built from this text (stock's own is kept);
   - if the line set's labels are ever published, they carry CC BY-SA 4.0 with attribution.
 
+### 2.5a Known biases of the gates (measured 2026-11-18)
+
+The gates keep what stays legible, so the accepted data under-represents the harshest degradation that was drawn. Read every result with that in mind.
+
+| Set | Photocopy share drawn | Photocopy share accepted | Photocopy pass rate | All crops pass rate |
+|---|---|---|---|---|
+| O1 (train, all faces but Tinos) | 23.9% | 20.2% | 80.6% (24,948 / 30,953) | 95.2% (123,486 / 129,716) |
+| degraded anchor (line rasters) | 27.8% | 18.4% | 57.6% (6,579 / 11,413) | 87.4% (35,848 / 41,000) |
+| office_val (Tinos only) | 25.6% | 19.1% | 68.4% (20,514 / 29,990) | 91.4% (107,222 / 117,293) |
+
+- **Photocopy is under-represented** against what was drawn: about 20% of O1 against 25% planned, and 18% of the degraded anchor. The lost lines are the thinned and doubly darkened copies, so arm A sees fewer of the heaviest copier artefacts than PLAN §5.2 intended.
+- **Tinos (held out) loses more:** its thin serif strokes fail the photocopy gates more often, at 68.4% against 80.6% for the training faces. So office_val is somewhat cleaner than a draw of the same degradation on the training faces would be. Selection on office_val may therefore favour checkpoints that read cleaner copies.
+- **The stock-fails rule is not a bias toward stock:** it rejects only when the clean render reads well and the similarity has dropped (§2.2). Stock's own misreads of legible numbers stay in.
+
 ### 2.6 Manifests (filled after the gates)
 
 | List | Lines | sha256 |
