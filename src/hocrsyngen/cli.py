@@ -980,6 +980,22 @@ def build_parser() -> argparse.ArgumentParser:
                                 help="Weight range for faces with a weight axis (default 400 400); static faces keep theirs.")
     render_lines_p.add_argument("--list-fonts", action="store_true", help="Print the governed faces as JSON and exit.")
     render_lines_p.add_argument("--format", choices=("text", "json"), default="json", help="Summary output format.")
+    office_pages_p = subparsers.add_parser(
+        "office-pages",
+        help="Generate office-print pages (tender and notice families) with exact line and cell boxes, line crops "
+             "and logical labels, from a text pool (JSONL of {id, unit_id, text}).",
+    )
+    office_pages_p.add_argument("--texts", type=Path, required=True, help="UTF-8 JSONL text pool, {id, unit_id, text}.")
+    office_pages_p.add_argument("--output", type=Path, required=True, help="Output directory.")
+    office_pages_p.add_argument("--seed", type=_non_negative_int, required=True, help="Run seed.")
+    office_pages_p.add_argument("--pages", type=_positive_int, required=True, help="Number of pages.")
+    office_pages_p.add_argument("--split", choices=("train", "val"), default="train",
+                                help="train: no held-out face or table schema; val (office_val): the held-out face only.")
+    office_pages_p.add_argument("--family", action="append", dest="families",
+                                help="Restrict to page families (repeatable): running_text, numbered, tables, front_matter.")
+    office_pages_p.add_argument("--degradation", action="append", dest="models",
+                                help="Restrict to degradation models (repeatable): office_scan, photocopy, phone_photo, clean.")
+    office_pages_p.add_argument("--prefix", default="op", help="Page id prefix (default op).")
     quality = subparsers.add_parser("quality-check", help="Summarize recorded annotation quality signals.")
     quality.add_argument("path", type=Path, help="Annotated batch directory.")
     quality.add_argument("--max-truncated-segments", type=_non_negative_int)
@@ -1434,6 +1450,18 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(f"rendered {summary['rendered']} of {summary['lines_in']} lines; refused {len(summary['refused'])}; "
                   f"by font {summary['by_font']}")
+        return 0
+    if args.command == "office-pages":
+        from .office_pages import office_pages  # noqa: PLC0415
+        try:
+            rows = [json.loads(x) for x in args.texts.read_text(encoding="utf-8").splitlines() if x.strip()]
+            summary = office_pages(rows, args.output, seed=args.seed, pages=args.pages, split=args.split,
+                                   families=args.families, models=args.models, prefix=args.prefix)
+        except (ValueError, RuntimeError, OSError, KeyError) as exc:
+            parser.error(f"office-pages: {exc}")
+        print(json.dumps({k: summary[k] for k in ("pages", "lines", "by_family", "by_model", "number_shape_share",
+                                                  "lines_with_number_share", "masked_by_mark", "refused_missing_chars")},
+                         ensure_ascii=False, indent=1))
         return 0
     if args.command == "quality-check":
         try:
