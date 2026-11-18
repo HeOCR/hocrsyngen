@@ -232,7 +232,7 @@ Generated page images come with exact line, cell and region boxes and the logica
 1. **This plan**, reviewed by the lead.
 2. **Fonts PR:** Arimo, Tinos, Cousine and Open Sans (HeOCR/hocrsyngen#104; Shay's go given 2026-11-18).
 3. **Number-gap diagnosis (§2.2): done** (§2.2.1, corrected after pipeline's review). The rest goes ahead re-aimed at line-initial multi-level labels, dates and cell digits.
-4. **hocrsyngen PR, `office_pages`:**
+4. **hocrsyngen PR, `office_pages`** ([docs/office_pages.md](../../docs/office_pages.md)):
    - the page families of §3;
    - the degradation models of §5.2;
    - tests for bidi in tables and numbers, exact boxes after skew, and the label folds.
