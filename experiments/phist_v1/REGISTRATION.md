@@ -37,7 +37,8 @@ Written 2026-11-18, before any P-hist training. The round fine-tunes Tesseract f
 - **Why:** the lead's per-book cap is 8% of the round. With 7 books, no book can be at or under 8% of the pool alone, since 1/7 = 14.3%. So the round adds replay (lead's ruling): a seeded (**20261129**) **40,000** of the 45,250 decontaminated Reshumot anchor lines of office-print v0 lists_v2.
 - **Files:** the same `.lstmf` files office-print uses, with dash-folded labels, PD-IL.
 - **Replay share: 51.98%.** Every P-hist book is uncapped and at or under 8%.
-- **The share is high for a P-hist round.** The 8% cap forces it, and the lead accepts it. It falls in the next round, when pool v2 arrives.
+- **The share is high for a P-hist round.** The 8% cap forces it, and the lead accepts it.
+- The replay share falls in the next round, when pool v2 (A1 capped lines, marker-free Tier B, Tur) arrives.
 
 ### 2.3 Labels (lead, 2026-11-18)
 
@@ -125,13 +126,13 @@ Two arms train now, in parallel, so the round does not wait for the office-print
 
 - The replay exists to keep modern print. So the selected model must not lose against stock on office-print §4.3's R-series dev lists, under the same non-inferiority rule: the upper bound of the paired bootstrap 95% interval of Δ CER is at most +0.5 pt.
 - A guard loss on any list bars the claim of a general improvement. The P-hist result is still reported.
-- **data-collection's dev-unit label audit (32 seeded lines each, word errors):**
+- **data-collection's dev-unit label audit, done (32 seeded lines each, word errors):**
 
   | List | Word errors | Effect |
   |---|---|---|
   | kevarpirezikhron | 0/32 | bars as usual |
   | brainin (IA) | 1/32 | bars as usual |
-  | yediothateva | 3/32 (letter errors) | its guard result is **reported, but does not bar** |
+  | yediothateva | 3/32, failing on one-letter edition variants | the yediothateva guard result is **reported but does not bar** |
 
 ## 6. Reporting
 
