@@ -68,8 +68,16 @@ No office_val unit appears in any training part.
 
 ### 2.5 Real scans: OLB Reshumot train
 
-- **What:** a seeded sample (seed 20261121) of **60,000** lines from `olbreshumotlines_v1/train_list.txt`.
+- **What:** a seeded sample (seed 20261121) of **60,000** lines from `olbreshumotlines_v1/train_list.txt`. Arm B recycles all of them (§3).
 - **Source list:** 136,903 lines, sha256 `59b5d2d8c9bcea6c355709300a8be26b39aed3fa09cbd13445118497ef16f869`. eval's reservations hold none of its units.
+- **Provenance:**
+  - **Images:** scans of Reshumot (Sefer HaChukim, Kovetz HaTakanot), PD-IL under Copyright Act 2007 §6.
+  - **Labels:** Hebrew Wikisource's ספר החוקים הפתוח (Open Law Book) text with the same wording (`label_source: wikisource_olb_same_wording`), licensed CC BY-SA 4.0. Every line records its page title, revision id and permalink (`attribution`, `attribution_url`, `olb_revision_id`).
+- **Decision 0016 applies to both arms:**
+  - weights stay Apache-2.0;
+  - the model's NOTICE and card credit "Hebrew Wikisource contributors" (CC BY-SA 4.0) as a source of training text, naming `olbreshumotlines_v1` and its per-page permalinks;
+  - no word list or dawg is built from this text (stock's own is kept);
+  - if the line set's labels are ever published, they carry CC BY-SA 4.0 with attribution.
 
 ### 2.6 Manifests (filled after the gates)
 
@@ -119,9 +127,13 @@ Both continue from **stock tessdata_best heb** (sha256 `dbaa827aea6bc21215638447
 
 ### 4.3 Guards, at line level on real print
 
-- **Rule:** neither arm may lose against stock on any R-series dev list.
-- **Loss:** the whole 95% paired-bootstrap interval of CER(arm) − CER(stock) lies above 0, scored with `score_lines.py` under line_fold_v1.
-- **Effect:** a guard loss bars the arm from qualifying, whatever its document-level figures.
+- **Rule:** neither arm may lose against stock on any R-series dev list below.
+- **Scoring:** both models read every line of the list (psm 7). Each is scored with `score_lines.py` under line_fold_v1. The list's CER is total edits over total reference characters, in percentage points.
+- **Δ:** CER(arm) − CER(stock), on the same lines.
+- **Interval:** a paired bootstrap over the list's lines, 10,000 resamples, seed 0, with both models' edits and reference lengths drawn together. The **upper bound** is the 97.5th percentile of Δ.
+- **Guard loss: the upper bound is above +0.5 pt**, the gate's CER margin. The test is non-inferiority, in the same form as `gate.py`: the arm must show it is no more than 0.5 pt worse than stock on that list.
+  - This is stricter than PLAN §2.3's "whole interval above 0" (lead, 2026-11-18). An arm whose interval is too wide to rule out a 0.5 pt loss also fails.
+- **Effect:** a guard loss on any one list bars the arm from qualifying, whatever its document-level figures. Every list's Δ and interval are reported.
 
 | List (`eval-domains/intermediates/r8b_score/lists`) | Lines | sha256 (prefix) |
 |---|---|---|
@@ -154,6 +166,9 @@ The print-and-scan pack PS-v1 (report-only at eval), the mid-century test set, t
 - **Columns:** every table shows stock tessdata_best, heocr with stock inside, arm A and arm B, at each of the three heocr commits.
 - **Dashes:** the count of reference `–` in each scored set is given (PLAN §8.3).
 - **Gate counts:** reported per rule, per degradation model and per number shape.
-- **Release:** if an arm qualifies, release follows the open-release rule (Apache-2.0 weights, CC0 synthetic data and recipe).
+- **Release:** if an arm qualifies, release follows the open-release rule:
+  - Apache-2.0 weights;
+  - CC0 synthetic data and recipe;
+  - the decision-0016 Wikisource credit in the NOTICE and card (§2.5).
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
