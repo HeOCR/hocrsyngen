@@ -50,7 +50,7 @@ Two label variants, both in logical order and NFC. The list order and lines are 
 | `stockfold` | ׳→' ״→" —→- ־→- –→- | stock heb or the office-print winner (neither has ־ or –) |
 
 - **No layer surgery** in either variant.
-- **Scoring is line_fold_v1,** which folds ־→- ׳→' ״→" —→–, and keeps – and - distinct (eval, 2026-11-18).
+- **Scoring is line_fold_v1** (`eval-domains/profiles/line_fold_v1.json`, sha256 `2e262710…`). It folds, on both reference and prediction, ־→- ׳→' ״→" “ ” „→" and —→–, and keeps – and - distinct (eval, 2026-11-18).
   - So `r7` matches the scorer exactly.
   - `stockfold` carries a **known dash penalty:** one substitution per reference – or —, the same cost stock pays. Reference – and — counts per scored set are reported with the results.
 - **Train lines carrying the marks:**
