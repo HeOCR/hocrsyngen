@@ -209,18 +209,38 @@ The print-and-scan pack PS-v1 (report-only at eval), the mid-century test set, t
 - **Label check, every line:** each `.gt.txt` against its manifest text. **0 mismatches** in 45,980 anchor lines and 0 in 136,903 OLB train lines; no label is missing.
 - **Guard:** `build_lists.py` now asserts that every path in every list exists.
 
-| List | Lines | sha256 (replaces §2.6) |
-|---|---|---|
-| **arm A: `lists_v1/arm_a.list`** | 260,980 | **`4bc44c7ddd2707c8967db94541faedb73625eb78648bf1866c3a1dccc53d53c9`** |
-| **arm B: `lists_v1/arm_b.list`** | 260,980 (182,883 real lines once, then 78,097 of a second shuffle) | **`c6aa4799c8a286365288242e86017167fc52f5f13fd4ecdfebef8a5394ef9332`** |
-| O1, degraded anchor, office_val selection | unchanged | unchanged (§2.6) |
+- **Dash fold (amendment 1b, lead 2026-11-18):** ― (U+2015), – (U+2013) and — (U+2014) are written `-` in every *training* label.
+  - **Count:** 5,684 lines were folded and reconverted: 2,434 anchor, 1,860 degraded anchor and 1,390 O1. OLB train labels hold none of the three.
+  - **Why:** without the fold, stock's unicharset skipped those lines, mostly Hebrew year ranges like התשס"ה―2005, and at different rates in A and B.
+  - **Scoring is unchanged:** `line_fold_v1` folds none of ― or – to `-` (— goes to –). As PLAN §8.3 says for –, a reference ― or – costs one substitution for every model, since stock's unicharset can output neither, so the comparison with stock is unaffected. A dash-folding profile would be eval's decision after the gate.
+  - **Not folded:** the office_val selection keeps its reference labels.
+- **How:** `fold_dashes.py` replaced each staged label with its folded copy; the source label files are untouched. The superseded `.lstmf` files were moved to `lists_v1/superseded_unfolded/`.
+- **Labels hash:** the lists hold paths, so the folded labels are pinned by a second hash, the sha256 over each line's `.gt.txt` bytes in list order.
 
-- **Labels stock's unicharset cannot encode** (no layer surgery, §3):
-  - arm A: 6,944 distinct lines (2.66%);
-  - arm B: 2,875 (1.57%);
-  - mostly `―` (U+2015, in Hebrew year ranges), `–`, a few Latin letters and `□`.
-  - lstmtraining skips such lines and does not fail. Both arms keep the same `--max_iterations` (260,980), so they still run equal iterations.
-  - Folding `―` is left for the next round, so these lists stay as eval checks them.
-- **eval's CLEAN** (§5.2) runs on these two hashes.
+| List | Lines | list sha256 (replaces §2.6) | labels sha256 |
+|---|---|---|---|
+| **arm A: `lists_v1/arm_a.list`** | 260,980 | **`4bc44c7ddd2707c8967db94541faedb73625eb78648bf1866c3a1dccc53d53c9`** | **`accfe4bcb91620f73f899cd19d48834d0c1c545dc751f2990d91882944bc6c67`** |
+| **arm B: `lists_v1/arm_b.list`** | 260,980 (182,883 real lines once, then 78,097 of a second shuffle) | **`c6aa4799c8a286365288242e86017167fc52f5f13fd4ecdfebef8a5394ef9332`** | **`9443d0b8e66d81a12d0255ac7d2ef88955ad4f5f32831cfef4fdc600083f4485`** |
+| O1 / degraded anchor / office_val selection | unchanged | unchanged (§2.6) | `ea0f451c…eac4a` / `32b3e683…ffb2f` / `f80a5f0d…7ee40` |
+
+- **Labels stock's unicharset still cannot encode, after the fold:** arm A 1,353 distinct lines (**0.52%**), arm B 493 (**0.27%**). They hold Latin letters, `□` and `”`, and lstmtraining skips them. Both arms keep `--max_iterations` 260,980.
+- **Reference ― / – / — per scored set** (aggregate counts; report per PLAN §8.3):
+
+| Set | Lines or docs | ― | – | — |
+|---|---|---|---|---|
+| D-bench T5 (B, C) | 82 docs | 1 | 121 | 3 |
+| D-bench T4 (B) | 40 docs | 0 | 77 | 2 |
+| D-bench tables (C) | 120 docs | 0 | 6 | 0 |
+| office_val selection | 5,000 | 86 | 0 | 0 |
+| `kevarpirezikhron00haco.heldout` | 4,600 | 0 | 696 | 0 |
+| `silman` | 3,046 | 0 | 526 | 0 |
+| `brainin_v3` | 6,257 | 0 | 450 | 78 |
+| `sel` | 3,000 | 0 | 395 | 4 |
+| `yediothateva06bernuoft.heldout` | 4,600 | 0 | 362 | 7 |
+| `brainin_nli` | 4,046 | 0 | 216 | 0 |
+| `reshumot_dev` | 2,716 | 0 | 64 | 0 |
+| `olb_dev`, `olb_dev_v1_1`, `rab_dev`, `ws_dev`, `bodek` | — | 0 | 0 | 0 |
+
+- **eval's CLEAN** (§5.2) runs on these two lists, checked by both their list and labels hashes.
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
