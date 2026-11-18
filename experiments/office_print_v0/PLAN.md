@@ -77,6 +77,8 @@ The scripts are [`diagnosis/numgap.py`](diagnosis/numgap.py) and [`diagnosis/num
 3. **Tables need digit reading in cells:** short integers, amounts and %, the 416 other misses. Their dates are partial (155) or absent (91).
 ### 2.3 Development rule (fixed in the arm-registration PR, before either arm trains)
 
+> **Registered 2026-11-18 in [REGISTRATION.md](REGISTRATION.md),** which holds where it differs from this section. The deciding heocr commit is the frozen release candidate `57e58de`; `7f5e99e` gives the model's own share; main at scoring time is information only.
+
 - **Checkpoint selection:** line_fold_v1 CER on `office_val` (§5.3), my synthetic held-out set, as the R-series does.
 - **Arm decision, at document level:** sets B and C, scored with eval's D-bench scorer (`gate.doc_units` / `report.py --synth`, `line_fold_v1`), with heocr at a fixed commit and the arm's model in the OCR route.
   - **Fixed heocr commits, two of them.** pipeline's number handling is changing fast (§2.2.1). Every arm, and stock, is scored with heocr at the commit this plan's diagnosis used (`7f5e99e`) and at the latest heocr main when the arm finishes. The model's own share is the gain at `7f5e99e`. The deciding figure is the one at the latest main, because that is how heocr will ship. This replaces "rejoin on and off": the rejoin it assumed turned out not to be the lever (§2.2.1 correction).
