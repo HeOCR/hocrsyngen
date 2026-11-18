@@ -54,8 +54,14 @@ No office_val unit appears in any training part.
 
 ### 2.4 Degraded real anchor
 
-- **What:** 35,000 lines, a seeded sample (seed 20261120) of the anchor.
-- **How:** each line raster goes through one of the §5.2 photometric models, `office_scan`, `photocopy` or `phone_photo` at 50:25:15 renormalised, from hocrsyngen `749069d`, with a seeded per-line skew of up to ±1° and the line's rectified crop. Double thickening is not used (lead, 2026-11-18).
+- **What:** the first 35,000 gate-accepted lines of a seeded shuffle (seed 20261120) of the anchor. 41,000 are degraded so that enough are accepted.
+- **How** (`tasks/office-print-v0/scripts/build_degraded_anchor.py`):
+  - each line raster is upsampled ×2, because the anchor lines are about 49 px high, half the scale at which the §5.2 filters were set: a 3 px filter erases their 2 px strokes;
+  - it is skewed by up to ±1° (seeded per line);
+  - it goes through one of the §5.2 photometric models from hocrsyngen `749069d`: `office_scan`, `photocopy` or `phone_photo`, at 50:25:15 renormalised;
+  - it is rescaled by the model's dpi range over 300;
+  - a photocopy that would thicken twice is redrawn (lead, 2026-11-18).
+- **Smoke test** (200 lines): 173 accepted. office_scan 112/112, phone_photo 31/32, photocopy 30/56: the correlation gate drops thinned and doubly darkened copies. The accepted part therefore holds fewer photocopies than 25%; the realised shares are reported.
 - **Plan change:** line rasters replace PLAN §6's page rasters. The born-digital page geometry is not kept beside the lines, so a page-level homography has nothing to act on.
 - **Gates:** the same gates as O1, with the undegraded line as the clean render.
 - **Labels:** the anchor's own labels, unchanged.
