@@ -49,7 +49,7 @@ held out of `train` too. A line with a character its face cannot draw is not dra
 | Model | Geometry | Photometric | Share |
 |---|---|---|---|
 | `office_scan` | 200-400 dpi, skew up to ±3° | paper and ink levels, sometimes faint bleed-through, blur, noise, grey or Otsu or fixed-threshold binarisation, JPEG 70-92 | 50% |
-| `photocopy` | 200-300 dpi, skew up to ±2° | 1-2 generations of contrast gain, stroke thickening or thinning, toner speckle, edge shadow and banding; thin rules drop out in places; blur, JPEG 75-92 | 25% |
+| `photocopy` | 200-300 dpi, skew up to ±2° | 1-2 generations of contrast gain, stroke thickening or thinning, toner speckle (25-200 specks per million pixels, halved after dots fell inside letters like a dagesh), edge shadow and banding; thin rules drop out in places; blur, JPEG 75-92 | 25% |
 | `phone_photo` | 150-250 dpi, a keystone of up to 6°, skew up to ±3° (what the app's deskew leaves), background outside the page | uneven light, vignetting, defocus or motion blur, noise, JPEG 60-85 | 15% |
 | `clean` | 150-300 dpi | none | 10% |
 

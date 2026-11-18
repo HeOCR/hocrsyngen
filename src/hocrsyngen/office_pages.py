@@ -1115,7 +1115,7 @@ def photometric(img: Image.Image, model: str, rng: random.Random, paper_fill: in
             elif stroke == "thin":
                 img = img.filter(ImageFilter.MaxFilter(3))
             d = ImageDraw.Draw(img)
-            dens = rng.uniform(0.00005, 0.0004)
+            dens = rng.uniform(0.000025, 0.0002)  # halved 2026-11-18: denser specks sat inside letters like a dagesh
             for _ in range(int(img.width * img.height * dens)):
                 x, y, rr = rng.randrange(img.width), rng.randrange(img.height), rng.uniform(0.6, 2.2)
                 d.ellipse((x - rr, y - rr, x + rr, y + rr), fill=rng.randint(0, 90))
