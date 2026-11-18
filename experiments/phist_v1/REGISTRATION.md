@@ -1,6 +1,6 @@
 # P-hist round v1: pre-registration
 
-Written 2026-11-18, before any P-hist training. The round fine-tunes one Tesseract model for old Hebrew print (P-hist, decision 0017), using data-collection's audited pool and a Reshumot replay. All counts are aggregates, with no protected text. `tasks/` is not a git repository, so scripts are pinned by sha256.
+Written 2026-11-18, before any P-hist training. The round fine-tunes Tesseract for old Hebrew print (P-hist, decision 0017), using data-collection's audited pool and a Reshumot replay. All counts are aggregates, with no protected text. `tasks/` is not a git repository, so scripts are pinned by sha256.
 
 ## 1. Roles of the evaluation sets (lead, 2026-11-18)
 
@@ -72,32 +72,47 @@ Two label variants, both in logical order and NFC. The list order and lines are 
 - **Scope:** group D's typed pages and the early-print pages moving to typed are checked when their text exists. A hit then drops the training line.
 - **Scripts:** `phist-round-train/scripts/build_phist.py` and `r8b-tesseract/scripts/make_lstmf.py` (sha256 `540116b8…`), tesseract 5.5.3.
 
-## 3. Start model
+## 3. Arms (lead, 2026-11-18)
 
-- **Candidates:**
-  - **R7.** It trained on 95k bynli_lines_v2 lines. data-collection's audit of its 6 largest books found 13 word errors in 192 lines, about 7%; 2 books fail the bar.
-  - **The office-print v0 winner,** once the A/B is decided.
-  - **Stock tessdata_best heb.**
-- **Choice:** eval scores the three zero-shot on audit2 (P-hist dev), paired, after tonight's gate and once the office-print winner exists. The lowest CER wins.
-- **Labels:** the winner fixes the label variant (§2.3).
+Two arms train now, in parallel, so the round does not wait for the office-print A/B. An arm starting from the office-print winner is registered separately once that A/B is decided.
 
-## 4. Training (one heocr-remote cpu pod)
+| Arm | Start model | sha256 | List | Labels |
+|---|---|---|---|---|
+| **r7** | R7 (`r7-tesseract-real/models/r7/heb.traineddata`) | `95faab81fba6fe57…` | `phist_r7.list` | `r7` |
+| **stock** | stock tessdata_best heb | `dbaa827aea6bc212…` | `phist_stockfold.list` | `stockfold` |
 
-- **Recipe:** lstmtraining `--continue_from` the start model's LSTM, `--old_traineddata` and `--traineddata` the start model, lr 1e-4 with `--reset_learning_rate`, `--target_error_rate 0.01`, no eval list.
-- **Iterations:** **76,946**, one pass of the list.
-- **Snapshots:** every 20 minutes of wall time, as `.traineddata`.
-- **Machine and build:** a 32-vCPU `cpu3c` pod, OMP_THREAD_LIMIT=4, tesseract 5.5.3 built from its tag (commit `db0ec62f…`). The pod checks every input hash before training.
+- **R7's data:** it trained on 95k bynli_lines_v2 lines. data-collection's audit of its 6 largest books found 13 word errors in 192 lines, about 7%; 2 books fail the bar.
+- **Each arm keeps its start model's own unicharset,** with no layer surgery.
+- **The two lists hold the same lines in the same order.** Only the dash and maqaf labels differ (§2.3).
+
+## 4. Training (one heocr-remote cpu pod, both arms side by side)
+
+- **Recipe, each arm:** lstmtraining `--continue_from` its start model's LSTM, `--old_traineddata` and `--traineddata` its start model, lr 1e-4 with `--reset_learning_rate`, `--target_error_rate 0.01`, no eval list.
+- **Iterations:** **76,946**, one pass of its list.
+- **Snapshots:** every **10 minutes** of wall time, each converted to `.traineddata` on the pod and pulled back. There's also a final model.
+- **Machine and build:**
+  - one 32-vCPU `cpu3c` pod, both arms on the same hardware;
+  - OMP_THREAD_LIMIT=4 per arm;
+  - tesseract 5.5.3 built from its tag (commit `db0ec62f…`);
+  - every starter, list and labels sha256 is checked on the pod before training.
+- **Scripts:**
+  - `phist-round-train/remote/train_phist.sh`, staged by `phist-round-train/scripts/stage_remote.py` under the pd_scans open root;
+  - the manifest sha256 goes in the result report.
+- **Stop:** training stops at 11 h 20 min at the latest. A timed-out arm says so in its run.json and can be resumed from its final checkpoint.
 
 ## 5. Decision rule
 
-### 5.1 Snapshot selection: audit2 only
+### 5.1 Snapshot and arm selection: audit2 only
 
-- **Scoring:** eval scores every snapshot on audit2 with its P-hist scorer under line_fold_v1. The lowest CER is the round's model; ties go to the earlier snapshot.
+- **Scorer:** eval's P-hist scorer on audit2, under line_fold_v1 with score_lines, not lstmtraining's BCER.
+- **Scope:** it scores every snapshot of both arms, and each arm's start model zero-shot.
+- **Per arm:** the lowest-CER snapshot is that arm's model. Ties go to the earlier snapshot.
+- **Across arms:** the arm whose selected model has the lower audit2 CER is the round's model, compared paired by eval.
 - **Nothing else selects.**
 
 ### 5.2 Claim: P-hist test only
 
-- **Sets:** on the 22-book P-hist test, at most 3 seeded pages per book, the selected model is scored against:
+- **Sets:** on the 22-book P-hist test, at most 3 seeded pages per book, the round's model is scored once against:
   - the start model;
   - stock tessdata_best heb, always reported.
 - **Method:** eval's paired page-level bootstrap.
