@@ -243,4 +243,82 @@ The print-and-scan pack PS-v1 (report-only at eval), the mid-century test set, t
 
 - **eval's CLEAN** (§5.2) runs on these two lists, checked by both their list and labels hashes.
 
+
+## Amendment 2 (2026-11-18, before any arm started): decontaminated lists, lists_v2
+
+- **Why:** eval's official CLEAN (check_train_overlap, §5.2) on the amendment 1 lists found hits. Both arms were **NOT CLEAN**:
+  - arm A: 4,624 lines (1.8%);
+  - arm B: 2,265 unique paths (3,231 list lines, 1.2%).
+  - The ruling (lead) was to drop them, not justify them.
+- **Hits by target** (aggregate counts only):
+  - dbench_text_pool;
+  - pmod_eval_pages, arm A only;
+  - pmod_holdout_plenary;
+  - midcentury_test_pages;
+  - wave1, arm A only;
+  - vendor_midcentury;
+  - a few PS-v1 lines, R-series dev lines and OLB dev lines.
+
+### Where the text came from
+
+1. **`pool_v1` (§2.1):** the reshumotlines_v2 clean3 pool behind O1, the anchor and the degraded anchor.
+   - **Hits:** 730 of 45,980 lines.
+   - **By target:** dbench_text_pool 566, pmod_holdout_plenary 171, vendor_midcentury 8, PS-v1 6.
+   - **Cause:** `build_pool.py` dropped lines on eval's reservations, the hash fixtures and the S17a pools, but never checked them against the official CLEAN targets.
+2. **Page assembly (§2.2):** O1's hits on pmod_eval_pages (1,698) and wave1 (541) came from no single pool line.
+   - Pool lines hit those two targets 0 times.
+   - Joining and re-wrapping pool lines into cells makes new word 6-grams across line boundaries.
+   - So a clean pool alone does not give clean crops.
+3. **OLB train (§2.5):** 1,535 of 136,903 lines hit.
+   - **By target:** vendor_midcentury 755, midcentury_test_pages 691, dbench_text_pool 660, pmod_holdout_plenary 359, PS-v1 8, OLB dev 2.
+
+### Fix upstream, so future builds come out clean on their own
+
+`tasks/` is not a git repository, so each script's sha256 is given.
+
+| Script | sha256 | Change |
+|---|---|---|
+| `official_targets.py` | `a7c4b6c3…e9d53` | New. Wraps `check_train_overlap.targets()`: every target eval's CLEAN holds, restricted ones included. Counts only, never text. |
+| `build_pool.py` | `5d741b17…a85cb9` | Drops a pool line that shares a word 6-gram with any official target. |
+| `office_gates.py` | `b03bba24…f3e2ac` | Rejects a crop whose own text hits a target. This covers the cross-line 6-grams. |
+| `build_lists.py` | `401837a1…18fe6` | `stage_real` drops OLB lines that hit; `lists_v2` is the rebuild below. |
+
+### The rebuild: `lists_v2`
+
+Nothing is regenerated and no `.lstmf` file changes; only the lists change.
+
+1. **Drop:** every path in eval's drop file goes.
+   - File: `eval-domains/intermediates/clean_office_print_v0/drop_paths.txt`, 5,507 paths, sha256 `597a7403a38fe7a051e062c3a8ae9975723725b16323727db3cffb112bd21b77`.
+   - Per part: O1 2,683, anchor 730, degraded anchor 559, OLB 1,535.
+   - Our own `decontam.py` on the amendment 1 lists gives the same 5,507 paths, with 0 differences.
+2. **Trim rule:**
+   - Arm A keeps its registered source mix. Every part is scaled by one factor, s = min over O1, anchor and degraded anchor of (clean lines / registered lines) = **0.977642**. O1 is the scarcest part.
+   - Each part gets n = floor(registered × s) lines, drawn by a seeded sample (20261125). A part with exactly n clean lines keeps them all.
+   - OLB has spare clean lines. It keeps its own sample seed, 20261121.
+3. **Order:**
+   - Arm A is shuffled with its registered seed, 20261122.
+   - Arm B is all clean real lines (anchor + OLB), recycled with seeds 20261123 + cycle until it reaches len(A), as registered.
+   - So the arms are equal in length, and the A/B still tests one variable.
+
+| Part | Registered | Dropped | Clean | Arm A, lists_v2 | Share of A (registered → v2) |
+|---|---|---|---|---|---|
+| O1 | 120,000 | 2,683 | 117,317 | 117,317 | 0.4598 → 0.4598 |
+| anchor | 45,980 | 730 | 45,250 | 44,951 | 0.1762 → 0.1762 |
+| degraded anchor | 35,000 | 559 | 34,441 | 34,217 | 0.1341 → 0.1341 |
+| OLB | 60,000 (sample of 136,903) | 1,535 of 136,903 | 135,368 | 58,658 | 0.2299 → 0.2299 |
+| **arm A** | 260,980 | | | **255,143** | |
+| **arm B** | 260,980 | | 45,250 anchor + 135,368 OLB = 180,618 | **255,143** (180,618 once, then 74,525 of a second shuffle) | |
+
+| List | Lines | list sha256 (replaces amendment 1) | labels sha256 |
+|---|---|---|---|
+| **arm A: `lists_v2/arm_a.list`** | 255,143 | **`79c92cf2f92e763d1febd3a9e1778fe4a342053a25eab3f6a7e1acaaa67006c5`** | **`27dd590ea0d55f9ed7392f512cbd475b5442386e604332ae75db8427d674a298`** |
+| **arm B: `lists_v2/arm_b.list`** | 255,143 | **`911443afb3035a7c5cff25865a37eaef655bd4e1f8d579eac6f628a3fb19100f`** | **`5d52e889d38362d31ffc2abf98892d1e837c70981349d1d604e83c54b86df3d2`** |
+
+- **Iterations:** both arms train for **255,143** iterations, one pass over arm A's list (replaces 260,980 in §3).
+- **Self-check:** `decontam.py` on both lists_v2 lists finds **0** hitting lines. eval's official CLEAN on the two hashes above is still the precondition (§5.2).
+- **Labels stock's unicharset cannot encode,** which lstmtraining skips:
+  - arm A: 1,352 lines (**0.53%**);
+  - arm B: 501 distinct lines, 694 list lines (**0.27%**).
+- **office_val selection: unchanged,** as registered. It is not training, and §4.1 uses it only to pick a snapshot. Its source pool, `pool_val`, has 54 lines hitting the targets (dbench_text_pool 42, pmod_holdout_plenary 9, vendor_midcentury 3). The lead may rule otherwise before training starts.
+
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
