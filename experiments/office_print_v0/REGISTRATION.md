@@ -319,6 +319,30 @@ Nothing is regenerated and no `.lstmf` file changes; only the lists change.
 - **Labels stock's unicharset cannot encode,** which lstmtraining skips:
   - arm A: 1,352 lines (**0.53%**);
   - arm B: 501 distinct lines, 694 list lines (**0.27%**).
-- **office_val selection: unchanged,** as registered. It is not training, and §4.1 uses it only to pick a snapshot. Its source pool, `pool_val`, has 54 lines hitting the targets (dbench_text_pool 42, pmod_holdout_plenary 9, vendor_midcentury 3). The lead may rule otherwise before training starts.
+- **office_val selection, decontaminated (lead ruling):** selecting snapshots on text that overlaps the test targets is a soft leak, so hitting crops are dropped from the selection set too.
+  - **Rule:** the same as the arms. A crop goes when its text shares a word 6-gram with an official CLEAN target (`decontam.py`). Order is kept.
+  - **Hits:** 149 of 5,000 crops. pool_val itself has only 54 hitting lines; the rest are the cross-line 6-grams described above.
+  - **By target:** pmod_eval_pages 82, dbench_text_pool 59, midcentury_test_pages 49, vendor_midcentury 31, wave1 22, pmod_holdout_plenary 14.
+
+| Selection set | Lines | list sha256 | labels sha256 |
+|---|---|---|---|
+| amendment 1: `lists_v1/office_val_sel.list` | 5,000 | `1c3efe44f8f2265a0ffdb883f02ea98ae5dc632ce7fed0d60037d90d3533f426` | `f80a5f0d…7ee40` |
+| **amendment 2: `lists_v2/office_val_sel.list`** | **4,851** | **`d77a7fa79c398208bfabe51db4cd982190bcdd9233eed5bbad1d1cec8ea88e51`** | **`7b0432ee2a183729f7df21f7d609f00bd0800314c77b0504a14dff5e828a88d8`** |
+
+  - **Self-check:** `decontam.py` finds 0 hitting lines in the new set. eval's CLEAN re-run covers it too.
+  - The §4.1 selection rule is otherwise unchanged.
+
+### Where the arms run (lead, 2026-11-18)
+
+- **Machine:** one heocr-remote `cpu` pod (RunPod `cpu3c`, 32 vCPUs, 64 GB). Both arms run side by side on it, so they share the same hardware.
+- **Threads:** pinned at `OMP_THREAD_LIMIT=4` per arm.
+- **Tesseract:** 5.5.3, built on the pod from the upstream tag (commit `6951ffe1…`). Any other version is refused.
+- **Before training:** the pod checks the starter sha256, both lists' sha256 and both labels sha256.
+- **Input category:** the real lines (anchor, degraded anchor, OLB) are Reshumot, PD-IL; US status is not asserted. They go under the `pd_scans` open root.
+- **Pulled back per arm:**
+  - the 20-minute snapshots as `.traineddata`, because §4.1 selects on them;
+  - the final model;
+  - the training log and the BCER trace.
+- The pod type and run id will be recorded in the result report.
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
