@@ -194,4 +194,33 @@ The print-and-scan pack PS-v1 (report-only at eval), the mid-century test set, t
   - CC0 synthetic data and recipe;
   - the decision-0016 Wikisource credit in the NOTICE and card (§2.5).
 
+## Amendment 1 (2026-11-18, before any arm started): arm lists rebuilt with real paths
+
+- **What was wrong:** in the lists of §2.6, the 45,980 anchor lines and the 60,000 OLB lines named `.lstmf` files that do not exist. So did OLB's `train_list.txt`, which holds relative `.png` paths.
+- **No data changed:**
+  - same lines, same seeds, same order rules;
+  - only the paths of the real parts and the two list hashes change.
+- **The key lists are not training inputs.** clean3, the OLB lists and the R-series dev lists name s16c `.lstmf` paths only as keys. Tools read the `.png` or `.gt.txt` beside each key, and every run builds its own `.lstmf`.
+- **Fresh conversion:**
+  - all 45,980 anchor lines and all 136,903 OLB train lines, from their `.png` and logical `.gt.txt`;
+  - into `tasks/office-print-v0/lists_v1/lstmf_real/`;
+  - with the same `r8b-tesseract/scripts/make_lstmf.py` used for O1 and the degraded anchor (sha256 `540116b891b7b43ffa961c2a409f1ec56b13b6adc8a67fc329ad843075cbce88`; `tasks/` is not a git repository) and tesseract 5.5.3;
+  - 182,883 of 182,883 converted.
+- **Label check, every line:** each `.gt.txt` against its manifest text. **0 mismatches** in 45,980 anchor lines and 0 in 136,903 OLB train lines; no label is missing.
+- **Guard:** `build_lists.py` now asserts that every path in every list exists.
+
+| List | Lines | sha256 (replaces §2.6) |
+|---|---|---|
+| **arm A: `lists_v1/arm_a.list`** | 260,980 | **`4bc44c7ddd2707c8967db94541faedb73625eb78648bf1866c3a1dccc53d53c9`** |
+| **arm B: `lists_v1/arm_b.list`** | 260,980 (182,883 real lines once, then 78,097 of a second shuffle) | **`c6aa4799c8a286365288242e86017167fc52f5f13fd4ecdfebef8a5394ef9332`** |
+| O1, degraded anchor, office_val selection | unchanged | unchanged (§2.6) |
+
+- **Labels stock's unicharset cannot encode** (no layer surgery, §3):
+  - arm A: 6,944 distinct lines (2.66%);
+  - arm B: 2,875 (1.57%);
+  - mostly `―` (U+2015, in Hebrew year ranges), `–`, a few Latin letters and `□`.
+  - lstmtraining skips such lines and does not fail. Both arms keep the same `--max_iterations` (260,980), so they still run equal iterations.
+  - Folding `―` is left for the next round, so these lists stay as eval checks them.
+- **eval's CLEAN** (§5.2) runs on these two hashes.
+
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
