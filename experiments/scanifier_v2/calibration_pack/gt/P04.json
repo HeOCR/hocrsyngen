@@ -1,0 +1,2493 @@
+{
+ "page": "P04",
+ "title": "table",
+ "size_px": [
+  4961,
+  7016
+ ],
+ "lines": [
+  {
+   "id": "P04_0000",
+   "block": "p4_title",
+   "text": "יוכל למצוא חן בעיני",
+   "box": [
+    3437,
+    567,
+    4441,
+    742
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 16,
+   "weight": 700
+  },
+  {
+   "id": "P04_0001",
+   "block": "p4_r00_c0",
+   "text": "מס'",
+   "box": [
+    4278,
+    831,
+    4406,
+    940
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 700
+  },
+  {
+   "id": "P04_0002",
+   "block": "p4_r00_c1",
+   "text": "תאריך",
+   "box": [
+    3866,
+    831,
+    4075,
+    940
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 700
+  },
+  {
+   "id": "P04_0003",
+   "block": "p4_r00_c2",
+   "text": "פרטים",
+   "box": [
+    3207,
+    831,
+    3414,
+    940
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 700
+  },
+  {
+   "id": "P04_0004",
+   "block": "p4_r00_c3",
+   "text": "כמות",
+   "box": [
+    1309,
+    831,
+    1477,
+    940
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 700
+  },
+  {
+   "id": "P04_0005",
+   "block": "p4_r00_c4",
+   "text": "סכום",
+   "box": [
+    890,
+    831,
+    1052,
+    940
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 700
+  },
+  {
+   "id": "P04_0006",
+   "block": "p4_r01_c0",
+   "text": "1",
+   "box": [
+    4368,
+    989,
+    4406,
+    1098
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0007",
+   "block": "p4_r01_c1",
+   "text": "04.01.1977",
+   "box": [
+    3714,
+    989,
+    4075,
+    1098
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0008",
+   "block": "p4_r01_c2",
+   "text": "הבוחנים, כי לא ימצאו בו",
+   "box": [
+    2693,
+    989,
+    3414,
+    1098
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0009",
+   "block": "p4_r01_c3",
+   "text": "103",
+   "box": [
+    1357,
+    989,
+    1477,
+    1098
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0010",
+   "block": "p4_r01_c4",
+   "text": "44,644.64",
+   "box": [
+    725,
+    989,
+    1052,
+    1098
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0011",
+   "block": "p4_r02_c0",
+   "text": "2",
+   "box": [
+    4365,
+    1147,
+    4406,
+    1256
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0012",
+   "block": "p4_r02_c1",
+   "text": "24.04.1966",
+   "box": [
+    3711,
+    1147,
+    4075,
+    1256
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0013",
+   "block": "p4_r02_c2",
+   "text": "את השטה הפדגוגית.",
+   "box": [
+    2791,
+    1147,
+    3414,
+    1256
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0014",
+   "block": "p4_r02_c3",
+   "text": "198",
+   "box": [
+    1357,
+    1147,
+    1477,
+    1256
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0015",
+   "block": "p4_r02_c4",
+   "text": "77,637.25",
+   "box": [
+    725,
+    1147,
+    1052,
+    1256
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0016",
+   "block": "p4_r03_c0",
+   "text": "3",
+   "box": [
+    4365,
+    1305,
+    4406,
+    1414
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0017",
+   "block": "p4_r03_c1",
+   "text": "18.01.1974",
+   "box": [
+    3718,
+    1305,
+    4075,
+    1414
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0018",
+   "block": "p4_r03_c2",
+   "text": "הנך אומר, כי ממורה עברי ידרש אך הנדרש מכל",
+   "box": [
+    1998,
+    1305,
+    3414,
+    1414
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0019",
+   "block": "p4_r03_c3",
+   "text": "227",
+   "box": [
+    1354,
+    1305,
+    1477,
+    1414
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0020",
+   "block": "p4_r03_c4",
+   "text": "66,855.65",
+   "box": [
+    725,
+    1305,
+    1052,
+    1414
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0021",
+   "block": "p4_r04_c0",
+   "text": "4",
+   "box": [
+    4365,
+    1463,
+    4406,
+    1572
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0022",
+   "block": "p4_r04_c1",
+   "text": "19.06.1962",
+   "box": [
+    3714,
+    1463,
+    4075,
+    1572
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0023",
+   "block": "p4_r04_c2",
+   "text": "מורה, היינו, לדעת שפת",
+   "box": [
+    2713,
+    1463,
+    3414,
+    1572
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0024",
+   "block": "p4_r04_c3",
+   "text": "228",
+   "box": [
+    1354,
+    1463,
+    1477,
+    1572
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0025",
+   "block": "p4_r04_c4",
+   "text": "51,357.64",
+   "box": [
+    729,
+    1463,
+    1052,
+    1572
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0026",
+   "block": "p4_r05_c0",
+   "text": "5",
+   "box": [
+    4365,
+    1621,
+    4406,
+    1730
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0027",
+   "block": "p4_r05_c1",
+   "text": "07.11.1966",
+   "box": [
+    3718,
+    1621,
+    4075,
+    1730
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0028",
+   "block": "p4_r05_c2",
+   "text": "רוסיה וחשבון,",
+   "box": [
+    3010,
+    1621,
+    3414,
+    1730
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0029",
+   "block": "p4_r05_c3",
+   "text": "241",
+   "box": [
+    1357,
+    1621,
+    1477,
+    1730
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0030",
+   "block": "p4_r05_c4",
+   "text": "98,838.50",
+   "box": [
+    725,
+    1621,
+    1052,
+    1730
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0031",
+   "block": "p4_r06_c0",
+   "text": "6",
+   "box": [
+    4365,
+    1779,
+    4406,
+    1888
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0032",
+   "block": "p4_r06_c1",
+   "text": "08.05.1979",
+   "box": [
+    3711,
+    1779,
+    4075,
+    1888
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0033",
+   "block": "p4_r06_c2",
+   "text": "שבלעדיהם אי-אפשר לאדם",
+   "box": [
+    2592,
+    1779,
+    3414,
+    1888
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0034",
+   "block": "p4_r06_c3",
+   "text": "157",
+   "box": [
+    1357,
+    1779,
+    1477,
+    1888
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0035",
+   "block": "p4_r06_c4",
+   "text": "93,967.45",
+   "box": [
+    725,
+    1779,
+    1052,
+    1888
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0036",
+   "block": "p4_r07_c0",
+   "text": "7",
+   "box": [
+    4365,
+    1937,
+    4406,
+    2046
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0037",
+   "block": "p4_r07_c1",
+   "text": "19.08.1978",
+   "box": [
+    3714,
+    1937,
+    4075,
+    2046
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0038",
+   "block": "p4_r07_c2",
+   "text": "להיות מורה ברוסיא. אך חפץ",
+   "box": [
+    2569,
+    1937,
+    3414,
+    2046
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0039",
+   "block": "p4_r07_c3",
+   "text": "83",
+   "box": [
+    1395,
+    1937,
+    1477,
+    2046
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0040",
+   "block": "p4_r07_c4",
+   "text": "59,963.89",
+   "box": [
+    725,
+    1937,
+    1052,
+    2046
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0041",
+   "block": "p4_r08_c0",
+   "text": "8",
+   "box": [
+    4365,
+    2095,
+    4406,
+    2204
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0042",
+   "block": "p4_r08_c1",
+   "text": "15.08.1967",
+   "box": [
+    3714,
+    2095,
+    4075,
+    2204
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0043",
+   "block": "p4_r08_c2",
+   "text": "אנכי לדעת, הידרשו שפת רוסיא וחשבון מאת איש אחד אשר",
+   "box": [
+    1659,
+    2095,
+    3414,
+    2204
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0044",
+   "block": "p4_r08_c3",
+   "text": "201",
+   "box": [
+    1357,
+    2095,
+    1477,
+    2204
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0045",
+   "block": "p4_r08_c4",
+   "text": "82,150.63",
+   "box": [
+    729,
+    2095,
+    1052,
+    2204
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0046",
+   "block": "p4_r09_c0",
+   "text": "9",
+   "box": [
+    4365,
+    2253,
+    4406,
+    2362
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0047",
+   "block": "p4_r09_c1",
+   "text": "08.10.1984",
+   "box": [
+    3714,
+    2253,
+    4075,
+    2362
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0048",
+   "block": "p4_r09_c2",
+   "text": "יבוא ללמד לנו שפת",
+   "box": [
+    2827,
+    2253,
+    3414,
+    2362
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0049",
+   "block": "p4_r09_c3",
+   "text": "119",
+   "box": [
+    1361,
+    2253,
+    1477,
+    2362
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0050",
+   "block": "p4_r09_c4",
+   "text": "66,977.05",
+   "box": [
+    725,
+    2253,
+    1052,
+    2362
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0051",
+   "block": "p4_r10_c0",
+   "text": "10",
+   "box": [
+    4327,
+    2411,
+    4406,
+    2520
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0052",
+   "block": "p4_r10_c1",
+   "text": "03.11.1977",
+   "box": [
+    3718,
+    2411,
+    4075,
+    2520
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0053",
+   "block": "p4_r10_c2",
+   "text": "ערב, פרס",
+   "box": [
+    3121,
+    2411,
+    3414,
+    2520
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0054",
+   "block": "p4_r10_c3",
+   "text": "40",
+   "box": [
+    1395,
+    2411,
+    1477,
+    2520
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0055",
+   "block": "p4_r10_c4",
+   "text": "16,626.86",
+   "box": [
+    729,
+    2411,
+    1052,
+    2520
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0056",
+   "block": "p4_r11_c0",
+   "text": "11",
+   "box": [
+    4331,
+    2569,
+    4406,
+    2678
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0057",
+   "block": "p4_r11_c1",
+   "text": "14.07.1950",
+   "box": [
+    3714,
+    2569,
+    4075,
+    2678
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0058",
+   "block": "p4_r11_c2",
+   "text": "וחינא, או אפילו שפת צרפת ואנגליא? האין מעשים",
+   "box": [
+    1951,
+    2569,
+    3414,
+    2678
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0059",
+   "block": "p4_r11_c3",
+   "text": "34",
+   "box": [
+    1395,
+    2569,
+    1477,
+    2678
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0060",
+   "block": "p4_r11_c4",
+   "text": "23,845.16",
+   "box": [
+    729,
+    2569,
+    1052,
+    2678
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0061",
+   "block": "p4_r12_c0",
+   "text": "12",
+   "box": [
+    4327,
+    2727,
+    4406,
+    2836
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0062",
+   "block": "p4_r12_c1",
+   "text": "26.10.1968",
+   "box": [
+    3714,
+    2727,
+    4075,
+    2836
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0063",
+   "block": "p4_r12_c2",
+   "text": "אנשים שלא ידברו היטב",
+   "box": [
+    2711,
+    2727,
+    3414,
+    2836
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0064",
+   "block": "p4_r12_c3",
+   "text": "135",
+   "box": [
+    1357,
+    2727,
+    1477,
+    2836
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0065",
+   "block": "p4_r12_c4",
+   "text": "24,513.69",
+   "box": [
+    729,
+    2727,
+    1052,
+    2836
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0066",
+   "block": "p4_r13_c0",
+   "text": "13",
+   "box": [
+    4327,
+    2885,
+    4406,
+    2994
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0067",
+   "block": "p4_r13_c1",
+   "text": "28.11.1999",
+   "box": [
+    3718,
+    2885,
+    4075,
+    2994
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0068",
+   "block": "p4_r13_c2",
+   "text": "בשפת-רוסיא? ובמה גרועה",
+   "box": [
+    2623,
+    2885,
+    3414,
+    2994
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0069",
+   "block": "p4_r13_c3",
+   "text": "68",
+   "box": [
+    1395,
+    2885,
+    1477,
+    2994
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0070",
+   "block": "p4_r13_c4",
+   "text": "11,560.89",
+   "box": [
+    732,
+    2885,
+    1052,
+    2994
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0071",
+   "block": "p4_r14_c0",
+   "text": "14",
+   "box": [
+    4327,
+    3043,
+    4406,
+    3152
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0072",
+   "block": "p4_r14_c1",
+   "text": "07.02.1970",
+   "box": [
+    3711,
+    3043,
+    4075,
+    3152
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0073",
+   "block": "p4_r14_c2",
+   "text": "שפת-עבר משפת ערב, פרס, חינא וצרפת,",
+   "box": [
+    2179,
+    3043,
+    3414,
+    3152
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0074",
+   "block": "p4_r14_c3",
+   "text": "214",
+   "box": [
+    1357,
+    3043,
+    1477,
+    3152
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0075",
+   "block": "p4_r14_c4",
+   "text": "44,644.08",
+   "box": [
+    725,
+    3043,
+    1052,
+    3152
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0076",
+   "block": "p4_r15_c0",
+   "text": "15",
+   "box": [
+    4327,
+    3201,
+    4406,
+    3310
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0077",
+   "block": "p4_r15_c1",
+   "text": "25.10.1990",
+   "box": [
+    3714,
+    3201,
+    4075,
+    3310
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0078",
+   "block": "p4_r15_c2",
+   "text": "שכל מורה אותה ידע בהכרח להיות",
+   "box": [
+    2392,
+    3201,
+    3414,
+    3310
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0079",
+   "block": "p4_r15_c3",
+   "text": "83",
+   "box": [
+    1395,
+    3201,
+    1477,
+    3310
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0080",
+   "block": "p4_r15_c4",
+   "text": "50,019.67",
+   "box": [
+    729,
+    3201,
+    1052,
+    3310
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0081",
+   "block": "p4_r16_c0",
+   "text": "16",
+   "box": [
+    4327,
+    3359,
+    4406,
+    3468
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0082",
+   "block": "p4_r16_c1",
+   "text": "08.12.1996",
+   "box": [
+    3714,
+    3359,
+    4075,
+    3468
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0083",
+   "block": "p4_r16_c2",
+   "text": "מורה שפת רוסיא? ולא עוד",
+   "box": [
+    2630,
+    3359,
+    3414,
+    3468
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0084",
+   "block": "p4_r16_c3",
+   "text": "86",
+   "box": [
+    1395,
+    3359,
+    1477,
+    3468
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0085",
+   "block": "p4_r16_c4",
+   "text": "9,498.41",
+   "box": [
+    770,
+    3359,
+    1052,
+    3468
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0086",
+   "block": "p4_r17_c0",
+   "text": "17",
+   "box": [
+    4327,
+    3517,
+    4406,
+    3626
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0087",
+   "block": "p4_r17_c1",
+   "text": "24.10.1999",
+   "box": [
+    3714,
+    3517,
+    4075,
+    3626
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0088",
+   "block": "p4_r17_c2",
+   "text": "אלא שבשפת-עבר, במלאכתו",
+   "box": [
+    2547,
+    3517,
+    3414,
+    3626
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0089",
+   "block": "p4_r17_c3",
+   "text": "223",
+   "box": [
+    1354,
+    3517,
+    1477,
+    3626
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0090",
+   "block": "p4_r17_c4",
+   "text": "63,923.01",
+   "box": [
+    729,
+    3517,
+    1052,
+    3626
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0091",
+   "block": "p4_r18_c0",
+   "text": "18",
+   "box": [
+    4327,
+    3675,
+    4406,
+    3784
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0092",
+   "block": "p4_r18_c1",
+   "text": "26.10.1974",
+   "box": [
+    3714,
+    3675,
+    4075,
+    3784
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0093",
+   "block": "p4_r18_c2",
+   "text": "האמיתית, אין",
+   "box": [
+    3015,
+    3675,
+    3414,
+    3784
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0094",
+   "block": "p4_r18_c3",
+   "text": "232",
+   "box": [
+    1354,
+    3675,
+    1477,
+    3784
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0095",
+   "block": "p4_r18_c4",
+   "text": "34,511.45",
+   "box": [
+    732,
+    3675,
+    1052,
+    3784
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0096",
+   "block": "p4_r19_c0",
+   "text": "19",
+   "box": [
+    4327,
+    3833,
+    4406,
+    3942
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0097",
+   "block": "p4_r19_c1",
+   "text": "02.03.1974",
+   "box": [
+    3711,
+    3833,
+    4075,
+    3942
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0098",
+   "block": "p4_r19_c2",
+   "text": "בוחנים אותו כלל?",
+   "box": [
+    2887,
+    3833,
+    3414,
+    3942
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0099",
+   "block": "p4_r19_c3",
+   "text": "153",
+   "box": [
+    1357,
+    3833,
+    1477,
+    3942
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0100",
+   "block": "p4_r19_c4",
+   "text": "53,853.02",
+   "box": [
+    725,
+    3833,
+    1052,
+    3942
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0101",
+   "block": "p4_r20_c0",
+   "text": "20",
+   "box": [
+    4324,
+    3991,
+    4406,
+    4100
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0102",
+   "block": "p4_r20_c1",
+   "text": "22.06.1967",
+   "box": [
+    3711,
+    3991,
+    4075,
+    4100
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0103",
+   "block": "p4_r20_c2",
+   "text": "מה היית אומר, אם באיזו עיר, למשל, היה בא",
+   "box": [
+    2103,
+    3991,
+    3414,
+    4100
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0104",
+   "block": "p4_r20_c3",
+   "text": "141",
+   "box": [
+    1361,
+    3991,
+    1477,
+    4100
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0105",
+   "block": "p4_r20_c4",
+   "text": "70,237.14",
+   "box": [
+    729,
+    3991,
+    1052,
+    4100
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0106",
+   "block": "p4_r21_c0",
+   "text": "21",
+   "box": [
+    4327,
+    4149,
+    4406,
+    4258
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0107",
+   "block": "p4_r21_c1",
+   "text": "27.09.1979",
+   "box": [
+    3711,
+    4149,
+    4075,
+    4258
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0108",
+   "block": "p4_r21_c2",
+   "text": "איש לקבל מאת הרב",
+   "box": [
+    2805,
+    4149,
+    3414,
+    4258
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0109",
+   "block": "p4_r21_c3",
+   "text": "13",
+   "box": [
+    1398,
+    4149,
+    1477,
+    4258
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0110",
+   "block": "p4_r21_c4",
+   "text": "33,808.05",
+   "box": [
+    725,
+    4149,
+    1052,
+    4258
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0111",
+   "block": "p4_r22_c0",
+   "text": "22",
+   "box": [
+    4324,
+    4307,
+    4406,
+    4416
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0112",
+   "block": "p4_r22_c1",
+   "text": "11.08.1956",
+   "box": [
+    3718,
+    4307,
+    4075,
+    4416
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0113",
+   "block": "p4_r22_c2",
+   "text": "סמיכה על שחיטת עופות והרב",
+   "box": [
+    2529,
+    4307,
+    3414,
+    4416
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0114",
+   "block": "p4_r22_c3",
+   "text": "176",
+   "box": [
+    1357,
+    4307,
+    1477,
+    4416
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0115",
+   "block": "p4_r22_c4",
+   "text": "74,325.36",
+   "box": [
+    725,
+    4307,
+    1052,
+    4416
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0116",
+   "block": "p4_r23_c0",
+   "text": "23",
+   "box": [
+    4324,
+    4465,
+    4406,
+    4574
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0117",
+   "block": "p4_r23_c1",
+   "text": "21.02.1952",
+   "box": [
+    3714,
+    4465,
+    4075,
+    4574
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0118",
+   "block": "p4_r23_c2",
+   "text": "היה מוביל אותו אל בית-פקידות",
+   "box": [
+    2490,
+    4465,
+    3414,
+    4574
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0119",
+   "block": "p4_r23_c3",
+   "text": "217",
+   "box": [
+    1357,
+    4465,
+    1477,
+    4574
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0120",
+   "block": "p4_r23_c4",
+   "text": "19,048.76",
+   "box": [
+    729,
+    4465,
+    1052,
+    4574
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0121",
+   "block": "p4_r24_c0",
+   "text": "24",
+   "box": [
+    4324,
+    4623,
+    4406,
+    4732
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0122",
+   "block": "p4_r24_c1",
+   "text": "25.04.1965",
+   "box": [
+    3711,
+    4623,
+    4075,
+    4732
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0123",
+   "block": "p4_r24_c2",
+   "text": "עושי-המלאכה והיה מבקש לבחון אותואם יודע",
+   "box": [
+    2065,
+    4623,
+    3414,
+    4732
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0124",
+   "block": "p4_r24_c3",
+   "text": "122",
+   "box": [
+    1357,
+    4623,
+    1477,
+    4732
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0125",
+   "block": "p4_r24_c4",
+   "text": "61,883.79",
+   "box": [
+    729,
+    4623,
+    1052,
+    4732
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0126",
+   "block": "p4_r25_c0",
+   "text": "25",
+   "box": [
+    4324,
+    4781,
+    4406,
+    4890
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0127",
+   "block": "p4_r25_c1",
+   "text": "07.08.1989",
+   "box": [
+    3711,
+    4781,
+    4075,
+    4890
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0128",
+   "block": "p4_r25_c2",
+   "text": "הוא לתפור מנעלים, וכיון שהיה עומד",
+   "box": [
+    2344,
+    4781,
+    3414,
+    4890
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0129",
+   "block": "p4_r25_c3",
+   "text": "84",
+   "box": [
+    1395,
+    4781,
+    1477,
+    4890
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0130",
+   "block": "p4_r25_c4",
+   "text": "24,693.51",
+   "box": [
+    729,
+    4781,
+    1052,
+    4890
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0131",
+   "block": "p4_r26_c0",
+   "text": "26",
+   "box": [
+    4324,
+    4939,
+    4406,
+    5048
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0132",
+   "block": "p4_r26_c1",
+   "text": "16.03.1994",
+   "box": [
+    3714,
+    4939,
+    4075,
+    5048
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0133",
+   "block": "p4_r26_c2",
+   "text": "בנסיון תפירת המנעלים",
+   "box": [
+    2726,
+    4939,
+    3414,
+    5048
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0134",
+   "block": "p4_r26_c3",
+   "text": "61",
+   "box": [
+    1398,
+    4939,
+    1477,
+    5048
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0135",
+   "block": "p4_r26_c4",
+   "text": "97,326.39",
+   "box": [
+    725,
+    4939,
+    1052,
+    5048
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0136",
+   "block": "p4_r27_c0",
+   "text": "27",
+   "box": [
+    4324,
+    5097,
+    4406,
+    5206
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0137",
+   "block": "p4_r27_c1",
+   "text": "11.10.1977",
+   "box": [
+    3721,
+    5097,
+    4075,
+    5206
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0138",
+   "block": "p4_r27_c2",
+   "text": "היה הרב נותן לו כתב-סמיכה על שחיטה?!",
+   "box": [
+    2194,
+    5097,
+    3414,
+    5206
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0139",
+   "block": "p4_r27_c3",
+   "text": "196",
+   "box": [
+    1357,
+    5097,
+    1477,
+    5206
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0140",
+   "block": "p4_r27_c4",
+   "text": "48,007.48",
+   "box": [
+    725,
+    5097,
+    1052,
+    5206
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0141",
+   "block": "p4_r28_c0",
+   "text": "28",
+   "box": [
+    4324,
+    5255,
+    4406,
+    5364
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0142",
+   "block": "p4_r28_c1",
+   "text": "18.04.1967",
+   "box": [
+    3714,
+    5255,
+    4075,
+    5364
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0143",
+   "block": "p4_r28_c2",
+   "text": "שמא תאמר, כי החק",
+   "box": [
+    2813,
+    5255,
+    3414,
+    5364
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0144",
+   "block": "p4_r28_c3",
+   "text": "49",
+   "box": [
+    1395,
+    5255,
+    1477,
+    5364
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0145",
+   "block": "p4_r28_c4",
+   "text": "96,862.30",
+   "box": [
+    725,
+    5255,
+    1052,
+    5364
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0146",
+   "block": "p4_r29_c0",
+   "text": "29",
+   "box": [
+    4324,
+    5413,
+    4406,
+    5522
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0147",
+   "block": "p4_r29_c1",
+   "text": "10.10.1952",
+   "box": [
+    3718,
+    5413,
+    4075,
+    5522
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0148",
+   "block": "p4_r29_c2",
+   "text": "דורש שילמוד כל נער מישראל שפת רוסיא וחשבון",
+   "box": [
+    1967,
+    5413,
+    3414,
+    5522
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0149",
+   "block": "p4_r29_c3",
+   "text": "93",
+   "box": [
+    1395,
+    5413,
+    1477,
+    5522
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0150",
+   "block": "p4_r29_c4",
+   "text": "53,005.25",
+   "box": [
+    725,
+    5413,
+    1052,
+    5522
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0151",
+   "block": "p4_r30_c0",
+   "text": "30",
+   "box": [
+    4324,
+    5571,
+    4406,
+    5680
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0152",
+   "block": "p4_r30_c1",
+   "text": "10.04.1981",
+   "box": [
+    3718,
+    5571,
+    4075,
+    5680
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0153",
+   "block": "p4_r30_c2",
+   "text": "שפת-עבר אין לו עסק, אך אין הדבר כן.",
+   "box": [
+    2277,
+    5571,
+    3414,
+    5680
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0154",
+   "block": "p4_r30_c3",
+   "text": "50",
+   "box": [
+    1395,
+    5571,
+    1477,
+    5680
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0155",
+   "block": "p4_r30_c4",
+   "text": "97,473.65",
+   "box": [
+    725,
+    5571,
+    1052,
+    5680
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0156",
+   "block": "p4_r31_c0",
+   "text": "31",
+   "box": [
+    4327,
+    5729,
+    4406,
+    5838
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0157",
+   "block": "p4_r31_c1",
+   "text": "24.01.1980",
+   "box": [
+    3714,
+    5729,
+    4075,
+    5838
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0158",
+   "block": "p4_r31_c2",
+   "text": "א)אין ברוסיא חק",
+   "box": [
+    2920,
+    5729,
+    3414,
+    5838
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0159",
+   "block": "p4_r31_c3",
+   "text": "235",
+   "box": [
+    1354,
+    5729,
+    1477,
+    5838
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  },
+  {
+   "id": "P04_0160",
+   "block": "p4_r31_c4",
+   "text": "94,462.06",
+   "box": [
+    725,
+    5729,
+    1052,
+    5838
+   ],
+   "font": "Assistant-wght.ttf",
+   "size_pt": 10,
+   "weight": 400
+  }
+ ],
+ "markers": [
+  {
+   "dict": "DICT_4X4_50",
+   "id": 12,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     189
+    ],
+    [
+     472,
+     189
+    ],
+    [
+     472,
+     472
+    ],
+    [
+     189,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 13,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     189
+    ],
+    [
+     4772,
+     189
+    ],
+    [
+     4772,
+     472
+    ],
+    [
+     4489,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 14,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     6544
+    ],
+    [
+     4772,
+     6544
+    ],
+    [
+     4772,
+     6827
+    ],
+    [
+     4489,
+     6827
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 15,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     6544
+    ],
+    [
+     472,
+     6544
+    ],
+    [
+     472,
+     6827
+    ],
+    [
+     189,
+     6827
+    ]
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "center": [
+    1323,
+    6307
+   ],
+   "side_px": 307,
+   "angle_deg": 5.0,
+   "polygon": [
+    [
+     1183.46,
+     6140.71
+    ],
+    [
+     1489.29,
+     6167.46
+    ],
+    [
+     1462.54,
+     6473.29
+    ],
+    [
+     1156.71,
+     6446.54
+    ]
+   ]
+  }
+ ],
+ "wedge": [
+  {
+   "set": "strip",
+   "step": 0,
+   "ink_fraction": 0.0,
+   "grey": 255,
+   "box": [
+    1701,
+    6165,
+    1937,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 1,
+   "ink_fraction": 0.2,
+   "grey": 204,
+   "box": [
+    1937,
+    6165,
+    2173,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 2,
+   "ink_fraction": 0.4,
+   "grey": 153,
+   "box": [
+    2173,
+    6165,
+    2409,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 3,
+   "ink_fraction": 0.6,
+   "grey": 102,
+   "box": [
+    2409,
+    6165,
+    2645,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 4,
+   "ink_fraction": 0.8,
+   "grey": 51,
+   "box": [
+    2645,
+    6165,
+    2881,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 5,
+   "ink_fraction": 1.0,
+   "grey": 0,
+   "box": [
+    2881,
+    6165,
+    3117,
+    6401
+   ]
+  }
+ ],
+ "colour_patches": [],
+ "furniture": [
+  {
+   "kind": "qr",
+   "text": "HEOCR-CAL-V1-P04",
+   "box": [
+    614,
+    6118,
+    992,
+    6496
+   ]
+  },
+  {
+   "kind": "label",
+   "text": "HeOCR cal. pack v1 | P04 | calibration/dev only",
+   "box": [
+    3165,
+    6270,
+    4385,
+    6326
+   ]
+  },
+  {
+   "kind": "table_grid",
+   "box": [
+    520,
+    807,
+    4441,
+    5863
+   ],
+   "rows": 32,
+   "cols": 5
+  }
+ ],
+ "dpi": 600,
+ "pack": "HeOCR calibration pack v1",
+ "use": "calibration and dev only, never test"
+}

@@ -1,0 +1,2041 @@
+{
+ "page": "P07",
+ "title": "mixed",
+ "size_px": [
+  4961,
+  7016
+ ],
+ "lines": [
+  {
+   "id": "P07_0000",
+   "block": "p7_h1",
+   "text": "זה לא עמד עמידה נכונה",
+   "box": [
+    2746,
+    567,
+    4441,
+    813
+   ],
+   "font": "Heebo-wght.ttf",
+   "size_pt": 20,
+   "weight": 700
+  },
+  {
+   "id": "P07_0001",
+   "block": "p7_body1",
+   "text": "ומנדינו\" (?). והנה אם \"גבורתא למיקלא רביה\" וגבורה יתירה היא לומר על גאוני ישראל שזכרתי למעלה, כי הם",
+   "box": [
+    519,
+    850,
+    4441,
+    955
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 700
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0002",
+   "block": "p7_body1",
+   "text": "מחזיקים בשיטת שבתי-צבי, דברים אשר אילו אמרם איש פשוט על איזה רב בישראל היה מחויב לקבל נזיפה, עוד",
+   "box": [
+    520,
+    968,
+    4441,
+    1074
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0003",
+   "block": "p7_body1",
+   "text": "גבורה יותר גדולה הראה רב קנאי אחר, אשר אם איננו ישיש,",
+   "box": [
+    2392,
+    1086,
+    4441,
+    1192
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0004",
+   "block": "p7_body1",
+   "text": "זכות ישישים מסיעתו. הוא אומר במכתבו להזקן הנ\"ל: \"קראתי יתר דבריו (כלומר, דברי ראש \"מצדיקי הרבים\"",
+   "box": [
+    520,
+    1251,
+    4441,
+    1357
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0005",
+   "block": "p7_body1",
+   "text": "המחרחר ריב הנ\"ל) בנידן \"כת (?) הציונים\" שנתחברו ונתאגדו עתה בחזקה, ולא אבוש מלאמר",
+   "box": [
+    1251,
+    1369,
+    4441,
+    1475
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0006",
+   "block": "p7_body1",
+   "text": "כי לא אדע איך למצוא מסלות לצאת נגדם, אחר כי האנשים הלא נודעים כל אחד (???) במקומותם לרעה ומהם גם",
+   "box": [
+    519,
+    1535,
+    4441,
+    1641
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0007",
+   "block": "p7_body1",
+   "text": "מפורסמים בזה ותכליתם כבר הודיעו ופרסמו, כי היא לעקור יסודי הדת וכו' וכאשר כבר הודיעו את כל אלו וגלו",
+   "box": [
+    520,
+    1653,
+    4441,
+    1759
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0008",
+   "block": "p7_body1",
+   "text": "מחשבתם במכ\"ע (האמנם קורא הוא מכ\"ע? ומה יאמר על זה אביו בגן-עדן?) וכו' ועכ\"ז מצאתי כי הצדק",
+   "box": [
+    935,
+    1771,
+    4441,
+    1877
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0009",
+   "block": "p7_body1",
+   "text": "את מע\"כ שי' כי ידברו יחד יראי ה' ויצעקו מרה וכו' להזהר בנפשותם לבלי להתחבר לענין שהוא הירוס הדת",
+   "box": [
+    519,
+    1936,
+    4441,
+    2042
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0010",
+   "block": "p7_body1",
+   "text": "ומכשול לבית ישראל\". מה תוכל להיות אחרית המחלוקת שלא לשם-שמים הזאת? כל בן-דעת",
+   "box": [
+    1280,
+    2054,
+    4441,
+    2160
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0011",
+   "block": "p7_body1",
+   "text": "יבין, כי אחריתה תוכל להיות מרה מאד לבית-שיראל. הנה לפני מכתב שלישי, שנשלח לי עם שני המכתבים הנ\"ל,",
+   "box": [
+    519,
+    2220,
+    4441,
+    2326
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0012",
+   "block": "p7_body1",
+   "text": "מאגודה ציונית, לאמר: \"הנם (מצדיקי הרבים) משתדלים להוציא מכתבים מהד\"ר אדלער מלונדון וכו' ומהרב צדוק",
+   "box": [
+    520,
+    2338,
+    4441,
+    2444
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0013",
+   "block": "p7_body1",
+   "text": "כהן מפאריז. ממילא מובן, כי הנקל יהיה בידיהם להוציא עוד חתימות ויפרסמו ברבים",
+   "box": [
+    1540,
+    2456,
+    4441,
+    2562
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0014",
+   "block": "p7_body1",
+   "text": "קול קורא רבני נגד הציוניות. אין אנו מתיראים פן יעלה בידם לשרש את הציוניות משורש, יען אין בכח אישים",
+   "box": [
+    519,
+    2621,
+    4441,
+    2727
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0015",
+   "block": "p7_body1",
+   "text": "פרטים, אף",
+   "box": [
+    4067,
+    2740,
+    4441,
+    2845
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400,
+   "word_fonts": [
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    },
+    {
+     "font": "NotoSerifHebrew-wdth-wght.ttf",
+     "size_pt": 10.5,
+     "weight": 400
+    }
+   ]
+  },
+  {
+   "id": "P07_0016",
+   "block": "p7_h2",
+   "text": "להכחיד רעיון שמקורו בלב",
+   "box": [
+    3173,
+    2976,
+    4441,
+    3149
+   ],
+   "font": "Heebo-wght.ttf",
+   "size_pt": 14,
+   "weight": 600
+  },
+  {
+   "id": "P07_0017",
+   "block": "p7_list",
+   "text": "לבבי הנסתרים מעין כל",
+   "box": [
+    3508,
+    3174,
+    4299,
+    3279
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0018",
+   "block": "p7_list",
+   "text": "חי, וכל תלאותי המוצאות",
+   "box": [
+    3434,
+    3292,
+    4299,
+    3397
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0019",
+   "block": "p7_list",
+   "text": "אותי, מאז השלכתי מזרועות",
+   "box": [
+    3341,
+    3410,
+    4299,
+    3515
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0020",
+   "block": "p7_list",
+   "text": "הילדות כאשר נבאת לי",
+   "box": [
+    3518,
+    3528,
+    4299,
+    3633
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0021",
+   "block": "p7_list",
+   "text": "מראש! ובנפש שוקקה",
+   "box": [
+    3543,
+    3646,
+    4299,
+    3751
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0022",
+   "block": "p7_list",
+   "text": "שמעתי גערתך כזמרת",
+   "box": [
+    3569,
+    3764,
+    4299,
+    3869
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0023",
+   "block": "p7_body2",
+   "text": "ונפש, אפס הלב ידאב והעינים תרדנה דמעה למראה פרוד הלבבות והדעות שיתהוה מזה. הזייפנים משתמשים בכל",
+   "box": [
+    520,
+    3929,
+    4441,
+    4034
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0024",
+   "block": "p7_body2",
+   "text": "האמצעים הפסולים והבזוים לנגדנו ומכריחים להיות לכתה. עתה אין כל הבדל חיצון בין ציוני למתנגד באמונות",
+   "box": [
+    520,
+    4047,
+    4441,
+    4153
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0025",
+   "block": "p7_body2",
+   "text": "ודעות, והנה ע\"י המחלוקת יצא הבדל בזה, כי לא המחלוקת נבראת ע\"י ההבדל, כי אם ההבדל מתהוה על-ידי",
+   "box": [
+    520,
+    4165,
+    4441,
+    4271
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0026",
+   "block": "p7_body2",
+   "text": "המחלוקת. ואף גם זאת יוכל להיות כי הרבנים הנותנים להם יד גורמים רעה גדולה לעצמם ולכבוד התורה, כי אם",
+   "box": [
+    520,
+    4283,
+    4441,
+    4389
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0027",
+   "block": "p7_body2",
+   "text": "תצא מטרתם הבזויה אל הפועל, אם יצאו הרבנים לנגדנו במחאה, אז יבא פרוד בין הציונים ובין הרבנים העומדים",
+   "box": [
+    520,
+    4401,
+    4441,
+    4507
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0028",
+   "block": "p7_body2",
+   "text": "בראש הדת, ותקותנו, \"שהציוניות תהיה תשובה אל היהדות\", תהיה לאכזב. האם אפשר להנאורים שבנו לכבד את",
+   "box": [
+    520,
+    4519,
+    4441,
+    4625
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0029",
+   "block": "p7_body2",
+   "text": "מורי העם, צריכים לבא ולהתיצב בראש תנועתם, הם באים ועושים ההפך ומחבלים את מעשי ידינו? האם אפשר",
+   "box": [
+    520,
+    4637,
+    4441,
+    4743
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0030",
+   "block": "p7_body2",
+   "text": "להם לאהב ולהוקיר את היהדות, אם נושאי דגלה מחללים אותה באופן מכוער כזה?\" הדברים האלה מעציבים מאד",
+   "box": [
+    520,
+    4755,
+    4441,
+    4861
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0031",
+   "block": "p7_body2",
+   "text": "ועל הרבנים החובה לשום אליהם לב בהבנה עמוקה. אם למרות דברי הגאונים הרמ\"ל מלבים ורצ\"ה קאלישער",
+   "box": [
+    520,
+    4874,
+    4441,
+    4979
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0032",
+   "block": "p7_body2",
+   "text": "(מובאים בס' שיבת ציון) ולמרות פעולות הגאונים ריא\"ס ז\"ל מקובנה, הרמ\"ע מבויסק ובנו ז\"ל, הרנצי\"ב מוואלאזין",
+   "box": [
+    520,
+    4992,
+    4441,
+    5098
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0033",
+   "block": "p7_body2",
+   "text": "והגרש\"מ מביאליסטאק ז\"ל, שהשתתפו בחבה בפעולות חובבי-ציון, ולמרות פעולת גאוני זמננו שזכרתי, שנתנו לבם",
+   "box": [
+    520,
+    5110,
+    4441,
+    5216
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 10.5,
+   "weight": 400
+  },
+  {
+   "id": "P07_0034",
+   "block": "p7_note1",
+   "text": "1. השוטר וישב להאניה. וישב השוטר וירד אל החוף, וילך לבית הפקודות לקונסול אנגליה ויבקש ויביאוהו תכף לפני הקונסול. ויאמר בלי הקדמות: –",
+   "box": [
+    520,
+    5369,
+    4441,
+    5450
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 8,
+   "weight": 400
+  },
+  {
+   "id": "P07_0035",
+   "block": "p7_note1",
+   "text": "אדוני הקונסול, יש לי יסוד לחשוב, כי אישנו בא על המונגוליה. ויספר פיקס את אשר ארע בינו ובין המשרת בדבר הפספורט. ויען הקונסול: – טוב,",
+   "box": [
+    519,
+    5455,
+    4441,
+    5537
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 8,
+   "weight": 400
+  },
+  {
+   "id": "P07_0036",
+   "block": "p7_note1",
+   "text": "אדוני פיקס, לא למרת רוחי יהיה הדבר לראות את",
+   "box": [
+    3166,
+    5542,
+    4441,
+    5624
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 8,
+   "weight": 400
+  },
+  {
+   "id": "P07_0037",
+   "block": "p7_note2",
+   "text": "2. פני הפוחז הזה. אבל, אולי לא יבא בעצמו הנה, אם הוא באמת כאשר יחשוב כבודו. גנב איננו אוהב להשאיר אחריו עקבות דרכו, ומלבד זה, אין חובה",
+   "box": [
+    519,
+    5629,
+    4441,
+    5710
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 8,
+   "weight": 400
+  },
+  {
+   "id": "P07_0038",
+   "block": "p7_note2",
+   "text": "עליו לקחת חתימתי על הפספורט. והשוטר אמר: – אם הוא בקי במלאכתו, כאשר עלי לחשוב, בוא יבוא. – לקדם את פספורטו למען אחתום עליו? – כן.",
+   "box": [
+    519,
+    5715,
+    4441,
+    5797
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 8,
+   "weight": 400
+  },
+  {
+   "id": "P07_0039",
+   "block": "p7_note2",
+   "text": "הפספורטים אינם",
+   "box": [
+    3986,
+    5802,
+    4441,
+    5884
+   ],
+   "font": "NotoSerifHebrew-wdth-wght.ttf",
+   "size_pt": 8,
+   "weight": 400
+  }
+ ],
+ "markers": [
+  {
+   "dict": "DICT_4X4_50",
+   "id": 24,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     189
+    ],
+    [
+     472,
+     189
+    ],
+    [
+     472,
+     472
+    ],
+    [
+     189,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 25,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     189
+    ],
+    [
+     4772,
+     189
+    ],
+    [
+     4772,
+     472
+    ],
+    [
+     4489,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 26,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     6544
+    ],
+    [
+     4772,
+     6544
+    ],
+    [
+     4772,
+     6827
+    ],
+    [
+     4489,
+     6827
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 27,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     6544
+    ],
+    [
+     472,
+     6544
+    ],
+    [
+     472,
+     6827
+    ],
+    [
+     189,
+     6827
+    ]
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "center": [
+    1323,
+    6307
+   ],
+   "side_px": 307,
+   "angle_deg": 5.0,
+   "polygon": [
+    [
+     1183.46,
+     6140.71
+    ],
+    [
+     1489.29,
+     6167.46
+    ],
+    [
+     1462.54,
+     6473.29
+    ],
+    [
+     1156.71,
+     6446.54
+    ]
+   ]
+  }
+ ],
+ "wedge": [
+  {
+   "set": "strip",
+   "step": 0,
+   "ink_fraction": 0.0,
+   "grey": 255,
+   "box": [
+    1701,
+    6165,
+    1937,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 1,
+   "ink_fraction": 0.2,
+   "grey": 204,
+   "box": [
+    1937,
+    6165,
+    2173,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 2,
+   "ink_fraction": 0.4,
+   "grey": 153,
+   "box": [
+    2173,
+    6165,
+    2409,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 3,
+   "ink_fraction": 0.6,
+   "grey": 102,
+   "box": [
+    2409,
+    6165,
+    2645,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 4,
+   "ink_fraction": 0.8,
+   "grey": 51,
+   "box": [
+    2645,
+    6165,
+    2881,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 5,
+   "ink_fraction": 1.0,
+   "grey": 0,
+   "box": [
+    2881,
+    6165,
+    3117,
+    6401
+   ]
+  }
+ ],
+ "colour_patches": [],
+ "furniture": [
+  {
+   "kind": "qr",
+   "text": "HEOCR-CAL-V1-P07",
+   "box": [
+    614,
+    6118,
+    992,
+    6496
+   ]
+  },
+  {
+   "kind": "label",
+   "text": "HeOCR cal. pack v1 | P07 | calibration/dev only",
+   "box": [
+    3165,
+    6270,
+    4385,
+    6326
+   ]
+  },
+  {
+   "kind": "bullet",
+   "box": [
+    4373,
+    3201,
+    4415,
+    3243
+   ]
+  },
+  {
+   "kind": "bullet",
+   "box": [
+    4373,
+    3318,
+    4415,
+    3360
+   ]
+  },
+  {
+   "kind": "bullet",
+   "box": [
+    4373,
+    3436,
+    4415,
+    3478
+   ]
+  },
+  {
+   "kind": "bullet",
+   "box": [
+    4373,
+    3554,
+    4415,
+    3596
+   ]
+  },
+  {
+   "kind": "bullet",
+   "box": [
+    4373,
+    3672,
+    4415,
+    3714
+   ]
+  },
+  {
+   "kind": "bullet",
+   "box": [
+    4373,
+    3790,
+    4415,
+    3832
+   ]
+  },
+  {
+   "kind": "rule",
+   "box": [
+    3307,
+    5322,
+    4441,
+    5322
+   ]
+  }
+ ],
+ "dpi": 600,
+ "pack": "HeOCR calibration pack v1",
+ "use": "calibration and dev only, never test"
+}

@@ -1,0 +1,494 @@
+{
+ "page": "P08",
+ "title": "large type",
+ "size_px": [
+  4961,
+  7016
+ ],
+ "lines": [
+  {
+   "id": "P08_0000",
+   "block": "p8_date",
+   "text": "09.03.1976",
+   "box": [
+    520,
+    567,
+    1260,
+    746
+   ],
+   "font": "Rubik-wght.ttf",
+   "size_pt": 18,
+   "weight": 400
+  },
+  {
+   "id": "P08_0001",
+   "block": "p8_body",
+   "text": "אשר קבלו מישראל האמונה באל אחד. הנוצרים",
+   "box": [
+    1107,
+    992,
+    4441,
+    1242
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0002",
+   "block": "p8_body",
+   "text": "מעמידים בן אדם ויולדתו בשורה אחת עם בורא שמים",
+   "box": [
+    672,
+    1257,
+    4441,
+    1508
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0003",
+   "block": "p8_body",
+   "text": "וארץ ועקר קדשת בית תפלה בא להם מהקברות אשר",
+   "box": [
+    753,
+    1523,
+    4441,
+    1774
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0004",
+   "block": "p8_body",
+   "text": "בסביבו ובתוכו. במאות הראשונות לאמונתם לא בנו",
+   "box": [
+    832,
+    1789,
+    4441,
+    2040
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0005",
+   "block": "p8_body",
+   "text": "בית תפלה כי אם במקום שהיה שם קבר של איש, אשר",
+   "box": [
+    637,
+    2055,
+    4441,
+    2306
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0006",
+   "block": "p8_body",
+   "text": "מסר את נפשו על נוצריותו, למען העמיד מזבח על",
+   "box": [
+    923,
+    2321,
+    4441,
+    2572
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0007",
+   "block": "p8_body",
+   "text": "קברו. אחרי כן התירו להם להשתמש גם בקבר של סתם",
+   "box": [
+    601,
+    2587,
+    4441,
+    2837
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0008",
+   "block": "p8_body",
+   "text": "כמר נכבד אצלם לבנות עליו את המזבח. ועד היום אין",
+   "box": [
+    656,
+    2852,
+    4441,
+    3103
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0009",
+   "block": "p8_body",
+   "text": "בונים במה כי אם על קבר. גם אצל המחמדים הקברים",
+   "box": [
+    681,
+    3118,
+    4441,
+    3369
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0010",
+   "block": "p8_body",
+   "text": "קדושים ודבקין ומערים במסגדים. ואין צריכים לאמר,",
+   "box": [
+    663,
+    3384,
+    4441,
+    3635
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0011",
+   "block": "p8_body",
+   "text": "כי כן היה אצל כל העמים הקדמונים וביחוד במצרים,",
+   "box": [
+    732,
+    3650,
+    4441,
+    3901
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0012",
+   "block": "p8_body",
+   "text": "אשר התפללו אל המלכים ואל יתר הגדולים אחרי מותם",
+   "box": [
+    609,
+    3916,
+    4441,
+    4167
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0013",
+   "block": "p8_body",
+   "text": "ויבנו להם צריפים 1 והיכלות. ואצלנו לא פשתה האולת",
+   "box": [
+    633,
+    4182,
+    4441,
+    4433
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0014",
+   "block": "p8_body",
+   "text": "הרבה בימי קדם. אמנם הנביאים מוכיחים עליה וישעיה",
+   "box": [
+    589,
+    4447,
+    4441,
+    4698
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0015",
+   "block": "p8_body",
+   "text": "הנביא לועג למתפללים אל המתים בעד החיים. אבל אין",
+   "box": [
+    576,
+    4713,
+    4441,
+    4964
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0016",
+   "block": "p8_body",
+   "text": "הנביאים מרבים לדבר על זה, שכנראה הרגישו תמיד",
+   "box": [
+    757,
+    4979,
+    4441,
+    5230
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0017",
+   "block": "p8_body",
+   "text": "בישראל, כי הדרישה אל המתים היא רק מולדת חוץ.",
+   "box": [
+    771,
+    5245,
+    4441,
+    5496
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  },
+  {
+   "id": "P08_0018",
+   "block": "p8_body",
+   "text": "וכל עוד שאיזו טפשות הנעשית בבית יעקב נושאת את",
+   "box": [
+    641,
+    5511,
+    4441,
+    5762
+   ],
+   "font": "Alef-Regular.ttf",
+   "size_pt": 22,
+   "weight": null
+  }
+ ],
+ "markers": [
+  {
+   "dict": "DICT_4X4_50",
+   "id": 28,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     189
+    ],
+    [
+     472,
+     189
+    ],
+    [
+     472,
+     472
+    ],
+    [
+     189,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 29,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     189
+    ],
+    [
+     4772,
+     189
+    ],
+    [
+     4772,
+     472
+    ],
+    [
+     4489,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 30,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     6544
+    ],
+    [
+     4772,
+     6544
+    ],
+    [
+     4772,
+     6827
+    ],
+    [
+     4489,
+     6827
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 31,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     6544
+    ],
+    [
+     472,
+     6544
+    ],
+    [
+     472,
+     6827
+    ],
+    [
+     189,
+     6827
+    ]
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "center": [
+    1323,
+    6307
+   ],
+   "side_px": 307,
+   "angle_deg": 5.0,
+   "polygon": [
+    [
+     1183.46,
+     6140.71
+    ],
+    [
+     1489.29,
+     6167.46
+    ],
+    [
+     1462.54,
+     6473.29
+    ],
+    [
+     1156.71,
+     6446.54
+    ]
+   ]
+  }
+ ],
+ "wedge": [
+  {
+   "set": "strip",
+   "step": 0,
+   "ink_fraction": 0.0,
+   "grey": 255,
+   "box": [
+    1701,
+    6165,
+    1937,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 1,
+   "ink_fraction": 0.2,
+   "grey": 204,
+   "box": [
+    1937,
+    6165,
+    2173,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 2,
+   "ink_fraction": 0.4,
+   "grey": 153,
+   "box": [
+    2173,
+    6165,
+    2409,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 3,
+   "ink_fraction": 0.6,
+   "grey": 102,
+   "box": [
+    2409,
+    6165,
+    2645,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 4,
+   "ink_fraction": 0.8,
+   "grey": 51,
+   "box": [
+    2645,
+    6165,
+    2881,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 5,
+   "ink_fraction": 1.0,
+   "grey": 0,
+   "box": [
+    2881,
+    6165,
+    3117,
+    6401
+   ]
+  }
+ ],
+ "colour_patches": [],
+ "furniture": [
+  {
+   "kind": "qr",
+   "text": "HEOCR-CAL-V1-P08",
+   "box": [
+    614,
+    6118,
+    992,
+    6496
+   ]
+  },
+  {
+   "kind": "label",
+   "text": "HeOCR cal. pack v1 | P08 | calibration/dev only",
+   "box": [
+    3165,
+    6270,
+    4385,
+    6326
+   ]
+  }
+ ],
+ "dpi": 600,
+ "pack": "HeOCR calibration pack v1",
+ "use": "calibration and dev only, never test"
+}
