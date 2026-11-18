@@ -110,6 +110,12 @@ Two arms train now, in parallel, so the round does not wait for the office-print
 ### 5.1 Selection: audit2 only, after training
 
 - **Scorer:** eval scores every snapshot of every arm on audit2 (P-hist dev) with its P-hist scorer, under line_fold_v1 with score_lines, not lstmtraining's BCER.
+  - **Amendment (eval, 2026-11-18, before any snapshot was scored):** audit2 has page-level references only, with no line set, so score_lines cannot run on it.
+    - **What runs instead:** each candidate reads the 38 audit2 page images with Tesseract `--psm 3` through heocr-engine's tesseract command, the same path as R6's and R7's audit2 scores.
+    - **The selection measure:** micro page CER under line_fold_v1 (`eval-domains/profiles/line_fold_v1.json`, sha256 `2e262710…`): NFC, the profile's folds, whitespace runs collapsed, summed edits over summed reference characters.
+    - **Candidates:** 20 in all, each arm's 8 snapshots plus heb_best_train and heb_final.
+    - **Context only, selecting nothing:** stock tessdata_best heb and R7 are reported beside them, and so is hocrgen primary.v1.
+    - The rule and the tie-break are unchanged.
 - **Rule:** the **lowest audit2 CER over all snapshots of all arms** is the round's model. Ties go to the earlier snapshot, then to arm r7.
 - **Nothing else selects.**
 
