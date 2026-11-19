@@ -7,6 +7,7 @@ A printed pack for fitting scanifier v2's capture models to real phone photos. I
 ```bash
 python3 experiments/scanifier_v2/calibration_pack/make_pack.py experiments/scanifier_v2/calibration_pack/pack_text.json experiments/scanifier_v2/calibration_pack
 python3 experiments/scanifier_v2/calibration_pack/shot_sheet.py experiments/scanifier_v2/calibration_pack
+python3 experiments/scanifier_v2/calibration_pack/make_addendum.py experiments/scanifier_v2/calibration_pack/addendum_text.json experiments/scanifier_v2/calibration_pack
 ```
 
 The builds need Pillow with libraqm, OpenCV (`cv2.aruco`), PyMuPDF, and Google Chrome for printing the Hebrew sheet. The fonts are hocrsyngen's bundled OFL fonts.
@@ -32,6 +33,8 @@ With these, any frame gives its page, its homography, a local edge-spread functi
 | P07 | Mixed: headings, a bold run, a bulleted list, body text and footnotes | Heebo, Noto Serif Hebrew |
 | P08 | Large type: an 18 pt date and 22 pt body | Rubik, Alef |
 | P09, P10 | P02 and P03 again, to print on thin paper for show-through | — |
+| P11 (addendum) | Pointed prose in three blocks: 10, 11 and 12 pt, justified, line spacing 1.6 | Frank Ruhl Libre, David Libre, Noto Serif Hebrew |
+| P12 (addendum) | Pointed Tanakh (Judges 11) in two justified columns at 10 pt, sof pasuq at verse ends | Frank Ruhl Libre |
 
 ## Conditions (shot sheet)
 
