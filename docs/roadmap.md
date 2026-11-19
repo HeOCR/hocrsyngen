@@ -1,5 +1,7 @@
 # hocrsyngen Roadmap
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 
 ## S12d: plain evaluation composition
 

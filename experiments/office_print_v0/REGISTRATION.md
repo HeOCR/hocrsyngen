@@ -1,5 +1,7 @@
 # Office-print v0: arm registration
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 Registered 2026-11-18, before either arm trains. This fixes the decision rule of [PLAN §2.3](PLAN.md#23-development-rule-fixed-in-the-arm-registration-pr-before-either-arm-trains) and the arms of PLAN §6 as they will run. Where this file and PLAN differ, this file holds. Nothing below may change after the first arm starts, except by a dated amendment in this file that says why.
 
 Owner: synth-gen. Approver: heocr-lead (merges this PR before the arms start, after eval's registered gate run on the night of 2026-11-18).

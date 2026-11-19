@@ -1,5 +1,7 @@
 # Office print v0: synthetic training data for a model that beats stock heb on modern office print
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 **Status:** approved by heocr-lead (2026-11-18), re-aimed at numbers after the diagnosis (§2.2.1, corrected). Training waits for scheduler slots.
 **Task:** heocr-lead, 2026-11-18, approved by Shay. It serves decisions 0019 and 0020, the `heocr` pipeline's OCR route.
 **Owner:** synth-gen. heocr-eval owns every gate, split and overlap check. Data-collection owns the real lines.

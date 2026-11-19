@@ -1,3 +1,5 @@
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 <!-- Copied from the HeOCR task workspace (s17a-scanifier/r8c-aug/README.md) on 2026-11-12. step0.sh needs bash >= 4 (associative array). Paths under diagnostics/ are local to that workspace. -->
 # R8c scan augmentation: design and step 0 (stopped)
 
