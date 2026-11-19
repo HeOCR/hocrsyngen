@@ -109,7 +109,20 @@ Training BCER selects nothing. The training data are as registered in §2: the p
 | reshumot_dev | 64 | 0 |
 | olb_dev, olb_dev_v1_1, rab_dev, ws_dev, bodek | 0 | 0 |
 
-- **audit2's reference – and — counts** come from eval. They are added here when eval sends them, or in the default-model study, which scores audit2 again.
+- **audit2's references** (eval, e2d3d refs, 38 pages, NFC, 51,010 characters including page-join spaces):
+
+| Character | Count | Pages holding it |
+|---|---|---|
+| – U+2013 en dash | 18 | 5 |
+| — U+2014 em dash | 14 | 4 |
+| - hyphen-minus (context) | 35 | 11 |
+| ־ U+05BE maqaf (context) | 5 | 5 |
+
+- **Under line_fold_v1** (the selection measure):
+  - — folds to –, so audit2 holds **32 en dashes**;
+  - ־ folds to -, so it holds **40 hyphens**;
+  - – and - stay distinct.
+- **Effect on the pick:** a stockfold-label model (the stock arm) can output neither –, nor — before folding. So it pays at most 32 substitutions, 0.06 pt of audit2's 50,714 scored reference characters. That is about the winner's margin over the stock arm, 0.061 pt, so the dash penalty alone could account for the stock arm's second place.
 
 ## 5. Not done in this round
 
