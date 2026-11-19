@@ -1,5 +1,7 @@
 # S17a dose arm: pre-registered decision rule
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 Written 2026-11-13, before any dose-arm training. It is pushed to hocrsyngen before the run starts, so the commit timestamp fixes it. Decision by heocr-lead: dose arm only, no ablation.
 
 ## Question

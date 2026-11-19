@@ -1,5 +1,7 @@
 # Synthetic document generator: design note (draft for review)
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 Status: design only, 2026-11-19. Nothing here has been generated or run. Owner: synth-gen. Review: eval (gold format,
 measures, D-bench pinning), pipeline (what it consumes), lead (merge, the open decisions in §10).
 

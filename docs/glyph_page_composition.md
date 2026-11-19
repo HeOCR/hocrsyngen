@@ -1,5 +1,7 @@
 # Real-Glyph Book Page Composition (S16b)
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 `S16b` composes scanned printed Hebrew book pages from glyph images cut out of
 real public-domain scans. The input is a `printed_glyph_bank.v1` directory
 ([printed_glyph_bank_v1.md](printed_glyph_bank_v1.md), `S16a`). The output is

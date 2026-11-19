@@ -1,5 +1,7 @@
 # P-hist round v1: pre-registration
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 Written 2026-11-18, before any P-hist training. The round fine-tunes Tesseract for old Hebrew print (P-hist, decision 0017), using data-collection's audited pool and a Reshumot replay. All counts are aggregates, with no protected text. `tasks/` is not a git repository, so scripts are pinned by sha256.
 
 ## 1. Roles of the evaluation sets (lead, 2026-11-18)

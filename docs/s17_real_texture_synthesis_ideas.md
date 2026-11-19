@@ -1,5 +1,7 @@
 # S17: real-texture synthetic data ideas (2026-11-11)
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 Status: proposals. Nothing here is built or measured yet, except where a later section says so.
 
 ## Why a new phase

@@ -1,5 +1,7 @@
 # P-hist round v1: results
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 Written 2026-11-19, after training, eval's audit2 selection (§5.1) and the modern-print guards (§5.3). The registration is [REGISTRATION.md](REGISTRATION.md). All figures are aggregates. `tasks/` is not a git repository, so scripts are pinned by sha256.
 
 ## Outcome

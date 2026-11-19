@@ -1,5 +1,7 @@
 # S17a dose arm: result
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 **Verdict under the pre-registered rule ([PREREGISTRATION.md](PREREGISTRATION.md), fixed at cafb637, de3d590 and fa82869 before training): the arm does not win.**
 - There is no OLB win: the 95% interval of Δ on "all" includes 0.
 - There is one guard loss: Silman, where the whole 95% interval of Δ is below 0.

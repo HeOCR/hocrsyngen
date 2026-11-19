@@ -1,5 +1,7 @@
 # Office-print v0, A/B v2: results
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 Written 2026-11-19, after training, the §4.1 checkpoint selection, eval's §4.2 document-level runs and the §4.3 guards. The registration is [REGISTRATION.md](REGISTRATION.md), with amendments 1 and 2. All figures are aggregates. `tasks/` is not a git repository, so scripts are pinned by sha256.
 
 ## Outcome

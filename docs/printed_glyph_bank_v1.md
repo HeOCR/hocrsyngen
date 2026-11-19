@@ -1,5 +1,7 @@
 # Printed Glyph Bank v1
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 `S16a` defines `printed_glyph_bank.v1`, the file contract through which
 `hocrsyngen` consumes glyph images cut from real scanned printed Hebrew pages.
 The bank is produced outside this repository (the `hocrgen` glyph harvester

@@ -1,5 +1,7 @@
 # S17a scan-ifier and add-on build recipe
 
+> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+
 This is idea 1 of `docs/s17_real_texture_synthesis_ideas.md`: learn "clean render → real scan line" from HeOCR's own aligned real lines, then use it to turn public-domain text into scan-like training lines.
 
 This folder holds the code **exactly as it ran** to build the two S17a add-on sets:
