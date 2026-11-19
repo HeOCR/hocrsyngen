@@ -1,0 +1,18 @@
+{
+ "pages": {
+  "P11": {
+   "lines": 20,
+   "chars": 2882
+  },
+  "P12": {
+   "lines": 61,
+   "chars": 5358
+  }
+ },
+ "pdf_sha256": {
+  "calibration_pack_v1_addendum.pdf": "4ac60160aeb862696b5cd18394cdfe95db08ce8563b93ee1acff29f673abbcf2"
+ },
+ "text_sha256": "cc34b8af857a2655366fba2c22eb646a3c16b54dca087f747b5569867600ff61",
+ "dpi": 600,
+ "seed": 20261134
+}
