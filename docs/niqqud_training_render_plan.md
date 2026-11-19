@@ -1,7 +1,7 @@
 # Pointed (niqqud) training renders: plan v1
 
-Status: **plan**. Prepared during the RC2 gate window (2026-11-19) in light mode. The text pool, the font list and a
-24-line dry run are done. Bulk renders and any training wait for eval to announce the end of the window. They then run as
+Status: **plan, lead's decisions in** (2026-11-19, §6). Prepared during the RC2 gate window in light mode. The text
+pool, the font list, the render units and small dry runs are done. Bulk renders and any training wait for eval to announce the end of the window. They then run as
 power-scheduler units, or as a RunPod run that the lead approves.
 
 Owner: synth-gen. Reviewer: heocr-lead.
@@ -12,7 +12,10 @@ set yet. The only scored set for it is the niqqud print test NQ1, which eval sco
 ## 1. Text pool v1
 
 The builder is `tasks/niqqud-train-v1/scripts/build_pool.py`, outside this repository, because it reads eval's
-reservation lists. Its output is `pool/pool_v1.jsonl` (sha256 `84ddff37…`) with `pool_v1.counts.json`.
+reservation lists. Its output is `pool/pool_v1.1.jsonl` (sha256 `1f7e62a3…`) with `pool_v1.1.counts.json`.
+
+**v1.1** also drops the works of calibration pack v1 and of the P11–P12 addendum, and Judges 11 (§4). The lines
+were refilled from other works, so the counts below are unchanged within a few lines.
 
 **Sources.** Both are htext releases. Both are public domain in Israel, and each line records `il_us`.
 
@@ -44,7 +47,9 @@ memoir 298; letters 183. The il_us share is 0.21.
    No Tanakh line hit once the reserved chapters were out.
 3. **Characters and length.** Allowed: Hebrew letters, points, maqaf, geresh and gershayim, digits and common
    punctuation. Lines must be 12–90 base characters long.
-4. **Pre-filter against eval's official targets** (`check_train_overlap.targets()`). 70 lines dropped: 50
+4. **Calibration text.** The calibration pack v1 works, the addendum works (PBY 3233, 5016, 6146) and Judges 11,
+   because calibration captures are dev.
+5. **Pre-filter against eval's official targets** (`check_train_overlap.targets()`). 70 lines dropped: 50
    `rseries_dev_report`, 20 `pmod_holdout_plenary`. Counts only.
 
 **Sampling.** Seeded order `sha256("20261119:niqqud-train-v1:" + line sha)`, at most 120 lines per work. Poetry is
@@ -84,20 +89,29 @@ coverage:
 - batch A: lines with ׃, ׳ or ״, on the 9 faces that cover all of them;
 - batch B: all other lines, on all 13 faces.
 
-**Decision for the lead: Culmus "seen" faces.** NQ1's other pages use three Culmus faces plus Noto Serif Hebrew. The
+**Culmus "seen" faces (lead: yes).** NQ1's other pages use three Culmus faces plus Noto Serif Hebrew. The
 Culmus faces are Frank Ruehl CLM, Hadasim CLM and Nachlieli CLM. None of the three is a governed face, so no training
 render has used them. NQ1's held-out-versus-seen font contrast only means something if the seen faces are in
 training.
-- **Proposal:** add those three to the font manifest under GPL-2.0 with the font exception (the rendered images are not
-  covered by the GPL) in a separate PR, and give them about 25% of the pointed lines.
-- **Without them,** the NQ1 "seen font" stratum is seen only through Noto Serif Hebrew.
+- **Done:** a pointed-render font manifest outside this package, `tasks/niqqud-train-v1/fonts/manifest.yaml`, read
+  through `render_lines(manifest_path=...)`. It holds the 13 faces above plus Frank Ruehl CLM Medium and Bold,
+  Hadasim CLM Regular and Bold, and Nachlieli CLM Light and Bold (v0.140, sha256-pinned).
+  - **Licence:** GPL-2.0 with the Culmus font exception. The licence file is built from the fonts' own name table:
+    the GPL text, the copyright notices and the exception.
+  - **Why outside the package:** this package's wheel ships OFL faces only.
+- **Share:** 6 of 19 faces in batch b, and 6 of 15 in batch a, so about a third of the lines.
+- **Check:** they cover every character in the pool. An 18-line trial render shapes cleanly
+  (`dryrun/sheet_culmus_v1.png`).
 
 ## 3. Render plan (after the window)
 
 | Unit | Lines | Faces | Notes |
 |---|---|---|---|
-| `nqtrain_v1_a` | pool lines with ׃ ׳ ״ (about 6,000) | 9 | |
-| `nqtrain_v1_b` | all other lines (about 69,000) | 13 (16 with the Culmus faces) | |
+| `nqtrain_v1_a` | pool lines with ׃ ׳ ״ (6,137) | 15 (9 governed + 6 Culmus) | |
+| `nqtrain_v1_b` | all other lines (68,793) | 19 (13 governed + 6 Culmus) | |
+
+The unit script is `tasks/niqqud-train-v1/scripts/render_unit.py {a|b} OUT --band-range MIN MAX`. It pins the pool's
+sha256 and refuses `HOCRSYNGEN_EVAL_RENDER=1`. A 9-line trial of each batch rendered with no refusals.
 
 - **Presets,** split by seeded line id:
 
@@ -113,9 +127,16 @@ training.
 - **Seed:** 20261119; every line's render derives from (seed, id).
 - **Estimate:** about 75k PNGs, roughly 1–1.5 GB, and under an hour of single-core CPU. Not measured; the first unit
   logs its timing. Free disk now: about 22 GB.
-- **Labels keep the points** (logical order, NFC). Whether the default model outputs points is the lead's decision.
-  The alternative is training on point-stripped labels, so that pointed input reads as plain text. Eval's NQ1 scoring
-  should report both forms, with points and stripped.
+- **Labels keep the points** (logical order, NFC; lead: we want models that output niqqud).
+- **Unpointed replay:** the training mix keeps an unpointed replay share, so the model doesn't invent marks on
+  unpointed text.
+  - **What it is:** the current R recipe's unpointed lines, kept in full.
+  - **Proposed ratio:** pointed lines at most a third of the list, so unpointed lines are at least twice the pointed
+    add-on.
+  - **Mark invention** is tracked on dev only: points per output letter on the unpointed dev sets, against the R
+    recipe without the add-on.
+  - The lead sets the exact ratio at recipe build.
+- **NQ1 scoring** by eval: with points, and stripped.
 - **After render:**
   1. eval's `check_train_overlap` on the whole rendered list, which must be CLEAN;
   2. a 200-line contact sheet per face for a visual check, done by me, with only unclear categories going to Shay;
@@ -127,6 +148,7 @@ training.
 `modern_print_scan_v1`.
 - 22 rendered. 2 were refused for ׃ on Rubik and Heebo, which is what the A/B batching handles.
 - The visual check found the Cousine problem above.
+- The superseded pool v1.0 file is in the Trash; its counts are kept as `pool_v1.0.counts.json`.
 - Outputs are in `tasks/niqqud-train-v1/dryrun/`.
 
 ## 4. Scanifier v2 calibration for pointed text
@@ -138,12 +160,21 @@ NQ1 frames and PS-v1 frames are never opened for calibration or selection.
 of blur, noise, JPEG and Telegram's 1280 px recompression, and one pointed page at one size is too little to fit mark
 loss.
 
-**Proposal: calibration pack v1 addendum, P11–P12** (needs the lead's and Shay's go, since Shay prints and shoots).
+**Calibration pack v1 addendum, P11–P12** (lead: approved; the lead puts it to Shay with his good-light NQ1 pass).
 - **P11:** pointed prose at 10, 11 and 12 pt.
 - **P12:** a two-column pointed Tanakh page at 10 pt.
 - **Frame:** the same as the other pages (ArUco, QR, slanted edge, grey wedge).
 - **Faces:** seen faces only, never Drugulin CLM or Simple CLM.
-- **Text:** from pool v1 works, with eval CLEAN before the PDF is final.
+- **Text:** `tasks/niqqud-train-v1/addendum/addendum_text.json` (sha256 `cc34b8af…`), selected by
+  `select_addendum_text.py`, all PD in Israel and the US:
+  - P11: three fully pointed blocks (at least 0.7 points per letter) from htext pby-v3 il_us, PBY 3233, 5016 and
+    6146, each about 520–660 base characters;
+  - P12: Judges 11, 3,110 base characters, sof pasuq at each verse end.
+  - Refused: reserved works and chapters, NQ1 6-grams, calibration v1 works, the books Neh, Ezra, Ezek and 1Chr, and
+    any block with an official-target 6-gram (4 Tanakh runs).
+  - These works and chapters left the training pool (v1.1).
+  - The PDF is built only after eval's CLEAN on this sha.
+- **Faces:** bundled OFL faces only, as the rest of the pack.
 - **Shots:** each of the three phones in conditions A, B, D, F and G: steady, motion blur, low light, Telegram and
   Adobe Scan. These are the ones that remove marks.
 - **Printing:** the pages can be printed in the same session as NQ1, but the captures are kept apart (different QR
@@ -169,11 +200,26 @@ once, by eval, on the final pick.
 |---|---|---|
 | `nqtrain_v1_a`, `nqtrain_v1_b` renders | scheduler units (CPU), or RunPod | eval announces the end of the RC2 window |
 | eval CLEAN on the rendered list | eval | renders done |
-| Culmus faces in the manifest | hocrsyngen PR | lead's decision |
+| Culmus faces | done: task-local manifest (§2) | — |
 | Nakdan prose v2 add-on | scheduler unit (MPS) | after the v1 renders |
-| Calibration addendum P11–P12 | PDF build, then Shay prints | lead's and Shay's go |
+| Calibration addendum P11–P12 | eval CLEAN on the text, then the PDF, then Shay prints | approved |
 | Scanifier pointed fit and ablation | after the captures | dev only |
 
 No unit is in `units.txt` yet: the window allows no new unit.
+
+## 6. Lead's decisions (2026-11-19)
+
+1. Add the Culmus seen faces (Frank Ruehl, Hadasim, Nachlieli CLM) to the pointed renders: done (§2).
+2. Keep the points in the labels, with an unpointed replay share (§3).
+3. Calibration addendum P11–P12 approved. Build the PDF after CLEAN; the lead puts it to Shay with the good-light NQ1
+   pass.
+4. Queue `nqtrain_v1_a` and `nqtrain_v1_b` as scheduler units after eval ends the window.
+
+**Held-out-font trace,** answered before merge (eval has it):
+- **No training list holds a Drugulin CLM or Simple CLM render.** The repro for #123 was a throwaway test manifest
+  with one line, now in the Trash.
+- **hdocsyngen pilot v0** (before hdocsyngen #6) set four documents in those fonts:
+  - tender-20261126 (Simple CLM) and tender-20261129 (Drugulin CLM) are in D-bench set H, an eval set;
+  - report-20361129 and report-20361138 stay in the task folder.
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
