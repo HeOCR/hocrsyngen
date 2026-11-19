@@ -8,7 +8,7 @@ Written 2026-11-19, after training, the §4.1 checkpoint selection, eval's §4.2
   - At heocr 57e58de, each arm's selected model inside heocr's OCR route meets `gate.py`'s rule on all three cells (T4, T5, scanned tables), against every recorded baseline.
   - All 10 D-bench cells pass for both arms.
 - **Both arms pass every guard (§4.3).** On all 12 R-series dev lists each is better than stock, with the whole interval below 0.
-- **Arm A** (synthetic office lines plus real lines) **beats arm B** (real lines only, same compute) on every cell where a difference is resolved: T4, T5 (at main), scanned tables, T6 and T3.
+- **Arm A** (synthetic office lines plus real lines) **beats arm B** (real lines only, same compute) on every cell where a difference is resolved. The material differences are T4 (−0.68 pt CER, −2.5 pt number misses), scanned tables (−0.83 pt CER) and T5 at main (−0.32 pt CER, −1.46 pt number misses). T6 (−0.04 pt CER) and T3 (−0.003 pt) are resolved but negligible.
   - At 57e58de, T5 is not resolved. Arm A crashed on one document there, which was then charged as empty (§3).
   - **This is the A-against-B question the round was registered to answer:** at equal compute, the synthetic office part adds to the real lines.
 - **Not a public claim.**
@@ -114,7 +114,7 @@ CER % with number misses % in brackets; larger is worse. The interval is a 95% b
 | T3 | CER | −0.003 (−0.001) | the same |
 | T1 | CER, number misses | 0 | 0 |
 
-- **A is better than B wherever the interval excludes 0.**
+- **A is better than B wherever the interval excludes 0.** Material: T4, scanned tables and T5 at main. T6 and T3 are resolved but negligible (−0.04 and −0.003 pt CER).
 - **The one unresolved cell, T5 at 57e58de, is a crash, not the model.**
   - At 57e58de and 7f5e99e, arm A hit heocr's path-guard `ContractError` on one T5 document (C/pdf_t5_office_numbers, number-dense office scan). gate.py charged it as empty.
   - Main 72726af carries the path-guard fix. There A reads it, and A beats B on T5 too.
