@@ -218,7 +218,8 @@ def main():
     rows = [r for r in rows if r["split"] == "train"][:: a.every]
     if a.limit:
         rows = rows[: a.limit]
-    font_path = str(FONTS / a.font)
+    from hocrsyngen.font_exclusion import check_font  # held-out fonts never enter training pairs
+    font_path = str(check_font(FONTS / a.font))
     kept = tried = 0
     reasons = {}
     with open(out / "pairs.jsonl", "w") as fo, ProcessPoolExecutor(a.workers) as ex:

@@ -1,0 +1,38 @@
+{
+ "schema": "heocr_font_exclusion.v1",
+ "created": "2026-11-19",
+ "by": "synth-gen",
+ "reason": "held out for the niqqud print test (niqqud_print_pack_v1): never use in any training render, pointed or not",
+ "families": [
+  {
+   "family": "Drugulin CLM",
+   "files": [
+    {
+     "file": "DrugulinCLM-Bold.otf",
+     "sha256": "baa8ddad5e6f012844cf9300eabdb3ca6702930608746576bbec60e3ffa9601e"
+    }
+   ]
+  },
+  {
+   "family": "Simple CLM",
+   "files": [
+    {
+     "file": "SimpleCLM-Medium.ttf",
+     "sha256": "74a04735bcee04b1c0a5f00afec84d805b4d69c70eb43f45ec806e6344e7240c"
+    },
+    {
+     "file": "SimpleCLM-MediumOblique.ttf",
+     "sha256": "ab1c12c0b9035808045b0e8bd03fa5f7411c7f9bbf4f7977aa9c41a1d2f6caf2"
+    },
+    {
+     "file": "SimpleCLM-Bold.ttf",
+     "sha256": "595895089adb22c765e1caac55e6a41288f2be3242f91e035531b1d6cbfb5030"
+    },
+    {
+     "file": "SimpleCLM-BoldOblique.ttf",
+     "sha256": "77fe9883f58b79471da9520bba9e4a58214f0d9e892facd99fa9c8c1d06516a3"
+    }
+   ]
+  }
+ ]
+}
