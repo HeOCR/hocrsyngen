@@ -443,18 +443,25 @@ Apache-2.0; output is CC0 only where all of its inputs are CC0. Lead creates the
   - The LibreOffice, Chrome and Ghostscript routes run on a pod for a few dollars.
   - Word is the bottleneck, and the reason a Windows host would matter.
 
-**What the pilot needs from Shay** (lead asks him after this note merges; nothing on the Mac changes before then):
-1. **macOS Automation permission:** allow the terminal (or the runner process) to control Microsoft Word through
-   AppleScript. This is a one-time system prompt that a session cannot answer.
-2. **Word's file access:** Word for Mac is sandboxed. Shay grants it access to the pilot's working folder once, or
-   the pilot works inside Word's container folder.
-3. **Word version:** pause Microsoft AutoUpdate for the pilot, so all documents use 16.115.
-4. **Fonts:** an OK to install the open Hebrew fonts into a user font folder (they are not installed today), so Word
-   can use them.
-5. **Downloads:** an OK to download a pinned Chrome for Testing build, and pinned `ocrmypdf` and `img2pdf` into a uv
-   environment for the pilot (P10 uses the installed Tesseract). Ghostscript and qpdf come with Homebrew for phase 2.
+**What the pilot needed from Shay: done** (lead did it on Shay's request, 2026-11-19):
+1. **Automation:** AppleScript control of Microsoft Word works from the app's shell, with no prompt left.
+2. **Word's file access:** no sandbox grant was needed. The pilot works inside Word's container,
+   `~/Library/Containers/com.microsoft.Word/Data/hdocsyngen-pilot/`, and copies outputs out.
+3. **Word version:** Microsoft AutoUpdate is **not** paused, since it is a security-update setting. Instead, the
+   driver records Word's version before and after every run and for every document. A run whose version changes
+   midway is aborted and rerun (the pilot is under an hour).
+4. **Fonts:** the open Hebrew fonts are installed in `~/Library/Fonts`:
+   - from Homebrew casks: Alef, Assistant, Bellefair, David CLM, David Libre, Frank Ruhl Libre, Heebo, Miriam Libre,
+     Miriam Mono CLM, Noto Rashi, Noto Sans and Noto Serif Hebrew, Rubik;
+   - the full Culmus 0.140 (44 files).
 
-Nothing else: no accounts, and no money.
+   The pilot manifest records every font file's sha256.
+5. **Downloads:** a uv environment with ocrmypdf 16.13.0 and img2pdf 0.6.3 (a full lock file), and Chrome for Testing
+   Stable 158.0.8127.36. Chrome embeds Culmus faces as Type 3 fonts in print-to-PDF, a census item.
+
+   Ghostscript and qpdf are phase 2, asked for then.
+
+No accounts and no money were needed.
 
 ## 10. Open decisions
 
@@ -467,7 +474,7 @@ Nothing else: no accounts, and no money.
 4. **Google Docs (P4):** deferred. No new OAuth client.
 5. **§7:** disjoint seeds plus held-out axes, with a D-bench-pinned fork as the fallback, is fine by lead. Eval gave
    its OK with conditions (item 10). It goes into the RC2 amendment if it touches gate sets.
-6. **Shay's §9 OKs:** lead asks Shay after the merge. Nothing on the Mac changes before then.
+6. **Shay's §9 OKs:** given; the setup is done (§9).
 
 **Decided by eval (2026-11-19, review on #119):**
 
