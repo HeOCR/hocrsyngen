@@ -40,6 +40,7 @@ hocrsyngen = [
   "data/synthetic/fonts/*.ttf",
   "data/synthetic/fonts/*.txt",
   "data/synthetic/fonts/*.yaml",
+  "data/fonts_excluded.json",
   "data/synthetic/texts/*.txt",
   "schemas/*.json",
 ]

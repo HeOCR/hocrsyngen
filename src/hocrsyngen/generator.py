@@ -13,6 +13,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageFo
 
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.io import load_simple_font_manifest, sha256_file
+from hocrsyngen.font_exclusion import check_font
 from hocrsyngen.manifest import (
     GeneratedSample,
     GenerationManifest,
@@ -532,6 +533,7 @@ def _font_path(manifest_path: Path, font_entry: dict[str, str]) -> Path:
     path = (manifest_path.parent / file_name).resolve()
     if not path.exists():
         raise ValueError(f"Synthetic font file is missing: {path}")
+    check_font(path)
     return path
 
 
@@ -547,6 +549,7 @@ def _require_raqm() -> None:
 
 @lru_cache(maxsize=32)
 def _load_font(font_path: Path, size: int) -> ImageFont.FreeTypeFont:
+    check_font(font_path)
     return ImageFont.truetype(str(font_path), size)
 
 
