@@ -50,7 +50,8 @@ wrote the source. What we must engineer is how the gold **survives** each produc
 - **Not installed:** Pages, Ghostscript, qpdf/mutool, Typst, a TeX distribution, WeasyPrint and ocrmypdf.
 
 **The weirdness column is a hypothesis per producer.** The pilot (§9) replaces it with a measured **weirdness census**.
-For every output PDF, the census records:
+For every output PDF, **per page** (classes are per page), and with the census version recorded so pins can be
+compared, the census records:
 - the producer and creator strings;
 - the font types (TrueType, CID, Type3 or Type1) and whether ToUnicode is present;
 - the share of private-use code points;
@@ -58,25 +59,30 @@ For every output PDF, the census records:
 - whether there are space glyphs or spaces by position only;
 - the glyph-run length (single-glyph runs mean split words);
 - the table encoding (ruling paths present or not, cell text in one run or many);
-- whether headers and footers repeat as text.
+- whether headers and footers repeat as text;
+- whether `/StructTreeRoot` is present, and whether its reading order and table structure agree with the gold.
+
+For pipeline, the census is an **oracle and an explanation**, not a run-time input. A test can say "this page has no
+ToUnicode, so expect T3" and catch classifier drift. The tagged structure tree is recorded but not built on in v1;
+pipeline may use it once `regress` shows it is reliable across producers (Windows Word exports are often tagged).
 
 A hypothesis that the census does not confirm is dropped from the template mix, not forced.
 
 | # | Producer | Automation, reproducibly | Expected weirdness (to be measured) | Priority |
 |---|---|---|---|---|
 | P1 | **Word for Mac** (16.115) | `osascript` drives Word: open DOCX → `save as` PDF (`format PDF`, "best for printing", the local Quartz route; **never the online-conversion option**, which uploads the document) → close without saving. A fresh Word process per batch, a timeout per document, and a watchdog for modal dialogs. The version is read from Info.plist into every manifest. Auto-update is paused during a run. | Quartz PDF, embedded TrueType subsets, mostly logical order. Footnote separators and repeated headers are drawn as text. Our numbering is laid out by Word itself (labels as Word renders them). The Mac route may differ from Windows Word's PDF route: the visual-order text layers D-bench check (a) looks for may be a Windows-only effect. | pilot |
-| P1w | **Word for Windows** | Only on a Windows host with Office. There is none today: RunPod has no Windows, and CI Windows runners have no Office. Later, if a runner exists: PowerShell COM `ExportAsFixedFormat`. | Microsoft's own PDF writer: likely the main source of real visual-order Hebrew layers and of per-glyph runs. | later, needs a host |
+| P1w | **Word for Windows** | Only on a Windows host with Office. There is none today: RunPod has no Windows, and CI Windows runners have no Office. Later, if a runner exists: PowerShell COM `ExportAsFixedFormat`. | Microsoft's own PDF writer: likely the main source of real visual-order Hebrew layers and of per-glyph runs. | later, needs a host: high value. A short-lived Windows VM with Office is a question for lead (§10). |
 | P2 | **LibreOffice** (26.2.5.2) | `soffice --headless -env:UserInstallation=file://<fresh dir> --convert-to 'pdf:writer_pdf_Export:{…}'` with pinned filter options (tagged or untagged, PDF/A on or off, embed fonts). The same version as a Linux build for pod-scale runs. | Logical order and good ToUnicode, usually. Its own DOCX import changes numbering and layout (D-bench check (b) knows where). Tables are positioned text with ruling paths. Optional tagged PDF gives a structure tree pipeline could use. | pilot |
-| P3 | **Pages** | Not installed (free from the App Store). AppleScript `export … to PDF`. | Quartz PDF, Apple's text layout. Its DOCX import is lossy (numbering, notes). | optional |
-| P3k | **Keynote / Numbers** (PPTX / XLSX in) | AppleScript `export … as PDF`. | Slides and sheets through Quartz. Text boxes become separate runs. | optional |
+| P3 | **Pages** | Not installed (free from the App Store). AppleScript `export … to PDF`. | Quartz PDF, Apple's text layout. Its DOCX import is lossy (numbering, notes). | low: rare in tender documents |
+| P3k | **Keynote / Numbers** (PPTX / XLSX in) | AppleScript `export … as PDF`. | Slides and sheets through Quartz. Text boxes become separate runs. | low |
 | P4 | **Google Docs export** | Needs a Drive API OAuth client on an account. **Deferred** (lead, 2026-11-19): no new accounts and no new OAuth client. | Its own layout engine; Skia-like PDFs. | deferred |
 | P5 | **Chrome / Chromium print-to-PDF** from HTML | `chrome --headless=new --no-pdf-header-footer --print-to-pdf=… file://…`, pinned to a **Chrome for Testing** build (a versioned download, not the auto-updating browser). CSS paged media for size, margins and `@page` headers. | Skia PDF. Hebrew glyph runs may be stored in visual order, so the text layer may come out reversed in some readers. Table cells are separate runs; `thead` repeats on every page; a `position: running()` header repeats. | pilot |
 | P5w | **WeasyPrint** from the same HTML | `uv run --with weasyprint==<pin>`; Pango and HarfBuzz from the pinned environment. | Pango shaping, logical-order ActualText-like runs; good paged-media support (footnotes `float: footnote`). | phase 2 |
-| P6 | **Typst** (or LuaLaTeX) | The Typst binary, pinned by version and sha256, compiles a `.typ` source written from the tree. LuaLaTeX only through a pinned TeX Live container on a pod (a 4 GB+ install is not worth it locally). | A typesetter's PDF: ligatures, kerning, justified Hebrew, real footnotes. Reading order follows the source. | phase 2 |
+| P6 | **Typst** (or LuaLaTeX) | The Typst binary, pinned by version and sha256, compiles a `.typ` source written from the tree. LuaLaTeX only through a pinned TeX Live container on a pod (a 4 GB+ install is not worth it locally). | A typesetter's PDF: ligatures, kerning, justified Hebrew, real footnotes. Reading order follows the source. | low: rare in tender documents |
 | P7 | **macOS Quartz print** | `cupsfilter` (PDF to PDF through the Quartz filter), or printing a document through the macOS print system to "Save as PDF". | Re-encodes the fonts and may flatten text to a different encoding. It is the "printed to PDF" route of many office users. | phase 2 |
-| P8 | **Ghostscript re-distil** | `gs -sDEVICE=pdfwrite` at a pinned version, with variants: default; `-dPDFSETTINGS=/screen`; `-dNoOutputFonts` (all text becomes vector paths); and a PostScript round trip (`ps2write`, then back). | The classic breaker of text layers: ToUnicode dropped or rebuilt, fonts turned to Type3, text turned to outlines (T6 everywhere, or a vector-only page). | phase 2, high value |
-| P9 | **Print to image → PDF** | Rasterise any P1–P8 output with pinned poppler or pymupdf at 150, 200 or 300 dpi. Optionally degrade it with hocrsyngen's scan models (`office_scan`, `photocopy`, `phone_photo`; scanifier v2 when calibrated). Encode as JPEG at quality 50–95, then wrap it with `img2pdf` (lossless wrap) or re-print it through P7. Seeds drive everything. | Image-only pages (T5): the JPEG grain hazard of set E, scan noise, skew and lost thin rules. | pilot (clean 200/300 dpi only), phase 2 (scanifier) |
-| P10 | **OCR'd layer** | `ocrmypdf` at a pinned version, over P9's output, with stock Tesseract `heb`, a correct OCR "sandwich" layer. Run with `-l eng` or a wrong page segmentation mode, the same tool gives a **real garbage layer** (T4), instead of our permuted one. | T1 with an OCR layer (`text_layer_is_ocr`), and T4: wrong letters in an invisible layer over a correct image. | phase 2 |
+| P8 | **Ghostscript re-distil** | `gs -sDEVICE=pdfwrite` at a pinned version, with variants: default; `-dPDFSETTINGS=/screen`; `-dNoOutputFonts` (all text becomes vector paths); and a PostScript round trip (`ps2write`, then back). | The classic breaker of text layers: ToUnicode dropped or rebuilt, fonts turned to Type3, text turned to outlines (T6 everywhere, or a vector-only page). | next after the pilot (pipeline's priority 4) |
+| P9 | **Print to image → PDF** | Rasterise any P1–P8 output with pinned poppler or pymupdf at 150, 200 or 300 dpi. Optionally degrade it with hocrsyngen's scan models (`office_scan`, `photocopy`, `phone_photo`; scanifier v2 when calibrated). Encode as JPEG at quality 40–95, then wrap it with `img2pdf` (lossless wrap) or re-print it through P7. Seeds drive everything. | Image-only pages (T5): the JPEG grain hazard of set E, scan noise, skew and lost thin rules. | pilot (200/300 dpi, and 200 dpi at JPEG 40–70 with grain or mottled paper), phase 2 (scanifier) |
+| P10 | **OCR'd layer** | `ocrmypdf` at a pinned version, over P9's output, with stock Tesseract `heb`, a correct OCR "sandwich" layer. Run with `-l eng` or a wrong page segmentation mode, the same tool gives a **real garbage layer** (T4), instead of our permuted one. | T1 with an OCR layer (`text_layer_is_ocr`, must be kept), and T4: wrong letters in an invisible layer over a correct image (must be replaced). | **pilot**, both ways (pipeline's priority 1) |
 
 **Chains.**
 - A document's producer route is a chain, for example `DOCX → P1 → P8(NoOutputFonts)` or `DOCX → P2 → P9(200 dpi,
@@ -108,6 +114,16 @@ A hypothesis that the census does not confirm is dropped from the template mix, 
 | **Typst** | P6 | The same tree as a Typst source. |
 | ODT, RTF (optional) | P2 (`--convert-to odt|rtf`), P1 (save as) | Converted from the DOCX, not written directly. The gold rests on the tree, and the verifier checks the conversion. |
 | **The PDFs out** | all | Every PDF from every chain, with its chain record. |
+
+**Priority among formats (pipeline):**
+1. **Producer-re-saved DOCX** (Word and LibreOffice) matters most: numbering and run splitting as real producers write
+   them.
+2. XLSX re-saved by Excel next.
+3. PPTX last: few real documents in the target use.
+
+**Copying from `heocr` `tests/synth`.** Copy, never import: `tests/synth` is not an API, and pipeline changes it
+freely. A file that copies whole functions keeps the Apache-2.0 header and a one-line "derived from" note. Generator
+outputs are never committed into `heocr`, whose fixtures stay code-built from invented text.
 
 **Writers must agree.**
 - The tree, not a writer, defines the document. Each writer has a test that its output, re-read by our own reader,
@@ -156,7 +172,8 @@ numbering := {abstract id, levels: [{format: decimal | hebrew1 | hebrew2 | lower
   - Latin product names, e-mail addresses and URLs inside Hebrew sentences;
   - ID-like numbers. These are **made to fail the Israeli check digit**, so a generated ID can never be a real
     person's.
-  - Names come from a generated pool, and authorities are generic (`משרד הדוגמה`).
+  - Names come from a generated pool, and authorities are generic (`משרד הדוגמה`). The pool is checked against a
+    common-names list so that no generated full name is a real public person's (eval).
 - **Mixed RTL/LTR:** a run's `lang` is explicit in the tree. The gold is logical order. The expected visual order is
   computed by the verifier (python-bidi, both implementations as in set D), and never by `heocr`.
 
@@ -169,11 +186,23 @@ numbering := {abstract id, levels: [{format: decimal | hebrew1 | hebrew2 | lower
 | tables | the cell grid: row, column, spans, header flag and cell text; `repeat_header` | tree (exact) |
 | notes | note id → anchor block id and offset; note text | tree (exact) |
 | furniture | header and footer text per page | tree + producer (pages known only after layout) |
-| section labels | the label each numbered block shows | **two bases:** `model` (our numbering model) and `producer` (what the producer rendered, read back, §3.3). Scored apart when they differ, as D-bench check (b) does. |
+| section labels | the label each numbered block shows | **two bases:** `producer` (what the producer rendered, read back, §3.3) is the **scored reference**, because it is what is on the page; `model` (our numbering model) is a numbering diagnostic, scored apart when the two differ, as in D-bench check (b). The same holds for the TOC and any other field. |
 | pages | page of every block and line; line breaks; hyphenation | producer (observed, verified) |
 | geometry | block and cell boxes per page, after layout | producer, through the colour twin (§3.3) |
 | drawn text | blocks or runs that exist only as image or vector | chain (P8 `NoOutputFonts`, P9, `image_with_text`) |
 | losses | text the producer did not render (clipped cells, overflow, missing glyphs) | verifier, marked `not_rendered`; readers are not expected to output it |
+
+**Scoring rules for the gold (eval, 2026-11-19).**
+- **Body and furniture:** body CER and WER are scored on the body sequence. Furniture has its own recall, and its
+  interleavings into the body are counted (§6).
+- **Not rendered:** `not_rendered` text is out of the reference. It is counted per chain, so a producer that clips
+  stays visible.
+- **Drawn text:** in the reference (readers must OCR it, as in set D), with its own recall.
+- **Reading-order conventions** (written into the schema README before any set is scored):
+  - table cells read in row order, right to left in RTL tables;
+  - notes form their own sequence, and their attachment is a separate measure;
+  - in multi-column pages each column is read to the end before the next, and a block spanning the columns breaks
+    the flow.
 
 ### 3.3 How the gold survives each producer, and how we prove it
 
@@ -249,8 +278,12 @@ share of mixed-direction runs.
 - the share of documents with footnotes, multi-column pages or repeated headers.
 
 **Rules:**
-- **Never test.** I never read the corpus files, only eval's table. The table is published in this repo only as
-  aggregates, and only if eval agrees (D-bench §7).
+- **Never test.** I never read the corpus files, only eval's table.
+- **The table stays private** (eval, 2026-11-19). It comes by message or in restricted-eval, with producer families as
+  coarse classes (Word for Windows, Word for Mac, LibreOffice, scanner/MFP, other), never raw strings, and with n
+  beside every figure. Dev is small (about 51 documents), so the quantiles are coarse.
+- **Only the derived template and chain weights are public,** with one line: "calibrated to aggregates of a private
+  dev split".
 - **Until the table arrives,** the pilot uses a flat mix.
 - **A chain whose census result does not match the real producer family it stands for gets no weight.** For example,
   Mac Word may not reproduce Windows Word's visual order. The gap is reported.
@@ -271,7 +304,7 @@ share of mixed-direction runs.
 - One open face per look family is held out of training (as Tinos is in office-print) and used only by tuning and gate
   sets.
 
-## 6. Measures (proposed; eval owns the definitions)
+## 6. Measures (eval owns the definitions; accepted in principle)
 
 Beyond character, word, line and page CER, the sets let eval score the following, all against the tree gold:
 
@@ -286,17 +319,36 @@ Beyond character, word, line and page CER, the sets let eval score the following
 | mixed direction | the share of lines whose LTR runs come out in the gold's logical order |
 | classification | T-class confusion per producer chain (the census gives each page's true class) |
 
-**All of these are proposals for eval to accept, change or reject.** None is used in a report before eval defines it.
+**Eval's rules (2026-11-19).**
+- **Reuse D-bench's frozen definitions where they exist:** `measures.py` for CER, number recall and reversed amounts;
+  the gate's `silent_loss`, including its "a never-flagging reader loses everything" rule; and `line_fold_v1`. That
+  keeps synthetic and D-bench figures comparable.
+- **Kendall tau must not reward dropping blocks:** it is reported on aligned blocks only, always with block recall
+  beside it.
+- **Tables:** TEDS, TEDS-struct and cell F1 as proposed. A page-spanning table is one table, and its repeated header
+  is counted once.
+- **Freezing:** eval writes `hdoc_measures_v1` (definitions and code, sha-pinned) after the pilot's gold exists. No
+  figure goes in a report before it is frozen.
 
 ## 7. Uses and splits
 
 | Use | Split | Seeds | Notes |
 |---|---|---|---|
 | **tuning** (pipeline thresholds, repair rules) | `tune` | the open tuning base | Every threshold may be tuned here, as on D-bench layer 1. |
-| **regression** (pipeline CI and release checks) | `regress` | a frozen base | Pinned by manifest sha in D-bench (§8); small (a few hundred pages); changes only by a new pin. |
+| **regression** (pipeline release-candidate checks) | `regress` | a frozen base | Pinned by manifest sha in D-bench (§8). **Not `heocr`'s per-PR CI**, which tracks no PDF, DOCX or image and stays offline. Pipeline runs it locally or on a pod before each release candidate (next to the opt-in suite), and on demand for risky PRs. About 300 pages, about 60% text-layer and 40% OCR chains (about 15 min on 4 cores). Changes only by a new pin. |
 | **training** (any future layout, table or reading-order component) | `train` | disjoint seed ranges | Never shares a seed, a held-out font or a held-out template variant with `tune`, `regress` or `gate`. Decontaminated text only. |
 | **public CC0 dataset** | `release` | its own base | Open fonts, htext CC0 `il_us` text, generated values: CC0 only where every input is CC0. A Reshumot-text subset, if made, is a separate subset marked PD with its US-status flag. Font files are not included. Goes through hocrgen governance to the public synthetic dataset repository. |
 | **gates** | `gate` | a fresh base drawn when the gate is registered (as amendment 6 did) | Generated once, pinned, never inspected before the gate runs. |
+
+**What `regress` holds first** (pipeline's order, by what has bitten `heocr` in practice):
+1. P10 both ways: a correct `heb` sandwich layer (keep: T1, `text_layer_is_ocr`) and an `eng` or wrong-psm garbage
+   layer (replace: T4).
+2. Mixed-direction amounts, percentages, dates and outline labels inside Hebrew runs, through P1, P2 and P5. No open
+   set reproduces reversed amounts yet; a producer that stores runs in visual order is the likeliest way.
+3. P9 at 200 dpi, JPEG quality 40–70, grain or mottled paper, small ruled tables on otherwise bare pages (the T4/T5
+   hazard).
+4. P8 `NoOutputFonts` and the `ps2write` round trip: vector-only text (T6) and lost ToUnicode (T3).
+5. Outline labels (`1.2.1.`) on scanned office pages: P1 or P2, then P9 (the T5 number gap).
 
 **Synthetic results are never a headline claim. Real data stays the benchmark.** Synthetic sets diagnose, tune and
 regress. A gate may carry a synthetic cell only as a secondary cell, as the set D cell is agreed in principle.
@@ -305,9 +357,18 @@ regress. A gate may carry a synthetic cell only as a secondary cell, as the set 
 - D-bench requires that its generators are never used by training generators.
 - This design has one generator serving both. It keeps the rule's intent through disjoint seeds plus held-out axes:
   fonts, template variants, and one producer version or chain per look.
-- That amends the rule. Lead accepts it; **eval owns the rule and must give its explicit OK** (§10). If it touches gate
-  sets, it is recorded in the RC2 amendment. The fallback is two code paths: D-bench pins a fork, and training never
-  imports it.
+- That amends the rule **for hdocsyngen only**. D-bench sets A–E keep the old rule. Lead and eval accepted it
+  (2026-11-19), with eval's conditions:
+  1. **Held-out axes are recorded.** Every hdocsyngen `train` set writes an exposure manifest (fonts, template variants,
+     chains, seed ranges). A `gate` or `regress` set fails validation if it shares any held-out axis with any exposure
+     manifest.
+  2. **Reports flag it.** A model trained on hdocsyngen output has its hdocsyngen-based D-bench cells marked "same
+     generator". Those cells stay secondary, never a headline; the real splits decide.
+  3. **Gates keep the fresh-base rule:** a base drawn at registration (amendment 6), plus at least one held-out font and
+     one held-out template variant per look.
+  4. **The fallback fork** (D-bench pins a fork that training never imports) is not needed while 1–3 hold. It comes
+     back if a training run ever uses the held-out axes.
+- If this touches gate sets, it is recorded in the RC2 amendment.
 
 ## 8. Ownership and repositories
 
@@ -334,7 +395,8 @@ Apache-2.0; output is CC0 only where all of its inputs are CC0. Lead creates the
   - the manifest sha256.
 - **Tier B sets** commit the manifest and gold only, and are regenerated and validated before a run, like sets B–E.
 - **Tier V sets** (Word, Pages, Keynote, Quartz) also store the produced files, in restricted-eval, with their sha256,
-  because they cannot be regenerated byte for byte.
+  because they cannot be regenerated byte for byte. That is for pinned `regress` and `gate` sets only. Training-scale
+  output would mean gigabytes in git: `train` stays a manifest plus regenerable chains, or a release artifact.
 - Sets with `local_only` fonts never leave the Mac and are never pinned in a pushed repository. Only their aggregate
   scores are.
 
@@ -352,19 +414,21 @@ Apache-2.0; output is CC0 only where all of its inputs are CC0. Lead creates the
   | DOCX → LibreOffice PDF | 48 PDFs |
   | HTML → Chrome for Testing PDF | 48 PDFs |
   | DOCX re-saved by Word and by LibreOffice | 96 DOCX |
-  | Rasterised to image-only PDFs at 200 and 300 dpi, no scan model | a sample of 12 per producer |
+  | Rasterised to image-only PDFs at 200 and 300 dpi, no scan model | a sample of 12 per producer (36) |
+  | The same at 200 dpi, JPEG 40–70, grain or mottled paper | 12 per producer (36) |
+  | ocrmypdf over the clean image PDFs, `heb` (T1 OCR layer) and `eng` (T4 garbage layer) | 36 + 36 |
 
-  That is about 150 PDFs and 100 DOCX in all.
+  That is about 290 PDFs and 100 DOCX in all.
 
 **Deliverables:**
-- the writers (DOCX and HTML), the three drivers, the verifier (§3.3, all four checks) and the census;
+- the writers (DOCX and HTML), the three drivers plus P9 and P10, the verifier (§3.3, all four checks) and the census;
 - a pilot report, for lead, eval and pipeline, with:
   - the weirdness census per producer;
   - the gold-survival rate per producer and feature;
   - the label-basis disagreements per numbering feature;
   - the byte-reproducibility results;
   - stock Tesseract and `heocr` aggregate scores per chain, as a smoke test, not a claim;
-  - a go or no-go for phase 2 (P5w, P6, P7, P8, P10, XLSX and PPTX, then scale).
+  - a go or no-go for phase 2 (P8 first, then P5w, P7, XLSX and PPTX, then scale; P3, P3k and P6 last).
 
 **Cost and time.**
 - **Compute:** local Mac only, no pod, $0.
@@ -387,8 +451,8 @@ Apache-2.0; output is CC0 only where all of its inputs are CC0. Lead creates the
 3. **Word version:** pause Microsoft AutoUpdate for the pilot, so all documents use 16.115.
 4. **Fonts:** an OK to install the open Hebrew fonts into a user font folder (they are not installed today), so Word
    can use them.
-5. **Downloads:** an OK to download a pinned Chrome for Testing build, and to install Ghostscript and qpdf with
-   Homebrew for phase 2.
+5. **Downloads:** an OK to download a pinned Chrome for Testing build, and pinned `ocrmypdf` and `img2pdf` into a uv
+   environment for the pilot (P10 uses the installed Tesseract). Ghostscript and qpdf come with Homebrew for phase 2.
 
 Nothing else: no accounts, and no money.
 
@@ -401,20 +465,29 @@ Nothing else: no accounts, and no money.
 3. **Culmus:** the font exception lets us embed subsets in generated PDFs without making them GPL. Font files are not
    redistributed in datasets.
 4. **Google Docs (P4):** deferred. No new OAuth client.
-5. **§7:** disjoint seeds plus held-out axes, with a D-bench-pinned fork as the fallback, is fine by lead. It still
-   needs eval's explicit OK (item 8), and it goes into the RC2 amendment if it touches gate sets.
+5. **§7:** disjoint seeds plus held-out axes, with a D-bench-pinned fork as the fallback, is fine by lead. Eval gave
+   its OK with conditions (item 10). It goes into the RC2 amendment if it touches gate sets.
 6. **Shay's §9 OKs:** lead asks Shay after the merge. Nothing on the Mac changes before then.
 
-**For eval:**
+**Decided by eval (2026-11-19, review on #119):**
 
-7. Owning `hdoc_tree.v1` and the gold layers (§3), and the two label bases.
-8. The measures (§6).
-9. The aggregate dev table for calibration (§4.2), and whether it may be published.
-10. The amendment to the D-bench generator rule (§7): needs eval's explicit OK.
+7. **Gold format:** eval owns `hdoc_tree.v1` and the gold layers. The `producer` label basis is the scored reference,
+   and `model` is the diagnostic. Scoring rules and reading-order conventions are in §3.2.
+8. **Measures:** accepted in principle, reusing D-bench's frozen definitions. `hdoc_measures_v1` is frozen after the
+   pilot gold exists (§6).
+9. **Calibration table:** dev only, private, coarse producer families. Only the derived weights are public (§4.2).
+10. **Generator rule:** accepted for hdocsyngen only, with conditions (§7). Sets A–E keep the old rule.
 
-**For pipeline:**
+**Decided by pipeline (2026-11-19):**
 
-11. What `regress` must contain for its CI (size, chains).
-12. Whether the tagged-PDF structure tree (P2) and the census per page are useful inputs.
+11. **`regress`:** not per-PR CI. About 300 pages, pinned in D-bench, run before each release candidate, with the
+    chain order in §7.
+12. **Census and structure tree:** the census per page is an oracle and explanation, not a run-time input; the tagged
+    structure tree is recorded, not built on in v1 (§1). P10 is promoted to the pilot; P3, P3k and P6 are lowered.
+
+**Still open, for lead:**
+
+13. A short-lived Windows VM with Office for P1w (pipeline asks). It is the likeliest source of real visual-order layers
+    and per-glyph runs.
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
