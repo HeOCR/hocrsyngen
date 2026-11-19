@@ -38,6 +38,7 @@ from typing import Iterable, Sequence
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, features
 
 from .assets import default_font_manifest_path
+from .font_exclusion import check_font
 from .io import load_simple_font_manifest
 
 LINE_RENDER_SCHEMA = "hocrsyngen_line_render.v1"
@@ -103,6 +104,8 @@ def governed_faces(manifest_path: Path | None = None) -> dict[str, GovernedFace]
             raise ValueError(f"font {fid!r}: font or licence file missing next to the manifest")
         if _sha256(path) != e["sha256"]:
             raise ValueError(f"font {fid!r}: {e['file']} does not match its manifest sha256")
+        check_font(fid)  # held-out faces (fonts_excluded.json) never reach render-lines or office pages
+        check_font(path)
         out[fid] = GovernedFace(fid, e["file"], path, e["sha256"], e["license"], e["license_file"], e.get("style", ""))
     return out
 

@@ -49,3 +49,23 @@ def test_generator_font_loading_is_guarded(tmp_path, monkeypatch):
         _font_path(tmp_path / "manifest.yaml", {"id": "simple", "file": held.name})
     with pytest.raises(fx.HeldOutFontError):
         _load_font(held, 16)
+
+
+def test_governed_faces_refuse_a_held_out_face(tmp_path, monkeypatch):
+    """render-lines and office pages take faces from governed_faces(): a manifest that lists a held-out face fails."""
+    import hashlib
+
+    from hocrsyngen.line_render import governed_faces
+
+    monkeypatch.delenv(fx.EVAL_ENV, raising=False)
+    font = tmp_path / "SimpleCLM-Medium.ttf"
+    font.write_bytes(b"not a real font")
+    (tmp_path / "LICENSE.txt").write_text("x", encoding="utf-8")
+    sha = hashlib.sha256(font.read_bytes()).hexdigest()
+    (tmp_path / "manifest.yaml").write_text(
+        "fonts:\n  - id: renamed-face\n    file: SimpleCLM-Medium.ttf\n    style: x\n    license: GPL-2.0\n"
+        f"    license_file: LICENSE.txt\n    sha256: {sha}\n    line_render: true\n", encoding="utf-8")
+    with pytest.raises(fx.HeldOutFontError):
+        governed_faces(tmp_path / "manifest.yaml")
+    monkeypatch.setenv(fx.EVAL_ENV, "1")
+    assert list(governed_faces(tmp_path / "manifest.yaml")) == ["renamed-face"]
