@@ -48,6 +48,7 @@ hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-
 - `src/hocrsyngen/data/synthetic/texts/LICENSE-CC0-1.0.txt`: CC0 1.0 dedication for the S10b, S13a and S13b text corpora and `hebrew_lines.txt`; code stays MIT (ADR 0008).
 - `tests/`: contract, generation, validation, installation, and wheel packaging tests.
 - `docs/pby_public_domain_text_intake_plan.md`: S15a plan for Project Ben-Yehuda public-domain training text as an external pinned `--text-corpus` file (ADR 0007).
+- `docs/document_generator_design.md`: design note for the producer-matrix synthetic document generator (source trees, real PDF producers, gold survival, pilot).
 - `docs/production_readiness.md`: current readiness state, explicit missing production pieces, high-lift quality work, and external hocrgen dependencies.
 - `docs/handwriting_research_acceptance_criteria.md`: S5a handwriting research boundaries, reproducibility, licensing, review, evaluation, and stop/reject gates.
 - `docs/allograph_character_prototype_plan.md`: S5b deterministic allograph and character-level prototype boundary, bounded sampling plan, Hebrew cases, evidence plan, and proceed/stop gates.
