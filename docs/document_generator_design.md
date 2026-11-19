@@ -69,7 +69,7 @@ A hypothesis that the census does not confirm is dropped from the template mix, 
 | P2 | **LibreOffice** (26.2.5.2) | `soffice --headless -env:UserInstallation=file://<fresh dir> --convert-to 'pdf:writer_pdf_Export:{…}'` with pinned filter options (tagged or untagged, PDF/A on or off, embed fonts). The same version as a Linux build for pod-scale runs. | Logical order and good ToUnicode, usually. Its own DOCX import changes numbering and layout (D-bench check (b) knows where). Tables are positioned text with ruling paths. Optional tagged PDF gives a structure tree pipeline could use. | pilot |
 | P3 | **Pages** | Not installed (free from the App Store). AppleScript `export … to PDF`. | Quartz PDF, Apple's text layout. Its DOCX import is lossy (numbering, notes). | optional |
 | P3k | **Keynote / Numbers** (PPTX / XLSX in) | AppleScript `export … as PDF`. | Slides and sheets through Quartz. Text boxes become separate runs. | optional |
-| P4 | **Google Docs export** | Needs a Drive API OAuth client on an account. **Not in v1**: no new accounts, and the existing project account would need an OAuth app (Shay's call, §10). | Its own layout engine; Skia-like PDFs. | deferred |
+| P4 | **Google Docs export** | Needs a Drive API OAuth client on an account. **Deferred** (lead, 2026-11-19): no new accounts and no new OAuth client. | Its own layout engine; Skia-like PDFs. | deferred |
 | P5 | **Chrome / Chromium print-to-PDF** from HTML | `chrome --headless=new --no-pdf-header-footer --print-to-pdf=… file://…`, pinned to a **Chrome for Testing** build (a versioned download, not the auto-updating browser). CSS paged media for size, margins and `@page` headers. | Skia PDF. Hebrew glyph runs may be stored in visual order, so the text layer may come out reversed in some readers. Table cells are separate runs; `thead` repeats on every page; a `position: running()` header repeats. | pilot |
 | P5w | **WeasyPrint** from the same HTML | `uv run --with weasyprint==<pin>`; Pango and HarfBuzz from the pinned environment. | Pango shaping, logical-order ActualText-like runs; good paged-media support (footnotes `float: footnote`). | phase 2 |
 | P6 | **Typst** (or LuaLaTeX) | The Typst binary, pinned by version and sha256, compiles a `.typ` source written from the tree. LuaLaTeX only through a pinned TeX Live container on a pod (a 4 GB+ install is not worth it locally). | A typesetter's PDF: ligatures, kerning, justified Hebrew, real footnotes. Reading order follows the source. | phase 2 |
@@ -142,8 +142,9 @@ numbering := {abstract id, levels: [{format: decimal | hebrew1 | hebrew2 | lower
 **Text content:**
 - **Prose:** text comes from the open sources only:
   - htext CC0 (the `il_us` subset for anything public);
-  - PD-IL Reshumot text (training and tuning only; its US status is not asserted, so it is excluded from a public CC0
-    release unless lead rules otherwise, §10).
+  - PD-IL Reshumot text (§6 of the Israeli Copyright Act; US public domain as government edicts). It is used for
+    training and tuning, and **never in the CC0 release** (lead, 2026-11-19). It may form a separate public subset
+    marked PD, with its US-status flag, and is never relabelled CC0.
   - Text passes eval's official CLEAN check against reservations before any training use. Dev and test units are
     excluded at the pool level, as in the office-print pools.
 - **Generated values, by seed:**
@@ -258,7 +259,7 @@ share of mixed-direction runs.
 
 | Use | Fonts | Licence |
 |---|---|---|
-| **public and training** | Culmus (David CLM, Frank Ruehl CLM, Miriam CLM, Nachlieli, Hadasim, Simple, Shofar, Keter YG …); David Libre, Frank Ruhl Libre, Miriam Libre; Noto Sans/Serif/Rashi Hebrew; Alef, Heebo, Rubik, Assistant; Arimo, Tinos, Cousine (metric-compatible with Arial, Times New Roman and Courier New, so office layouts keep their line breaks) | OFL-1.1, Apache-2.0, and Culmus's GPL-2 **with the font exception** (embedding in a PDF does not make the document GPL). Lead to confirm the Culmus reading (§10). Every face is pinned by sha256, as in hocrsyngen's governed fonts. |
+| **public and training** | Culmus (David CLM, Frank Ruehl CLM, Miriam CLM, Nachlieli, Hadasim, Simple, Shofar, Keter YG …); David Libre, Frank Ruhl Libre, Miriam Libre; Noto Sans/Serif/Rashi Hebrew; Alef, Heebo, Rubik, Assistant; Arimo, Tinos, Cousine (metric-compatible with Arial, Times New Roman and Courier New, so office layouts keep their line breaks) | OFL-1.1, Apache-2.0, and Culmus's GPL-2 **with the font exception**: embedding subsets in the PDFs we generate does not make the documents GPL (lead confirmed, 2026-11-19). **The font files themselves are never redistributed in a dataset;** a release points to their source and sha256. Every face is pinned by sha256, as in hocrsyngen's governed fonts. |
 | **local only** | Microsoft and Office fonts (Arial, Times New Roman, David, Miriam, Narkisim, FrankRuehl as shipped with Office) | The lo_pdf rule: no derived file is public or used in training; aggregate scores may be public. These variants live only on this Mac, are never committed, and their manifests carry `local_only: true`. |
 
 **Installing fonts for the producers.**
@@ -294,7 +295,7 @@ Beyond character, word, line and page CER, the sets let eval score the following
 | **tuning** (pipeline thresholds, repair rules) | `tune` | the open tuning base | Every threshold may be tuned here, as on D-bench layer 1. |
 | **regression** (pipeline CI and release checks) | `regress` | a frozen base | Pinned by manifest sha in D-bench (§8); small (a few hundred pages); changes only by a new pin. |
 | **training** (any future layout, table or reading-order component) | `train` | disjoint seed ranges | Never shares a seed, a held-out font or a held-out template variant with `tune`, `regress` or `gate`. Decontaminated text only. |
-| **public CC0 dataset** | `release` | its own base | Open fonts, CC0 `il_us` text, generated values. Goes through hocrgen governance to the public synthetic dataset repository. |
+| **public CC0 dataset** | `release` | its own base | Open fonts, htext CC0 `il_us` text, generated values: CC0 only where every input is CC0. A Reshumot-text subset, if made, is a separate subset marked PD with its US-status flag. Font files are not included. Goes through hocrgen governance to the public synthetic dataset repository. |
 | **gates** | `gate` | a fresh base drawn when the gate is registered (as amendment 6 did) | Generated once, pinned, never inspected before the gate runs. |
 
 **Synthetic results are never a headline claim. Real data stays the benchmark.** Synthetic sets diagnose, tune and
@@ -304,8 +305,9 @@ regress. A gate may carry a synthetic cell only as a secondary cell, as the set 
 - D-bench requires that its generators are never used by training generators.
 - This design has one generator serving both. It keeps the rule's intent through disjoint seeds plus held-out axes:
   fonts, template variants, and one producer version or chain per look.
-- That amends the rule, so **eval and lead must accept it** (§10). The fallback is two code paths: D-bench pins a fork,
-  and training never imports it.
+- That amends the rule. Lead accepts it; **eval owns the rule and must give its explicit OK** (§10). If it touches gate
+  sets, it is recorded in the RC2 amendment. The fallback is two code paths: D-bench pins a fork, and training never
+  imports it.
 
 ## 8. Ownership and repositories
 
@@ -316,7 +318,8 @@ regress. A gate may carry a synthetic cell only as a secondary cell, as the set 
 - **pipeline** consumes: `tune` and `regress`, and the census for its classifier.
 - **lead** merges and rules on §10.
 
-**Where the code lives: a new public repository, proposed `HeOCR/hdocsyngen`.**
+**Where the code lives: a new public repository, `HeOCR/hdocsyngen`** (agreed by lead, 2026-11-19). The code is
+Apache-2.0; output is CC0 only where all of its inputs are CC0. Lead creates the repository after this note merges.
 - hocrsyngen's scope is image and line samples. Its `AGENTS.md` keeps external application drivers and heavy
   dependencies out of its baseline.
 - A document generator that drives Word, LibreOffice and Chrome is a different tool, with different pins.
@@ -376,7 +379,7 @@ regress. A gate may carry a synthetic cell only as a secondary cell, as the set 
   - The LibreOffice, Chrome and Ghostscript routes run on a pod for a few dollars.
   - Word is the bottleneck, and the reason a Windows host would matter.
 
-**What the pilot needs from Shay:**
+**What the pilot needs from Shay** (lead asks him after this note merges; nothing on the Mac changes before then):
 1. **macOS Automation permission:** allow the terminal (or the runner process) to control Microsoft Word through
    AppleScript. This is a one-time system prompt that a session cannot answer.
 2. **Word's file access:** Word for Mac is sandboxed. Shay grants it access to the pilot's working folder once, or
@@ -391,22 +394,27 @@ Nothing else: no accounts, and no money.
 
 ## 10. Open decisions
 
-**For lead:**
-1. The new repository `HeOCR/hdocsyngen`, or a subpackage in hocrsyngen.
-2. Reshumot text in the public CC0 release: excluded (proposed), or included with its US status flagged.
-3. The Culmus licence reading: GPL-2 with the font exception, so embedded output is free of the GPL.
-4. Google Docs (P4): whether to create an OAuth client on the project account.
+**Decided by lead (2026-11-19):**
+1. **Repository:** a new public repository, `HeOCR/hdocsyngen`, Apache-2.0 code. Lead creates it after this note merges.
+2. **Reshumot text:** out of the CC0 release. A separate subset marked PD, with its US-status flag, is allowed. It is
+   never relabelled CC0.
+3. **Culmus:** the font exception lets us embed subsets in generated PDFs without making them GPL. Font files are not
+   redistributed in datasets.
+4. **Google Docs (P4):** deferred. No new OAuth client.
+5. **§7:** disjoint seeds plus held-out axes, with a D-bench-pinned fork as the fallback, is fine by lead. It still
+   needs eval's explicit OK (item 8), and it goes into the RC2 amendment if it touches gate sets.
+6. **Shay's §9 OKs:** lead asks Shay after the merge. Nothing on the Mac changes before then.
 
 **For eval:**
 
-5. Owning `hdoc_tree.v1` and the gold layers (§3), and the two label bases.
-6. The measures (§6).
-7. The aggregate dev table for calibration (§4.2), and whether it may be published.
-8. The amendment to the D-bench generator rule (§7).
+7. Owning `hdoc_tree.v1` and the gold layers (§3), and the two label bases.
+8. The measures (§6).
+9. The aggregate dev table for calibration (§4.2), and whether it may be published.
+10. The amendment to the D-bench generator rule (§7): needs eval's explicit OK.
 
 **For pipeline:**
 
-9. What `regress` must contain for its CI (size, chains).
-10. Whether the tagged-PDF structure tree (P2) and the census per page are useful inputs.
+11. What `regress` must contain for its CI (size, chains).
+12. Whether the tagged-PDF structure tree (P2) and the census per page are useful inputs.
 
 — synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
