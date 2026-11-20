@@ -145,7 +145,6 @@ def encode(image, label, output, tessdata):
 def prepare_pairs(root, work, out, rows, tiles):
     for arm in ARMS:
         (work / arm).mkdir(parents=True, exist_ok=True)
-        (out / 'paired' / arm).mkdir(parents=True, exist_ok=True)
     images, masks = [], {}
     for row in rows:
         line_id = row['id']
@@ -172,25 +171,17 @@ def prepare_pairs(root, work, out, rows, tiles):
         if any(text != label for text in decoded):
             reason['reader_mismatch'] += 1
             continue
-        outputs = [out / 'paired' / arm / f'{line_id}.lstmf' for arm in ARMS]
         pair_images = images[2*i:2*i + 2]
-        if not all(encode(img, label, file, root / 'tessdata') for img, file in zip(pair_images, outputs)):
-            for file in outputs:
-                file.unlink(missing_ok=True)
-            reason['lstmf_encoding'] += 1
-            continue
         saved = {'id': line_id, 'label_sha256': line_id, 'mask_sha256': masks[line_id]}
-        for arm, image, output in zip(ARMS, pair_images, outputs):
-            saved[arm] = {'lstmf': output.relative_to(out).as_posix(), 'sha256': sha256(output),
-                          'image_sha256': sha256(image),
-                          'pixels_sha256': hashlib.sha256(read_gray(image).tobytes()).hexdigest()}
+        for arm, image in zip(ARMS, pair_images):
+            saved[arm] = {'pixels_sha256': hashlib.sha256(read_gray(image).tobytes()).hexdigest()}
         accepted.append(saved)
     by_id = {row['id']: row['text'] for row in rows}
     coverage = set(''.join(by_id[row['id']] for row in accepted))
     accepted_fonts = {row['id']: row['font_id'] for row in read_records(root / 'render/manifest.jsonl')}
     supported = len({accepted_fonts[row['id']] for row in accepted}) == 2
     supported = supported and set(''.join(CONFUSABLES)) <= coverage
-    with (out / 'pairs.jsonl').open('w') as handle:
+    with (out / 'accepted.jsonl').open('w') as handle:
         for row in accepted:
             handle.write(json.dumps(row) + '\n')
     write_json(out / 'quality.json', {'attempted': len(rows), 'accepted': len(accepted),
@@ -231,7 +222,7 @@ def main():
                                        'style_manifest_sha256': sha256(root / 'style-crops.jsonl'),
                                        'label_manifest_sha256': sha256(root / 'train-labels.jsonl'),
                                        'assets_sha256': sha256(config_path)})
-    print('Decoding and encoding the paired lines.', flush=True)
+    print('Checking both readers on the paired lines.', flush=True)
     prepare_pairs(root, work, out, rows, read_tiles(out / 'paper-tiles.jsonl'))
 
 
