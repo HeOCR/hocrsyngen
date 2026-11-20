@@ -49,6 +49,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install --force-reinstall --no-binary Pillow -C raqm=enable "Pillow>=10"
           python -m pip install -e ".[test]"
+          python -m pip install -r experiments/scanifier_v2/requirements.txt
 
       - name: Verify Pillow libraqm support
         run: |

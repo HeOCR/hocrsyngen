@@ -738,6 +738,10 @@ Planned PR breakdown:
   | TOTAL | 80 | 440 → 640 | 12,939 → 13,870 (11,051 → 11,982) | +931 (+7.2%) |
 
   Status: done in PR #75.
+- `S10d` — Scanifier v2: generate synthetic phone captures from annotated
+  procedural print pages. Publish a hash-bound sidecar with transformed line
+  and region geometry, uncalibrated priors, and a fit tool for the registered
+  print pack. See [scanifier v2](../experiments/scanifier_v2/README.md).
 
 Exit criteria:
 
