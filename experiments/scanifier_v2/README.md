@@ -50,6 +50,8 @@ The geometry is the composition of EXIF orientation, two invertible piecewise-li
 
 Use a dedicated folder of original **HEOCR-CAL-V1 calibration** JPEGs named by the [shot list and addendum](calibration_pack/README.md). The fitter opens only registered names and requires matching ArUco page IDs before taking measurements. Capture photos, their EXIF, and private collection paths belong outside this repository.
 
+**Use of the photos.** Calibration-pack frames feed calibration and development only. They never enter a training list. No PS-v1 or NQ1 photo (both are held-out test sets) is ever an input; the fitter's registered-name and ArUco checks refuse them.
+
 ```sh
 python -m experiments.scanifier_v2.fit_calibration path/to/calibration-jpegs out/scanifier-fit
 python -m experiments.scanifier_v2 out/scanifier-source out/scanifier-fitted \
