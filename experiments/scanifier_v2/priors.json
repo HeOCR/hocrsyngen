@@ -1,0 +1,75 @@
+{
+  "geometry": {
+    "long_edge_px": [1000, 1800],
+    "margin": [0.035, 0.13],
+    "frame_aspect": [0.72, 0.80],
+    "pitch_deg": [-29, 29],
+    "yaw_deg": [-24, 24],
+    "distance": [1.25, 2.6],
+    "roll_deg": [-10, 10],
+    "quarter_turn_weights": {"0": 0.78, "90": 0.08, "180": 0.06, "270": 0.08},
+    "curl_probability": 0.42,
+    "curl": [-0.055, 0.055],
+    "crumple_probability": 0.32,
+    "crumple": [0.006, 0.036],
+    "crumple_cycles": [1.1, 3.5],
+    "crumple_phase_deg": [0, 360]
+  },
+  "surface": {
+    "kind_weights": {"dark_table": 0.38, "grey_floor": 0.34, "wood": 0.28},
+    "dark_table_rgb": [[40, 66], [36, 61], [34, 56]],
+    "grey_floor_rgb": [[102, 146], [103, 148], [102, 146]],
+    "wood_rgb": [[106, 166], [66, 114], [38, 73]],
+    "texture": [0.07, 0.20],
+    "wood_rings": [13, 35],
+    "wood_angle_deg": [-50, 50]
+  },
+  "lighting": {
+    "exposure": [0.67, 1.18],
+    "low_light_probability": 0.25,
+    "low_light_exposure": [0.22, 0.55],
+    "gradient": [0.04, 0.34],
+    "gradient_angle_deg": [0, 360],
+    "vignette": [0.02, 0.25],
+    "white_balance_r": [0.84, 1.18],
+    "white_balance_g": [0.94, 1.06],
+    "white_balance_b": [0.76, 1.23]
+  },
+  "hard_light": {
+    "probability": 0.43,
+    "kind_weights": {"shadow_stripe": 0.45, "shadow_square": 0.32, "sun_patch": 0.23},
+    "center_x": [0.28, 0.72],
+    "center_y": [0.26, 0.74],
+    "angle_deg": [-65, 65],
+    "width": [0.12, 0.38],
+    "edge_px": [0.65, 2.4],
+    "shadow_gain": [0.38, 0.72],
+    "sun_gain": [1.22, 1.9]
+  },
+  "optics": {
+    "defocus_sigma_px": [0.24, 1.3],
+    "defocus_gradient_px": [0, 1.4],
+    "defocus_angle_deg": [0, 360],
+    "motion_probability": 0.45,
+    "motion_length_px": [1.4, 8.0],
+    "motion_angle_deg": [0, 180]
+  },
+  "sensor": {
+    "shot_noise": [0.000007, 0.00008],
+    "read_noise": [0.0005, 0.003],
+    "low_light_shot_noise": [0.00008, 0.00065],
+    "low_light_read_noise": [0.002, 0.009]
+  },
+  "isp": {
+    "denoise_sigma_px": [0.65, 2.1],
+    "denoise_strength": [0.0, 0.32],
+    "low_light_denoise_strength": [0.26, 0.72],
+    "denoise_edge_threshold": [0.045, 0.18],
+    "sharpen_sigma_px": [0.6, 1.7],
+    "sharpen_amount": [0.22, 0.95]
+  },
+  "jpeg": {
+    "quality": [74, 96],
+    "subsampling_weights": {"0": 0.1, "1": 0.1, "2": 0.8}
+  }
+}
