@@ -1,0 +1,12 @@
+{
+  "blur_px": 0.55,
+  "border": true,
+  "brightness": 0.985,
+  "colorspace": "gray",
+  "contrast": 1.06,
+  "noise_stddev": 0.012,
+  "rotate_deg": 0.25,
+  "rotate_variance_deg": 0.5,
+  "scale": 1.0,
+  "yellowish": 0.0
+}
