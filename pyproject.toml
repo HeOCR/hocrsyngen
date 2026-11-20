@@ -23,6 +23,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+niqqud-probe = [
+  "uharfbuzz>=0.40",
+  "fonttools>=4",
+]
 test = [
   "pytest>=8",
 ]

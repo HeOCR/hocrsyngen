@@ -1,0 +1,152 @@
+{
+  "font": "NotoSansHebrew-wdth-wght.ttf",
+  "sha256": "7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88",
+  "cases": [
+    {
+      "case": "point-05B0",
+      "text": "בְג",
+      "issues": []
+    },
+    {
+      "case": "point-05B1",
+      "text": "בֱג",
+      "issues": []
+    },
+    {
+      "case": "point-05B2",
+      "text": "בֲג",
+      "issues": []
+    },
+    {
+      "case": "point-05B3",
+      "text": "בֳג",
+      "issues": []
+    },
+    {
+      "case": "point-05B4",
+      "text": "בִג",
+      "issues": []
+    },
+    {
+      "case": "point-05B5",
+      "text": "בֵג",
+      "issues": []
+    },
+    {
+      "case": "point-05B6",
+      "text": "בֶג",
+      "issues": []
+    },
+    {
+      "case": "point-05B7",
+      "text": "בַג",
+      "issues": []
+    },
+    {
+      "case": "point-05B8",
+      "text": "בָג",
+      "issues": []
+    },
+    {
+      "case": "point-05B9",
+      "text": "בֹג",
+      "issues": []
+    },
+    {
+      "case": "point-05BA",
+      "text": "בֺג",
+      "issues": []
+    },
+    {
+      "case": "point-05BB",
+      "text": "בֻג",
+      "issues": []
+    },
+    {
+      "case": "point-05BC",
+      "text": "בּג",
+      "issues": []
+    },
+    {
+      "case": "point-05BD",
+      "text": "בֽג",
+      "issues": []
+    },
+    {
+      "case": "point-05BF",
+      "text": "בֿג",
+      "issues": []
+    },
+    {
+      "case": "point-05C1",
+      "text": "בׁג",
+      "issues": []
+    },
+    {
+      "case": "point-05C2",
+      "text": "בׂג",
+      "issues": []
+    },
+    {
+      "case": "point-05C7",
+      "text": "בׇג",
+      "issues": []
+    },
+    {
+      "case": "shin-shin",
+      "text": "שַׁג",
+      "issues": [
+        "geometry and mark identity not checked for combinations"
+      ]
+    },
+    {
+      "case": "shin-sin",
+      "text": "שַׂג",
+      "issues": [
+        "geometry and mark identity not checked for combinations"
+      ]
+    },
+    {
+      "case": "dagesh-vowel",
+      "text": "בָּג",
+      "issues": [
+        "geometry and mark identity not checked for combinations"
+      ]
+    },
+    {
+      "case": "holam-male",
+      "text": "בּוֹג",
+      "issues": [
+        "geometry and mark identity not checked for combinations"
+      ]
+    },
+    {
+      "case": "holam-haser",
+      "text": "בוֺג",
+      "issues": [
+        "geometry and mark identity not checked for combinations"
+      ]
+    },
+    {
+      "case": "qamats-qatan",
+      "text": "בׇּג",
+      "issues": [
+        "geometry and mark identity not checked for combinations"
+      ]
+    },
+    {
+      "case": "above-stack",
+      "text": "בַּ֨ג",
+      "issues": [
+        "geometry and mark identity not checked for combinations"
+      ]
+    },
+    {
+      "case": "below-stack",
+      "text": "בָּ֖ג",
+      "issues": [
+        "geometry and mark identity not checked for combinations"
+      ]
+    }
+  ]
+}
