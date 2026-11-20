@@ -10,7 +10,7 @@
 
 - **Where stock stands.** The `heocr` OCR route runs stock Tesseract `heb` (tessdata_best, sha256 `dbaa827a…abdae5`) by default, because none of our models beats it on modern scans.
 - **The weakest gate cells are all modern-print OCR:** PDF T5 (image-only), PDF T4 (garbage layer, read through OCR) and scanned tables.
-- **What is actually open is number recall, not CER** (heocr-eval, 2026-11-18, synthetic set `synth-2026-11-17-main`, heocr at `7f5e99e`). heocr already beats stock on CER in all three cells. Its number recall is below the best baseline in each cell by more than the 1-point margin. §2.1 has the figures.
+- **What is actually open is number recall** (heocr-eval's reading of the synthetic set `synth-2026-11-17-main`, heocr at `7f5e99e`). No synthetic-set figure is reported (Shay, 2026-11-20).
 - **So this work is aimed at numbers first:** dates, amounts, ₪, %, section numbers, and digits in table cells.
 - **What S17 and the R-series taught:**
   - Our models were trained toward mid-century books.
@@ -27,15 +27,9 @@
 - **Baselines:** stock Tesseract (tessdata_best `heb`, psm 3), docling, markitdown, pymupdf4llm, and the production tender-extraction pipeline.
 - **How a model gets in.** A new model inside heocr's OCR route is a dated amendment plus a run on a fresh synthetic set: the D-bench generators with new seeds. A test-split veto can only hold a cell back. eval runs it; I never read the test split, `eval_refs/` or any `runs/*test*`.
 
-### 2.1 Target cells and where they stand (synthetic `synth-2026-11-17-main`, heocr `7f5e99e`; aggregates from eval)
+### 2.1 Target cells
 
-| Cell (docs) | Gate measures | stock | docling | pymupdf4llm | heocr (stock inside) | Open |
-|---|---|---|---|---|---|---|
-| **PDF T5** image-only: `B/pdf_t5_scan`, `C/pdf_t5_office`, `C/pdf_t5_office_numbers` (82) | CER, number recall, silent loss | CER 11.5, NR 42.0, silent 10.4 | CER 81.5, NR 77.6 | CER 81.1, NR 84.0 | CER 7.0, **NR 74.8**, silent 4.1 | NR: about 9 pt below pymupdf4llm |
-| **PDF T4** garbage layer: `B/pdf_t4_garbage` (40) | the same | CER 9.1, NR 45.8, silent 8.0 | NR 70.4 | | CER 6.0, **NR 68.6**, silent 2.1 | NR: about 2 pt below docling |
-| **Scanned tables**: `C/pdf_t5_table`, `_faint`, `_merged` (120) | CER, NR, rows read, rows silent, silent loss | CER 54.5, NR 14.2, rows read 3.7 | NR 95.0, rows read 2.5 | | CER 18.1, **NR 87.0**, rows read 66.9, rows silent 2.8 | NR: 8 pt below docling |
-
-Number recall is not a cell of its own. It is the number-recall measure inside each cell, against every baseline.
+PDF T5 (image-only), PDF T4 (garbage text layer) and scanned tables, each with its gate measures. Where they stood was read on the synthetic set `synth-2026-11-17-main`. No synthetic-set figure is reported (Shay, 2026-11-20).
 
 ### 2.2 First step: is the number gap the recogniser's?
 
@@ -46,37 +40,10 @@ Synthetic data for the recogniser only helps if the missed numbers are **misread
 
 The class counts per cell go to the lead and to pipeline. **If most of the gap is absent, I report that before generating anything,** because the fix then belongs in heocr, not in the model.
 
-#### 2.2.1 Result (2026-11-18, synth-2026-11-17-main, heocr 7f5e99e; counts only)
+#### 2.2.1 Result
 
-The scripts are [`diagnosis/numgap.py`](diagnosis/numgap.py) and [`diagnosis/number_assembly.py`](diagnosis/number_assembly.py). They import eval's frozen `measures.py` (`NUM`, `fold`, `clean`) and build the reference as `gate.doc_units` does. They reproduce the gate's number recall exactly for every reader and cell: heocr 74.75 / 68.60 / 87.01, docling 77.61 / 70.44 / 95.02, pymupdf4llm 84.00. The outputs ([json](diagnosis/numgap_synth-2026-11-17-main.json), [txt](diagnosis/number_assembly_synth-2026-11-17-main.txt)) hold counts only.
+The scripts are [`diagnosis/numgap.py`](diagnosis/numgap.py) and [`diagnosis/number_assembly.py`](diagnosis/number_assembly.py) (known-string tests in `tests/test_office_print_diagnosis.py`). They classed heocr's number misses on the synthetic sets B and C. No synthetic-set figure is reported (Shay, 2026-11-20). The finding that guided this plan: the recogniser is the lever, above all line-initial multi-level section labels (`1.1`, `2.2.4.`, `(א)`) read down to their last level, plus digits in table cells; a rejoin in heocr is not the fix.
 
-**Correction (2026-11-18, found by pipeline).** The first version of this result, commit `8ab3fc5`, said most misses were digit groups reversed with spaces, worth about 20 points. That was a regex bug in `number_assembly.py`: an ungrouped `|` in the gap pattern split the whole pattern into alternatives, so a single group next to any whitespace counted as a match. With the gap grouped, reversed-and-spaced numbers are rare (27 in T5, 12 in T4, 0 in tables, after the boundary fix below), and a rejoin would gain well under 1 point. pipeline reproduced the fixed counts on its own run (`full-m59`). The table below is the fixed probe. `numgap.py`'s classes (misread, absent, split) never used that pattern and stand as they were.
-
-**Known-string tests (lead, 2026-11-18).** `number_assembly.py` now checks its classifier against a table of invented known strings before every run, and `tests/test_office_print_diagnosis.py` runs the same table in CI. On the first run, the tests caught a second, smaller looseness: a group inside a longer number counted (`13` in `13.5`). Number boundaries now also exclude a neighbouring separator followed by a digit. The table below uses the tested classifier.
-
-**What the misses are (heocr, tested probe):**
-
-| Cell | Misses / ref | Multi-level sections `1.2.3`, groups apart | `3.1`, joined digits on the page (page-wide; aligned, almost none, see below) | `3.1`, groups apart | Dates, partial or apart | Dates, no group | Reversed (no space / with space) | Other shapes (ints, amounts, %) |
-|---|---|---|---|---|---|---|---|---|
-| T5 | 2,028 / 8,032 | 539 | 289 | 301 | 273 | 134 | 66 / 27 | 320 |
-| T4 | 1,129 / 3,596 | 357 | 190 | 212 | 51 | 47 | 28 / 12 | 178 |
-| Scanned tables | 663 / 5,103 | 0 | 0 | 0 | 155 | 91 | 0 / 0 | 416 |
-
-- **These classes are page-wide, so they are upper bounds by class.** A group or a joined digit string is searched for anywhere on the page, so a stray `11` counts as `1.1` with its dot dropped.
-- **pipeline's line-aligned count (2026-11-18)** is the better guide for training targets. On set C T5, at heocr main, each missed `d.d` token was aligned word by word to its best-matching output line:
-  - only the last level read: **346**;
-  - another number, often with the first level dropped (`2.2.` for `1.2.2`): **100**;
-  - not a number: 20;
-  - a dot really dropped: **12**.
-  Dates read as non-numbers are 29 in T5 and 56 in tables. So "dots dropped inside numbers" is almost empty once misses are aligned to their place.
-- **"Groups apart"** means every digit group of the number is somewhere on the page, but not together. This fits what pipeline sees on OCR'd pages: a multi-level label cut down to its last piece (`2.2.4.` read as `4.`), and a first level lost (`2.2.` for `1.2.2`).
-- **Truly absent numbers,** with no group anywhere, are mostly dates (134 in T5, 47 in T4, 91 in tables). Sections are rarely absent (23 / 17 / 1).
-- **At pipeline's later segment-tokens run,** T5 misses are already 1,082 + 740 (sets B + C), with 16 + 18 reversed with spaces.
-
-**What follows (pipeline, 2026-11-18; the lever moves from spaces to labels):**
-1. **The recogniser is the lever,** above all **line-initial multi-level section labels** (`1.1`, `2.2.4.`, `12.4.1`, `(א)`), which are read down to their last level or lose their first level. These are what this plan's numbered-structure part trains (§3). Dates read as something other than a number come second (§4).
-2. **A rejoin in heocr is not the fix.** pipeline's token segmentation already changes the counts, so every arm is scored at a fixed heocr commit, with pipeline's segmentation at that commit.
-3. **Tables need digit reading in cells:** short integers, amounts and %, the 416 other misses. Their dates are partial (155) or absent (91).
 ### 2.3 Development rule (fixed in the arm-registration PR, before either arm trains)
 
 > **Registered 2026-11-18 in [REGISTRATION.md](REGISTRATION.md),** which holds where it differs from this section. The deciding heocr commit is the frozen release candidate `57e58de`; `7f5e99e` gives the model's own share; main at scoring time is information only.
