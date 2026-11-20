@@ -9,6 +9,15 @@ This document makes the current readiness state explicit. It records what is
 ready in `hocrsyngen`, what remains before generated batches can become
 governed dataset inputs, and which roadmap items should carry the work.
 
+## HeOCR model publication
+
+HeOCR's trained models and packaged OCR pipeline are unpublished pending a
+result that beats the state of the art on at least one document type in a
+registered real held-out comparison. hocrsyngen produces candidate inputs
+for development. Code and clean CC0 data remain public. The
+[HeOCR Engine release documentation](https://github.com/HeOCR/heocr-engine/tree/main/release)
+records the publication policy.
+
 ## Current State After S6g
 
 The last merged roadmap item is `S6g` - `hocrgen` adapter handoff checklist,

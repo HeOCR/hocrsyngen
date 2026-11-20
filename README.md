@@ -25,6 +25,11 @@ validation, packaged fonts, and candidate-only governance boundaries.
 | Release status | Candidate input only; not a release-ready dataset payload |
 | Runtime boundary | No REST, GPU, LLM, diffusion, or network dependency in the baseline |
 
+HeOCR's trained models and packaged OCR pipeline are unpublished. HeOCR will
+release them after a registered real held-out comparison shows that the system
+beats the state of the art on at least one document type. See the
+[HeOCR model publication status](https://github.com/HeOCR/heocr-engine/tree/main/release).
+
 ## What This Repository Owns
 
 This package owns deterministic candidate synthetic sample generation.
