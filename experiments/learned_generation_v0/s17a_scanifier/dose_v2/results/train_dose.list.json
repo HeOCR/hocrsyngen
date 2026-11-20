@@ -1,0 +1,18 @@
+{
+ "main_list": "r8b-tesseract/data/train_main.list",
+ "main_sha256": "be972aa431feb8befa987a0b4599c81a2cc615a5e7c15fce2862819b6205c102",
+ "main_lines": 196275,
+ "addon_lines": 18553,
+ "arm_lines": 214828,
+ "seed": 20261115,
+ "arm_sha256": "e35d47e06463ec006e6a2df847f919ddf1f89b018ea66d00d1a4042fe59f5cd3",
+ "pretrain_6gram_hits": {
+  "r8_dev_list": 0,
+  "audit2_refs": 0,
+  "rseries_lists": 0,
+  "ngram_overlap_targets": 0,
+  "pmod_eval_pages": 0,
+  "midcentury_heldout": 0
+ },
+ "positive_control_kevar_hits": 188
+}

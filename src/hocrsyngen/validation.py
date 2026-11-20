@@ -1,0 +1,333 @@
+from __future__ import annotations
+
+import json
+import unicodedata
+from dataclasses import dataclass
+from importlib import resources
+from json import JSONDecodeError
+from pathlib import Path, PurePosixPath
+from typing import Any
+
+import jsonschema
+from PIL import Image, UnidentifiedImageError
+
+from hocrsyngen.generator import (
+    BOOK_TEMPLATE_IDS,
+    COMPOSED_TEMPLATE_CATALOG,
+    COMPOSED_TEMPLATE_IDS,
+    GENERATOR_VERSION,
+    GLYPH_COMPOSER_VERSION,
+    GOVERNED_TEMPLATE_IDS,
+    PREVIOUS_GENERATOR_VERSIONS,
+    TemplateCatalogEntry,
+    template_catalog,
+)
+from hocrsyngen.io import sha256_file
+from hocrsyngen.line_annotations import (
+    LINE_ANNOTATIONS_FILENAME,
+    LineAnnotationsError,
+    validate_line_annotations,
+)
+from hocrsyngen.manifest import (
+    GENERATION_MANIFEST_VERSION,
+    PROJECT_SYNTHETIC_LICENSE,
+    SYNTHETIC_DISCLOSURE,
+    PageAsset,
+    TextMetadata,
+)
+
+
+MANIFEST_FILENAME = "generation_manifest.json"
+
+
+@dataclass(frozen=True)
+class ValidationResult:
+    sample_count: int
+    page_count: int
+
+
+class BatchValidationError(ValueError):
+    pass
+
+
+def validate_batch(batch_dir: Path) -> ValidationResult:
+    root = batch_dir.resolve()
+    manifest_path = root / MANIFEST_FILENAME
+    if not batch_dir.exists():
+        raise BatchValidationError(f"Batch path does not exist: {batch_dir}")
+    if not batch_dir.is_dir():
+        raise BatchValidationError(f"Batch path is not a directory: {batch_dir}")
+    if not manifest_path.is_file():
+        raise BatchValidationError(f"Missing manifest: {manifest_path}")
+
+    payload = _load_manifest_payload(manifest_path)
+    _validate_manifest_schema(payload)
+    _validate_manifest_constants(payload)
+    governed_templates = _load_governed_template_catalog(
+        {sample["provenance"]["template_id"] for sample in payload["samples"]}
+    )
+
+    page_count = 0
+    for sample_index, sample in enumerate(payload["samples"]):
+        _validate_text(sample["text"], sample_index)
+        _validate_sample_constants(sample, sample_index, governed_templates)
+        for page_index, page in enumerate(sample["pages"]):
+            _validate_page(root, page, sample_index, page_index)
+            page_count += 1
+    if (root / LINE_ANNOTATIONS_FILENAME).exists():
+        try:
+            validate_line_annotations(root, payload)
+        except LineAnnotationsError as exc:
+            raise BatchValidationError(str(exc)) from exc
+    _validate_glyph_provenance(root, payload)
+    from hocrsyngen.paired_render import FILENAME, PairedRenderError, validate_paired_render
+
+    pair_sidecar = root / FILENAME
+    if pair_sidecar.is_symlink():
+        raise BatchValidationError("Paired render sidecar must be a local file, not a symlink")
+    if pair_sidecar.exists():
+        try:
+            validate_paired_render(root, payload)
+        except PairedRenderError as exc:
+            raise BatchValidationError(str(exc)) from exc
+    return ValidationResult(sample_count=len(payload["samples"]), page_count=page_count)
+
+
+def _validate_glyph_provenance(root: Path, payload: dict[str, Any]) -> None:
+    from hocrsyngen.glyph_compose import GLYPH_PROVENANCE_FILENAME, GlyphProvenanceError, validate_glyph_provenance
+
+    sidecar = root / GLYPH_PROVENANCE_FILENAME
+    composed = any(sample["provenance"]["template_id"] in COMPOSED_TEMPLATE_IDS for sample in payload["samples"])
+    if sidecar.is_symlink():
+        raise BatchValidationError("Glyph provenance sidecar must be a local file, not a symlink")
+    if not sidecar.exists():
+        if composed:
+            raise BatchValidationError(
+                f"Batch has real-glyph composed samples but no {GLYPH_PROVENANCE_FILENAME}."
+            )
+        return
+    try:
+        validate_glyph_provenance(root, payload)
+    except GlyphProvenanceError as exc:
+        raise BatchValidationError(str(exc)) from exc
+
+
+def _load_manifest_payload(manifest_path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except JSONDecodeError as exc:
+        raise BatchValidationError(
+            f"Malformed manifest JSON at line {exc.lineno}, column {exc.colno}: {exc.msg}"
+        ) from exc
+    except OSError as exc:
+        raise BatchValidationError(f"Could not read manifest: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise BatchValidationError("Manifest must be a JSON object.")
+    return payload
+
+
+def _validate_manifest_schema(payload: dict[str, Any]) -> None:
+    schema = json.loads(
+        (
+            resources.files("hocrsyngen")
+            / "schemas"
+            / "generation_manifest.schema.json"
+        ).read_text(encoding="utf-8")
+    )
+    validator = jsonschema.Draft202012Validator(schema)
+    errors = sorted(validator.iter_errors(payload), key=lambda error: list(error.path))
+    if errors:
+        error = errors[0]
+        location = _json_location(error.path)
+        raise BatchValidationError(
+            f"Manifest schema validation failed at {location}: {error.message}"
+        )
+
+
+def _validate_manifest_constants(payload: dict[str, Any]) -> None:
+    if payload["manifest_version"] != GENERATION_MANIFEST_VERSION:
+        raise BatchValidationError(
+            "Manifest version does not match hocrsyngen manifest v1."
+        )
+    if payload["generator_name"] != "hocrsyngen":
+        raise BatchValidationError("Manifest generator_name must be hocrsyngen.")
+    if payload["license"] != PROJECT_SYNTHETIC_LICENSE:
+        raise BatchValidationError("Manifest license must be PROJECT-SYNTHETIC.")
+    if payload["synthetic_disclosure"] != SYNTHETIC_DISCLOSURE:
+        raise BatchValidationError(
+            "Manifest synthetic_disclosure does not match the hocrsyngen v1 disclosure."
+        )
+
+
+def _validate_sample_constants(
+    sample: dict[str, Any],
+    sample_index: int,
+    governed_templates: dict[str, TemplateCatalogEntry],
+) -> None:
+    location = f"samples[{sample_index}]"
+    if sample["license"] != PROJECT_SYNTHETIC_LICENSE:
+        raise BatchValidationError(f"{location}.license must be PROJECT-SYNTHETIC.")
+    if sample["synthetic_disclosure"] != SYNTHETIC_DISCLOSURE:
+        raise BatchValidationError(
+            f"{location}.synthetic_disclosure does not match the hocrsyngen v1 disclosure."
+        )
+    if sample["provenance"]["template_id"] in COMPOSED_TEMPLATE_IDS:
+        if sample["generator_version"] != GLYPH_COMPOSER_VERSION:
+            raise BatchValidationError(
+                f"{location}.generator_version must be {GLYPH_COMPOSER_VERSION} for a real-glyph composed template."
+            )
+    elif sample["generator_version"] not in (GENERATOR_VERSION, *PREVIOUS_GENERATOR_VERSIONS):
+        raise BatchValidationError(
+            f"{location}.generator_version must be {GENERATOR_VERSION} "
+            f"or a previous version ({', '.join(PREVIOUS_GENERATOR_VERSIONS)})."
+        )
+    if sample["recipe_id"] != sample["provenance"]["recipe_id"]:
+        raise BatchValidationError(
+            f"{location}.recipe_id must match provenance.recipe_id."
+        )
+    _validate_provenance_contract(
+        sample["provenance"], sample_index, governed_templates
+    )
+
+
+def _load_governed_template_catalog(used_template_ids: set[str]) -> dict[str, TemplateCatalogEntry]:
+    # The governed templates always; a book template only when the batch uses it.
+    template_ids = [*GOVERNED_TEMPLATE_IDS, *(t for t in BOOK_TEMPLATE_IDS if t in used_template_ids)]
+    try:
+        entries = [*template_catalog(template_ids), *COMPOSED_TEMPLATE_CATALOG]
+    except (OSError, ValueError) as exc:
+        raise BatchValidationError(
+            f"Could not load governed template catalog: {exc}"
+        ) from exc
+    return {entry.template_id: entry for entry in entries}
+
+
+def _validate_provenance_contract(
+    provenance: dict[str, Any],
+    sample_index: int,
+    governed_templates: dict[str, TemplateCatalogEntry],
+) -> None:
+    location = f"samples[{sample_index}].provenance"
+    template_id = provenance["template_id"]
+    expected = governed_templates.get(template_id)
+    if expected is None:
+        raise BatchValidationError(
+            f"{location}.template_id is not a governed template: {template_id}"
+        )
+    if provenance["recipe_id"] != expected.recipe_id:
+        raise BatchValidationError(
+            f"{location}.recipe_id must be {expected.recipe_id} for template_id {template_id}."
+        )
+    if provenance["degradation_preset"] != expected.degradation_preset:
+        raise BatchValidationError(
+            f"{location}.degradation_preset must be {expected.degradation_preset} "
+            f"for template_id {template_id}."
+        )
+    if provenance["font_id"] != expected.font_id:
+        raise BatchValidationError(
+            f"{location}.font_id must be {expected.font_id} for template_id {template_id}."
+        )
+
+
+def _validate_text(text: dict[str, Any], sample_index: int) -> None:
+    location = f"samples[{sample_index}].text"
+    try:
+        TextMetadata(**text)
+    except (TypeError, ValueError) as exc:
+        raise BatchValidationError(f"{location}: {exc}") from exc
+    logical_order = text["logical_order"]
+    if logical_order != unicodedata.normalize("NFC", logical_order):
+        raise BatchValidationError(f"{location}.logical_order must be NFC-normalized.")
+    if text != {
+        "logical_order": logical_order,
+        "script": "Hebr",
+        "language": "he",
+        "direction": "rtl",
+        "unicode_normalization": "NFC",
+    }:
+        raise BatchValidationError(f"{location} must retain Hebrew RTL metadata.")
+
+
+def _validate_page(
+    root: Path, page: dict[str, Any], sample_index: int, page_index: int
+) -> None:
+    location = f"samples[{sample_index}].pages[{page_index}]"
+    try:
+        PageAsset(**page)
+    except (TypeError, ValueError) as exc:
+        raise BatchValidationError(f"{location}: {exc}") from exc
+
+    asset_path = _portable_asset_path(page["asset_path"], location)
+    path = root / Path(*asset_path.parts)
+    if not path.is_file():
+        raise BatchValidationError(
+            f"{location}.asset_path is missing: {page['asset_path']}"
+        )
+    if not path.resolve().is_relative_to(root):
+        raise BatchValidationError(
+            f"{location}.asset_path must stay under the batch directory: {page['asset_path']}"
+        )
+
+    actual_sha256 = sha256_file(path)
+    if actual_sha256 != page["sha256"]:
+        raise BatchValidationError(
+            f"{location}.sha256 mismatch for {page['asset_path']}: expected {page['sha256']}, got {actual_sha256}"
+        )
+
+    _verify_image(path, location, page["asset_path"])
+    try:
+        with Image.open(path) as image:
+            image.load()
+            if image.format != "JPEG":
+                raise BatchValidationError(
+                    f"{location}.media_type mismatch for {page['asset_path']}: expected image/jpeg, got {image.format}"
+                )
+            if image.size != (page["width"], page["height"]):
+                raise BatchValidationError(
+                    f"{location} dimensions mismatch for {page['asset_path']}: "
+                    f"expected {page['width']}x{page['height']}, got {image.size[0]}x{image.size[1]}"
+                )
+    except UnidentifiedImageError as exc:
+        raise BatchValidationError(
+            f"{location}.asset_path is not a readable image: {page['asset_path']}"
+        ) from exc
+    except OSError as exc:
+        raise BatchValidationError(
+            f"{location}.asset_path is not a valid image: {page['asset_path']}"
+        ) from exc
+
+
+def _verify_image(path: Path, location: str, asset_path: str) -> None:
+    try:
+        with Image.open(path) as image:
+            image.verify()
+    except UnidentifiedImageError as exc:
+        raise BatchValidationError(
+            f"{location}.asset_path is not a readable image: {asset_path}"
+        ) from exc
+    except OSError as exc:
+        raise BatchValidationError(
+            f"{location}.asset_path is not a valid image: {asset_path}"
+        ) from exc
+
+
+def _portable_asset_path(value: str, location: str) -> PurePosixPath:
+    path = PurePosixPath(value)
+    if path.is_absolute() or ".." in path.parts or "\\" in value:
+        raise BatchValidationError(
+            f"{location}.asset_path must be a relative portable path: {value}"
+        )
+    return path
+
+
+def _json_location(path: Any) -> str:
+    parts = list(path)
+    if not parts:
+        return "$"
+    location = "$"
+    for part in parts:
+        if isinstance(part, int):
+            location += f"[{part}]"
+        else:
+            location += f".{part}"
+    return location

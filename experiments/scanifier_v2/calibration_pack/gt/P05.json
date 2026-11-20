@@ -1,0 +1,578 @@
+{
+ "page": "P05",
+ "title": "pointed verse",
+ "size_px": [
+  4961,
+  7016
+ ],
+ "lines": [
+  {
+   "id": "P05_0000",
+   "block": "p5_poem",
+   "text": "שָׁם מֶלֶךְ בְּיָפְיוֹ עֵינַי תֶּחֱזֶינָה.",
+   "box": [
+    1964,
+    567,
+    2997,
+    708
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0001",
+   "block": "p5_poem",
+   "text": "פֹּה עֲמַל אֱנוֹשׁ יַכֵּהוּ שְׁאִיָּה",
+   "box": [
+    2008,
+    756,
+    2953,
+    898
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0002",
+   "block": "p5_poem",
+   "text": "אָרְחוֹת חַיָּיו יוֹרְדוֹת שְׁאוֹל הַתַּחְתִּיָה",
+   "box": [
+    1837,
+    946,
+    3124,
+    1088
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0003",
+   "block": "p5_poem",
+   "text": "פֶּגַע קָטָן יִקְרֵהוּ וְדַרְכּוֹ נִסְתָּרָה",
+   "box": [
+    1943,
+    1135,
+    3018,
+    1277
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0004",
+   "block": "p5_poem",
+   "text": "טָח עֵין בְּשָׂרוֹ וַיֵּלֶךְ בְּקֶרֶב צְרָה.",
+   "box": [
+    1923,
+    1439,
+    3038,
+    1581
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0005",
+   "block": "p5_poem",
+   "text": "שָׁם לֵאוֹר בְּאוֹר אֵל רוּחוֹ יִשּׂאֵהוּ",
+   "box": [
+    1903,
+    1628,
+    3058,
+    1770
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0006",
+   "block": "p5_poem",
+   "text": "אֶל-הֵיכַל קָדְשׁו עַל מוּת יְנַהֲגֵהוּ",
+   "box": [
+    1911,
+    1818,
+    3050,
+    1960
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0007",
+   "block": "p5_poem",
+   "text": "בִּנְתִיבַת אַל-מָוֶת דֶּרֶךְ הַחַיִּים",
+   "box": [
+    1957,
+    2007,
+    3004,
+    2149
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0008",
+   "block": "p5_poem",
+   "text": "יֵלֵךְ כֹּל נְכֹחוֹ כִּי אוֹרוּ עֵינָיִם.",
+   "box": [
+    1967,
+    2311,
+    2994,
+    2453
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0009",
+   "block": "p5_poem",
+   "text": "פֹּה בְּתֵבֵל בְּבוֹר שָׁאוֹן אֱנוֹשׁ יָשֹׁחַ",
+   "box": [
+    1897,
+    2500,
+    3064,
+    2642
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0010",
+   "block": "p5_poem",
+   "text": "אָסוּר בְּחַבְלֵי-עוֹנִי שָׁדוּד וְאֵין כֹּחַ",
+   "box": [
+    1895,
+    2690,
+    3066,
+    2832
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0011",
+   "block": "p5_poem",
+   "text": "חֲדָשִׁים לַבְּקָרִים תַּשּׂיגֵהוּ אֲנָחָה –;",
+   "box": [
+    1869,
+    2879,
+    3092,
+    3021
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0012",
+   "block": "p5_poem",
+   "text": "שָׁם בִּנְאוֹת שָׁלוֹם יֵצֵא לִרְוָחָה.",
+   "box": [
+    1938,
+    3183,
+    3023,
+    3325
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0013",
+   "block": "p5_poem",
+   "text": "פֹּה עַל מוֹת יָחִיד תִּדְאַב אֵם קוֹדֶרֶת",
+   "box": [
+    1848,
+    3372,
+    3113,
+    3514
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0014",
+   "block": "p5_poem",
+   "text": "כִּי הָלַךְ נְדוֹד אֶל אֶרֶץ אַחֶרֶת;",
+   "box": [
+    1951,
+    3562,
+    3010,
+    3704
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0015",
+   "block": "p5_poem",
+   "text": "שָׁם בְּסוֹד קְדוֹשִׁים תִּגְבַּהּ לָשָׁבֶת",
+   "box": [
+    1911,
+    3752,
+    3050,
+    3894
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0016",
+   "block": "p5_poem",
+   "text": "תִּמְצָא מַחֲמַד בִּטְנָהּ וְתָנוּס עַצָּבֶת.",
+   "box": [
+    1873,
+    4055,
+    3088,
+    4197
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0017",
+   "block": "p5_poem",
+   "text": "פֹּה דַכָּא יֵבְךְּ בְּכִי תַמְרוּרִים",
+   "box": [
+    1992,
+    4244,
+    2969,
+    4386
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0018",
+   "block": "p5_poem",
+   "text": "כִּי שָׂךְ אֱלֹהִים דַּרְכּוֹ בַּסִּירִים",
+   "box": [
+    1974,
+    4434,
+    2987,
+    4576
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0019",
+   "block": "p5_poem",
+   "text": "שָׁם עֵת נְעִימוֹת יָהּ יִשׁקוֹל בְּמאֹזְנַיִם",
+   "box": [
+    1846,
+    4624,
+    3115,
+    4766
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0020",
+   "block": "p5_poem",
+   "text": "מֵהֶבֶל אָז יַעֲלֶה חֶלְקוֹ בַּחַיִּים.",
+   "box": [
+    1954,
+    4927,
+    3007,
+    5069
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0021",
+   "block": "p5_poem",
+   "text": "פֹּה נֶאֱנַח גֶּבֶר תָּם מֵיטִיב לֶכֶת",
+   "box": [
+    1940,
+    5117,
+    3021,
+    5258
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0022",
+   "block": "p5_poem",
+   "text": "כִּי יָעֹז מֱעַוֵּל וְדַרְכּוֹ מְבֹרֶכֶת",
+   "box": [
+    1996,
+    5306,
+    2965,
+    5448
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0023",
+   "block": "p5_poem",
+   "text": "עוֹד תָּבִין לְאַחֲרִית רָעֵי כַפָּיִם",
+   "box": [
+    1962,
+    5496,
+    2999,
+    5638
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  },
+  {
+   "id": "P05_0024",
+   "block": "p5_poem",
+   "text": "שָׁם בְּסֵתֶר עֶלְיוֹן בִּנְאוֹת שָׁמָיִם!",
+   "box": [
+    1924,
+    5799,
+    3037,
+    5941
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 13,
+   "weight": 400
+  }
+ ],
+ "markers": [
+  {
+   "dict": "DICT_4X4_50",
+   "id": 16,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     189
+    ],
+    [
+     472,
+     189
+    ],
+    [
+     472,
+     472
+    ],
+    [
+     189,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 17,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     189
+    ],
+    [
+     4772,
+     189
+    ],
+    [
+     4772,
+     472
+    ],
+    [
+     4489,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 18,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     6544
+    ],
+    [
+     4772,
+     6544
+    ],
+    [
+     4772,
+     6827
+    ],
+    [
+     4489,
+     6827
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 19,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     6544
+    ],
+    [
+     472,
+     6544
+    ],
+    [
+     472,
+     6827
+    ],
+    [
+     189,
+     6827
+    ]
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "center": [
+    1323,
+    6307
+   ],
+   "side_px": 307,
+   "angle_deg": 5.0,
+   "polygon": [
+    [
+     1183.46,
+     6140.71
+    ],
+    [
+     1489.29,
+     6167.46
+    ],
+    [
+     1462.54,
+     6473.29
+    ],
+    [
+     1156.71,
+     6446.54
+    ]
+   ]
+  }
+ ],
+ "wedge": [
+  {
+   "set": "strip",
+   "step": 0,
+   "ink_fraction": 0.0,
+   "grey": 255,
+   "box": [
+    1701,
+    6165,
+    1937,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 1,
+   "ink_fraction": 0.2,
+   "grey": 204,
+   "box": [
+    1937,
+    6165,
+    2173,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 2,
+   "ink_fraction": 0.4,
+   "grey": 153,
+   "box": [
+    2173,
+    6165,
+    2409,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 3,
+   "ink_fraction": 0.6,
+   "grey": 102,
+   "box": [
+    2409,
+    6165,
+    2645,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 4,
+   "ink_fraction": 0.8,
+   "grey": 51,
+   "box": [
+    2645,
+    6165,
+    2881,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 5,
+   "ink_fraction": 1.0,
+   "grey": 0,
+   "box": [
+    2881,
+    6165,
+    3117,
+    6401
+   ]
+  }
+ ],
+ "colour_patches": [],
+ "furniture": [
+  {
+   "kind": "qr",
+   "text": "HEOCR-CAL-V1-P05",
+   "box": [
+    614,
+    6118,
+    992,
+    6496
+   ]
+  },
+  {
+   "kind": "label",
+   "text": "HeOCR cal. pack v1 | P05 | calibration/dev only",
+   "box": [
+    3165,
+    6270,
+    4385,
+    6326
+   ]
+  }
+ ],
+ "dpi": 600,
+ "pack": "HeOCR calibration pack v1",
+ "use": "calibration and dev only, never test"
+}

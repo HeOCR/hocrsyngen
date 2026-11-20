@@ -1,0 +1,103 @@
+# hocrsyngen
+
+hocrsyngen generates deterministic candidate synthetic Hebrew OCR/HTR sample batches. It emits `generation_manifest.json` plus relative JPEG page assets. hocrgen remains the downstream governance, validation, release, and publication toolchain.
+
+## HeOCR Ecosystem Position
+
+hocrsyngen sits downstream of the real-glyph chain (`public-domain-hand-written-hebrew-scans` → `hletterscriptgen` → `hletterscript`) and upstream of `hocrgen` and the public dataset releases. The full six-repo ecosystem table and ownership boundaries are in `docs/repository_scope.md`.
+
+## Compact Source Tree
+
+- `src/hocrsyngen/`: Python package.
+- `src/hocrsyngen/schemas/`: JSON schemas for serialized contracts.
+- `src/hocrsyngen/data/synthetic/`: governed packaged fonts and Hebrew text corpus.
+- `src/hocrsyngen/data/contracts/`: packaged downstream contract fixtures.
+- `experiments/`: research scripts outside the package, never imported or packaged: `learned_generation_v0/s17a_scanifier/` (S17a scan-ifier and add-on recipe; Torch) and `r8c_scan_aug/` (R8c procedural scan augmentation).
+- `tests/`: CLI, generation, validation, installation, and package-resource tests.
+- `docs/`: architecture, scope, specs, roadmap, research, testing, and decisions.
+
+## Critical File Map
+
+- `src/hocrsyngen/cli.py`: public CLI commands and machine-readable reports.
+- `src/hocrsyngen/generator.py`: deterministic rendering, templates, richer template catalog metadata, degradation, font/text selection.
+- `src/hocrsyngen/manifest.py`: manifest dataclasses and constants.
+- `src/hocrsyngen/line_render.py`: `render-lines`: caller-supplied lines rendered with governed (sha256- and licence-checked) faces, line-level presets, per-line provenance (`docs/line_render.md`).
+- `src/hocrsyngen/rendering_coverage.py`: opt-in rendering coverage report builder and sidecar writer.
+- `src/hocrsyngen/line_annotations.py`: S10a opt-in `line_annotations.json` builder, writer, and validator outside manifest v1, with S11a region geometry.
+- `src/hocrsyngen/wet_run.py`: S8b deterministic wet-test smoke run artifact writer outside manifest v1.
+- `src/hocrsyngen/wet_gallery.py`: S8d static HTML gallery builder for existing wet-test runs outside manifest v1.
+- `src/hocrsyngen/wet_analysis.py`: S8e deterministic wet-test warning metrics over existing wet-test runs outside manifest v1.
+- `src/hocrsyngen/wet_review.py`: S8f human review worksheet template generator and worksheet validator over existing wet-test runs outside manifest v1.
+- `src/hocrsyngen/wet_run_artifact.py`: shared loader and helpers for `wet_test_run.v1` artifacts used by wet-gallery, wet-analyze, and wet-review-* commands.
+- `src/hocrsyngen/glyph_bank.py`: S16b loader and validator for external `printed_glyph_bank.v1` glyph banks (`docs/printed_glyph_bank_v1.md`).
+- `src/hocrsyngen/glyph_compose.py`: S16b real-glyph printed book page composer (`compose-glyph-pages`), size bands, bidi placement, gold checks, and the `glyph_provenance.json` sidecar writer and validator (`docs/glyph_page_composition.md`).
+- `src/hocrsyngen/schemas/printed_glyph_bank.schema.json`, `glyph_provenance.schema.json`: S16 glyph bank and composed-page provenance contracts.
+- `src/hocrsyngen/validation.py`: batch validation, schema validation, asset integrity checks.
+- `src/hocrsyngen/schemas/generation_manifest.schema.json`: serialized manifest contract.
+- `src/hocrsyngen/schemas/rendering_coverage_report.schema.json`: serialized rendering coverage report contract.
+- `src/hocrsyngen/schemas/template_catalog.schema.json`: serialized `template_catalog.v2` contract.
+- `src/hocrsyngen/schemas/line_annotations.schema.json`: serialized `hocrsyngen_line_annotations.v1` contract.
+- `CHANGELOG.md`: generator-output changes keyed by `generator_version`.
+- `docs/book_page_templates.md`: S11c printed book page templates (prose, two columns, Rashi commentary, title pages, 960 px thumbnail variants), their regions and gold, and the OFL book fonts.
+- `docs/line_annotations_v1.md`: S10a line annotations sidecar contract, coordinate rules, `logical_order` relation, S11a regions and region reading order, `--text-corpus` provenance, and seed-101 gold finding.
+- `src/hocrsyngen/data/contracts/generation_manifest_v1/fixture-batch/`: downstream integration fixture.
+- `src/hocrsyngen/data/synthetic/fonts/manifest.yaml`: governed packaged font registry.
+- `src/hocrsyngen/data/synthetic/texts/hebrew_lines.txt`: packaged Hebrew text corpus.
+- `src/hocrsyngen/data/synthetic/texts/hebrew_mixed_lines_*_v1.txt`: S13a mixed Hebrew/Latin/digit train and eval corpora (`docs/mixed_script_text_corpus_card.md`).
+- `src/hocrsyngen/data/synthetic/texts/hebrew_typographic_lines_*_v1.txt`: S13b typeset Hebrew train and eval corpora with em/en dashes, geresh/gershayim, typographic quotes and ellipses (`docs/typographic_text_corpus_card.md`).
+- `src/hocrsyngen/data/synthetic/texts/LICENSE-CC0-1.0.txt`: CC0 1.0 dedication for the S10b, S13a and S13b text corpora and `hebrew_lines.txt`; code stays MIT (ADR 0008).
+- `tests/`: contract, generation, validation, installation, and wheel packaging tests.
+- `docs/pby_public_domain_text_intake_plan.md`: S15a plan for Project Ben-Yehuda public-domain training text as an external pinned `--text-corpus` file (ADR 0007).
+- `docs/document_generator_design.md`: design note for the producer-matrix synthetic document generator (source trees, real PDF producers, gold survival, pilot).
+- `docs/production_readiness.md`: current readiness state, explicit missing production pieces, high-lift quality work, and external hocrgen dependencies.
+- `docs/handwriting_research_acceptance_criteria.md`: S5a handwriting research boundaries, reproducibility, licensing, review, evaluation, and stop/reject gates.
+- `docs/allograph_character_prototype_plan.md`: S5b deterministic allograph and character-level prototype boundary, bounded sampling plan, Hebrew cases, evidence plan, and proceed/stop gates.
+- `docs/word_line_assembly_prototype_plan.md`: S5c deterministic word and line assembly prototype boundary, spacing/wrapping controls, Hebrew cases, S5b interaction, evidence plan, and proceed/stop gates.
+- `docs/learned_generation_packaging_boundary.md`: S5d optional learned-generation packaging boundary for experiments, extras, separate packages, model/data provenance, reproducibility, sidecars, and stop/refuse gates.
+- `docs/downstream_realism_acceptance_rubric.md`: S6a downstream realism acceptance categories, calibrated example classes, visual evidence expectations, rejection reasons, and hocrgen/HeOCR release-eligibility boundaries.
+- `docs/downstream_utility_measurement_contract.md`: S6b downstream utility measurement contract for real-reference prerequisites, CER/WER boundaries, leakage controls, evidence packets, and hocrgen/HeOCR ownership.
+- `docs/synthetic_diversity_domain_shift_metrics.md`: S6c synthetic diversity and domain-shift metrics for candidate-batch summaries, repeated-pattern warnings, synthetic-to-real comparison requirements, leakage boundaries, and downstream ownership.
+- `docs/release_cap_handoff_policy.md`: S6d release cap handoff policy for public hocrsyngen metadata, evidence packet ids, downstream cap records, source-composition boundaries, and hocrgen/HeOCR governance ownership.
+- `docs/review_evidence_sidecar_contract.md`: S6e review evidence sidecar contract for reviewed sample/page ids, reviewer state, decision categories, reason codes, visual evidence references, S6a category references, S6c warning references, S6d cap decision references, limitations, and downstream governance ownership.
+- `docs/candidate_batch_profile_mix_handoff.md`: S6f candidate batch profile and mix handoff contract for requested, generated/observed, reviewed, capped/admitted, and released mix layers, gap reason codes, and downstream ownership boundaries.
+- `docs/hocrgen_adapter_handoff_checklist.md`: S6g external hocrgen adapter handoff checklist for installed CLI import, public JSON assertions, manifest id/path retention, template_catalog.v2 joins, S6a-S6f evidence links, failure handling, and downstream governance boundaries.
+- `docs/wet_testing_program_plan.md`: S8a developer-owned wet-testing sub-plan for staged code validation, human review, optional LLM triage, evidence artifacts, and regression promotion outside manifest v1 and release governance; S8b adds the first smoke run artifact generator, S8c adds the candidate evidence-run handoff, S8d adds the static gallery, S8e adds deterministic warning metrics, S8f adds the human review worksheet template and validator, S8g adds the bounded LLM triage packet export command (`wet-llm-packet`), and S8h adds the `wet-report` command that aggregates run metadata, analysis, optional review, and optional LLM triage into a developer-facing generator-quality report.
+- `docs/script_abstraction_design.md`: S7a design-only script abstraction boundaries for future RTL-script profiles; preserves Hebrew-first manifest v1, logical-order UTF-8 Hebrew, NFC normalization, RTL metadata, and current validation semantics.
+- `docs/roadmap.md`: S6 is complete through S6g, S7a script abstraction design is complete, S8 is active for wet-testing/generator-quality evidence with S8h as the last completed implementation slice, and S9 (real-glyph composition from `hletterscript`) is design-only with `S9a` documented in `docs/real_glyph_composition_plan.md`.
+- `docs/real_glyph_composition_plan.md`: S9a design-only plan for future real-glyph page composition from `HeOCR/hletterscript` `letter_set.v1` letter sets, including scope boundary, implementation direction, and prerequisites. It does not implement glyph composition. Detailed field names and class names belong in implementation PRs.
+
+## Public Contracts
+
+- `hocrsyngen templates`
+- `template_catalog.v2` via `hocrsyngen templates --format json --catalog-version v2`
+- Governed template ids include `printed_letter`, `handwritten_note`,
+  `archive_card`, `ledger`, and stronger degradation variants.
+- `hocrsyngen contracts`
+- `hocrsyngen contracts export`
+- `hocrsyngen generate`
+- `hocrsyngen validate`
+- `hocrsyngen compose-glyph-pages --glyph-bank BANK --count N --seed S --output OUT` (S16b; governed template `printed_book_glyph_page`, listed by `templates --include-composed`)
+- `hocrsyngen wet-run --profile smoke`
+- `hocrsyngen wet-gallery RUN_ROOT --output RUN_ROOT/gallery`
+- `hocrsyngen wet-analyze RUN_ROOT --format json`
+- `hocrsyngen wet-review-template RUN_ROOT --output RUN_ROOT/review/human_review.csv --format json`
+- `hocrsyngen wet-review-validate RUN_ROOT REVIEW_PATH --format json`
+- `generation_manifest.json` v1
+- `wet_test_run.json` via `hocrsyngen wet-run --profile smoke`, outside manifest v1
+- Static `gallery/index.html` via `hocrsyngen wet-gallery`, outside manifest v1
+- `wet_analysis_report.v1` via `hocrsyngen wet-analyze`, outside manifest v1 and without a schema
+- `wet_review_template_report.v1` summary plus a CSV or JSON Lines worksheet via `hocrsyngen wet-review-template`, outside manifest v1 and without a schema
+- `wet_review_validation_report.v1` summary via `hocrsyngen wet-review-validate`, outside manifest v1 and without a schema
+- Optional `rendering_coverage_report.json` sidecar with report version `rendering_coverage_report.v1`
+- Optional downstream review evidence sidecar contract documented as `review_evidence_sidecar.v1`; it is not emitted or validated by `hocrsyngen`
+- Optional downstream candidate batch profile/mix contract documented as `candidate_batch_profile_mix.v1`; it is not emitted or validated by `hocrsyngen`
+- External downstream adapter checklist documented in `docs/hocrgen_adapter_handoff_checklist.md`; it is not emitted or validated by `hocrsyngen`
+- S7a script abstraction is planning-only in `docs/script_abstraction_design.md`; Arabic support, broader validation semantics, and manifest v1 changes are not implemented.
+- Packaged contract fixture id `generation_manifest_v1_fixture_batch`
+
+## Non-Goals And Boundaries
+
+- No `hocrgen` import from `hocrsyngen`.
+- No baseline network, GPU, LLM, or diffusion dependencies.
+- No publication or release governance inside `hocrsyngen`.
+- No current `hletterscript` or `hletterscriptgen` import from `hocrsyngen`. If future S9 work composes real glyphs from `letter_set.v1` sources, it must consume them through file-based contracts only, not by importing those repositories.

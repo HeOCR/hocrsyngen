@@ -1,0 +1,21 @@
+olb all              3254/ 55  ctl 2.129  arm 2.110  d +0.019 [-0.037, 0.052]  stock 5.428
+olb excluded         3243/ 55  ctl 2.139  arm 2.118  d +0.021 [-0.037, 0.056]  stock 5.440
+olb exact            2028/ 54  ctl 0.735  arm 0.714  d +0.021 [-0.019, 0.049]  stock 3.965
+olb not_exact        1226/ 44  ctl 4.021  arm 4.005  d +0.016 [-0.098, 0.066]  stock 7.415
+olb all_cap60        1484/ 55  ctl 1.473  arm 1.480  d -0.007 [-0.059, 0.042]  stock 4.987
+olb excluded_cap60   1480/ 55  ctl 1.479  arm 1.481  d -0.002 [-0.054, 0.045]  stock 4.994
+guard kevar          4600/ 210  ctl 0.757  arm 0.764  d -0.007 [-0.022, 0.008]  stock 5.664
+guard yediot         4600/ 298  ctl 1.019  arm 1.000  d +0.019 [0.0, 0.039]  stock 9.168
+guard brainin_ia     6257/ 191  ctl 0.743  arm 0.714  d +0.029 [0.017, 0.041]  stock 5.071
+guard brainin_nli    4046/ 145  ctl 1.073  arm 1.064  d +0.009 [-0.014, 0.03]  stock 10.450
+guard silman         3046/ 132  ctl 0.869  arm 0.915  d -0.046 [-0.07, -0.023]  stock 5.824
+guard_ kevar          4600/ 210  ctl 0.757  arm 0.764  d -0.007 [-0.022, 0.008]  stock 5.664
+guard_ yediot         4600/ 298  ctl 1.019  arm 1.000  d +0.019 [0.0, 0.039]  stock 9.168
+guard_ brainin_ia     6195/ 191  ctl 0.743  arm 0.715  d +0.028 [0.017, 0.041]  stock 5.063
+guard_ brainin_nli    4046/ 145  ctl 1.073  arm 1.064  d +0.009 [-0.014, 0.03]  stock 10.450
+guard_ silman         3046/ 132  ctl 0.869  arm 0.915  d -0.046 [-0.07, -0.023]  stock 5.824
+report bodek            21/  12  ctl 5.094  arm 5.094  d +0.000 [-0.818, 0.588]  stock 15.684
+report reshumot_dev   2716/2716  ctl 1.179  arm 1.301  d -0.122 [-0.202, -0.052]  stock 6.613
+report rab_dev        3141/ 173  ctl 1.056  arm 1.084  d -0.028 [-0.042, -0.013]  stock 7.512
+report ws_dev          257/ 257  ctl 6.932  arm 7.022  d -0.090 [-0.203, 0.021]  stock 14.672
+{'olb_win': False, 'olb_unresolved': False, 'guard_losses': ['silman'], 'arm_wins': False, 'verdict': 'arm does not win'}

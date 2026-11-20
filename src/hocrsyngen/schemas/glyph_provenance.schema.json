@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://heocr.org/hocrsyngen/glyph_provenance.schema.json",
+  "title": "hocrsyngen hocrsyngen_glyph_provenance.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "generation_manifest_sha256", "bank", "styles", "pages"],
+  "properties": {
+    "schema": {"const": "hocrsyngen_glyph_provenance.v1"},
+    "generation_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "bank": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "bank_id", "glyphs_sha256", "min_glyph_score"],
+      "properties": {
+        "schema": {"const": "printed_glyph_bank.v1"},
+        "bank_id": {"type": "string", "minLength": 1},
+        "glyphs_sha256": {"$ref": "#/$defs/sha256"},
+        "min_glyph_score": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "styles": {
+      "description": "Every bank style used by at least one page, with the rights fields copied from the bank index.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["style_id", "source_id", "work_id", "licence", "attribution", "born_digital"],
+        "properties": {
+          "style_id": {"type": "string", "minLength": 1},
+          "source_id": {"type": "string", "minLength": 1},
+          "work_id": {"type": "string", "minLength": 1},
+          "licence": {"enum": ["PD", "CC0-1.0", "CC-BY-4.0"]},
+          "attribution": {"type": ["string", "null"]},
+          "born_digital": {"type": "boolean"}
+        }
+      }
+    },
+    "pages": {
+      "description": "One entry per composed page, in manifest order.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sample_id",
+          "page_id",
+          "page_sha256",
+          "style_ids",
+          "glyph_count",
+          "unique_glyph_count",
+          "synthesized_double_marks",
+          "source_pages",
+          "degradation"
+        ],
+        "properties": {
+          "sample_id": {"type": "string", "minLength": 1},
+          "page_id": {"type": "string", "minLength": 1},
+          "page_sha256": {"$ref": "#/$defs/sha256"},
+          "style_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}, "uniqueItems": true},
+          "glyph_count": {"type": "integer", "minimum": 0},
+          "unique_glyph_count": {"type": "integer", "minimum": 0},
+          "synthesized_double_marks": {
+            "description": "Gershayim or double quotes drawn as two adjacent single-mark glyphs.",
+            "type": "integer",
+            "minimum": 0
+          },
+          "source_pages": {
+            "description": "Placed glyph count per bank source page id.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["page_id", "glyph_count"],
+              "properties": {
+                "page_id": {"type": "string", "minLength": 1},
+                "glyph_count": {"type": "integer", "minimum": 1}
+              }
+            }
+          },
+          "glyph_ids": {
+            "description": "Optional (--provenance-glyph-ids): sorted unique bank glyph ids placed on the page.",
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "degradation": {
+            "description": "Sampled page-level degradation parameters (informative).",
+            "type": "object"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,1548 @@
+{
+ "page": "P03",
+ "title": "news",
+ "size_px": [
+  4961,
+  7016
+ ],
+ "lines": [
+  {
+   "id": "P03_0000",
+   "block": "p3_head",
+   "text": "– בני! זכאי חלקך בעולם",
+   "box": [
+    1678,
+    567,
+    3283,
+    805
+   ],
+   "font": "FrankRuhlLibre-wght.ttf",
+   "size_pt": 22,
+   "weight": 700
+  },
+  {
+   "id": "P03_0001",
+   "block": "p3_body_col1",
+   "text": "ושדופות יבלו כל ימיהם ותפארו עוד בכסלם לאמר: בסוד חכמים",
+   "box": [
+    2552,
+    954,
+    4441,
+    1038
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0002",
+   "block": "p3_body_col1",
+   "text": "ונבונים גם אנו, ובקהל חוקרי קדמוניות תחד גם כבודנו! חכמים",
+   "box": [
+    2552,
+    1055,
+    4441,
+    1140
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0003",
+   "block": "p3_body_col1",
+   "text": "בעיניהם אלה לא אל תוך הספרים ישימו עין לדעת יושר דברי אמת",
+   "box": [
+    2552,
+    1156,
+    4441,
+    1241
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0004",
+   "block": "p3_body_col1",
+   "text": "הטמון בחבם, כי אם אל שער הספר והקדמתו, אל דפיו ואגפיו",
+   "box": [
+    2552,
+    1257,
+    4441,
+    1342
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0005",
+   "block": "p3_body_col1",
+   "text": "יתבוננו, ויחתרו למצוא בחקירה עצומה – שנת ומקום הדפוס, ומי",
+   "box": [
+    2552,
+    1359,
+    4441,
+    1443
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0006",
+   "block": "p3_body_col1",
+   "text": "האיש אשר זכה וזיכה את הרבים להזכיר הספר הזה ראשונה",
+   "box": [
+    2552,
+    1460,
+    4441,
+    1545
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0007",
+   "block": "p3_body_col1",
+   "text": "ברשימת הספרים! כמה נבזה בעיניהם כל חכמה, בלתי ידיעת",
+   "box": [
+    2761,
+    1561,
+    4441,
+    1646
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0008",
+   "block": "p3_body_col1",
+   "text": "מוצא הספרים לבדה, לדעת מתי נכתבו, ומי אביהם, ואנה יצאו",
+   "box": [
+    2551,
+    1703,
+    4441,
+    1788
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0009",
+   "block": "p3_body_col1",
+   "text": "לאור? כבואם אל אוצרות הספרים בערי הממלכה, אזי אל הדלת",
+   "box": [
+    2551,
+    1804,
+    4441,
+    1889
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0010",
+   "block": "p3_body_col1",
+   "text": "והשער ירצעו אזנם במרצע הבקורת, והבית סגור לפניהם מבוא, והיה",
+   "box": [
+    2552,
+    1905,
+    4441,
+    1990
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0011",
+   "block": "p3_body_col1",
+   "text": "סגור! אם נתן לאיש מהם ספר לאמר: קרא נא זה, ואמר: לא ידעתי",
+   "box": [
+    2552,
+    2007,
+    4441,
+    2091
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0012",
+   "block": "p3_body_col1",
+   "text": "ספר, אך שערי הספרים פתוחים לפני, זה חלקי מכל עמלי, פה אשב",
+   "box": [
+    2586,
+    2108,
+    4441,
+    2193
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0013",
+   "block": "p3_body_col1",
+   "text": "כי אויתיהו! לעמת החכמים הגדולים באמת טיט וחומר, אשר סביב",
+   "box": [
+    2551,
+    2250,
+    4441,
+    2334
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0014",
+   "block": "p3_body_col1",
+   "text": "חכמי הבנין יתהלכון, הבונים כמו רמים מקדש מלך נחמד למראה;",
+   "box": [
+    2552,
+    2351,
+    4441,
+    2436
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0015",
+   "block": "p3_body_col1",
+   "text": "ועת יעבדו אלה בפרך עבודתם וישאו מחשבת, יקראו בקול גדול לכל",
+   "box": [
+    2552,
+    2452,
+    4441,
+    2537
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0016",
+   "block": "p3_body_col1",
+   "text": "הנצבים שמה: המשא הזה אשר נשא ונסבול על שכמנו, זה הוא",
+   "box": [
+    2552,
+    2553,
+    4441,
+    2638
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0017",
+   "block": "p3_body_col1",
+   "text": "ההיכל הבנוי לתלפיות, ואם לא נגיש חמר ומלט במלבן לעושי",
+   "box": [
+    2551,
+    2655,
+    4441,
+    2739
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0018",
+   "block": "p3_body_col1",
+   "text": "המלאכה, לשוא עמלו בוניו בו! ומעשיהם כמעשה האיש חרש אבן",
+   "box": [
+    2552,
+    2756,
+    4441,
+    2841
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0019",
+   "block": "p3_body_col1",
+   "text": "הבא לבקר בהיכל מלך מלא כל הון יקר ונעים ושירות כל חמדה",
+   "box": [
+    2551,
+    2857,
+    4441,
+    2942
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0020",
+   "block": "p3_body_col1",
+   "text": "במלאכת מחשבת, ויהי בבואו יפנה עורף לכל הכבוד הזה ויחצוב אבן",
+   "box": [
+    2552,
+    2958,
+    4441,
+    3043
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0021",
+   "block": "p3_body_col1",
+   "text": "מקיר וכפיס מעץ",
+   "box": [
+    3978,
+    3060,
+    4441,
+    3144
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0022",
+   "block": "p3_body_col1",
+   "text": "בגרזן אשר הביא בידו, וברוב עמל ויגיעה ובזיעת אפים ישית לבו",
+   "box": [
+    2552,
+    3201,
+    4441,
+    3286
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0023",
+   "block": "p3_body_col1",
+   "text": "לדעת תכונתם ומשקלם, ארכם ורחבם, ולכל החמדה אשר סביבותיו",
+   "box": [
+    2552,
+    3303,
+    4441,
+    3387
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0024",
+   "block": "p3_body_col1",
+   "text": "לא ישית לב. אולם בלי משל וחידות אדברה עמך, ידיד אהוב! כי אם",
+   "box": [
+    2552,
+    3404,
+    4441,
+    3489
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0025",
+   "block": "p3_body_col1",
+   "text": "באר על כל יודעי בינה, לא יכבדו ספרי חכמה ושירי עבר בלתי אם",
+   "box": [
+    2551,
+    3505,
+    4441,
+    3590
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0026",
+   "block": "p3_body_col1",
+   "text": "עליהם לפני שנות דור ודור. אזי קדוש יאמרו להם; והנקבר בארץ",
+   "box": [
+    2552,
+    3606,
+    4441,
+    3691
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0027",
+   "block": "p3_body_col1",
+   "text": "ספרד לו עשר ידות! אמנם אנשים אשר לא הצליחו עוד בין החיים",
+   "box": [
+    2551,
+    3708,
+    4441,
+    3792
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0028",
+   "block": "p3_body_col1",
+   "text": "ולהתענג בנועם ה'",
+   "box": [
+    3943,
+    3809,
+    4441,
+    3894
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0029",
+   "block": "p3_body_col1",
+   "text": "בתבל ארצה, ולכתוב הגיון לבם על ספר בארץ מולדתנו, אותם כלה",
+   "box": [
+    2552,
+    3951,
+    4441,
+    4035
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0030",
+   "block": "p3_body_col1",
+   "text": "גרש יגרשו מהסתפח כי התוליהם על קדקדם וכלמתם אל חיקם",
+   "box": [
+    2551,
+    4052,
+    4441,
+    4137
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0031",
+   "block": "p3_body_col1",
+   "text": "תשוב! – גם השירים הישנים לא מפנים נועם המליצה והדרה יקרו",
+   "box": [
+    2552,
+    4153,
+    4441,
+    4238
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0032",
+   "block": "p3_body_col1",
+   "text": "בעיניהם, חלילה להם! כי אם מאשר יסכנו להיות למו ליתד לתלות",
+   "box": [
+    2551,
+    4254,
+    4441,
+    4339
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0033",
+   "block": "p3_body_col1",
+   "text": "עליו בלואי לא למראה עין אשר הורו להם מרחוק דרך הבקורת",
+   "box": [
+    2551,
+    4356,
+    4441,
+    4440
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0034",
+   "block": "p3_body_col1",
+   "text": "בתעלומות ימי קדם, חכם צוף דבש אמרי נועם יטעם לו באשר הוא",
+   "box": [
+    2552,
+    4457,
+    4441,
+    4542
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0035",
+   "block": "p3_body_col1",
+   "text": "שם, ישן או חדש, ולא אחת ולא שתים",
+   "box": [
+    3383,
+    4558,
+    4441,
+    4643
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0036",
+   "block": "p3_body_col1",
+   "text": "ישן מפני חדש יוציאו, אם הישן נושן, לא תואר ולא הדר לו, והחדש",
+   "box": [
+    2552,
+    4700,
+    4441,
+    4785
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0037",
+   "block": "p3_body_col1",
+   "text": "יגיה אורו לכבוד ותפארת. ידידי הקורא, אשר רוח נכון לך לשפוט",
+   "box": [
+    2552,
+    4801,
+    4441,
+    4886
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0038",
+   "block": "p3_body_col1",
+   "text": "משרים, אתה תשפטו ולא אני אם לא השחוק היו לבית ישראל,",
+   "box": [
+    2552,
+    4902,
+    4441,
+    4987
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0039",
+   "block": "p3_body_col1",
+   "text": "להוציא משפט מעקל לאמר: אחרי כי מארץ ספרד יצאו לפנים",
+   "box": [
+    2733,
+    5004,
+    4441,
+    5088
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0040",
+   "block": "p3_body_col1",
+   "text": "מאורות החכמה וגדולי המשוררים: בן גבירול, יהודה הלוי, משה",
+   "box": [
+    2552,
+    5145,
+    4441,
+    5230
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0041",
+   "block": "p3_body_col1",
+   "text": "ואברהם אבן עזרא ומעטים כערכם. לכן איש ואיש יולד בה כותב",
+   "box": [
+    2552,
+    5247,
+    4441,
+    5331
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0042",
+   "block": "p3_body_col1",
+   "text": "ספרים ועושה חרוזים יקר ונעלה הוא מכל המשוררים חדשים מקרוב",
+   "box": [
+    2551,
+    5348,
+    4441,
+    5433
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0043",
+   "block": "p3_body_col1",
+   "text": "באו! מי ישמע הבלים כאלה ולא ימלא שחוק פיהו? ונמשלו בעלי",
+   "box": [
+    2552,
+    5449,
+    4441,
+    5534
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0044",
+   "block": "p3_body_col1",
+   "text": "בקורת אלה לאיש בא בגן המלך וישלח ידו לקחת מפרי עץ הגן, תפוח",
+   "box": [
+    2552,
+    5550,
+    4441,
+    5635
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0045",
+   "block": "p3_body_col1",
+   "text": "זהב נחמד למראה וטוב למאכל, ויקרא בגרון: האדמה הזאת פוריה",
+   "box": [
+    2551,
+    5652,
+    4441,
+    5736
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0046",
+   "block": "p3_body_col1",
+   "text": "ושמנה היא,",
+   "box": [
+    4111,
+    5753,
+    4441,
+    5838
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0047",
+   "block": "p3_body_col2",
+   "text": "לכן אגזור אומר ואחרוץ משפט כי גם תפוחי האדמה אשר יחפרו",
+   "box": [
+    521,
+    954,
+    2410,
+    1038
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0048",
+   "block": "p3_body_col2",
+   "text": "בעמק מתחת רגבי עפרה, טעמם כטעם תפוחי זהב ופרי עץ החיים!",
+   "box": [
+    520,
+    1055,
+    2410,
+    1140
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0049",
+   "block": "p3_body_col2",
+   "text": "2 אחי ועמי! לא עת עוד לחשות המכשלה הזאת. באה העת, הגיע",
+   "box": [
+    520,
+    1156,
+    2410,
+    1241
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0050",
+   "block": "p3_body_col2",
+   "text": "היום להורות לנלוזי לב אלה בקברים ילינו, כי קורי עכביש מבטחם",
+   "box": [
+    520,
+    1257,
+    2410,
+    1342
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0051",
+   "block": "p3_body_col2",
+   "text": "ולא יוסיפו עוד להקטין ולהשפיל כבוד ישראל בעט שקר קנה רצוץ",
+   "box": [
+    521,
+    1359,
+    2410,
+    1443
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0052",
+   "block": "p3_body_col2",
+   "text": "ורוח כהה. – אמנם אל קנא ונוקם חי וקים! הוא לקח נקמתו מהם,",
+   "box": [
+    521,
+    1460,
+    2410,
+    1545
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0053",
+   "block": "p3_body_col2",
+   "text": "נקמת לשוננו הקדושה. לא בחיל ולא בכח נקם ישוב לבנים שובבים",
+   "box": [
+    521,
+    1561,
+    2410,
+    1646
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0054",
+   "block": "p3_body_col2",
+   "text": "אלה, כי אם ברוח מפשט ורוב",
+   "box": [
+    1596,
+    1662,
+    2410,
+    1747
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0055",
+   "block": "p3_body_col2",
+   "text": "בער. כי רגע יתגנבו מתחכמים אלה לבוא גם הם בחברת המחברים",
+   "box": [
+    521,
+    1804,
+    2410,
+    1889
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0056",
+   "block": "p3_body_col2",
+   "text": "לעת מצוא לדבר יהודית באזני בני עמם, אזי מפתח שפתם הבל",
+   "box": [
+    521,
+    1905,
+    2410,
+    1990
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0057",
+   "block": "p3_body_col2",
+   "text": "ורעות רוח, לשון עלגים וסרת טעם, וראו כל בית ישראל כי עירומים",
+   "box": [
+    520,
+    2007,
+    2410,
+    2091
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0058",
+   "block": "p3_body_col2",
+   "text": "הם מחכמה מכבוד, מלשון וספר. על מליצתם הנאלחה ילעגו ילדי",
+   "box": [
+    521,
+    2108,
+    2410,
+    2193
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0059",
+   "block": "p3_body_col2",
+   "text": "בית הספר, ונערים יתקלסו במו. וכבר חכמים הגידו במכתביהם ולא",
+   "box": [
+    521,
+    2209,
+    2410,
+    2294
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0060",
+   "block": "p3_body_col2",
+   "text": "תבונה בקדקדם, אף כי כל יגיעם ועמלם להזכיר עונות פנים וחזק",
+   "box": [
+    521,
+    2310,
+    2410,
+    2395
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0061",
+   "block": "p3_body_col2",
+   "text": "מצח יעבירו",
+   "box": [
+    2089,
+    2412,
+    2410,
+    2496
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0062",
+   "block": "p3_body_col2",
+   "text": "אותם תחת שבטם, שבט הנוגש בם! זאת נקמת אל קנא לשפוך בוז",
+   "box": [
+    520,
+    2553,
+    2410,
+    2638
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0063",
+   "block": "p3_body_col2",
+   "text": "על כבודם אי-כבוד והיו גם יהיו בחייהם ובמותם ללעג ולקלס, לא",
+   "box": [
+    521,
+    2655,
+    2410,
+    2739
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0064",
+   "block": "p3_body_col2",
+   "text": "יזכרו ולא יפקדו עדי יבוא באחרית הימים דורש אל המתים כמוהם",
+   "box": [
+    521,
+    2756,
+    2410,
+    2841
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0065",
+   "block": "p3_body_col2",
+   "text": "ויהלל בשערים מעשיהם! קנצי למלין! רב כבוד להם,",
+   "box": [
+    970,
+    2857,
+    2410,
+    2942
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0066",
+   "block": "p3_body_col2",
+   "text": "כי העתרתי דברי עליהם עד הנה כי בני בלי שם המה; אמנם בלעדי",
+   "box": [
+    520,
+    2999,
+    2410,
+    3084
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0067",
+   "block": "p3_body_col2",
+   "text": "אגיד, הקורא המבין יכירם, כי שמתי להם אות והתוותי תו על מצחם,",
+   "box": [
+    521,
+    3100,
+    2410,
+    3185
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0068",
+   "block": "p3_body_col2",
+   "text": "למען יכיר בה' ובתורתו אשר ידעו נאמנה כי שפת קדשנו עמוד התוך",
+   "box": [
+    521,
+    3201,
+    2410,
+    3286
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0069",
+   "block": "p3_body_col2",
+   "text": "היא לאמונת בית ישראל, וכי בלעדיה היכל ה' נוטה לנפול – מרחוק",
+   "box": [
+    521,
+    3303,
+    2410,
+    3387
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0070",
+   "block": "p3_body_col2",
+   "text": "ומקרוב ידרשוני ונפשם, בשאלתם, כי אוסיף להוציא לאור מחדש פרי",
+   "box": [
+    521,
+    3404,
+    2410,
+    3489
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0071",
+   "block": "p3_body_col2",
+   "text": "מלאכת עבודתי מימי עלומי, כי הספרים ההמה כבר ספו תמו ואינם",
+   "box": [
+    520,
+    3546,
+    2410,
+    3630
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0072",
+   "block": "p3_body_col2",
+   "text": "כי ארכו הימים למאז באו ראשונה בקהל רב, ועת כביר לא חדשו",
+   "box": [
+    520,
+    3647,
+    2410,
+    3732
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0073",
+   "block": "p3_body_col2",
+   "text": "נעוריהם, ורבים ונכבדים נכספה נפשם לאסוף פרים אל בתיהם. ואני",
+   "box": [
+    520,
+    3748,
+    2410,
+    3833
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0074",
+   "block": "p3_body_col2",
+   "text": "נדרשתי לאשר שאלוני, ואתנה כל השירים ההם ביד איש אמן",
+   "box": [
+    521,
+    3849,
+    2410,
+    3934
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0075",
+   "block": "p3_body_col2",
+   "text": "במלאכת הדפוס, להוציאם לאור ברב חן והדר תפארת לרגל",
+   "box": [
+    521,
+    3951,
+    2410,
+    4035
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0076",
+   "block": "p3_body_col2",
+   "text": "המלאכה אשר לפניו, כאשר עיניך משכילי עמנו, ולא ימנע טוב",
+   "box": [
+    521,
+    4052,
+    2410,
+    4137
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0077",
+   "block": "p3_body_col2",
+   "text": "מבעליו ויהי שכר לפעולתו. עוד",
+   "box": [
+    1557,
+    4153,
+    2410,
+    4238
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0078",
+   "block": "p3_body_col2",
+   "text": "זאת יודע לך, קורא אהוב! כי בין אוהבי ורעי ברב ארצות האירופה,",
+   "box": [
+    521,
+    4295,
+    2410,
+    4380
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0079",
+   "block": "p3_body_col2",
+   "text": "אשר העירו לבבי למלאכה הזאת, באו גם חכמי לבב אשר האירה",
+   "box": [
+    521,
+    4396,
+    2410,
+    4481
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0080",
+   "block": "p3_body_col2",
+   "text": "הארץ מכבודם וחכמת לבם, כי מליצת לשון עבר לא דבר רק הוא",
+   "box": [
+    521,
+    4497,
+    2410,
+    4582
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0081",
+   "block": "p3_body_col2",
+   "text": "מהם וידעו מאד במה כחה גדול על כל לב טהור ורוח נכון. בין",
+   "box": [
+    747,
+    4599,
+    2410,
+    4683
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0082",
+   "block": "p3_body_col2",
+   "text": "המכתבים הרבים אשר באו עדי בדבר הזה יתנוסס כאבני קדש, אבן",
+   "box": [
+    521,
+    4740,
+    2410,
+    4825
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0083",
+   "block": "p3_body_col2",
+   "text": "חן, מכתב אחד מלא אמרי נועם, אשר כתב לי ידיד נפשי ולבי הרב",
+   "box": [
+    520,
+    4842,
+    2410,
+    4926
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0084",
+   "block": "p3_body_col2",
+   "text": "הגאון הגדול, חוקר עד תכלית, אבי כל דורשי קדמוניות, אשר לא סר",
+   "box": [
+    521,
+    4943,
+    2410,
+    5028
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0085",
+   "block": "p3_body_col2",
+   "text": "טעמו עד זקנה יע\"א, כי ככחו אז כחו עתה בחקרי לבבו, ואהבתו עוד",
+   "box": [
+    521,
+    5044,
+    2410,
+    5129
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0086",
+   "block": "p3_body_col2",
+   "text": "נאמנה לי ולפועל כפי; יקוד אשו אשדות לא כבה בקרבו וחסדו ואמתו",
+   "box": [
+    521,
+    5145,
+    2410,
+    5230
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0087",
+   "block": "p3_body_col2",
+   "text": "לא נעדרו בפיו ובשפתיו, ואהבת אחים עוד תוסיף תת כחה לכל",
+   "box": [
+    521,
+    5247,
+    2410,
+    5331
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0088",
+   "block": "p3_body_col2",
+   "text": "אהביו מימי קדם. כי",
+   "box": [
+    1864,
+    5348,
+    2410,
+    5433
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0089",
+   "block": "p3_body_col2",
+   "text": "פי שנים ברוחו: נפש עדינה ולב טוב אשר זער שם זער שם צמדים",
+   "box": [
+    520,
+    5490,
+    2410,
+    5574
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0090",
+   "block": "p3_body_col2",
+   "text": "המה יחד באיש אחד! קח נא, קורא אהוב! את קצות דבריו אשר כתב",
+   "box": [
+    520,
+    5591,
+    2410,
+    5676
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0091",
+   "block": "p3_body_col2",
+   "text": "לי האדם הגדול הזה לאות יקרת רוחו ולחותם אמת להגיון לבבו;",
+   "box": [
+    521,
+    5692,
+    2410,
+    5777
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  },
+  {
+   "id": "P03_0092",
+   "block": "p3_body_col2",
+   "text": "ואלה הם: \"לכבוד ידידי החכם היקר, משורר נפלא בלשוננו הקדושה,",
+   "box": [
+    521,
+    5793,
+    2410,
+    5878
+   ],
+   "font": "Tinos-Regular.ttf",
+   "size_pt": 9,
+   "weight": null
+  }
+ ],
+ "markers": [
+  {
+   "dict": "DICT_4X4_50",
+   "id": 8,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     189
+    ],
+    [
+     472,
+     189
+    ],
+    [
+     472,
+     472
+    ],
+    [
+     189,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 9,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     189
+    ],
+    [
+     4772,
+     189
+    ],
+    [
+     4772,
+     472
+    ],
+    [
+     4489,
+     472
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 10,
+   "corners_tl_tr_br_bl": [
+    [
+     4489,
+     6544
+    ],
+    [
+     4772,
+     6544
+    ],
+    [
+     4772,
+     6827
+    ],
+    [
+     4489,
+     6827
+    ]
+   ]
+  },
+  {
+   "dict": "DICT_4X4_50",
+   "id": 11,
+   "corners_tl_tr_br_bl": [
+    [
+     189,
+     6544
+    ],
+    [
+     472,
+     6544
+    ],
+    [
+     472,
+     6827
+    ],
+    [
+     189,
+     6827
+    ]
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "center": [
+    1323,
+    6307
+   ],
+   "side_px": 307,
+   "angle_deg": 5.0,
+   "polygon": [
+    [
+     1183.46,
+     6140.71
+    ],
+    [
+     1489.29,
+     6167.46
+    ],
+    [
+     1462.54,
+     6473.29
+    ],
+    [
+     1156.71,
+     6446.54
+    ]
+   ]
+  }
+ ],
+ "wedge": [
+  {
+   "set": "strip",
+   "step": 0,
+   "ink_fraction": 0.0,
+   "grey": 255,
+   "box": [
+    1701,
+    6165,
+    1937,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 1,
+   "ink_fraction": 0.2,
+   "grey": 204,
+   "box": [
+    1937,
+    6165,
+    2173,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 2,
+   "ink_fraction": 0.4,
+   "grey": 153,
+   "box": [
+    2173,
+    6165,
+    2409,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 3,
+   "ink_fraction": 0.6,
+   "grey": 102,
+   "box": [
+    2409,
+    6165,
+    2645,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 4,
+   "ink_fraction": 0.8,
+   "grey": 51,
+   "box": [
+    2645,
+    6165,
+    2881,
+    6401
+   ]
+  },
+  {
+   "set": "strip",
+   "step": 5,
+   "ink_fraction": 1.0,
+   "grey": 0,
+   "box": [
+    2881,
+    6165,
+    3117,
+    6401
+   ]
+  }
+ ],
+ "colour_patches": [],
+ "furniture": [
+  {
+   "kind": "qr",
+   "text": "HEOCR-CAL-V1-P03",
+   "box": [
+    614,
+    6118,
+    992,
+    6496
+   ]
+  },
+  {
+   "kind": "label",
+   "text": "HeOCR cal. pack v1 | P03 | calibration/dev only",
+   "box": [
+    3165,
+    6270,
+    4385,
+    6326
+   ]
+  },
+  {
+   "kind": "rule",
+   "box": [
+    520,
+    860,
+    4441,
+    860
+   ]
+  },
+  {
+   "kind": "rule",
+   "box": [
+    2481,
+    954,
+    2481,
+    5976
+   ]
+  }
+ ],
+ "dpi": 600,
+ "pack": "HeOCR calibration pack v1",
+ "use": "calibration and dev only, never test"
+}

@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://heocr.org/hocrsyngen/rendering_coverage_report.schema.json",
+  "title": "hocrsyngen rendering_coverage_report.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_version",
+    "generator_name",
+    "generator_version",
+    "batch",
+    "environment",
+    "coverage",
+    "limitations"
+  ],
+  "properties": {
+    "report_version": {
+      "const": "rendering_coverage_report.v1"
+    },
+    "generator_name": {
+      "const": "hocrsyngen"
+    },
+    "generator_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "batch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_path", "sample_count", "page_count"],
+      "properties": {
+        "manifest_path": {
+          "const": "generation_manifest.json"
+        },
+        "sample_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pillow_raqm", "shaping_stack"],
+      "properties": {
+        "pillow_raqm": {
+          "type": "boolean"
+        },
+        "shaping_stack": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["libraqm", "fribidi", "harfbuzz"],
+          "properties": {
+            "libraqm": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fribidi": {
+              "type": "string",
+              "minLength": 1
+            },
+            "harfbuzz": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fonts",
+        "templates",
+        "recipes",
+        "degradation_presets",
+        "text_features",
+        "bidi_mixed_direction",
+        "rendering_path",
+        "asset_smoke"
+      ],
+      "properties": {
+        "fonts": { "$ref": "#/$defs/coverage_entry" },
+        "templates": { "$ref": "#/$defs/coverage_entry" },
+        "recipes": { "$ref": "#/$defs/coverage_entry" },
+        "degradation_presets": { "$ref": "#/$defs/coverage_entry" },
+        "text_features": { "$ref": "#/$defs/coverage_entry" },
+        "bidi_mixed_direction": { "$ref": "#/$defs/coverage_entry" },
+        "rendering_path": { "$ref": "#/$defs/coverage_entry" },
+        "asset_smoke": { "$ref": "#/$defs/coverage_entry" }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "coverage_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["covered", "missing", "evidence"],
+      "properties": {
+        "covered": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                { "type": "string" },
+                { "type": "boolean" },
+                { "type": "integer" },
+                { "type": "number" },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "required": ["sample_id"]
+          }
+        }
+      }
+    }
+  }
+}

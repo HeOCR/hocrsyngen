@@ -1,0 +1,32 @@
+{
+  "01-window-stripe": {
+    "seed": 118,
+    "config": {
+      "geometry": {"long_edge_px": [1080, 1080], "pitch_deg": [23, 23], "yaw_deg": [-16, -16], "quarter_turn_weights": {"0": 1, "90": 0, "180": 0, "270": 0}},
+      "surface": {"kind_weights": {"dark_table": 0, "grey_floor": 0, "wood": 1}},
+      "lighting": {"low_light_probability": 0, "white_balance_r": [1.08, 1.08], "white_balance_g": [0.99, 0.99], "white_balance_b": [0.87, 0.87]},
+      "hard_light": {"probability": 1, "kind_weights": {"shadow_stripe": 1, "shadow_square": 0, "sun_patch": 0}},
+      "optics": {"motion_probability": 0}
+    }
+  },
+  "02-dim-quarter-turn": {
+    "seed": 227,
+    "config": {
+      "geometry": {"long_edge_px": [1080, 1080], "quarter_turn_weights": {"0": 0, "90": 1, "180": 0, "270": 0}, "crumple_probability": 1},
+      "surface": {"kind_weights": {"dark_table": 1, "grey_floor": 0, "wood": 0}},
+      "lighting": {"low_light_probability": 1},
+      "hard_light": {"probability": 0},
+      "optics": {"motion_probability": 1}
+    }
+  },
+  "03-sun-upside-down": {
+    "seed": 355,
+    "config": {
+      "geometry": {"long_edge_px": [1080, 1080], "quarter_turn_weights": {"0": 0, "90": 0, "180": 1, "270": 0}, "curl_probability": 1},
+      "surface": {"kind_weights": {"dark_table": 0, "grey_floor": 1, "wood": 0}},
+      "lighting": {"low_light_probability": 0, "exposure": [0.68, 0.68]},
+      "hard_light": {"probability": 1, "kind_weights": {"shadow_stripe": 0, "shadow_square": 0, "sun_patch": 1}, "center_x": [0.55, 0.55], "center_y": [0.66, 0.66], "width": [0.33, 0.33]},
+      "optics": {"motion_probability": 0}
+    }
+  }
+}

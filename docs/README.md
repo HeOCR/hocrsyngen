@@ -1,0 +1,72 @@
+# Documentation Index
+
+Created by [Shay Palachy Affek](http://www.shaypalachy.com/).
+
+This directory holds human-facing design, architecture, specification, roadmap, research, testing, and decision records for `hocrsyngen`.
+
+## Repository Context Files
+
+- [AGENTS.md](../AGENTS.md): static, actionable rules for agents. It should not contain roadmap narrative, current PR state, or task lists.
+- [llms.txt](../llms.txt): compact repository sitemap for agents. It should not contain planning narrative or task state.
+- [.agent-plan.md](../.agent-plan.md): dynamic immediate execution state and next actions. It should stay short and be updated as active work changes.
+- [docs/](./): long-form human-readable architecture, specifications, plans, research notes, testing strategy, and decisions.
+- [README.md](../README.md): user-facing entry point. It should link to deeper docs instead of becoming the full planning archive.
+
+## Docs Map
+
+- [repository_scope.md](repository_scope.md): product boundaries between `hocrsyngen`, `hocrgen`, and HeOCR.
+- [architecture.md](architecture.md): current module map, data flow, public surfaces, dependencies, failure modes, and extension points.
+- [generation_manifest_v1.md](generation_manifest_v1.md): serialized `generation_manifest.json` v1 contract and validation expectations.
+- [hocrgen_integration.md](hocrgen_integration.md): stable downstream integration contract for `hocrgen`.
+- [production_readiness.md](production_readiness.md): current production-readiness state,
+  crucial missing pieces, high-lift quality work, and external `hocrgen`
+  dependencies before candidate batches become governed dataset inputs.
+- [rendering_coverage_reporting.md](rendering_coverage_reporting.md): design and implemented contract for opt-in Hebrew rendering coverage reports outside manifest v1.
+- [../CHANGELOG.md](../CHANGELOG.md): generator-output changes keyed by `generator_version`, including the S10c `s10c-gold-complete-v1` gold-completeness bump.
+- [line_annotations_v1.md](line_annotations_v1.md): S10a opt-in `hocrsyngen_line_annotations.v1` sidecar (per-line polygons and baselines in final-page pixels, `logical_order` reconstruction rule, S11a region polygons and region reading order), `--text-corpus` provenance, and the seed-101 occlusion/unlisted-text gold finding.
+- [mixed_script_text_corpus_card.md](mixed_script_text_corpus_card.md): S13a packaged mixed Hebrew/Latin/digit train and eval corpora for tender-style lines: coverage spec, font limits, provenance, leakage against all evaluation text (including a hash-only `hocrgen` fixture), and statistics.
+- [typographic_text_corpus_card.md](typographic_text_corpus_card.md): S13b packaged typeset Hebrew train and eval corpora with em and en dashes, geresh and gershayim, typographic quotes, ellipses and semicolons at realistic rates: character set, placement rules, font check, provenance, leakage and statistics.
+- [pby_public_domain_text_intake_plan.md](pby_public_domain_text_intake_plan.md): S15a plan for Project Ben-Yehuda public-domain training text: per-work Israel/US rights fields, catalogue gaps, external pinned `--text-corpus` location, proposed manifest licence value for `hocrgen` governance, attribution, real-scan eval exclusion, line-cutting and niqqud split.
+- [document_generator_design.md](document_generator_design.md): design note (draft) for a synthetic document generator at training and benchmark scale: CC0 source trees rendered by real producers (Word, LibreOffice, Chrome, Ghostscript, print-to-image, OCR layers), gold survival checks, templates, fonts, proposed measures, splits, ownership and a pilot.
+- [layout_metadata_design.md](layout_metadata_design.md): design direction for future document-layout metadata and hocrgen filtering boundaries.
+- [document_family_recipes.md](document_family_recipes.md): governed document-family recipes and their current catalog/manifest boundaries.
+- [visual_inspection_rubric.md](visual_inspection_rubric.md): human review criteria for S3 layout realism, Hebrew readability, artifacts, and candidate rejection.
+- [wet_testing_program_plan.md](wet_testing_program_plan.md): developer-owned wet-testing sub-plan for staged code validation, static galleries, deterministic warning metrics, human review, optional LLM triage, evidence artifacts, and regression promotion without changing manifest v1 or adding release governance.
+- [downstream_realism_acceptance_rubric.md](downstream_realism_acceptance_rubric.md): S6a downstream `hocrgen`/HeOCR acceptance categories, calibrated example classes, visual evidence expectations, rejection reasons, and release-eligibility boundaries.
+- [downstream_utility_measurement_contract.md](downstream_utility_measurement_contract.md): S6b downstream utility measurement contract for real-reference prerequisites, CER/WER boundaries, leakage controls, evidence packets, and `hocrgen`/HeOCR ownership.
+- [synthetic_diversity_domain_shift_metrics.md](synthetic_diversity_domain_shift_metrics.md): S6c synthetic diversity and domain-shift metrics for candidate-batch summaries, repeated-pattern warnings, synthetic-to-real comparison requirements, leakage boundaries, and downstream ownership.
+- [release_cap_handoff_policy.md](release_cap_handoff_policy.md): S6d release cap handoff policy for how public `hocrsyngen` metadata and S6a/S6b/S6c evidence support downstream cap decisions without moving caps, source composition, release eligibility, export, publication, or governance enforcement into this repo.
+- [review_evidence_sidecar_contract.md](review_evidence_sidecar_contract.md): S6e portable optional downstream review evidence sidecar contract for reviewed sample/page ids, reviewer state, decision categories, reason codes, visual evidence references, S6a category references, S6c warning references, S6d cap decision references, limitations, and unreviewed strata outside manifest v1.
+- [candidate_batch_profile_mix_handoff.md](candidate_batch_profile_mix_handoff.md): S6f candidate batch profile and mix handoff contract for requested, generated/observed, reviewed, capped/admitted, and released candidate mix layers, required/preferred/excluded strata, mix gap reason codes, and downstream ownership boundaries outside manifest v1.
+- [hocrgen_adapter_handoff_checklist.md](hocrgen_adapter_handoff_checklist.md): S6g external `hocrgen` adapter handoff checklist for installed CLI import, public JSON boundary assertions, manifest id/path retention, `template_catalog.v2` joins, S6a-S6f evidence links, failure handling, and downstream-only governance responsibilities.
+- [script_abstraction_design.md](script_abstraction_design.md): S7a design-only script abstraction boundaries for future RTL-script profiles while preserving Hebrew-first manifest v1, logical-order UTF-8 Hebrew, NFC, RTL metadata, and current validation semantics.
+- [real_glyph_composition_plan.md](real_glyph_composition_plan.md): S9a design-only plan for future real-glyph page composition from `HeOCR/hletterscript` `letter_set.v1` per-writer letter sets, including proposed `generation_manifest.v2` boundary, composer interface, asset-location boundary, validation extensions, wet-test extensions, persona/condition vs. provenance reconciliation, prerequisites, and stop/reject gates.
+- [roadmap.md](roadmap.md): hocrsyngen-specific phases from planning foundation through Hebrew rendering, realism, research, completed S6 evaluation handoffs, S7 script-abstraction design, active S8 wet-testing/generator-quality evidence, and design-only S9 real-glyph composition planning.
+- [research_program.md](research_program.md): planning track for believable synthetic Hebrew handwriting and document generation.
+- [handwriting_research_acceptance_criteria.md](handwriting_research_acceptance_criteria.md): S5a boundaries, reproducibility, licensing, visual review, downstream evaluation, and stop/reject gates for handwriting research.
+- [allograph_character_prototype_plan.md](allograph_character_prototype_plan.md): S5b deterministic allograph and character-level prototype boundary, bounded sampling plan, Hebrew cases, evidence plan, and proceed/stop gates.
+- [word_line_assembly_prototype_plan.md](word_line_assembly_prototype_plan.md): S5c deterministic word and line assembly prototype boundary, spacing/wrapping controls, Hebrew cases, S5b interaction, evidence plan, and proceed/stop gates.
+- [learned_generation_packaging_boundary.md](learned_generation_packaging_boundary.md): S5d optional learned-generation packaging boundary for experiments, extras, separate packages, model/data provenance, reproducibility, sidecars, and stop/refuse gates.
+- [testing_and_quality.md](testing_and_quality.md): test commands, current coverage, environmental requirements, quality gates, and failure handling.
+- [decisions/](decisions/): accepted ADR-style design decisions, including persona/style/condition semantics.
+- [decisions/0005-persona-style-condition-semantics.md](decisions/0005-persona-style-condition-semantics.md): normative semantics and forbidden-claim boundaries for synthetic persona, style, and condition controls.
+- [decisions/0007-third-party-public-domain-training-text.md](decisions/0007-third-party-public-domain-training-text.md): maintainer decisions allowing outside public-domain training text (Israel PD enough, US PD recorded per entry, mix share a hyperparameter, translations need author and translator PD).
+- [decisions/0008-cc0-for-project-authored-text-corpora.md](decisions/0008-cc0-for-project-authored-text-corpora.md): maintainer decision dedicating the project-authored S10b, S13a and S13b text corpora, and (by amendment) `hebrew_lines.txt`, to the public domain under CC0 1.0; code stays MIT.
+- [decisions/0006-real-glyph-provenance-boundary.md](decisions/0006-real-glyph-provenance-boundary.md): decision that real writer identity belongs in `sample.provenance` (not `controls.persona`), preserving ADR 0005's forbidden-claims boundary for S9 real-glyph composition.
+
+## Suggested Reading Order
+
+1. Start with [README.md](../README.md) for user-facing CLI and fixture examples.
+2. Read [repository_scope.md](repository_scope.md) to understand ownership boundaries.
+3. Read [architecture.md](architecture.md) and [generation_manifest_v1.md](generation_manifest_v1.md) before changing code or contracts.
+4. Read [hocrgen_integration.md](hocrgen_integration.md) before touching downstream adapter assumptions.
+5. Read [testing_and_quality.md](testing_and_quality.md) before running or changing tests.
+6. Read [roadmap.md](roadmap.md), [production_readiness.md](production_readiness.md), [research_program.md](research_program.md), and [decisions/](decisions/) for planning context.
+
+Coding agents should also read [AGENTS.md](../AGENTS.md), [llms.txt](../llms.txt), and the current [.agent-plan.md](../.agent-plan.md) before editing.
+
+## Credits
+
+Created by [Shay Palachy Affek ](http://www.shaypalachy.com/) [[GitHub](https://github.com/shaypal5)]
+
+- [paired_render.md](paired_render.md): optional same-frame pre-photometric image pairs and validation.

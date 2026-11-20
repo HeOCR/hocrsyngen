@@ -1,0 +1,92 @@
+{
+ "schema": "hocrsyngen_line_render.v1",
+ "lines_in": 4,
+ "rendered": 4,
+ "refused": [],
+ "by_font": {
+  "gveret-levin-regular": 2,
+  "playpen-sans-hebrew": 2
+ },
+ "preset": "handwriting_v1",
+ "preset_definition": {
+  "blur": [
+   0.1,
+   0.45
+  ],
+  "grain": [
+   0.8,
+   3.0
+  ],
+  "ink": [
+   15,
+   62
+  ],
+  "paper": [
+   230,
+   252
+  ],
+  "jpeg": [
+   86,
+   96
+  ],
+  "downsample": [
+   0.95,
+   1.0
+  ],
+  "spread": [
+   0,
+   0
+  ],
+  "rotate": [
+   -0.6,
+   0.6
+  ],
+  "wobble_em": [
+   0.025,
+   0.065
+  ],
+  "wobble_period_em": [
+   4.5,
+   8.0
+  ],
+  "slant": [
+   -0.14,
+   0.14
+  ],
+  "letter_spacing_scale": [
+   0.92,
+   1.09
+  ],
+  "spacing_wobble_em": [
+   0.02,
+   0.06
+  ],
+  "stroke_px": [
+   -0.25,
+   0.55
+  ],
+  "wobble_phase": [
+   0.0,
+   6.283185307179586
+  ],
+  "spacing_phase": [
+   0.0,
+   6.283185307179586
+  ]
+ },
+ "size_mode": "band",
+ "band_range": [
+  27,
+  34
+ ],
+ "weight_range": [
+  400,
+  400
+ ],
+ "band_def": "otsu2pct",
+ "groups": 2,
+ "seed": 8421,
+ "font_manifest_sha256": "5560b96233fb4c76a1cc2c03a88482ea5093a8e7f2249009cf02e1b29c0ad472",
+ "hocrsyngen_version": "0.1.0",
+ "synthetic": "rendered"
+}
