@@ -1,0 +1,2334 @@
+{
+  "alef-regular": {
+    "font": "Alef-Regular.ttf",
+    "sha256": "a32adcc953ac356906901778460083dc207d4560cb586fd9ea24ec5b186969ed",
+    "version": "Version 1.002;PS 001.002;hotconv 1.0.56;makeotf.lib2.0.21325",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "no",
+      "rafe": "no",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "none"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core substitution review",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BC": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "point-05C1": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C2": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shuruq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05BC@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "mappiq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "dagesh-vowel": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-male": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "qamats-qatan": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "wide-qubuts": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "adjacent-holam": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@5: mark identity or base inconclusive (possible substitution)"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ]
+        }
+      }
+    ]
+  },
+  "frank-ruhl-libre": {
+    "font": "FrankRuhlLibre-wght.ttf",
+    "sha256": "f9bf26966681037aae894b031bd0dcf2c1bfdfa128dd0640cf276fe62a338a43",
+    "version": "Version 6.004",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "none"
+    },
+    "instances": [
+      {
+        "weight": 400,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ]
+        }
+      }
+    ]
+  },
+  "david-libre-regular": {
+    "font": "DavidLibre-Regular.ttf",
+    "sha256": "923f06e0f6dc84e1649d8cc5d5e12a8d663adf6aba83ba15baa5d559fb47b86e",
+    "version": "Version 1.100; ttfautohint (v1.8.4.7-5d5b)",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "no",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "none"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ]
+        }
+      }
+    ]
+  },
+  "noto-sans-hebrew": {
+    "font": "NotoSansHebrew-wdth-wght.ttf",
+    "sha256": "7ef36a2c3593758cdb622e1bdef4f84523e92fbc3ccc667438dd80ff54c2de88",
+    "version": "Version 3.001",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": 400,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "clear",
+        "case_flags": {
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "clear",
+        "case_flags": {
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "clear",
+        "case_flags": {
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ]
+        }
+      }
+    ]
+  },
+  "noto-serif-hebrew": {
+    "font": "NotoSerifHebrew-wdth-wght.ttf",
+    "sha256": "93caef921360788dc3b0e32136bb26f16bc57717ec482d48fc7fd43820617165",
+    "version": "Version 2.004",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": 400,
+        "core_probe": "core probe clear",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "clear",
+        "case_flags": {
+          "meteg-stack": [
+            "U+05B8@1 + U+05BD@1: mark bboxes overlap"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core probe clear",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "clear",
+        "case_flags": {
+          "meteg-stack": [
+            "U+05B8@1 + U+05BD@1: mark bboxes overlap"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core probe clear",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "clear",
+        "case_flags": {
+          "meteg-stack": [
+            "U+05B8@1 + U+05BD@1: mark bboxes overlap"
+          ]
+        }
+      }
+    ]
+  },
+  "assistant": {
+    "font": "Assistant-wght.ttf",
+    "sha256": "1c3b393884f8fb133a1b17f41d26178adae1050a4f86d7a429d1b5658c314fa3",
+    "version": "Version 3.000",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "no",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "none"
+    },
+    "instances": [
+      {
+        "weight": 400,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ]
+        }
+      }
+    ]
+  },
+  "heebo": {
+    "font": "Heebo-wght.ttf",
+    "sha256": "18f930b583fa8fe6b40b2f8263b7ac6afbac07adc91a12467874e7467d3ace30",
+    "version": "Version 3.100",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "no",
+      "rafe": "yes",
+      "sof_pasuq": "no",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "none"
+    },
+    "instances": [
+      {
+        "weight": 400,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      }
+    ]
+  },
+  "rubik": {
+    "font": "Rubik-wght.ttf",
+    "sha256": "1b3a7437ba2af80e465e773ed60c5036d1ba6ace492d89046dbcf18fb31e4e88",
+    "version": "Version 2.300;gftools[0.9.30]",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "no",
+      "rafe": "no",
+      "sof_pasuq": "no",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "none"
+    },
+    "instances": [
+      {
+        "weight": 400,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      }
+    ]
+  },
+  "miriam-libre": {
+    "font": "MiriamLibre-wght.ttf",
+    "sha256": "9ea850118d552d25e1fb8242cbd429a5801c691b6ce218458e1a039045114bb8",
+    "version": "Version 2.000",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "no",
+      "rafe": "no",
+      "sof_pasuq": "no",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "none"
+    },
+    "instances": [
+      {
+        "weight": 400.0,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05BD": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "holam-haser": [
+            "vav holam pair has no clear right/left distinction"
+          ],
+          "meteg-stack": [
+            "missing U+05BD",
+            ".notdef"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            ".notdef"
+          ]
+        }
+      }
+    ]
+  },
+  "arimo": {
+    "font": "Arimo-wght.ttf",
+    "sha256": "e43898b143ec826ac8cb4034816458a7047fbe0836558de2a1f8c6223ae3e0ca",
+    "version": "Version 1.341",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": 400.0,
+        "core_probe": "core probe clear",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "below-stack": [
+            "U+05B8@1 + U+0596@1: mark bboxes overlap"
+          ],
+          "double-stack": [
+            "U+05A8@1: above mark below top of base",
+            "U+05B8@1 + U+0596@1: mark bboxes overlap"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core probe clear",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "below-stack": [
+            "U+05B8@1 + U+0596@1: mark bboxes overlap"
+          ],
+          "double-stack": [
+            "U+05A8@1: above mark below top of base",
+            "U+05B8@1 + U+0596@1: mark bboxes overlap"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core probe clear",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "below-stack": [
+            "U+05B8@1 + U+0596@1: mark bboxes overlap"
+          ],
+          "double-stack": [
+            "U+05A8@1: above mark below top of base",
+            "U+05B8@1 + U+0596@1: mark bboxes overlap"
+          ]
+        }
+      }
+    ]
+  },
+  "tinos-regular": {
+    "font": "Tinos-Regular.ttf",
+    "sha256": "60a0e8ef0c04dd5dd69ffe91025fa2ae5836cbd35600a82ba031977557e2cb61",
+    "version": "Version 1.340; ttfautohint (v1.8.4.16-eb64)",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core probe clear",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "clear",
+        "case_flags": {}
+      }
+    ]
+  },
+  "tinos-bold": {
+    "font": "Tinos-Bold.ttf",
+    "sha256": "393269dbab8899f938db19783eca5eac92eb431f7ae0ab45b8349ca895f1a06b",
+    "version": "Version 1.340; ttfautohint (v1.8.4.16-eb64)",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core probe clear",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "clear",
+        "case_flags": {}
+      }
+    ]
+  },
+  "open-sans": {
+    "font": "OpenSans-wdth-wght.ttf",
+    "sha256": "36643644f318a812aab2d2ed3bb98f8cf0872527f835fe9398d95fe6b9adb878",
+    "version": "Version 3.003",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "no",
+      "sof_pasuq": "no",
+      "geresh": "no",
+      "gershayim": "no",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "none"
+    },
+    "instances": [
+      {
+        "weight": 400,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05B9": [
+            "U+05B9@1: above mark below top of base"
+          ],
+          "point-05BA": [
+            "U+05BA@1: above mark below top of base"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "shin-dagesh": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BA@3: above mark below top of base"
+          ],
+          "adjacent-holam": [
+            "U+05B9@1: above mark below top of base"
+          ],
+          "meteg-stack": [
+            "U+05B8@1 + U+05BD@1: mark bboxes overlap"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            "missing U+05F3",
+            "missing U+05F4",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 550,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05B9": [
+            "U+05B9@1: above mark below top of base"
+          ],
+          "point-05BA": [
+            "U+05BA@1: above mark below top of base"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "shin-dagesh": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BA@3: above mark below top of base"
+          ],
+          "adjacent-holam": [
+            "U+05B9@1: above mark below top of base"
+          ],
+          "meteg-stack": [
+            "U+05B8@1 + U+05BD@1: mark bboxes overlap"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            "missing U+05F3",
+            "missing U+05F4",
+            ".notdef"
+          ]
+        }
+      },
+      {
+        "weight": 700,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AB",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "unsupported",
+        "case_flags": {
+          "point-05B9": [
+            "U+05B9@1: above mark below top of base"
+          ],
+          "point-05BA": [
+            "U+05BA@1: above mark below top of base"
+          ],
+          "point-05BF": [
+            "missing U+05BF",
+            ".notdef"
+          ],
+          "shin-dagesh": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BA@3: above mark below top of base"
+          ],
+          "adjacent-holam": [
+            "U+05B9@1: above mark below top of base"
+          ],
+          "meteg-stack": [
+            "U+05B8@1 + U+05BD@1: mark bboxes overlap"
+          ],
+          "above-stack": [
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "below-stack": [
+            "missing U+0596",
+            ".notdef"
+          ],
+          "double-stack": [
+            "missing U+0596",
+            "missing U+05A8",
+            ".notdef"
+          ],
+          "punctuation": [
+            "missing U+05C3",
+            "missing U+05F3",
+            "missing U+05F4",
+            ".notdef"
+          ]
+        }
+      }
+    ]
+  },
+  "frank-ruehl-clm-medium": {
+    "font": "FrankRuehlCLM-Medium.otf",
+    "sha256": "6c0ab8bb2fb605160dbb348abad5de33e47719ab1af7b5df3324c9c338afad58",
+    "version": "Version 0.140",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "point-05BC": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C1": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C2": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shuruq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05BC@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "mappiq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "dagesh-vowel": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-male": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "qamats-qatan": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "wide-qubuts": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "adjacent-holam": [
+            "U+05B9@1: mark bbox overlaps neighboring letter",
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@5: mark identity or base inconclusive (possible substitution)"
+          ],
+          "above-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "below-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "double-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ]
+        }
+      }
+    ]
+  },
+  "frank-ruehl-clm-bold": {
+    "font": "FrankRuehlCLM-Bold.otf",
+    "sha256": "0f836360f6861474ba1c156d9e145d73c7fbd6c4eadf7d6ca28603e4915f2f28",
+    "version": "Version 0.140",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core placement or shaping flagged",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "point-05BC": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C1": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C2": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shuruq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05BC@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "mappiq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "dagesh-vowel": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-male": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "qamats-qatan": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "wide-qubuts": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "adjacent-holam": [
+            "U+05B9@1: mark bbox overlaps neighboring letter",
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@5: mark identity or base inconclusive (possible substitution)"
+          ],
+          "above-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "below-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "double-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ]
+        }
+      }
+    ]
+  },
+  "hadasim-clm-regular": {
+    "font": "HadasimCLM-Regular.otf",
+    "sha256": "950cbb40f332b2dfaa36d71461caa385245a4f33ae3478ef03c7e6bb0d960a0c",
+    "version": "Version 0.140",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "partial"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core substitution review",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "point-05BC": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C1": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C2": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shuruq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05BC@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "mappiq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "dagesh-vowel": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-male": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "qamats-qatan": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "wide-qubuts": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "adjacent-holam": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@5: mark identity or base inconclusive (possible substitution)"
+          ],
+          "above-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05A8@1: mark or base has no visible extents"
+          ],
+          "below-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+0596@1: mark or base has no visible extents"
+          ],
+          "double-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)",
+            "U+0596@1: mark or base has no visible extents",
+            "U+05A8@1: mark or base has no visible extents"
+          ]
+        }
+      }
+    ]
+  },
+  "hadasim-clm-bold": {
+    "font": "HadasimCLM-Bold.otf",
+    "sha256": "6966208f183ad903b4155db069300733bbdf9f9c6afe5acbfe1657ff4d879ce5",
+    "version": "Version 0.140",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "partial"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core substitution review",
+        "cantillation_unverified": [
+          "U+0591",
+          "U+0592",
+          "U+0593",
+          "U+0594",
+          "U+0595",
+          "U+0596",
+          "U+0597",
+          "U+0598",
+          "U+0599",
+          "U+059A",
+          "U+059B",
+          "U+059C",
+          "U+059D",
+          "U+059E",
+          "U+059F",
+          "U+05A0",
+          "U+05A1",
+          "U+05A2",
+          "U+05A3",
+          "U+05A4",
+          "U+05A5",
+          "U+05A6",
+          "U+05A7",
+          "U+05A8",
+          "U+05A9",
+          "U+05AA",
+          "U+05AC",
+          "U+05AD",
+          "U+05AE",
+          "U+05AF"
+        ],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "point-05BC": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C1": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C2": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shuruq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05BC@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "mappiq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "dagesh-vowel": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-male": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "qamats-qatan": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "wide-qubuts": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "adjacent-holam": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@5: mark identity or base inconclusive (possible substitution)"
+          ],
+          "above-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05A8@1: mark or base has no visible extents"
+          ],
+          "below-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+0596@1: mark or base has no visible extents"
+          ],
+          "double-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)",
+            "U+0596@1: mark or base has no visible extents",
+            "U+05A8@1: mark or base has no visible extents"
+          ]
+        }
+      }
+    ]
+  },
+  "nachlieli-clm-light": {
+    "font": "NachlieliCLM-Light.otf",
+    "sha256": "41a9ea4e896702036c2cae75368fcde2ac3042611eefb38d22f92463098a64a7",
+    "version": "Version 0.140",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core substitution review",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "point-05BC": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C1": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C2": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shuruq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05BC@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "mappiq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "dagesh-vowel": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-male": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "qamats-qatan": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "wide-qubuts": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "adjacent-holam": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@5: mark identity or base inconclusive (possible substitution)"
+          ],
+          "above-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "below-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "double-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ]
+        }
+      }
+    ]
+  },
+  "nachlieli-clm-bold": {
+    "font": "NachlieliCLM-Bold.otf",
+    "sha256": "4b43572203b7fb64ef50ec93a48b104ef5536d2c1179b4d08dd5fad96a95b509",
+    "version": "Version 0.140",
+    "harfbuzz": "15.0.0",
+    "coverage": {
+      "meteg": "yes",
+      "rafe": "yes",
+      "sof_pasuq": "yes",
+      "geresh": "yes",
+      "gershayim": "yes",
+      "hebrew_letters": "full",
+      "core": "full",
+      "cantillation": "full"
+    },
+    "instances": [
+      {
+        "weight": null,
+        "core_probe": "core substitution review",
+        "cantillation_unverified": [],
+        "cantillation_stack_probe": "flagged",
+        "case_flags": {
+          "point-05BC": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C1": [
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "point-05C2": [
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "sin-dagesh": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C2@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "shuruq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05BC@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "mappiq": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "dagesh-vowel": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-male": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "holam-haser": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "qamats-qatan": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "wide-qubuts": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)"
+          ],
+          "adjacent-holam": [
+            "U+05C1@3: mark identity or base inconclusive (possible substitution)",
+            "U+05B9@5: mark identity or base inconclusive (possible substitution)"
+          ],
+          "above-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "below-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)"
+          ],
+          "double-stack": [
+            "U+05BC@1: mark identity or base inconclusive (possible substitution)",
+            "U+05C1@1: mark identity or base inconclusive (possible substitution)"
+          ]
+        }
+      }
+    ]
+  }
+}
