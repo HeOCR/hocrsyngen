@@ -51,7 +51,8 @@ def test_generator_font_loading_is_guarded(tmp_path, monkeypatch):
         _load_font(held, 16)
 
 
-def test_governed_faces_refuse_a_held_out_face(tmp_path, monkeypatch):
+@pytest.mark.parametrize("preset", ["modern_print_scan_v1", "handwriting_v1"])
+def test_governed_faces_refuse_a_held_out_face(tmp_path, monkeypatch, preset):
     """render-lines and office pages take faces from governed_faces(): a manifest that lists a held-out face fails."""
     import hashlib
 
@@ -64,8 +65,9 @@ def test_governed_faces_refuse_a_held_out_face(tmp_path, monkeypatch):
     sha = hashlib.sha256(font.read_bytes()).hexdigest()
     (tmp_path / "manifest.yaml").write_text(
         "fonts:\n  - id: renamed-face\n    file: SimpleCLM-Medium.ttf\n    style: x\n    license: GPL-2.0\n"
-        f"    license_file: LICENSE.txt\n    sha256: {sha}\n    line_render: true\n", encoding="utf-8")
+        f"    license_file: LICENSE.txt\n    sha256: {sha}\n    line_render: true\n    handwriting_line_render: true\n",
+        encoding="utf-8")
     with pytest.raises(fx.HeldOutFontError):
-        governed_faces(tmp_path / "manifest.yaml")
+        governed_faces(tmp_path / "manifest.yaml", preset=preset)
     monkeypatch.setenv(fx.EVAL_ENV, "1")
-    assert list(governed_faces(tmp_path / "manifest.yaml")) == ["renamed-face"]
+    assert list(governed_faces(tmp_path / "manifest.yaml", preset=preset)) == ["renamed-face"]

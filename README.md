@@ -446,7 +446,9 @@ font id does not match the packaged contract for that template.
 
 ### Render given lines (`render-lines`)
 
-`hocrsyngen render-lines --input lines.jsonl --output out/ --seed N` renders caller-supplied lines (`{"id", "text"}`, logical order). It uses only the governed faces in `data/synthetic/fonts/manifest.yaml` (`line_render: true`, licence and sha256 checked) and a line-level preset (`modern_print_scan_v1` by default, its `_medium` and `_small_inky` variants, or `none`). Lines can share a `group` (one face, size and weight per group), and `--band-range` targets the ink-band height per face. It writes `lines/<id>.png`, logical `lines/<id>.gt.txt`, and a `manifest.jsonl` that records font, licence, sha256, preset, seed and `synthetic: "rendered"` for every line. See [docs/line_render.md](docs/line_render.md).
+Use `--preset handwriting_v1` for handwriting-style lines with Gveret Levin and Playpen Sans Hebrew, seeded line jitter and light scan degradation. It writes the same PNGs, labels and sidecar as the print presets. See the [handwriting examples](docs/line_render.md#handwriting-style-lines).
+
+`hocrsyngen render-lines --input lines.jsonl --output out/ --seed N` renders caller-supplied lines (`{"id", "text"}`, logical order). It checks licences and hashes for the fonts enabled by the preset in `data/synthetic/fonts/manifest.yaml`. The default preset is `modern_print_scan_v1`. Lines can share a `group` (one face, size and weight per group), and `--band-range` targets the ink-band height per face. It writes `lines/<id>.png`, logical `lines/<id>.gt.txt`, and a `manifest.jsonl` that records font, licence, sha256, preset, seed and `synthetic: "rendered"` for every line. See [docs/line_render.md](docs/line_render.md).
 
 ### Office-print pages (`office-pages`)
 
@@ -547,7 +549,7 @@ See `docs/testing_and_quality.md` for the canonical Python support policy.
 
 - **Code:** MIT ([LICENSE](LICENSE)).
 - **Fonts:** each under the licence file beside it in
-  `src/hocrsyngen/data/synthetic/fonts/`. All are SIL OFL-1.1: Alef, David Libre, Frank Ruhl Libre, Gveret Levin,
+  `src/hocrsyngen/data/synthetic/fonts/`. All are SIL OFL-1.1: Alef, David Libre, Frank Ruhl Libre, Gveret Levin, Playpen Sans Hebrew,
   Noto Rashi Hebrew, and (from google/fonts, commits recorded in `fonts/manifest.yaml`) Noto Sans Hebrew, Noto Serif
   Hebrew, Assistant, Heebo, Rubik, Miriam Libre, Arimo, Tinos, Cousine and Open Sans.
 - **Project-authored training and evaluation text (S10b, S13a, S13b and the

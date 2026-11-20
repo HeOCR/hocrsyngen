@@ -10,11 +10,21 @@ fonts:
   - id: gveret-levin-regular
     file: GveretLevin-Regular.ttf
     style: handwritten_like
-    notes: Open Hebrew handwriting-style font used for note-like synthetic documents.
+    notes: Open Hebrew handwriting-style font. From AlefAlefAlef/gveret-levin commit b383a9c00863837b1b88b4d0365f43a304007dae, fonts/ttf/GveretLevin-Regular.ttf (git blob verified).
     license: OFL-1.1
     license_file: LICENSE-GveretLevin-OFL.txt
     sha256: 05c443395d48b97f43469da4fb08772a4c612fda306348577dbc40a1267912b1
     line_render: false
+    handwriting_line_render: true
+  - id: playpen-sans-hebrew
+    file: PlaypenSansHebrew-wght.ttf
+    style: handwriting_line
+    notes: Open educational handwriting face from google/fonts commit 8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5, ofl/playpensanshebrew/PlaypenSansHebrew[wght].ttf (git blob verified).
+    license: OFL-1.1
+    license_file: LICENSE-PlaypenSansHebrew-OFL.txt
+    sha256: 0ec8a95033c5a01e1799c60b49ab76d9922a68f715a081fc1f5587e4d2bb5b69
+    line_render: false
+    handwriting_line_render: true
   - id: frank-ruhl-libre
     file: FrankRuhlLibre-wght.ttf
     style: book_serif
