@@ -10,14 +10,14 @@ renderer draws each line in one governed font, applies a named line-level degrad
 - ``summary.json``        counts per font and preset, font-manifest sha256, package version, refusals
 
 Rules:
-- Only faces listed in the packaged font manifest with ``line_render: true`` can be used. Every face's file must match
-  its manifest sha256 and carry a licence id and licence file; anything else is refused.
+- Only faces enabled in the packaged font manifest for the requested preset can be used. Every face's file must
+  match its manifest sha256 and carry a licence id and licence file.
 - Bidi is resolved by Pillow's libraqm backend (the Unicode Bidirectional Algorithm with an RTL base direction), so
   Latin and digit runs stay left-to-right and paired brackets are mirrored. Pillow without libraqm is refused.
 - A line with a character the chosen face cannot draw (it would render as .notdef) is refused, not rendered.
 - Fonts are assigned by a seeded balanced permutation over groups (or lines when there is no ``group``); counts differ
   by at most one. Lines of a group share face, size and weight, so a sitting reads like one document.
-- Every random choice derives from (seed, group or line id), so a line renders identically in any batch.
+- With the same assigned face, a line's group and line seeds make it render identically across batches.
 - Each record carries two ink-band measures: ``ink_band_px_otsu2pct`` / ``ink_band_frac_otsu2pct`` (the R9 face-stats
   definition) and ``ink_band_px`` / ``dark_density`` (p5-p95 letter body). ``--band-range`` targets one of them
   (``--band-def``, default otsu2pct), converted to a font size per face.
@@ -27,6 +27,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import math
 import random
 import re
 import unicodedata
@@ -59,12 +60,25 @@ class LinePreset:
     rotate: tuple[float, float]          # degrees
 
 
+HANDWRITING_PRESET = "handwriting_v1"
+HANDWRITING_JITTER = {
+    "wobble_em": (0.025, 0.065),
+    "wobble_period_em": (4.5, 8.0),
+    "slant": (-0.14, 0.14),
+    "letter_spacing_scale": (0.92, 1.09),
+    "spacing_wobble_em": (0.02, 0.06),
+    "stroke_px": (-0.25, 0.55),
+    "wobble_phase": (0.0, math.tau),
+    "spacing_phase": (0.0, math.tau),
+}
+
 LINE_PRESETS: dict[str, LinePreset] = {
     "none": LinePreset((0, 0), (0, 0), (0, 0), (255, 255), (0, 0), (1.0, 1.0), (0, 0), (0, 0)),
     # light (default): modern print on an office scanner
     "modern_print_scan_v1": LinePreset((0.0, 0.4), (0.0, 4.0), (0, 40), (225, 255), (85, 95), (1.0, 1.0), (0, 0), (-0.2, 0.2)),
     "modern_print_scan_v1_medium": LinePreset((0.2, 0.7), (2.0, 8.0), (10, 60), (200, 245), (70, 90), (0.7, 1.0), (0, 0), (-0.4, 0.4)),
     "modern_print_scan_v1_small_inky": LinePreset((0.3, 0.8), (2.0, 8.0), (0, 50), (190, 240), (65, 85), (0.5, 0.75), (0, 1), (-0.4, 0.4)),
+    HANDWRITING_PRESET: LinePreset((0.1, 0.45), (0.8, 3.0), (15, 62), (230, 252), (86, 96), (0.95, 1.0), (0, 0), (-0.6, 0.6)),
 }
 DEFAULT_PRESET = "modern_print_scan_v1"
 # Calibration line for --band-range: mixes letters with and without ascenders/descenders.
@@ -86,13 +100,16 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def governed_faces(manifest_path: Path | None = None) -> dict[str, GovernedFace]:
-    """All faces the manifest allows for line rendering, verified against their sha256 and licence file."""
+def governed_faces(manifest_path: Path | None = None, *, preset: str = DEFAULT_PRESET) -> dict[str, GovernedFace]:
+    """Faces allowed for the preset, verified against their sha256 and licence file."""
+    if preset not in LINE_PRESETS:
+        raise ValueError(f"unknown preset {preset!r}; choose one of {sorted(LINE_PRESETS)}")
     manifest_path = Path(manifest_path or default_font_manifest_path())
     entries = load_simple_font_manifest(manifest_path).get("fonts", [])
     out: dict[str, GovernedFace] = {}
+    flag = "handwriting_line_render" if preset == HANDWRITING_PRESET else "line_render"
     for e in entries:
-        if str(e.get("line_render", "")).lower() != "true":
+        if str(e.get(flag, "")).lower() != "true":
             continue
         fid = e.get("id", "")
         for key in ("file", "sha256", "license", "license_file"):
@@ -104,7 +121,7 @@ def governed_faces(manifest_path: Path | None = None) -> dict[str, GovernedFace]
             raise ValueError(f"font {fid!r}: font or licence file missing next to the manifest")
         if _sha256(path) != e["sha256"]:
             raise ValueError(f"font {fid!r}: {e['file']} does not match its manifest sha256")
-        check_font(fid)  # held-out faces (fonts_excluded.json) never reach render-lines or office pages
+        check_font(fid)
         check_font(path)
         out[fid] = GovernedFace(fid, e["file"], path, e["sha256"], e["license"], e["license_file"], e.get("style", ""))
     return out
@@ -284,6 +301,43 @@ def _i(rng: random.Random, r: tuple[int, int]) -> int:
     return r[0] if r[0] == r[1] else rng.randint(*r)
 
 
+def _handwriting_jitter(img: Image.Image, size: int, paper: int, params: dict[str, float]) -> Image.Image:
+    """Warp a shaped line as a whole so bidi runs and combining marks stay together."""
+    stroke = params["stroke_px"]
+    stroke_filter = ImageFilter.MinFilter(3) if stroke > 0 else ImageFilter.MaxFilter(3)
+    img = Image.blend(img, img.filter(stroke_filter), abs(stroke))
+
+    scale = params["letter_spacing_scale"]
+    slant = params["slant"]
+    wobble = params["wobble_em"] * size
+    period = params["wobble_period_em"] * size
+    spacing = params["spacing_wobble_em"] * size
+    # Reserve room for the largest possible displacement before scan rotation.
+    pad_x = math.ceil((abs(slant) * img.height / 2 + spacing) * scale) + 2
+    pad_y = math.ceil(wobble) + 2
+    width = math.ceil(img.width * scale) + 2 * pad_x
+    height = img.height + 2 * pad_y
+
+    def source_point(x: int, y: int) -> tuple[float, float]:
+        u = (x - pad_x) / scale
+        v = y - pad_y
+        return (
+            u - slant * (v - img.height / 2)
+            - spacing * math.sin(math.tau * u / (2.5 * size) + params["spacing_phase"]),
+            v - wobble * math.sin(math.tau * u / period + params["wobble_phase"]),
+        )
+
+    # Adjacent strips share their edge coordinates. Sample each wave every quarter em.
+    mesh = []
+    step = max(2, size // 4)
+    for left in range(0, width, step):
+        right = min(left + step, width)
+        quad = source_point(left, 0) + source_point(left, height) + source_point(right, height) + source_point(right, 0)
+        mesh.append(((left, 0, right, height), quad))
+    return img.transform((width, height), Image.Transform.MESH, mesh,
+                         resample=Image.Resampling.BICUBIC, fillcolor=paper)
+
+
 def render_line(text: str, face: GovernedFace, size_px: int, preset: str, rng: random.Random,
                 weight: int | None = None) -> tuple[Image.Image, dict]:
     """Render one logical-order line. Returns the greyscale image and the realised preset parameters.
@@ -298,6 +352,10 @@ def render_line(text: str, face: GovernedFace, size_px: int, preset: str, rng: r
     img = Image.new("L", (max(1, w), max(1, h)), paper)
     ImageDraw.Draw(img).text((pad_x - left, pad_y - top), text, font=font, fill=ink, direction="rtl")
     params: dict = {"ink": ink, "paper": paper}
+    if preset == HANDWRITING_PRESET:
+        jitter = {name: round(_u(rng, limits), 4) for name, limits in HANDWRITING_JITTER.items()}
+        img = _handwriting_jitter(img, size_px, paper, jitter)
+        params.update(jitter)
     rot = _u(rng, p.rotate)
     if rot:
         img = img.rotate(rot, resample=Image.Resampling.BICUBIC, expand=True, fillcolor=paper)
@@ -379,8 +437,6 @@ def render_lines(
     Lines sharing a `group` share face, size/band and weight (sampled once per group); faces are balanced over
     groups, or over lines when no group is given. Degradation is drawn per line."""
     _require_raqm()
-    if preset not in LINE_PRESETS:
-        raise ValueError(f"unknown preset {preset!r}; choose one of {sorted(LINE_PRESETS)}")
     if size_range is not None and band_range is not None:
         raise ValueError("give size_range or band_range, not both")
     if band_def not in BAND_DEFS:
@@ -392,7 +448,7 @@ def render_lines(
     wlo, whi = weight_range
     if not (1 <= wlo <= whi <= 1000):
         raise ValueError(f"weight_range must satisfy 1 <= lo <= hi <= 1000, got {weight_range}")
-    governed = governed_faces(manifest_path)
+    governed = governed_faces(manifest_path, preset=preset)
     chosen = list(fonts) if fonts else sorted(governed)
     unknown = [f for f in chosen if f not in governed]
     if unknown:
@@ -458,5 +514,7 @@ def render_lines(
                "preset_definition": asdict(LINE_PRESETS[preset]), "size_mode": mode, f"{mode}_range": [lo, hi],
                "weight_range": [wlo, whi], "band_def": band_def if mode == "band" else None, "groups": len({r["group"] for r in rows if r.get("group")}), "seed": seed,
                "font_manifest_sha256": _sha256(mpath), "hocrsyngen_version": version, "synthetic": "rendered"}
+    if preset == HANDWRITING_PRESET:
+        summary["preset_definition"].update(HANDWRITING_JITTER)
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     return summary

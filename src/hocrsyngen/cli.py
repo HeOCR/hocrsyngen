@@ -964,10 +964,10 @@ def build_parser() -> argparse.ArgumentParser:
     render_lines_p.add_argument("--output", type=Path, help="Output directory (lines/, manifest.jsonl, summary.json).")
     render_lines_p.add_argument("--seed", type=_non_negative_int, help="Run seed; each line derives its own from (seed, id).")
     render_lines_p.add_argument("--font", action="append", dest="fonts",
-                                help="Governed font id (repeatable). Default: every face with line_render: true.")
+                                help="Governed font id (repeatable). Default: all faces allowed by the preset.")
     render_lines_p.add_argument("--preset", default="modern_print_scan_v1",
                                 help="Line degradation preset: modern_print_scan_v1 (default, light), "
-                                     "modern_print_scan_v1_medium, modern_print_scan_v1_small_inky, none.")
+                                     "modern_print_scan_v1_medium, modern_print_scan_v1_small_inky, handwriting_v1, none.")
     size_group = render_lines_p.add_mutually_exclusive_group()
     size_group.add_argument("--size-range", nargs=2, type=_positive_int, metavar=("MIN", "MAX"),
                             help="Font size range in px, sampled per group or line (default 24 72).")
@@ -978,7 +978,8 @@ def build_parser() -> argparse.ArgumentParser:
                                      "face stats) or p5p95 (letter body).")
     render_lines_p.add_argument("--weight-range", nargs=2, type=_positive_int, default=(400, 400), metavar=("MIN", "MAX"),
                                 help="Weight range for faces with a weight axis (default 400 400); static faces keep theirs.")
-    render_lines_p.add_argument("--list-fonts", action="store_true", help="Print the governed faces as JSON and exit.")
+    render_lines_p.add_argument("--list-fonts", action="store_true",
+                                help="Print the governed faces for the selected preset as JSON and exit.")
     render_lines_p.add_argument("--format", choices=("text", "json"), default="json", help="Summary output format.")
     office_pages_p = subparsers.add_parser(
         "office-pages",
@@ -1431,7 +1432,7 @@ def main(argv: list[str] | None = None) -> int:
         from .line_render import governed_faces, read_lines, render_lines  # noqa: PLC0415
         try:
             if args.list_fonts:
-                faces = governed_faces()
+                faces = governed_faces(preset=args.preset)
                 print(json.dumps({k: {"file": f.file, "sha256": f.sha256, "license": f.license,
                                       "license_file": f.license_file, "style": f.style} for k, f in faces.items()},
                                  ensure_ascii=False, indent=1))

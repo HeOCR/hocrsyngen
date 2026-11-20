@@ -13,6 +13,7 @@ from hocrsyngen.assets import default_font_manifest_path
 from hocrsyngen.cli import main
 from hocrsyngen.line_render import (
     CALIBRATION_TEXT,
+    HANDWRITING_PRESET,
     LINE_PRESETS,
     _calibration_band,
     band_ratio,
@@ -148,11 +149,55 @@ def test_every_preset_renders(tmp_path):
         assert s["rendered"] == 3
 
 
+def test_handwriting_cli_writes_repeatable_training_lines(tmp_path, capsys):
+    assert main(["render-lines", "--preset", HANDWRITING_PRESET, "--list-fonts"]) == 0
+    faces = json.loads(capsys.readouterr().out)
+    assert set(faces) == {"gveret-levin-regular", "playpen-sans-hebrew"}
+    assert set(faces).isdisjoint(governed_faces())
+
+    text = "כתבתי 12 שורות (ועוד אחת)."
+    inp = _write(tmp_path, [{"id": "line-a", "text": text}, {"id": "line-b", "text": text}])
+    first, second = tmp_path / "first", tmp_path / "second"
+    args = ["render-lines", "--input", str(inp), "--seed", "51", "--preset", HANDWRITING_PRESET,
+            "--size-range", "40", "40"]
+    for out in (first, second):
+        assert main([*args, "--output", str(out)]) == 0
+    manifest = first / "manifest.jsonl"
+    assert manifest.read_bytes() == (second / manifest.name).read_bytes()
+    rows = [json.loads(line) for line in manifest.read_text(encoding="utf-8").splitlines()]
+    assert {row["font_id"] for row in rows} == set(faces)
+    for row in rows:
+        assert row["schema"] == "hocrsyngen_line_render.v1"
+        assert row["synthetic"] == "rendered" and row["label_order"] == "logical"
+        assert row["image"] == f"lines/{row['id']}.png"
+        assert row["label"] == f"lines/{row['id']}.gt.txt"
+        assert (first / row["label"]).read_text(encoding="utf-8") == text + "\n"
+        assert (first / row["image"]).read_bytes() == (second / row["image"]).read_bytes()
+        assert {"wobble_em", "slant", "letter_spacing_scale", "stroke_px"} <= row["preset_params"].keys()
+        with Image.open(first / row["image"]) as img:
+            threshold = (row["preset_params"]["ink"] + row["preset_params"]["paper"]) / 2
+            ink = img.point(lambda pixel: 255 if pixel < threshold else 0).getbbox()
+            assert img.mode == "L" and img.size == (row["width"], row["height"])
+            assert ink and 0 < ink[0] < ink[2] < img.width and 0 < ink[1] < ink[3] < img.height
+    assert rows[0]["preset_params"] != rows[1]["preset_params"]
+
+
+def test_handwriting_warp_preserves_rtl_and_digit_order():
+    face = governed_faces(preset=HANDWRITING_PRESET)["gveret-levin-regular"]
+    img, params = render_line("ת   29   א", face, SIZE, HANDWRITING_PRESET, random.Random(0))
+    threshold = (params["ink"] + params["paper"]) / 2
+    img = img.point(lambda pixel: 0 if pixel < threshold else 255)
+    x = {char: _best_x(img, _template(face, char)) for char in "את29"}
+    assert x["א"] < x["2"] < x["9"] < x["ת"], x
+
+
 def test_refuses_ungoverned_and_unknown_fonts_and_presets(tmp_path):
     with pytest.raises(ValueError, match="not governed"):
         render_lines(ROWS[:1], tmp_path / "x", seed=1, fonts=["gveret-levin-regular"])
     with pytest.raises(ValueError, match="not governed"):
         render_lines(ROWS[:1], tmp_path / "x", seed=1, fonts=["no-such-font"])
+    with pytest.raises(ValueError, match="not governed"):
+        render_lines(ROWS[:1], tmp_path / "x", seed=1, preset=HANDWRITING_PRESET, fonts=["alef-regular"])
     with pytest.raises(ValueError, match="unknown preset"):
         render_lines(ROWS[:1], tmp_path / "x", seed=1, preset="heavy")
 
