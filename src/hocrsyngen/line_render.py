@@ -121,6 +121,7 @@ def governed_faces(manifest_path: Path | None = None, *, preset: str = DEFAULT_P
             raise ValueError(f"font {fid!r}: font or licence file missing next to the manifest")
         if _sha256(path) != e["sha256"]:
             raise ValueError(f"font {fid!r}: {e['file']} does not match its manifest sha256")
+        # held-out faces (fonts_excluded.json) never reach render-lines or office pages
         check_font(fid)
         check_font(path)
         out[fid] = GovernedFace(fid, e["file"], path, e["sha256"], e["license"], e["license_file"], e.get("style", ""))

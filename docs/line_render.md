@@ -38,7 +38,7 @@ hocrsyngen render-lines --input docs/assets/handwriting-lines/prompts.jsonl \
 
 ![A line rendered in Playpen Sans Hebrew](assets/handwriting-lines/lines/letter-02.png)
 
-For a training batch, prepare JSONL with stable IDs from the approved plain `htext-cc0` corpus. Pin that release, the renderer commit, dependency versions and seed. Queue bulk rendering remotely through the lead. Check `summary.json` for font coverage refusals and record the rendered line and font counts. If sharding, pin face assignments before partitioning and use `--font` per shard to preserve those assignments.
+For a training batch, prepare JSONL with stable IDs from the approved plain `htext-cc0` corpus, then decontaminate it before rendering: drop reserved works with `reserved_works.py`, pre-filter lines against eval's official targets, and render only after eval's `check_train_overlap` reports CLEAN on the exact list. The handwriting evaluation set is real handwriting, so these text checks are what keep it held out. Pin that release, the renderer commit, dependency versions and seed. Queue bulk rendering remotely through the lead. Check `summary.json` for font coverage refusals and record the rendered line and font counts. If sharding, pin face assignments before partitioning and use `--font` per shard to preserve those assignments.
 
 ## Output
 
