@@ -5,7 +5,7 @@
 | **Set** | HeOCR calibration pack v1 (`HEOCR-CAL-V1`), pages P01–P10 |
 | **Use** | **Calibration and dev only. Never test.** |
 | **Purpose** | To fit scanifier v2's capture models to real phone captures: blur and defocus, noise against ISO, perspective and tilt, lighting and colour cast, JPEG, backgrounds, show-through and occlusion. Then to serve as a real-capture dev set, with exact labels, for the scanifier v2 ablation. |
-| **Not this set** | PS-v1 (print-and-scan pack v1, every frame including its instruction sheet PS-00) is eval's untouched test set. No PS-v1 pixel is used to calibrate or select anything here. |
+| **Not this set** | PS-v1 (print-and-scan pack v1, every frame including its instruction sheet PS-00) and NQ1 (the niqqud print test, every page and photo) are eval's untouched test sets. No PS-v1 or NQ1 pixel is used to calibrate or select anything here. |
 | **Decided by** | lead, with Shay's approval ("Yes, prepare it"), 2026-11-18 |
 
 ## What was printed
