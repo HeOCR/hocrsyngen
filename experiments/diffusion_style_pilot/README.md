@@ -15,7 +15,7 @@ Copy `level2.sh`, `job-env.sh`, `level2.py`, `paper.py` and `contracts.py` to th
 | `tessdata/heb.traineddata` | The pinned float `tessdata_best` Hebrew model, shared by the first OCR reader and the matched OCR arms. |
 | `reader/` | `charset_v2f.txt` and `server-svtrv2/{ctc,nrtr-encoder,nrtr-decstep}.onnx` from [the pinned Apache-2.0 model revision](https://huggingface.co/Rivok/paddleocr-hebrew/tree/c6bfad5d207024ef66927dd5d061308cb407a496). Retain upstream licence and notices. |
 | `assets.json` | A mapping from each reader artifact's relative path to its SHA-256. The heocr-compute upload manifest separately hashes the full directory. |
-| `gpu-requirements.lock` and `wheels/` | Hash-locked wheels for the GPU image's Linux x86-64 Python. Prepare and smoke-test the wheelhouse against the image before the paid run. The image supplies CUDA and PyTorch. |
+| `gpu-requirements.lock` and `wheels/` | Hash-locked wheels for the GPU image's Linux x86-64 Python 3.12. Prepare and smoke-test the wheelhouse against the image before the paid run. The image supplies CUDA and PyTorch 2.8.0. The resolved AMD64 image digest at preparation was `sha256:4d1721e62b56d345c83b4fd6090664be6daf9312caab5b2e76f23d8231941851`. Check it again before launch. |
 
 Pin Diffusers `0.35.2` and build the reader wheel from [decoder commit `3baae91`](https://github.com/RivoksLab/paddleocr-hebrew/tree/3baae91ad6479ef0473f901b4ed96366ae6c1670). Resolve and hash the transitive wheels, including NumPy, Pillow, safetensors and CPU ONNX Runtime, using the intended image's Python version. Install the lock with `--require-hashes --no-index` on the pod. Tesseract and its training tools are checked at 5.5.3. If absent, the job installs Ubuntu build dependencies and compiles the pinned upstream revision. Confirm that packages, pinned image and the source repository are reachable in preflight.
 
@@ -27,11 +27,11 @@ hocrsyngen render-lines --input "$STAGE/in/train-labels.jsonl" --output "$STAGE/
   --band-range 27 34
 ```
 
-The GPU job re-arms the runner's self-termination timer before setup. After training, it returns scratch model weights, generated tiles, a data-quality report, `pairs.jsonl` and paired encodings. Review the runner's `SHA256SUMS` and confirm termination before using the results.
+The GPU job re-arms the runner's self-termination timer before setup. After training, it returns scratch model weights, generated tiles, a data-quality report and `accepted.jsonl`. The generic runner filters `.lstmf` from its result pull, so the CPU training encodings are staged locally after the audit. Review the runner's `SHA256SUMS` and confirm termination before using the results.
 
 ## Blinded label audit
 
-Rebuild the exact pixel arrays for a deterministic sample of 50 accepted pairs. The script checks both image pixel hashes and the original mask. Give the independent reviewer only the `blind/` images. Compare their transcripts against `review-key.json` after review. Stop on any drift. A passing audit record binds the result to the hash of the full pair manifest.
+Rebuild the exact pixel arrays for a deterministic sample of 50 accepted pairs. The script checks both image pixel hashes and the original mask. Give the independent reviewer only the `blind/` images. Compare their transcripts against `review-key.json` after review. Stop on any drift. A passing audit record binds the result to the hash of `accepted.jsonl`. Save it with `status: "PASS"`, `accepted_sha256` from the review key, `examined_pairs: 50` and an opaque `record` for the review decision.
 
 ```sh
 python3 experiments/diffusion_style_pilot/audit_pairs.py "$STAGE/in" "$GPU_RESULT" "$AUDIT"
@@ -41,6 +41,12 @@ Use the `quality.json` rejection and confusable-pair counts to report data quali
 
 ## Paired training job input root
 
-Use a fresh policy-approved `in/` directory and stage `train-pair.sh`, `job-env.sh`, `train_pair.py` and `contracts.py`. Copy the verified `pairs.jsonl` and `paired/` results, the same `assets.json` and stock `tessdata/heb.traineddata`. Add `pair-audit.json` with `status: "PASS"`, `sha256` of `pairs.jsonl`, `examined_pairs: 50` and an opaque `record` for the audit decision. Use the CPU preflight invocation in the plan.
+Use local Tesseract 5.5.3, the verified GPU result and the passing audit to build the CPU job's `in/` directory under a policy-approved parent. The stager reconstructs each pair, verifies both pixel hashes and writes the training files, pair manifest and hash-bound audit together. An encoding failure rejects the staging operation.
+
+```sh
+python3 experiments/diffusion_style_pilot/stage_pairs.py "$STAGE/in" "$GPU_RESULT" "$AUDIT_PASS" "$PAIR/in"
+```
+
+Stage `train-pair.sh`, `job-env.sh`, `train_pair.py` and `contracts.py` in that directory. Use the CPU preflight invocation in the plan.
 
 Both lists are derived from the same ordered record IDs and are checked against the recorded encodings. Three consecutive checkpoints per arm share one starter and iteration schedule. The job requires matching sample consumption without skips before marking `training.json` complete. Hand the checkpoints to eval for P-hist audit2 selection only after the job and teardown pass.

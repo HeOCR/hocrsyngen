@@ -32,7 +32,7 @@ ensure_tesseract() {
         export DEBIAN_FRONTEND=noninteractive
         apt-get update -qq
         apt-get install -y -qq g++ make autoconf automake libtool pkg-config git python3-venv \
-            libleptonica-dev libicu-dev libpango1.0-dev libcairo2-dev > /heocr/out/tess-dependencies.log
+            libleptonica-dev libicu-dev libpango1.0-dev libcairo2-dev libgl1 libglib2.0-0t64 > /heocr/out/tess-dependencies.log
         git clone --quiet --depth 1 --branch "$tess_tag" https://github.com/tesseract-ocr/tesseract.git /heocr/work/tesseract-src
         test "$(git -C /heocr/work/tesseract-src rev-parse HEAD)" = "$tess_commit"
         (
