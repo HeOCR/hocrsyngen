@@ -49,7 +49,7 @@ Select transform settings and checkpoints on **real dev data only**, through eva
 
 ## Stage 1 job specification
 
-The first job produces paper textures and paired inputs. A second job trains the two OCR arms once the feasibility output and real-dev protocol are accepted. Both use the same stage 1 budget. The job entry points below are implementation interfaces. Before launch, the staged scripts need a local fixture smoke, source clearance, final input hashes and lead approval to spend.
+The first job produces paper textures and paired inputs. A second job trains the two OCR arms once the feasibility output and real-dev protocol are accepted. Both use the same stage 1 budget. The [standalone job bundle](../../experiments/diffusion_style_pilot/README.md) provides the entry points. Before launch, finalize source clearance, input hashes, dependency staging and lead approval to spend.
 
 ### GPU job and outputs
 
