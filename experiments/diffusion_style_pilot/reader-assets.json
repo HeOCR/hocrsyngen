@@ -1,0 +1,7 @@
+{
+  "tessdata/heb.traineddata": "dbaa827aea6bc21215638447f17783a1004987c2d0bf5573d111fee397abdae5",
+  "reader/charset_v2f.txt": "1bdb9e6baaf155ba0661c1a0687bd84ad2bb140a912e0a7c8e5c10eb496b4766",
+  "reader/server-svtrv2/ctc.onnx": "08c04c100cd6e91908b975bc8c343dd1f062f4a265547a0227bf055c8546b205",
+  "reader/server-svtrv2/nrtr-encoder.onnx": "50c850ef36bb9e74a6ac8f3af64e03ee8ee9570d51af6c35294db3f9ed5f4aab",
+  "reader/server-svtrv2/nrtr-decstep.onnx": "28f5a7a6b4cd642be1b9e83aed4481f77add1d44f88699a2722352bfc58db211"
+}
