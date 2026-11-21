@@ -25,7 +25,10 @@ rules and dark cover material. The duplex fitter estimates weak front-side
 ink from the mirrored verso with an opacity, blur, and small translation.
 An observation must reproduce on separate strips of the leaf and beat tests
 at deliberately wrong placements. The search grid provides approximate
-translations and blur. Missing support is recorded as absence of a fitted
+translations and blur. When accepted fits pile up at the largest blur candidate,
+use a wider `blur_grid` in `measure_show_through` on fit leaves before any
+reserved comparison. The grid uses analysis pixels on the raster capped at
+1200 pixels long edge. Returned blur uses input raster pixels. Missing support is recorded as absence of a fitted
 observation.
 
 The report contains private, candidate ranges when at least three distinct
