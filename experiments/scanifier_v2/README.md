@@ -204,3 +204,5 @@ Pass original page annotations in pixel-edge coordinates. The capture result
 carries the transformed lines, including their original labels, and the
 source-to-capture map. Phone capture continues to use its own fitted optics
 and geometry.
+
+Use [fixed-geometry training views](TRAINING_CAPTURES.md) to apply a complete fitted capture recipe per view, with source-matched duplex ink or a measured scanner edge. The guide includes the development QA sheet command.
