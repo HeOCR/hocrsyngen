@@ -103,9 +103,12 @@ photo = capture(page, seed=106, config=read_config())
 | `rotated_save` | choose uniformly among baked 0°, 90°, 180° and 270° counter-clockwise turns; specify `turns` to restrict choices. |
 | `show_through(image, reverse, seed, ...)` | opacity 0.025–0.12, Gaussian blur 0.3–1.2 pixels, independent x/y offset −0.025–0.025 of width/height. `reverse` is resized and mirrored from its normal reading view; its darkness is the ink mask. |
 | `paper_tint` | strength 0.03–0.16 multiplying RGB toward the supplied default warm tint `(238, 225, 198)`. |
+| `scanner_edge_bars` | Four edge sides with configurable fractional width, taper and darkness. Independent vertical and horizontal bars with fractional width, span and darkness, plus optional pixel feathering. Defaults are engineering priors. |
 | `scanner_artifacts` | one left or right edge 0.005–0.04 of width, 0–3 vertical bars each 0.002–0.015 of width, darkness 0.75–1.0. |
 | `thumb_occlusion` | ellipse radius 0.06–0.15 of the short edge entering the top or bottom, with a configurable solid skin tone. This is a simple proxy, not a photographic hand. |
 | `spatial_noise` | standard deviation 2–12 sRGB levels, variation 0.3–1.0 across an 8×8 interpolated random field. |
 | `recompress` | downscale to at most 1280 pixels long edge, then JPEG quality 70–90 and 4:2:0 subsampling; returns a decoded raster. This approximates a delivery path, not a claim about a particular service's current encoder. |
 
 `rotated_save` changes orientation and requires corresponding annotation rotation. All effects except `recompress` and `rotated_save` preserve raster dimensions and coordinates; occlusion can hide labels, so consumers must retain gold and decide how to handle visible text. `recompress` changes dimensions, so rescale annotations by the actual output width and height ratios. Apply page effects before `capture` to use its existing geometry mapping. The existing capture API supplies seedable motion blur, spatial defocus, rotation, dark/wood surround, signal-dependent noise and JPEG. Shutter speed and ISO are capture metadata, not direct pixel-space blur/noise parameters: there is no fitted 1/25–1/33 s or ISO 2000–3200 mapping here. Adobe Scan processing is likewise not emulated or claimed. Fit effect ranges only from authorized non-test captures or aggregate metadata, and retain calibration provenance separately.
+
+See [paired renders](PAIRED_RENDERS.md) for clean-to-degraded page pairs and annotation handling.
