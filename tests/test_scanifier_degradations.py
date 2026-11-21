@@ -14,7 +14,7 @@ def page():
 
 
 @pytest.mark.parametrize('effect,kwargs', [
-    (d.paper_tint, {}), (d.scanner_artifacts, {}), (d.thumb_occlusion, {}),
+    (d.paper_tint, {}), (d.scanner_artifacts, {}),
     (d.spatial_noise, {}), (d.recompress, {'long_edge': (128, 128)}),
 ])
 def test_seeded_effects(page, effect, kwargs):
@@ -45,6 +45,20 @@ def test_zero_strength_and_invalid_ranges(page):
         d.recompress(page, 1, quality=(0, 90))
     with pytest.raises(ValueError):
         d.show_through(page, page, 1, opacity=(0.2, float('nan')))
+
+
+@pytest.mark.parametrize("side", ("left", "right", "top", "bottom"))
+def test_soft_scanner_edges_stay_outside_text(page, side):
+    box = (15, 20, 180, 280)
+    settings = dict(side=side, width_fraction=0.035, darkness=0.8, feather_px=3, text_box=box)
+    result = d.soft_scanner_edge(page, 13, **settings)
+    assert result.tobytes() == d.soft_scanner_edge(page, 13, **settings).tobytes()
+    assert result.crop(box).tobytes() == page.crop(box).tobytes()
+    array = np.asarray(result)[:, :, 0]
+    assert array.min() < 100 and len(np.unique(array)) > 8
+    opposite = {"left": array[:, -1], "right": array[:, 0],
+                "top": array[-1], "bottom": array[0]}[side]
+    assert np.all(opposite == 255)
 
 
 def test_recompression_downsizes_only(page):

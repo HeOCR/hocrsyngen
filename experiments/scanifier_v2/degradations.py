@@ -8,7 +8,9 @@ import math
 
 import cv2
 import numpy as np
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageOps
+
+from .pipeline import _rng
 
 
 def _range(value, name, low, high):
@@ -33,12 +35,14 @@ def paper_tint(image, seed, strength=(0.03, 0.16), color=(238, 225, 198)):
     return Image.fromarray(np.uint8(np.clip(rgb * (1 - amount * (1 - np.array(color) / 255)), 0, 255)))
 
 
-def show_through(image, reverse, seed, opacity=(0.025, 0.12), blur_px=(0.3, 1.2), offset_fraction=(-0.025, 0.025)):
+def show_through(image, reverse, seed, opacity=(0.025, 0.12), blur_px=(0.3, 1.2),
+                 offset_fraction=(-0.025, 0.025), *, transmission_variation=0.0):
     """Overlay mirrored reverse-page ink. Reverse must be a permitted training/dev image."""
     rng = np.random.default_rng(seed)
     alpha = _sample(rng, opacity, 'opacity', 0, 1)
-    blur = _sample(rng, blur_px, 'blur_px', 0, 20)
+    blur = _sample(rng, blur_px, 'blur_px', 0, 64)
     _range(offset_fraction, 'offset_fraction', -1, 1)
+    _range((transmission_variation, transmission_variation), 'transmission_variation', 0, 1)
     page = np.asarray(image.convert('RGB'), dtype=np.float32)
     # White is transparent, darker reverse pixels contribute more ink. Mirroring
     # is performed here so callers supply the reverse in its normal reading view.
@@ -50,7 +54,15 @@ def show_through(image, reverse, seed, opacity=(0.025, 0.12), blur_px=(0.3, 1.2)
     dy = rng.uniform(*offset_fraction) * image.height
     ink = cv2.warpAffine(ink, np.float32([[1, 0, dx], [0, 1, dy]]), image.size,
                          flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
-    return Image.fromarray(np.uint8(np.clip(page * (1 - alpha * ink[..., None]), 0, 255)))
+    rounding = 0
+    if transmission_variation:
+        rng = _rng(seed, 'show_through/transmission')
+        knots = rng.uniform(-1, 1, (5, 5)).astype(np.float32)
+        field = cv2.resize(knots, image.size, interpolation=cv2.INTER_LINEAR)
+        alpha = np.clip(alpha * (1 + transmission_variation * field), 0, 1)
+        rounding = 0.5
+    gain = 1 - alpha * ink
+    return Image.fromarray(np.uint8(np.clip(page * gain[..., None] + rounding, 0, 255)))
 
 
 def scanner_artifacts(image, seed, edge_fraction=(0.005, 0.04), bar_fraction=(0.002, 0.015), bars=(0, 3), darkness=(0.75, 1.0)):
@@ -76,20 +88,42 @@ def scanner_artifacts(image, seed, edge_fraction=(0.005, 0.04), bar_fraction=(0.
     return Image.fromarray(np.uint8(np.clip(rgb, 0, 255)))
 
 
-def thumb_occlusion(image, seed, size_fraction=(0.06, 0.15), color=(181, 130, 105)):
-    """Add a simple edge-entering thumb-shaped occluder; it may cover text."""
-    rng = np.random.default_rng(seed)
-    size = _sample(rng, size_fraction, 'size_fraction', 0, 0.5) * min(image.size)
-    if len(color) != 3 or any(type(x) is not int or not 0 <= x <= 255 for x in color):
-        raise ValueError('color must be three integer sRGB values')
-    output = image.convert('RGB').copy()
-    if size == 0:
-        return output
-    draw = ImageDraw.Draw(output)
-    x = rng.uniform(0.15, 0.85) * image.width
-    y = 0 if rng.integers(2) == 0 else image.height
-    draw.ellipse((x-size, y-size*1.35, x+size, y+size*1.35), fill=color)
-    return output
+def soft_scanner_edge(image, seed, *, side, width_fraction, darkness, feather_px,
+                      text_box, taper=0.0):
+    """Render a soft gutter or platen mark confined to the margin outside text_box."""
+    if side not in ('left', 'right', 'top', 'bottom'):
+        raise ValueError('unknown scanner edge side')
+    _range((width_fraction, width_fraction), 'width_fraction', 0, 0.25)
+    _range((darkness, darkness), 'darkness', 0, 1)
+    _range((feather_px, feather_px), 'feather_px', 0.25, 32)
+    _range((taper, taper), 'taper', -0.25, 0.25)
+    left, top, right, bottom = text_box
+    width, height = image.size
+    if (any(type(coord) is not int for coord in text_box)
+            or not (0 <= left < right <= width and 0 <= top < bottom <= height)):
+        raise ValueError('expected an in-frame integer text box')
+    margin = {'left': left, 'top': top, 'right': width - right, 'bottom': height - bottom}[side]
+    result = np.array(image.convert('RGB'))
+    if width_fraction == 0 or margin == 0 or darkness == 0:
+        return Image.fromarray(result)
+    strip = result.swapaxes(0, 1) if side in ('top', 'bottom') else result
+    if side in ('right', 'bottom'):
+        strip = strip[:, ::-1]
+    length, across = strip.shape[:2]
+    scale = 2
+    positions = (np.arange(length * scale, dtype=np.float32) + 0.5) / (length * scale)
+    rng = _rng(seed, 'soft_scanner_edge')
+    ripple = np.interp(positions, np.linspace(0, 1, 7), rng.uniform(-0.12, 0.12, 7))
+    edge = np.clip(across * (width_fraction * (1 + ripple) + taper * (positions - 0.5)), 0, margin)
+    depth = min(margin, math.ceil(edge.max() + feather_px))
+    sample_x = (np.arange(depth * scale, dtype=np.float32) + 0.5) / scale
+    # A supersampled smoothstep covers partial pixels without drawing a hard band.
+    cover = np.clip((edge[:, None] - sample_x) / feather_px + 0.5, 0, 1)
+    cover[edge == 0] = 0
+    cover *= cover * (3 - 2 * cover)
+    cover = cover.reshape(length, scale, depth, scale).mean(axis=(1, 3))
+    strip[:, :depth] = np.uint8(np.rint(strip[:, :depth] * (1 - darkness * cover[..., None])))
+    return Image.fromarray(result)
 
 
 def spatial_noise(image, seed, sigma=(2.0, 12.0), variation=(0.3, 1.0), grid=8):
