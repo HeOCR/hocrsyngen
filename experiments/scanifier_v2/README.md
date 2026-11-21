@@ -1,6 +1,6 @@
 # Scanifier v2
 
-Scanifier v2 adds phone-capture degradations to synthetic printed pages with line geometry. The code, config and previews are experimental, and the shipped priors are **uncalibrated**. OCR impact has not been measured on a held-out set yet.
+Scanifier v2 adds phone-capture degradations to synthetic printed pages with line geometry. The code, config and previews are experimental. The default camera priors are **uncalibrated**. OCR impact has not been measured on a held-out set yet.
 
 ## Run on a small annotated batch
 
@@ -122,8 +122,8 @@ represents statistics of processed rasters and leaves JPEG off for PNG
 endpoints. The old flatbed recipe is a prior, including opt-in reverse-page
 show-through and dark scanner bars. Use an eligible reverse raster to enable
 show-through. Geometry and annotation warping belong to `pipeline.capture`.
-The development fitter emits profiles and a private report. No captures,
-image measurements, or fitted JSON are bundled with the source.
+The development fitter emits exact profiles and a private report. Captures,
+image measurements, and exact fit outputs stay outside the source repository.
 
 ```python
 from experiments.scanifier_v2.dev_profiles import apply_profile, read_profile
