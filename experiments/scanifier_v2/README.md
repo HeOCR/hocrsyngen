@@ -171,3 +171,5 @@ Isolating show-through requires registered, permitted recto–verso observations
 See [Tonazzini et al.](https://doi.org/10.1186/1687-6180-2013-58).
 The fitter leaves this effect disabled for empirically fitted profiles
 and emits the old flatbed recipe with `prior_only` status.
+
+Use [fixed-geometry training views](TRAINING_CAPTURES.md) to apply one whole fitted raster per view, with source-matched duplex ink or a measured scanner edge. The guide includes the development QA sheet command.
