@@ -254,3 +254,36 @@ def test_calibration_fits_registered_frames_and_retains_missing_priors(tmp_path,
     assert "lighting.white_balance_r" in report["fitted"]
     assert "geometry.roll_deg" in report["fitted"]
     assert "geometry.crumple" in report["retained_priors"]
+
+
+def test_sparse_specks_are_seeded_black_and_preserve_label_boxes():
+    from experiments.scanifier_v2.degradations import sparse_black_specks
+
+    source = Image.new("RGB", (512, 512), (242, 238, 234))
+    ImageDraw.Draw(source).rectangle((50, 50, 99, 79), fill=(72, 80, 81))
+    settings = dict(density_per_mpx=240, size_weights=(0, 0, 1), clustering=0.6,
+                    edge_gain=1.1, protected_boxes=[(50, 50, 100, 80)])
+    output = sparse_black_specks(source, 17, **settings)
+    assert output.size == source.size
+    assert output.tobytes() == sparse_black_specks(source, 17, **settings).tobytes()
+    assert output.tobytes() != sparse_black_specks(source, 18, **settings).tobytes()
+    before, after = np.asarray(source), np.asarray(output)
+    new = (after != before).any(axis=2)
+    assert new.any() and not new[50:80, 50:100].any()
+    assert (after[new] == 0).all()
+    assert sparse_black_specks(source, 17, **(settings | {"density_per_mpx": 0})).tobytes() == source.tobytes()
+    _, _, stats, _ = cv2.connectedComponentsWithStats(new.astype(np.uint8), 8)
+    assert ((stats[1:, 2:4] == 3).all(axis=1)).any()
+
+
+def test_speck_measurement_rejects_tiles_with_large_ink():
+    from experiments.scanifier_v2.fit_specks import measure
+
+    gray = np.full((288, 288), 244, dtype=np.uint8)
+    gray[20, 20] = 0
+    gray[151:153, 20:22] = 0
+    gray[20:27, 150:160] = 0
+    gray[35:37, 145:147] = 0
+    counts, sizes = measure(gray)
+    assert counts == [[1, 1, 0], []]
+    assert sizes.tolist() == [1, 1, 0]

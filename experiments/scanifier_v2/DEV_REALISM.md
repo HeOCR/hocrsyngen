@@ -56,6 +56,30 @@ shadow at 2× and confines it to the margin outside the union of the front
 text boxes. There are no interior bars in this API. Omit `edge` and/or
 `reverse` for controls using the same seed, fitted paper, optics and noise.
 
+## Sparse black specks
+
+Pass `specks=fit["parameters"]` to `archival_dev_view` for an optional
+paper-dust comparison with the same page and seed. The raster effect protects
+the annotated text boxes and preserves dimensions. Use
+`degradations.sparse_black_specks` directly to apply the same effect to an
+authorized Gazette candidate with its protected text boxes and render DPI.
+
+Fit from authorized original TRAIN rasters with matching archival characteristics.
+The fitter checks the scan hashes and native 300 dpi tags. It counts isolated black
+components in blank 128 px tiles, estimates the 1–3 px diameter mix, subtracts the
+Poisson shot term to estimate clustering and measures the margin-to-interior rate
+ratio. Logged density is per 300 dpi megapixel. Fit inputs are a JSON list of
+objects with relative `path`, lowercase `sha256` and `split` set to `train`.
+Keep source records, fitted parameters and cropped comparisons in private QA.
+
+```sh
+python -m experiments.scanifier_v2.fit_specks train-scans.json /path/to/authorized/train
+```
+
+The effect stays inside v5's existing 500-visit Gazette section-label slice.
+Pin the fit and seed and use the same setting for matched layouts. Record the
+realized geometry and crop QA before admitting any affected visit.
+
 ## Candidate use
 
 - Keep historical overlays and new historical fit combinations in DEV only.

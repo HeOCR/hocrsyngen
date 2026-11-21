@@ -5,7 +5,7 @@ import random
 
 from hocrsyngen.print_typography import render_print_page
 
-from .degradations import show_through, soft_scanner_edge
+from .degradations import show_through, soft_scanner_edge, sparse_black_specks
 from .dev_profiles import apply_profile
 from .pipeline import _rng
 
@@ -35,13 +35,14 @@ def render_verso(front, paragraphs, *, seed, source_type, body_px=32):
                              body_px=body_px, margin=(side, top))
 
 
-def archival_dev_view(front, *, source_type, fits, seed, reverse=None, edge=None):
+def archival_dev_view(front, *, source_type, fits, seed, reverse=None, edge=None, specks=None):
     """Apply one full source fit for tone, optics and spatial noise.
 
     The fit bank maps a source type to its base and optional conditional duplex
     fit. Supply a separately rendered verso and/or an explicitly enabled soft
-    edge to compare the overlays on the same front. The fitted base is shared
-    across these ablations. This entry point stays outside training recipes.
+    edge or matched sparse speck fit to compare overlays on the same front.
+    The fitted base is shared across these ablations. This entry point stays
+    outside training recipes.
     """
     if source_type not in SOURCES or type(seed) is not int or seed < 0:
         raise ValueError("expected an archival source type and nonnegative seed")
@@ -72,4 +73,6 @@ def archival_dev_view(front, *, source_type, fits, seed, reverse=None, edge=None
         text_box = tuple(fn(line["box"][coordinate] for line in front.lines)
                          for coordinate, fn in enumerate((min, min, max, max)))
         result = soft_scanner_edge(result, seed, text_box=text_box, **edge)
+    if specks is not None:
+        result = sparse_black_specks(result, seed, protected_boxes=[line["box"] for line in front.lines], **specks)
     return result

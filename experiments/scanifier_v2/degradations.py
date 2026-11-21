@@ -140,6 +140,62 @@ def spatial_noise(image, seed, sigma=(2.0, 12.0), variation=(0.3, 1.0), grid=8):
     return Image.fromarray(np.uint8(np.clip(rgb + noise, 0, 255)))
 
 
+def sparse_black_specks(image, seed, *, density_per_mpx, size_weights, clustering,
+                        edge_gain, dpi=300, protected_boxes=()):
+    """Add black specks sized 1–3 px at 300 dpi without moving the source raster.
+
+    Density is the interior count per 300 dpi megapixel. The three size weights
+    apply to diameters 1, 2 and 3. Clustering controls the coefficient of
+    variation in the underlying rate per 128 px tile at 300 dpi (zero is
+    Poisson). The outer 10% of the short edge uses an edge/interior rate ratio.
+    Protected boxes use exclusive right and bottom coordinates.
+    """
+    density = _range((density_per_mpx,) * 2, 'density_per_mpx', 0, 4096)[0]
+    cv = _range((clustering,) * 2, 'clustering', 0, 8)[0]
+    gain = _range((edge_gain,) * 2, 'edge_gain', 0, 8)[0]
+    dpi = _range((dpi,) * 2, 'dpi', 36, 1200)[0]
+    if len(size_weights) != 3 or any(isinstance(w, bool) or not isinstance(w, (int, float))
+                                     or not math.isfinite(w) or w < 0 for w in size_weights):
+        raise ValueError('size_weights must be three finite, nonnegative values')
+    weights = np.array(size_weights, dtype=np.float64)
+    if not math.isfinite(weights.sum()) or weights.sum() <= 0:
+        raise ValueError('size_weights must have a finite, positive sum')
+    probabilities = weights / weights.sum()
+    rng = _rng(seed, 'sparse_black_specks')
+    rgb = image.convert('RGB')
+    width, height = rgb.size
+    scale = dpi / 300
+    block = round(128 * scale)
+    margin = 0.1 * min(width, height)
+    mask = np.zeros((height, width), dtype=np.uint8)
+    for y in range(0, height, block):
+        for x in range(0, width, block):
+            w, h = min(block, width - x), min(block, height - y)
+            center_x, center_y = x + w / 2, y + h / 2
+            edge = min(center_x, width - center_x, center_y, height - center_y) < margin
+            rate = density * w * h / (1e6 * scale**2) * (gain if edge else 1)
+            if cv >= 1e-6:
+                rate *= rng.gamma(1 / cv**2, cv**2)
+            count = rng.poisson(rate)
+            if not count:
+                continue
+            for px, py, diameter in zip(rng.integers(x, x + w, count),
+                                        rng.integers(y, y + h, count),
+                                        rng.choice((1, 2, 3), count, p=probabilities)):
+                size = max(1, round(diameter * scale))
+                left, top = int(px) - (size - 1) // 2, int(py) - (size - 1) // 2
+                if size % 2:
+                    cv2.circle(mask, (int(px), int(py)), size // 2, 255, -1)
+                else:
+                    mask[max(0, top):top + size, max(0, left):left + size] = 255
+    for x0, y0, x1, y1 in protected_boxes:
+        if not 0 <= x0 < x1 <= width or not 0 <= y0 < y1 <= height:
+            raise ValueError('protected box must lie inside the raster')
+        mask[y0:y1, x0:x1] = 0
+    rgb.paste((0, 0, 0), (0, 0), Image.fromarray(mask))
+    return rgb
+
+
 def recompress(image, seed, long_edge=(1280, 1280), quality=(70, 90)):
     """Resize down to the sampled long edge and JPEG-recompress; return RGB raster."""
     rng = np.random.default_rng(seed)
