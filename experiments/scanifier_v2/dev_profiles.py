@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from .pipeline import _optics, _rng
+from .pipeline import _gaussian, _optics, _rng
 
 
 PROFILES = ("phone_flat", "phone_oblique", "adobe_scan", "flatbed_old")
@@ -119,6 +119,8 @@ def _render(image, p, seed, reverse):
         sharp = sharp * (1 - radial) + soft * radial
     if p["noise_sd"] > 0:
         sharp = sharp + _noise(image.size, p, _rng(seed, "dev_profile/noise_pixels"))[..., None]
+    if p.get("sharpen_amount", 0) > 0:
+        sharp = sharp + p["sharpen_amount"] * (sharp - _gaussian(sharp, p["sharpen_sigma"]))
     output = Image.fromarray(np.uint8(np.clip(sharp + 0.5, 0, 255)))
     if p["scanner_edge_fraction"] > 0 or p["scanner_bars"] > 0:
         from .degradations import scanner_artifacts

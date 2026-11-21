@@ -121,7 +121,9 @@ The phone profiles cover near and oblique views separately. The Adobe profile
 represents statistics of processed rasters and leaves JPEG off for PNG
 endpoints. The old flatbed recipe is a prior, including opt-in reverse-page
 show-through and dark scanner bars. Use an eligible reverse raster to enable
-show-through. Geometry and annotation warping belong to `pipeline.capture`.
+show-through. Use [phone training views](PHONE_TRAINING.md) to combine the
+phone profiles with matched perspective, nonlinear line geometry and guarded
+recognizer crops.
 The development fitter emits exact profiles and a private report. Captures,
 image measurements, and exact fit outputs stay outside the source repository.
 
