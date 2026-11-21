@@ -6,6 +6,8 @@ Written 2026-11-19, after training, eval's audit2 selection (§5.1) and the mode
 
 ## Outcome
 
+R7 checkpoint selection used 7,092 development rows from two sources now reserved in line_verify. R7 and its verified descendants carry that exposure. Comparisons on those sources are selection-exposed.
+
 - **The round's model is arm r7's `heb_final`** (sha256 `f8090760b5b02d09cf4ddb435e7a5e34089f6f17cde9cfb6c67fd06c6f17ec02`). It has the lowest audit2 CER of the 20 candidates, 16.753%, against 20.261% for stock tessdata_best heb and 18.330% for R7, its start model.
 - **The guard holds (§5.3):** on all 12 R-series dev lists it is better than stock, with the whole interval below 0. It does not lose modern print.
 - **No test claim yet (§5.2).** The P-hist test has no references: they are a volunteer task that starts with Shay's volunteer launch. The lead ruled (2026-11-19) that no P-hist test claim is made before a registered run, and that run belongs to the default-model study after RC2. Until then the model card shows the dev figure only, next to stock.

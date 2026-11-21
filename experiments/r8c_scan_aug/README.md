@@ -3,6 +3,8 @@
 <!-- Copied from the HeOCR task workspace (s17a-scanifier/r8c-aug/README.md) on 2026-11-12. step0.sh needs bash >= 4 (associative array). Paths under diagnostics/ are local to that workspace. -->
 # R8c scan augmentation: design and step 0 (stopped)
 
+R7 checkpoint selection used 7,092 development rows from two sources now reserved in line_verify. R7 and its verified descendants carry that exposure. Comparisons on those sources are selection-exposed.
+
 **Request (heocr-lead, 2026-11-12):** every R8 model reads Brainin's IA scan worse than R7, 0.743 vs 0.635 CER under line_fold_v1. The errors are small-gap letters: ה/ח, ר/ד, כ/ב. The lead wants a degradation for a seeded share of real train lines, a small A/B, and share and strength as parameters.
 
 ## What sets the IA scan apart
