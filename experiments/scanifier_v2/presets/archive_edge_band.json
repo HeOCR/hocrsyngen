@@ -1,0 +1,5 @@
+{
+    "edge_darkness": [0.975, 1],
+    "edge_fraction": [0.00025, 0.00075],
+    "edge_taper": [0.0, 0.003]
+}

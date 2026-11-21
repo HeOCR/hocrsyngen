@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "phone_flat",
+  "status": "dev_fit",
+  "seed": 0,
+  "jpeg_encoders": [],
+  "ranges": {
+    "blur_sigma": [0.6, 0.8],
+    "defocus_add": [0.4, 0.6],
+    "gradient_x": [0.01, 0.05],
+    "gradient_y": [-0.07, -0.0],
+    "motion_deg": [0, 0],
+    "motion_px": [0, 1.0],
+    "noise_cv": [0, 0.05],
+    "noise_low_mix": [0, 0.1],
+    "noise_sd": [1.25, 2.0],
+    "paper_b": [185.0, 195.0],
+    "paper_g": [185.0, 195.0],
+    "paper_r": [190.0, 200.0],
+    "scanner_bar_fraction": [0, 0],
+    "scanner_bars": [0, 0],
+    "scanner_edge_fraction": [0, 0],
+    "show_through_opacity": [0, 0]
+  }
+}

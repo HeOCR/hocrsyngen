@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "adobe_scan",
+  "status": "dev_fit",
+  "seed": 0,
+  "jpeg_encoders": [],
+  "ranges": {
+    "blur_sigma": [0.5, 0.7],
+    "defocus_add": [0.2, 0.4],
+    "gradient_x": [-0.0, 0.0],
+    "gradient_y": [-0.0, 0.0],
+    "motion_deg": [90, 90],
+    "motion_px": [0, 0.75],
+    "noise_cv": [0, 0],
+    "noise_low_mix": [0, 0],
+    "noise_sd": [0.0, 0.0],
+    "paper_b": [255.0, 255.0],
+    "paper_g": [255.0, 255.0],
+    "paper_r": [255.0, 255.0],
+    "scanner_bar_fraction": [0, 0],
+    "scanner_bars": [0, 0],
+    "scanner_edge_fraction": [0, 0],
+    "show_through_opacity": [0, 0]
+  }
+}

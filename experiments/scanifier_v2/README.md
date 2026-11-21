@@ -112,6 +112,8 @@ photo = capture(page, seed=106, config=read_config())
 
 ## Development capture profiles
 
+The [portable presets](presets/README.md) provide coarse training ranges for common capture targets.
+
 Use `dev_profiles` for fixed-geometry degradation recipes. It applies
 effective raster-domain white point and illumination gradient, defocus and
 directional blur, spatially variable noise, and optional JPEG recompression.

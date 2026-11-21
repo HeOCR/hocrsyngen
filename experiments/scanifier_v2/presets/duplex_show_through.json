@@ -1,0 +1,5 @@
+{
+    "blur_fraction_long_edge": [0.0015, 0.006],
+    "offset_fraction": [0, 0],
+    "opacity": [0.03, 0.1]
+}
