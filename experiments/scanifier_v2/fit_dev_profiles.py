@@ -371,21 +371,32 @@ def _check_profile(profile, records, seed):
         seeds.append(render_seed)
         rendered = _render(stimulus, sample_profile(profile, render_seed), render_seed, None)
         predictions.append(_measure_rendered(rendered, seed))
-    checks = {}
-    for field in ("paper_r", "paper_g", "paper_b", "gradient_x", "gradient_y", "noise_sd",
-                  "noise_cv", "noise_band", "edge_sigma", "edge_sigma_center", "edge_sigma_outer",
-                  "mtf50_proxy", "jpeg_luma_dc", "jpeg_luma_step"):
-        a = [row[field] for row in predictions if field in row]
-        b = [row["metrics"][field] for row in records if field in row["metrics"]]
-        if a and b:
-            checks[field] = _distances(a, b)
     observed_jpeg = [r["metrics"]["jpeg_encoder"] for r in records if "jpeg_encoder" in r["metrics"]]
-    return {"seeds": seeds, "probe": predictions, "comparisons": checks,
+    return {"seeds": seeds, "probe": predictions, "comparisons": _compare(predictions, records),
             "jpeg_table_matches": {
                 "n": len(observed_jpeg),
                 "exact": sum(encoder in profile["jpeg_encoders"] for encoder in observed_jpeg),
             }}
 
+
+
+def _compare(predictions, records):
+    # Quantize numerical precision before computing empirical CDFs. An
+    # exactly white region can differ in floating-point least-squares noise.
+    decimals = {
+        "paper_r": 2, "paper_g": 2, "paper_b": 2,
+        "gradient_x": 4, "gradient_y": 4,
+        "noise_sd": 3, "noise_cv": 4, "noise_band": 4,
+        "edge_sigma": 3, "edge_sigma_center": 3, "edge_sigma_outer": 3,
+        "mtf50_proxy": 4, "jpeg_luma_dc": 0, "jpeg_luma_step": 1,
+    }
+    checks = {}
+    for field, places in decimals.items():
+        a = [round(row[field], places) for row in predictions if field in row]
+        b = [round(row["metrics"][field], places) for row in records if field in row["metrics"]]
+        if a and b:
+            checks[field] = _distances(a, b)
+    return checks
 
 def _write(path, value):
     with path.open("x", encoding="utf-8") as file:
