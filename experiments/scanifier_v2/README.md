@@ -76,3 +76,36 @@ python -m pytest tests/test_scanifier_v2.py
 ```
 
 The [dev text](dev/text.txt) and procedural textures were authored for this project and are dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). The previews are project-synthetic and use the bundled [Alef font under the SIL OFL](../../src/hocrsyngen/data/synthetic/fonts/LICENSE-Alef-OFL.txt). Preview bytes were generated with Python 3.12, Pillow 13.0.0 with libraqm, NumPy 2.5.5 and OpenCV 5.1.0 on macOS.
+
+## Independent paper and scanner effects
+
+`experiments.scanifier_v2.degradations` supplies opt-in, independently seeded RGB-to-RGB transforms. They do not mutate the input. The ranges below are uniform, inclusive engineering priors, **not calibrated estimates**; the user chooses an effect explicitly, so these defaults do not assert occurrence rates. A fixed seed, inputs, arguments and imaging stack give reproducible pixels. These transforms are for training and calibration only, not OCR evaluation. No PS-v1 or NQ1 pixels, including the PS-v1 instruction sheet, may be used for fitting or as reverse pages. Use a separately sourced eligible training/dev page for the reverse, and check source/edition exclusions downstream.
+
+```python
+from experiments.scanifier_v2 import degradations as d
+from experiments.scanifier_v2.pipeline import capture, read_config
+
+# front and back are PIL images from permitted training sources.
+page = d.show_through(front, back, seed=101, opacity=(0.03, 0.10))
+page = d.paper_tint(page, seed=102)
+page = d.scanner_artifacts(page, seed=103)
+page = d.thumb_occlusion(page, seed=104)
+page = d.spatial_noise(page, seed=105)
+photo = capture(page, seed=106, config=read_config())
+# Alternatively, simulate a size-limited JPEG delivery on a captured PIL image:
+# delivered = d.recompress(captured_image, seed=107)
+```
+
+| Function | Default sampled ranges and meaning |
+|---|---|
+| `motion_blur` | linear blur length 1.4–8 output pixels, angle 0–180 degrees. |
+| `edge_defocus` | Gaussian sigma 0.5–2.5 pixels, blended toward frame edges from radial onset 0.3–0.7. |
+| `rotated_save` | choose uniformly among baked 0°, 90°, 180° and 270° counter-clockwise turns; specify `turns` to restrict choices. |
+| `show_through(image, reverse, seed, ...)` | opacity 0.025–0.12, Gaussian blur 0.3–1.2 pixels, independent x/y offset −0.025–0.025 of width/height. `reverse` is resized and mirrored from its normal reading view; its darkness is the ink mask. |
+| `paper_tint` | strength 0.03–0.16 multiplying RGB toward the supplied default warm tint `(238, 225, 198)`. |
+| `scanner_artifacts` | one left or right edge 0.005–0.04 of width, 0–3 vertical bars each 0.002–0.015 of width, darkness 0.75–1.0. |
+| `thumb_occlusion` | ellipse radius 0.06–0.15 of the short edge entering the top or bottom, with a configurable solid skin tone. This is a simple proxy, not a photographic hand. |
+| `spatial_noise` | standard deviation 2–12 sRGB levels, variation 0.3–1.0 across an 8×8 interpolated random field. |
+| `recompress` | downscale to at most 1280 pixels long edge, then JPEG quality 70–90 and 4:2:0 subsampling; returns a decoded raster. This approximates a delivery path, not a claim about a particular service's current encoder. |
+
+`rotated_save` changes orientation and requires corresponding annotation rotation. All effects except `recompress` and `rotated_save` preserve raster dimensions and coordinates; occlusion can hide labels, so consumers must retain gold and decide how to handle visible text. `recompress` changes dimensions, so rescale annotations by the actual output width and height ratios. Apply page effects before `capture` to use its existing geometry mapping. The existing capture API supplies seedable motion blur, spatial defocus, rotation, dark/wood surround, signal-dependent noise and JPEG. Shutter speed and ISO are capture metadata, not direct pixel-space blur/noise parameters: there is no fitted 1/25–1/33 s or ISO 2000–3200 mapping here. Adobe Scan processing is likewise not emulated or claimed. Fit effect ranges only from authorized non-test captures or aggregate metadata, and retain calibration provenance separately.
