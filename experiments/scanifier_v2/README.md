@@ -109,3 +109,60 @@ photo = capture(page, seed=106, config=read_config())
 | `recompress` | downscale to at most 1280 pixels long edge, then JPEG quality 70–90 and 4:2:0 subsampling; returns a decoded raster. This approximates a delivery path, not a claim about a particular service's current encoder. |
 
 `rotated_save` changes orientation and requires corresponding annotation rotation. All effects except `recompress` and `rotated_save` preserve raster dimensions and coordinates; occlusion can hide labels, so consumers must retain gold and decide how to handle visible text. `recompress` changes dimensions, so rescale annotations by the actual output width and height ratios. Apply page effects before `capture` to use its existing geometry mapping. The existing capture API supplies seedable motion blur, spatial defocus, rotation, dark/wood surround, signal-dependent noise and JPEG. Shutter speed and ISO are capture metadata, not direct pixel-space blur/noise parameters: there is no fitted 1/25–1/33 s or ISO 2000–3200 mapping here. Adobe Scan processing is likewise not emulated or claimed. Fit effect ranges only from authorized non-test captures or aggregate metadata, and retain calibration provenance separately.
+
+## Development capture profiles
+
+Use `dev_profiles` for fixed-geometry degradation recipes. It applies
+effective raster-domain white point and illumination gradient, defocus and
+directional blur, spatially variable noise, and optional JPEG recompression.
+The phone profiles cover near and oblique views separately. The Adobe profile
+represents statistics of processed rasters and leaves JPEG off for PNG
+endpoints. The old flatbed recipe is a prior, including opt-in reverse-page
+show-through and dark scanner bars. Use an eligible reverse raster to enable
+show-through. Geometry and annotation warping belong to `pipeline.capture`.
+The development fitter emits profiles and a private report. No captures,
+image measurements, or fitted JSON are bundled with the source.
+
+```python
+from experiments.scanifier_v2.dev_profiles import apply_profile, read_profile
+
+profile = read_profile(private_profile_path)
+rendered = apply_profile(front, profile, seed=sample_seed)
+rendered.save(output_path, format="PNG")
+```
+
+Supply a separate seed for each training sample. The renderer falls back to
+the profile seed when none is supplied. It works on the stored raster without
+applying EXIF rotation. Optical widths and noise are in native pixels and
+8-bit levels respectively. Rescaling afterwards changes both properties.
+Save losslessly to preserve the simulated JPEG effects without a second encode.
+
+The fitter takes an explicit local JSON allowlist. Each entry has a
+`profile`, a physical `page` ID, an absolute `file` path, and a `split`
+of `fit` or `check`. Its top-level `purpose` must be
+`non_test_development_calibration`. Assign all views and derivatives of each
+physical page to the same split before opening capture pixels. The check phase
+compares the frozen profile's calibration probes against the reserved real
+dev pages with empirical KS distance and Wasserstein-1. Keep its outputs,
+the fitted profiles and the manifest private.
+
+```sh
+python -m experiments.scanifier_v2.fit_dev_profiles fit private-manifest.json private-profiles private-fit.json --seed 561201
+python -m experiments.scanifier_v2.fit_dev_profiles check private-manifest.json private-profiles private-check.json --seed 829301
+```
+
+Paper and illumination use bright, flat interior patches. Noise uses
+plane-detrended luma patches, a low-frequency power fraction and variation in
+patch standard deviation. Printed transitions provide an effective edge width
+and a native-pixel MTF50 proxy, right-censored at Nyquist. This is a
+document-content estimator inspired by [Burns's slanted-edge method](https://www.imaging.org/common/uploaded%20files/pdfs/Papers/2000/PICS-0-81/1621.pdf),
+without a standard edge target. Printed marks, motion, focus, resampling and ISP
+cannot be uniquely separated. Likewise the processed noise model combines
+sensor, paper, ISP and compression contributions rather than mapping ISO to raw
+noise. See [Brooks et al.](https://arxiv.org/abs/1811.11127) for the raw-domain
+distinction. JPEG profiles sample the observed quantisation tables and
+subsampling together, following [libjpeg's table model](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/doc/usage.txt).
+Isolating show-through requires registered, permitted recto–verso observations.
+See [Tonazzini et al.](https://doi.org/10.1186/1687-6180-2013-58).
+The fitter leaves this effect disabled for empirically fitted profiles
+and emits the old flatbed recipe with `prior_only` status.
