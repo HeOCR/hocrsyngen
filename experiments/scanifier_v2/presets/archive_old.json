@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "flatbed_old",
+  "status": "dev_fit",
+  "seed": 0,
+  "jpeg_encoders": [],
+  "ranges": {
+    "blur_sigma": [0.6, 0.7],
+    "defocus_add": [0, 0.2],
+    "gradient_x": [-0.0, 0.0],
+    "gradient_y": [-0.0, -0.0],
+    "motion_deg": [90, 90],
+    "motion_px": [1.25, 1.75],
+    "noise_cv": [0.0, 0.0],
+    "noise_low_mix": [0.0, 0.0],
+    "noise_sd": [0.0, 0.0],
+    "paper_b": [250.0, 255],
+    "paper_g": [250.0, 255],
+    "paper_r": [250.0, 255],
+    "scanner_bar_fraction": [0, 0],
+    "scanner_bars": [0, 0],
+    "scanner_edge_fraction": [0, 0],
+    "show_through_opacity": [0, 0]
+  }
+}

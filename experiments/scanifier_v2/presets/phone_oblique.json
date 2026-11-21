@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "name": "phone_oblique",
+  "status": "dev_fit",
+  "seed": 0,
+  "jpeg_encoders": [],
+  "ranges": {
+    "blur_sigma": [0.5, 0.9],
+    "defocus_add": [0.2, 0.6],
+    "gradient_x": [0.0, 0.04],
+    "gradient_y": [-0.15, -0.03],
+    "motion_deg": [0, 0],
+    "motion_px": [0.25, 1.75],
+    "noise_cv": [0, 0.05],
+    "noise_low_mix": [0, 0.05],
+    "noise_sd": [1.5, 2.0],
+    "paper_b": [195.0, 205.0],
+    "paper_g": [190.0, 200.0],
+    "paper_r": [190.0, 200.0],
+    "scanner_bar_fraction": [0, 0],
+    "scanner_bars": [0, 0],
+    "scanner_edge_fraction": [0, 0],
+    "show_through_opacity": [0, 0]
+  }
+}
