@@ -40,3 +40,21 @@ def test_duplex_fit_accepts_mirrored_reverse_and_rejects_clean_front():
     assert fitted["opacity"] == pytest.approx(0.08, abs=0.01)
     assert fitted["offset_x_fraction"] == fitted["offset_y_fraction"] == 0
     assert measure_show_through(np.asarray(front.convert("L")), back, 1) is None
+
+
+def test_duplex_fit_accepts_a_search_grid_for_wider_blur():
+    size = (640, 800)
+    front = Image.new("RGB", size, "white")
+    reverse = front.copy()
+    rng = np.random.default_rng(76)
+    for page in (front, reverse):
+        draw = ImageDraw.Draw(page)
+        for _ in range(240):
+            x, y = rng.integers((30, 30), (size[0] - 45, size[1] - 45))
+            draw.rectangle((x, y, x + 6, y + 8), fill="black")
+    raster = show_through(front, reverse, 12, opacity=(0.2, 0.2),
+                          blur_px=(4, 4), offset_fraction=(0, 0))
+    estimate = measure_show_through(np.asarray(raster.convert("L")), np.asarray(reverse.convert("L")),
+                                    1, blur_grid=(1.7, 2.5, 3.25, 4.0, 5.0))
+    assert estimate is not None
+    assert estimate["blur_px"] > 2.5

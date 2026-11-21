@@ -1,6 +1,7 @@
 """Measure scanner bands and duplex show-through on cleared old-print DEV rasters."""
 import argparse
 import json
+import math
 from pathlib import Path
 
 import cv2
@@ -111,12 +112,18 @@ def _association(x, y):
     return float(xy / np.sqrt(xx * yy)), float(xy / xx)
 
 
-def measure_show_through(front, reverse, seed):
+def measure_show_through(front, reverse, seed, *, blur_grid=(0, 0.45, 0.8, 1.15, 1.7, 2.5)):
     """Fit a mirrored reverse-ink proxy in manually registered leaf crops.
 
     The reverse is in normal reading orientation. Return no fitted observation
     when a candidate does not replicate in disjoint bands of the same leaf.
+    The optional blur grid is in pixels on the analysis raster, which has a
+    long edge of at most 1200 pixels. Returned widths use the input raster.
     """
+    blur_grid = tuple(blur_grid)
+    if not blur_grid or any(type(sigma) not in (int, float) or not math.isfinite(sigma)
+                            or not 0 <= sigma <= 12 for sigma in blur_grid):
+        raise ValueError("blur_grid must contain finite analysis-pixel widths from 0 to 12")
     height, width = front.shape
     if min(height, width) < 64 or min(reverse.shape) < 64:
         raise ValueError("Duplex crops must span at least 64 pixels per axis")
@@ -142,7 +149,7 @@ def measure_show_through(front, reverse, seed):
     x_steps = np.unique(np.rint(np.linspace(-0.02, 0.02, 13) * size[0]).astype(int))
     y_steps = np.unique(np.rint(np.linspace(-0.02, 0.02, 13) * size[1]).astype(int))
     best = None
-    for blur in (0, 0.45, 0.8, 1.15, 1.7, 2.5):
+    for blur in blur_grid:
         softened = cv2.GaussianBlur(verso, (0, 0), blur) if blur else verso
         for dy in y_steps:
             for dx in x_steps:
