@@ -91,6 +91,8 @@ Rights notes:
 - Training ran on mps (Apple GPU), which is not bit-reproducible. This keeps the method exploratory, per the boundary doc.
 - **Evidence and baseline comparison:** the R8b A/B (S17a add-on vs control, same recipe and list order) improved CER on both clean held-out dev books. That's −0.017 on Kevar and −0.015 on Yedi'ot ha-Teva (page-cluster bootstrap, 95% CIs below zero). Details are in the HeOCR task notes.
 
+The R7-derived readers shown here inherit R7 checkpoint-selection exposure to 7,092 development rows from two sources now reserved in line_verify. Comparisons on those sources are selection-exposed.
+
 **Cleanup:** the run's local intermediates (`addon_gen/`, `pairs_full/`, `pairs_v2/`) stay in the workspace until this PR merges. They then go to the Trash. The released add-on and `last.pt` are kept.
 
 ## Dose arm (s17a_addon_v2, 2026-11-13): no win

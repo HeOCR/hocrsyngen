@@ -14,6 +14,8 @@
 
 ## Training and selection
 
+The R7-derived readers shown here inherit R7 checkpoint-selection exposure to 7,092 development rows from two sources now reserved in line_verify. Comparisons on those sources are selection-exposed.
+
 - **Training:** one epoch (214,828 iterations) through power-scheduler, AC only, one job, 2026-11-13 15:12–18:04 IST. lstmtraining exited 0 with "Finished!".
 - **Selection:** line_fold_v1 CER on `sel.list` over all 30 checkpoints and snapshots ([results/sel_scores.tsv](results/sel_scores.tsv)). The selected checkpoint is **heb_snap_173254**, with CER 0.865 / WER 3.933, a unique minimum.
 - **Packed model:** `heb.traineddata` sha256 `75772e0abe148a3c6dac52a8aa6bf580db927640179499a18c5273b40c3e4ace`.
