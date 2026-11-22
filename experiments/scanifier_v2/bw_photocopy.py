@@ -13,6 +13,7 @@ from PIL import Image
 from .geometry import Warp
 from .low_ppi import checked_annotation, normalized_grain, render_low_ppi
 from .pipeline import _rng
+from .severity import severity_parameters
 
 PROFILE = "bw_photocopy"
 NOMINAL = {
@@ -26,8 +27,6 @@ NOMINAL = {
     "threshold": 128.0,
     "toner_speckle": 0.0,
 }
-_SEVERITY_KNOTS = (0.0, 0.4, 0.75, 1.0)
-_BAND_WEIGHTS = (0.55, 0.35, 0.10)
 _CURVES = {
     "rotate_deg": (0.2, 0.7, 1.2),
     "ppi": (200.0, 150.0, 120.0),
@@ -67,19 +66,7 @@ def _highlights(shape, seed):
 
 
 def _parameters(seed, severity):
-    if severity is None:
-        rng = _rng(seed, f"{PROFILE}/parameters")
-        band = rng.choice(len(_BAND_WEIGHTS), p=_BAND_WEIGHTS)
-        severity = float(rng.uniform(_SEVERITY_KNOTS[band], _SEVERITY_KNOTS[band + 1]))
-    if not 0 <= severity <= 1:
-        raise ValueError("severity must be between 0 and 1")
-    return {
-        "severity": severity,
-        **{
-            key: float(np.interp(severity, _SEVERITY_KNOTS, (*values, NOMINAL[key])))
-            for key, values in _CURVES.items()
-        },
-    }
+    return severity_parameters(_rng(seed, f"{PROFILE}/parameters"), severity, _CURVES, NOMINAL)
 
 
 def bw_photocopy(image, *, source_ppi, seed, nominal=False, severity=None, rasterize=None):

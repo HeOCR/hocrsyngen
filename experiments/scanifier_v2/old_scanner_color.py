@@ -13,10 +13,12 @@ from PIL import Image
 from .geometry import Warp
 from .low_ppi import checked_annotation, normalized_grain, render_low_ppi, rotate_raster
 from .pipeline import _rng
+from .severity import severity_parameters
 
 
 PROFILE = "old_scanner_color"
 NOMINAL = {
+    "severity": 1.0,
     "rotate_base_deg": -1.6,
     "rotate_var_deg": 1.1,
     "ppi": 77.0,
@@ -26,15 +28,15 @@ NOMINAL = {
     "noise": 0.75,
     "yellowish": 0.64,
 }
-RANGES = {
-    "rotate_base_deg": (-1.9, -1.3),
-    "rotate_var_deg": (0.8, 1.3),
-    "ppi": (72.0, 88.0),
-    "brightness": (1.04, 1.12),
-    "contrast": (1.04, 1.16),
-    "blur_px": (0.04, 0.32),
-    "noise": (0.65, 0.83),
-    "yellowish": (0.52, 0.76),
+_CURVES = {
+    "rotate_base_deg": (-0.3, -0.7, -1.15),
+    "rotate_var_deg": (0.2, 0.45, 0.8),
+    "ppi": (160.0, 140.0, 104.0),
+    "brightness": (1.01, 1.03, 1.055),
+    "contrast": (1.02, 1.04, 1.075),
+    "blur_px": (0.04, 0.055, 0.07),
+    "noise": (0.15, 0.31, 0.53),
+    "yellowish": (0.08, 0.20, 0.42),
 }
 _SEPIA = np.array([[.393, .769, .189], [.349, .686, .168], [.272, .534, .131]], dtype=np.float32)
 _TILE_SIZE = (1000, 1000)
@@ -73,20 +75,25 @@ def _grain_alpha(seed, noise, size, rotation):
     return opacity[..., None] * noise
 
 
-def old_scanner_color(image, *, source_ppi, seed, nominal=False, rasterize=None):
+def _parameters(seed, severity):
+    rng = _rng(seed, f"{PROFILE}/parameters")
+    params = severity_parameters(rng, severity, _CURVES, NOMINAL)
+    variance = params["rotate_var_deg"]
+    jitter = 0.0 if params["severity"] == 1.0 else float(rng.uniform(-variance, variance))
+    params["rotate_deg"] = params["rotate_base_deg"] + jitter
+    return params
+
+
+def old_scanner_color(image, *, source_ppi, seed, nominal=False, severity=None, rasterize=None):
     """Return a color scanner view, parameters and pixel-edge geometry.
 
     The same oriented vector page may be rendered directly at the selected
-    PPI with rasterize(ppi). Nominal fixes the reference settings and base
-    angle for visual comparisons. Ordinary seeded draws use symmetric skew.
+    PPI with rasterize(ppi). Omit severity to sample the three-band mixture.
+    Nominal or severity=1 fixes the hard reference, including the base angle.
     """
-    rng = _rng(seed, f"{PROFILE}/parameters")
-    params = dict(NOMINAL) if nominal else {
-        key: float(rng.uniform(*bounds)) for key, bounds in RANGES.items()
-    }
-    variance = params["rotate_var_deg"]
-    jitter = 0.0 if nominal else float(rng.uniform(-variance, variance))
-    params["rotate_deg"] = params["rotate_base_deg"] + jitter
+    if nominal and severity is not None:
+        raise ValueError("nominal and severity are mutually exclusive")
+    params = _parameters(seed, 1.0 if nominal else severity)
     rgb, warp, rotation = render_low_ppi(
         image, source_ppi, params["ppi"], params["rotate_deg"], rasterize,
     )
@@ -110,14 +117,17 @@ def main():
     parser.add_argument("output", type=Path, help="Path to a new RGB PNG")
     parser.add_argument("--source-ppi", type=float, required=True)
     parser.add_argument("--seed", type=int, required=True)
-    parser.add_argument("--nominal", action="store_true")
+    strength = parser.add_mutually_exclusive_group()
+    strength.add_argument("--nominal", action="store_true", help="Use the hard reference settings")
+    strength.add_argument("--severity", type=float, help="Set severity between 0 (mildest) and 1 (hardest)")
     parser.add_argument("--annotations", type=Path, help="JSON array of source annotations")
     args = parser.parse_args()
     sidecar = args.output.with_suffix(".json")
     if args.output.suffix.lower() != ".png" or args.output.exists() or sidecar.exists():
         parser.error("output PNG and companion JSON must be new paths")
     with Image.open(args.input) as image:
-        view = old_scanner_color(image, source_ppi=args.source_ppi, seed=args.seed, nominal=args.nominal)
+        view = old_scanner_color(image, source_ppi=args.source_ppi, seed=args.seed,
+                                 nominal=args.nominal, severity=args.severity)
     record = {
         "profile": PROFILE, "seed": args.seed, "parameters": view.parameters,
         "source_ppi": args.source_ppi, "scan_size": view.scan_size,
