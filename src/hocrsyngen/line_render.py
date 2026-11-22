@@ -41,6 +41,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, features
 from .assets import default_font_manifest_path
 from .font_exclusion import check_font
 from .io import load_simple_font_manifest
+from .text_shaping import ShapingError, check_shaping, covers as _covers, missing_characters
 
 LINE_RENDER_SCHEMA = "hocrsyngen_line_render.v1"
 ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$")
@@ -270,23 +271,8 @@ def band_size(path: str, weight: int | None, target: int, band_def: str = DEFAUL
     return min(sizes, key=lambda s: (abs(_calibration_band(path, s, weight, band_def) - target), abs(s - guess), s))
 
 
-@lru_cache(maxsize=8192)
-def _covers(path: str, ch: str) -> bool:
-    """False if the face has no glyph for `ch` (it would be drawn as .notdef, or a combining mark would be dropped
-    while the label keeps it). Checked with Pillow's BASIC layout, which maps each character through the face's cmap
-    without HarfBuzz mark handling, against the .notdef bitmap. Combining marks (niqqud, te'amim) are checked like any
-    other character; only whitespace and format controls (Cf, e.g. RLM) are exempt."""
-    if ch.isspace() or unicodedata.category(ch) == "Cf":
-        return True
-    f = ImageFont.truetype(path, 48, layout_engine=ImageFont.Layout.BASIC)
-    def mask(c: str) -> bytes:
-        m = f.getmask(c, mode="L")
-        return bytes(m) + m.size[0].to_bytes(4, "big") + m.size[1].to_bytes(4, "big")
-    return mask(ch) != mask("\U000F0000")
-
-
 def missing_chars(face: GovernedFace, text: str) -> list[str]:
-    return sorted({c for c in text if not _covers(str(face.path), c)})
+    return missing_characters(face.path, text)
 
 
 def _line_rng(seed: int, line_id: str) -> random.Random:
@@ -344,6 +330,7 @@ def render_line(text: str, face: GovernedFace, size_px: int, preset: str, rng: r
     """Render one logical-order line. Returns the greyscale image and the realised preset parameters.
     `weight` applies to faces with a weight axis (clip it with face_weight first); static faces ignore it."""
     _require_raqm()
+    check_shaping(face.path, text)
     p = LINE_PRESETS[preset]
     font = _font(str(face.path), size_px, weight)
     ink, paper = _i(rng, p.ink), _i(rng, p.paper)
@@ -352,6 +339,11 @@ def render_line(text: str, face: GovernedFace, size_px: int, preset: str, rng: r
     w, h = (right - left) + 2 * pad_x, (bottom - top) + 2 * pad_y
     img = Image.new("L", (max(1, w), max(1, h)), paper)
     ImageDraw.Draw(img).text((pad_x - left, pad_y - top), text, font=font, fill=ink, direction="rtl")
+    actual = ImageChops.difference(img, Image.new("L", img.size, paper)).getbbox()
+    if actual is None:
+        raise ShapingError("empty_ink")
+    if not (0 < actual[0] < actual[2] < img.width and 0 < actual[1] < actual[3] < img.height):
+        raise ShapingError("ink_touches_render_boundary")
     params: dict = {"ink": ink, "paper": paper}
     if preset == HANDWRITING_PRESET:
         jitter = {name: round(_u(rng, limits), 4) for name, limits in HANDWRITING_JITTER.items()}
@@ -477,15 +469,16 @@ def render_lines(
             if not text:
                 refused.append({"id": r["id"], "reason": "empty"}); continue
             face = governed[assign[r["id"]]]
-            miss = missing_chars(face, text)
-            if miss:
-                refused.append({"id": r["id"], "reason": "font_missing_chars", "font_id": face.id, "chars": miss}); continue
             grng = _line_rng(seed, key[r["id"]] + ":style")
             target = grng.randint(lo, hi)
             weight, variable = face_weight(face, grng.randint(wlo, whi))
             size = target if mode == "size" else band_size(str(face.path), weight, target, band_def)
             rng = _line_rng(seed, r["id"])
-            img, params = render_line(text, face, size, preset, rng, weight)
+            try:
+                img, params = render_line(text, face, size, preset, rng, weight)
+            except ShapingError as exc:
+                refused.append({"id": r["id"], "reason": exc.reason, "font_id": face.id, "chars": exc.chars})
+                continue
             band = line_measures(img, params["ink"], params["paper"])
             img.save(out / "lines" / f"{r['id']}.png")
             (out / "lines" / f"{r['id']}.gt.txt").write_text(text + "\n", encoding="utf-8")
