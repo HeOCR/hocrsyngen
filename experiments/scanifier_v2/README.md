@@ -19,7 +19,7 @@ python -m hocrsyngen.cli validate out/scanifier-capture --format json
 
 The Python API `pipeline.capture(image, seed, config)` accepts a synthetic PIL page and returns JPEG bytes, a bidirectional geometry map, and the sampled settings. Use `geometry.transform_annotation(record, result.warp)` to transform polygons, boxes and baselines in the stored input raster's pixel-edge coordinates. The EXIF transform handles all eight orientations and is applied exactly once. Output rotation is baked into the raster and the JPEG carries no orientation or input metadata.
 
-The opt-in [B&W photocopy profile](BW_PHOTOCOPY.md) produces one-bit PNG training views and mapped annotations.
+The opt-in [B&W photocopy profile](BW_PHOTOCOPY.md) produces one-bit PNG training views and mapped annotations. The [old color scanner profile](OLD_SCANNER_COLOR.md) produces low-PPI RGB views with warm paper and seeded grain.
 
 ## Stages and priors
 
