@@ -19,6 +19,8 @@ python -m hocrsyngen.cli validate out/scanifier-capture --format json
 
 The Python API `pipeline.capture(image, seed, config)` accepts a synthetic PIL page and returns JPEG bytes, a bidirectional geometry map, and the sampled settings. Use `geometry.transform_annotation(record, result.warp)` to transform polygons, boxes and baselines in the stored input raster's pixel-edge coordinates. The EXIF transform handles all eight orientations and is applied exactly once. Output rotation is baked into the raster and the JPEG carries no orientation or input metadata.
 
+The opt-in [B&W photocopy profile](BW_PHOTOCOPY.md) produces one-bit PNG training views and mapped annotations.
+
 ## Stages and priors
 
 Pass `--config path.json` to override any fields in [priors.json](priors.json). Continuous ranges are uniform `[min, max]`. Output size and JPEG quality ranges are inclusive integers. Use equal endpoints to fix a value, zero magnitude or probability to disable optional effects, and categorical weights to choose modes. Each stage has an independent seeded random stream. A fixed seed, inputs, config and imaging stack reproduce the same result.
