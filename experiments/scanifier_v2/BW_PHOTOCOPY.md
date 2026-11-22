@@ -9,7 +9,8 @@ python -m experiments.scanifier_v2.bw_photocopy clean.png copier.png \
   --source-ppi 300 --seed 17 --annotations lines.json
 ```
 
-Supply the source raster's actual PPI. The optional annotations are a JSON
+Supply the source raster's actual PPI. Use a source of at least 200 PPI
+for the full mixture. The optional annotations are a JSON
 array of records with `box` or `polygon` in source pixel-edge coordinates.
 The output PNG has a companion JSON with the warp, working raster size and
 mapped annotations. Text and other non-geometric fields are retained exactly.
@@ -24,25 +25,39 @@ density. Direct rasterisation preserves PDF hairlines more closely. For raster
 inputs the profile uses area downsampling. Both routes apply a clockwise
 rotation on a fixed low-PPI canvas, grayscale and Gaussian blur, quantised
 brightness and contrast, a seeded highlight overlay and optional toner
-specks, then a threshold of 128. A nearest-neighbour upscale retains the
+specks, then a severity-dependent threshold. A nearest-neighbour upscale retains the
 one-bit values at the oriented source dimensions.
 
-## Nominal settings and per-page sampling
+## Severity sampling
 
-Use `--nominal` or `nominal=True` for a reference comparison. The seed selects
-the noise field even at nominal settings. Page-to-page randomisation samples
-each range uniformly. The rotation range changes the sampled angle between
-pages, with zero extra rotation variance.
+A seeded draw picks one band per page. It draws severity uniformly in that
+band and interpolates the parameters together between the band boundaries.
 
-| Parameter | Nominal | Sampled range |
-|---|---:|---:|
-| Clockwise angle | 1.6° | 1.1–2.1° |
-| Working PPI | 100 | 94–106 |
-| Blur sigma at working resolution | 0.79 px | 0.70–0.88 px |
-| Brightness multiplier | 0.88 | 0.86–0.90 |
-| Contrast multiplier about mid-gray | 0.02 | 0.018–0.023 |
-| Noise strength | 0.73 | 0.65–0.81 |
-| Sparse black toner speck probability per working pixel | 0 | 0–0.0004 |
+| Band | Default share | Severity | Working PPI |
+|---|---:|---:|---:|
+| Mild | 55% | 0–0.40 | 200–150 |
+| Medium | 35% | 0.40–0.75 | 150–120 |
+| Hard | 10% | 0.75–1.00 | 120–100 |
+
+The table gives the parameter knots in order of increasing severity. Lower blur
+at higher resolution preserves fine rules and thin strokes. The threshold
+is applied after the contrast and noise stages.
+
+| Parameter | 0 | 0.40 | 0.75 | 1.00 |
+|---|---:|---:|---:|---:|
+| Clockwise angle | 0.2° | 0.7° | 1.2° | 1.6° |
+| Blur sigma at working resolution | 0.24 px | 0.37 px | 0.46 px | 0.79 px |
+| Brightness multiplier | 0.965 | 0.945 | 0.91 | 0.88 |
+| Contrast multiplier about mid-gray | 0.26 | 0.09 | 0.045 | 0.02 |
+| Noise strength | 0.15 | 0.31 | 0.55 | 0.73 |
+| Binarisation threshold | 126 | 127.1 | 127.8 | 128 |
+| Extra toner speck probability per working pixel | 0.00001 | 0.00004 | 0.00014 | 0 |
+
+Use `--severity` or `severity=` to fix a point. The three review levels are
+0.20 (175 PPI), 0.575 (135 PPI) and 1.00 (100 PPI). The seed still fixes
+the noise field. `--nominal` and `nominal=True` select the same hard endpoint
+and retain the original reference pixels at a fixed input and seed. The extra
+black toner overlay tapers to zero there to reproduce the original setting.
 
 ## Look Scanned reference
 
