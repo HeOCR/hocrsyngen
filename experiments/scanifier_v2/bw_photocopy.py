@@ -16,22 +16,27 @@ from .pipeline import _rng
 
 PROFILE = "bw_photocopy"
 NOMINAL = {
+    "severity": 1.0,
     "rotate_deg": 1.6,
     "ppi": 100.0,
     "blur_px": 0.79,
     "brightness": 0.88,
     "contrast": 0.02,
     "noise": 0.73,
+    "threshold": 128.0,
     "toner_speckle": 0.0,
 }
-RANGES = {
-    "rotate_deg": (1.1, 2.1),
-    "ppi": (94.0, 106.0),
-    "blur_px": (0.70, 0.88),
-    "brightness": (0.86, 0.90),
-    "contrast": (0.018, 0.023),
-    "noise": (0.65, 0.81),
-    "toner_speckle": (0.0, 0.0004),
+_SEVERITY_KNOTS = (0.0, 0.4, 0.75, 1.0)
+_BAND_WEIGHTS = (0.55, 0.35, 0.10)
+_CURVES = {
+    "rotate_deg": (0.2, 0.7, 1.2),
+    "ppi": (200.0, 150.0, 120.0),
+    "blur_px": (0.24, 0.37, 0.46),
+    "brightness": (0.965, 0.945, 0.91),
+    "contrast": (0.26, 0.09, 0.045),
+    "noise": (0.15, 0.31, 0.55),
+    "threshold": (126.0, 127.1, 127.8),
+    "toner_speckle": (0.00001, 0.00004, 0.00014),
 }
 
 # P(additive light < step) estimated on an invented 128-grey patch at
@@ -87,7 +92,23 @@ def _rgb_on_white(image):
     return background.convert("RGB")
 
 
-def bw_photocopy(image, *, source_ppi, seed, nominal=False, rasterize=None):
+def _parameters(seed, severity):
+    if severity is None:
+        rng = _rng(seed, f"{PROFILE}/parameters")
+        band = rng.choice(len(_BAND_WEIGHTS), p=_BAND_WEIGHTS)
+        severity = float(rng.uniform(_SEVERITY_KNOTS[band], _SEVERITY_KNOTS[band + 1]))
+    if not 0 <= severity <= 1:
+        raise ValueError("severity must be between 0 and 1")
+    return {
+        "severity": severity,
+        **{
+            key: float(np.interp(severity, _SEVERITY_KNOTS, (*values, NOMINAL[key])))
+            for key, values in _CURVES.items()
+        },
+    }
+
+
+def bw_photocopy(image, *, source_ppi, seed, nominal=False, severity=None, rasterize=None):
     """Return a bilevel PIL page and its source-to-output pixel-edge map.
 
     Set source_ppi to the rasterization density of the original page. The
@@ -96,14 +117,15 @@ def bw_photocopy(image, *, source_ppi, seed, nominal=False, rasterize=None):
     rasterize(ppi) to render the same oriented page directly on that grid.
     The result is nearest-neighbour resampled to the oriented source
     size for consumers that expect the original page dimensions.
+    Omit severity to sample the mixture or set it between 0 and 1.
+    nominal=True selects the exact hard endpoint.
     """
     if not math.isfinite(source_ppi) or source_ppi <= 0:
         raise ValueError("source_ppi must be finite and positive")
 
-    rng = _rng(seed, f"{PROFILE}/parameters")
-    params = dict(NOMINAL) if nominal else {
-        key: float(rng.uniform(*bounds)) for key, bounds in RANGES.items()
-    }
+    if nominal and severity is not None:
+        raise ValueError("nominal and severity are mutually exclusive")
+    params = _parameters(seed, 1.0 if nominal else severity)
     orientation = image.getexif().get(274, 1)
     page = ImageOps.exif_transpose(image)
     if source_ppi < params["ppi"]:
@@ -135,7 +157,7 @@ def bw_photocopy(image, *, source_ppi, seed, nominal=False, rasterize=None):
 
     overlay = _highlights(tone.shape, seed)
     tone += overlay * (params["noise"] / NOMINAL["noise"]) ** 2
-    ink = tone < 128
+    ink = tone < params["threshold"]
     if params["toner_speckle"]:
         specks = _rng(seed, f"{PROFILE}/toner").random(ink.shape, dtype=np.float32)
         ink |= specks < params["toner_speckle"]
@@ -155,7 +177,9 @@ def main():
     parser.add_argument("output", type=Path, help="Path to a new one-bit PNG")
     parser.add_argument("--source-ppi", type=float, required=True)
     parser.add_argument("--seed", type=int, required=True)
-    parser.add_argument("--nominal", action="store_true")
+    strength = parser.add_mutually_exclusive_group()
+    strength.add_argument("--nominal", action="store_true", help="Use the hard reference settings")
+    strength.add_argument("--severity", type=float, help="Set severity between 0 (mildest) and 1 (hardest)")
     parser.add_argument("--annotations", type=Path, help="JSON array of source annotations")
     args = parser.parse_args()
     sidecar = args.output.with_suffix(".json")
@@ -164,7 +188,8 @@ def main():
     if args.output.exists() or sidecar.exists():
         parser.error("output PNG and companion JSON must be new paths")
     with Image.open(args.input) as image:
-        result = bw_photocopy(image, source_ppi=args.source_ppi, seed=args.seed, nominal=args.nominal)
+        result = bw_photocopy(image, source_ppi=args.source_ppi, seed=args.seed,
+                             nominal=args.nominal, severity=args.severity)
     record = {
         "profile": PROFILE,
         "seed": args.seed,

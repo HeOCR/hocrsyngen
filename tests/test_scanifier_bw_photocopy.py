@@ -1,3 +1,4 @@
+from collections import Counter
 import json
 import subprocess
 import sys
@@ -8,7 +9,7 @@ from PIL import Image, ImageDraw
 np = pytest.importorskip("numpy")
 pytest.importorskip("cv2")
 
-from experiments.scanifier_v2.bw_photocopy import NOMINAL, RANGES, bw_photocopy
+from experiments.scanifier_v2.bw_photocopy import NOMINAL, _parameters, bw_photocopy
 
 
 def test_bilevel_seeded_views_keep_labels_and_geometry():
@@ -24,7 +25,7 @@ def test_bilevel_seeded_views_keep_labels_and_geometry():
     assert first.image.size == page.size
     assert first.image.tobytes() == repeat.image.tobytes()
     assert first.image.tobytes() != other.image.tobytes()
-    assert all(low <= other.parameters[key] <= high for key, (low, high) in RANGES.items())
+    assert 100 <= other.parameters["ppi"] <= 200
     mapped = first.annotation(annotation)
     assert mapped["label"] == annotation["label"]
     assert mapped["ordinal"] == annotation["ordinal"]
@@ -36,6 +37,45 @@ def test_bilevel_seeded_views_keep_labels_and_geometry():
     assert np.allclose(first.warp.inverse(first.warp.forward([[500, 300]])), [[500, 300]])
     with pytest.raises(ValueError, match="clips"):
         first.annotation({"box": [0, 0, 30, 20], "label": "א"})
+
+
+
+def test_mixture_favours_mild_and_medium_settings():
+    counts = Counter()
+    for seed in range(1024):
+        params = _parameters(seed, None)
+        assert params == _parameters(seed, None)
+        band = np.searchsorted([120, 150], params["ppi"], side="right")
+        counts[("hard", "medium", "mild")[band]] += 1
+    assert 500 <= counts["mild"] <= 630
+    assert 300 <= counts["medium"] <= 420
+    assert 70 <= counts["hard"] <= 135
+
+
+def test_mild_preserves_thin_rules_and_hard_matches_nominal():
+    source = Image.new("L", (600, 900), 255)
+    ImageDraw.Draw(source).line((80, 450, 520, 450), fill=0, width=2)
+    mild = bw_photocopy(source, source_ppi=300, seed=33, severity=0.2)
+    medium = bw_photocopy(source, source_ppi=300, seed=33, severity=0.575)
+    hard = bw_photocopy(source, source_ppi=300, seed=33, severity=1)
+    nominal = bw_photocopy(source, source_ppi=300, seed=33, nominal=True)
+    assert mild.parameters["ppi"] == 175
+    assert medium.parameters["ppi"] == 135
+    for key in ("blur_px", "noise", "threshold"):
+        assert mild.parameters[key] < medium.parameters[key] < hard.parameters[key]
+    assert hard.image.tobytes() == nominal.image.tobytes()
+    assert hard.parameters == NOMINAL
+    rule = [(x, 450) for x in range(90, 511)]
+    recoveries = []
+    for view in (mild, medium, hard):
+        xy = np.rint(view.warp.forward(rule)).astype(int)
+        ink = ~np.asarray(view.image)
+        recoveries.append(np.mean([ink[y - 3:y + 4, x].any() for x, y in xy]))
+    mild_coverage, medium_coverage, hard_coverage = recoveries
+    assert mild_coverage > 0.95
+    assert hard_coverage < medium_coverage < mild_coverage
+    with pytest.raises(ValueError, match="between 0 and 1"):
+        bw_photocopy(source, source_ppi=300, seed=33, severity=1.01)
 
 
 def test_direct_render_uses_working_ppi_and_preserves_white():
