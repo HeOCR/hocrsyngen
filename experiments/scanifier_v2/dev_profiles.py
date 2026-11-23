@@ -17,6 +17,7 @@ from .pipeline import _gaussian, _optics, _rng
 
 FITTED_STATUSES = ("dev_fit", "train_fit")
 PROFILES = ("phone_flat", "phone_oblique", "adobe_scan", "flatbed_old")
+LIGHTING_KEYS = ("paper_r", "paper_g", "paper_b", "gradient_x", "gradient_y")
 RANGE_BOUNDS = {
     "paper_r": (0, 255), "paper_g": (0, 255), "paper_b": (0, 255),
     "gradient_x": (-2, 2), "gradient_y": (-2, 2),
@@ -52,6 +53,14 @@ def validate_profile(profile):
             raise ValueError(f"Invalid scanifier profile range {key}")
         if key == "scanner_bars" and any(type(item) is not int for item in value):
             raise ValueError(f"Scanifier profile range {key} needs integer endpoints")
+    if "lighting_samples" in profile:
+        samples = profile["lighting_samples"]
+        if (profile["status"] != "train_fit" or not isinstance(samples, list) or not samples
+                or any(not isinstance(row, dict) or row.keys() != set(LIGHTING_KEYS)
+                       or any(type(value) not in (int, float)
+                              or not RANGE_BOUNDS[key][0] <= value <= RANGE_BOUNDS[key][1]
+                              for key, value in row.items()) for row in samples)):
+            raise ValueError("Invalid joint TRAIN lighting observations")
     encoders = profile.get("jpeg_encoders")
     if not isinstance(encoders, list):
         raise ValueError("jpeg_encoders must list observed encoders, or be empty for no JPEG")
@@ -66,7 +75,7 @@ def validate_profile(profile):
 
 
 def sample_profile(profile, seed=None):
-    """Sample named renderer ranges with stable, independent random streams."""
+    """Sample stable renderer ranges and preserve observed lighting tuples."""
     validate_profile(profile)
     seed = profile["seed"] if seed is None else seed
     if type(seed) is not int or seed < 0:
@@ -76,6 +85,10 @@ def sample_profile(profile, seed=None):
         rng = _rng(seed, "dev_profile/" + key)
         sampled[key] = (int(rng.integers(low, high + 1)) if key == "scanner_bars"
                         else float(rng.uniform(low, high)))
+    lighting = profile.get("lighting_samples")
+    if lighting:
+        index = _rng(seed, "dev_profile/lighting").integers(len(lighting))
+        sampled.update(lighting[index])
     encoders = profile["jpeg_encoders"]
     index = _rng(seed, "dev_profile/jpeg_encoder").integers(len(encoders)) if encoders else None
     sampled["jpeg"] = encoders[index] if index is not None else None

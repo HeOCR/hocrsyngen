@@ -4,7 +4,11 @@ import json
 import numpy as np
 import pytest
 from experiments.scanifier_v2 import fit_phone_training
-from experiments.scanifier_v2.dev_profiles import RANGE_BOUNDS
+from experiments.scanifier_v2.dev_profiles import (
+    LIGHTING_KEYS,
+    RANGE_BOUNDS,
+    sample_profile,
+)
 from experiments.scanifier_v2.fit_phone_training import observe, read_pairs, register
 from experiments.scanifier_v2.phone_training import (
     phone_line_crop,
@@ -413,5 +417,23 @@ def test_train_fit_reports_support_by_distinct_page_and_never_mixes_endpoints(
     assert len(bank["profiles"]["phone_flat"]) == 4
     assert set(fitted) == {"phone_flat"}
     assert fitted["phone_flat"]["status"] == "train_fit"
+    assert len(fitted["phone_flat"]["lighting_samples"]) == 4
     assert evidence["coverage"]["phone_oblique"]["optical_pages"] == 2
     assert "phone_oblique" in evidence["unsupported_endpoints"]
+
+
+def test_train_profile_keeps_camera_colour_channels_and_gradient_together():
+    lighting = [
+        dict(zip(LIGHTING_KEYS, row, strict=True))
+        for row in [(173, 185, 199, 0.12, -0.17), (212, 206, 201, -0.23, 0.32)]
+    ]
+    train = profile() | {"status": "train_fit", "lighting_samples": lighting}
+    drawn = []
+    for seed in range(16):
+        sample = sample_profile(train, seed)
+        assert sample == sample_profile(train, seed)
+        drawn.append({key: sample[key] for key in LIGHTING_KEYS})
+    assert all(row in lighting for row in drawn)
+    assert all(row in drawn for row in lighting)
+    with pytest.raises(ValueError, match="joint TRAIN lighting"):
+        sample_profile(train | {"status": "dev_fit"})

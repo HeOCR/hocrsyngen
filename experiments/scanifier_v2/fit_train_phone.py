@@ -8,6 +8,7 @@ from pathlib import Path
 import cv2
 from PIL import Image
 
+from .dev_profiles import LIGHTING_KEYS, RANGE_BOUNDS, validate_profile
 from .fit_dev_profiles import _band_to_mix, _fit_profile, _measure
 from .fit_phone_training import load_rgb, observe, read_pairs
 from .phone_training import phone_warp
@@ -103,12 +104,31 @@ def fit_train(manifest):
                 k: v for k, v in row["metrics"].items() if len(metric_pages[k]) >= 3
             }
         report["parameter_pages"] = {k: len(pages) for k, pages in metric_pages.items()}
+        lighting = [
+            row for row in optics[mode] if set(LIGHTING_KEYS) <= row["metrics"].keys()
+        ]
+        if len({row["page"] for row in lighting}) < 3:
+            unsupported[mode] = (
+                "Fewer than three source pages with joint lighting observations"
+            )
+            continue
         try:
             profile, _ = _fit_profile(mode, optics[mode], SEED, transfer)
         except ValueError as error:
             unsupported[mode] = str(error)
             continue
-        profiles[mode] = profile | {"status": "train_fit"}
+        profile["status"] = "train_fit"
+        profile["lighting_samples"] = [
+            {
+                key: round(min(upper, max(lower, row["metrics"][key])), 5)
+                for key, (lower, upper) in (
+                    (key, RANGE_BOUNDS[key]) for key in LIGHTING_KEYS
+                )
+            }
+            for row in lighting
+        ]
+        validate_profile(profile)
+        profiles[mode] = profile
 
     bank = {
         "schema": "scanifier_phone_bank.v1",

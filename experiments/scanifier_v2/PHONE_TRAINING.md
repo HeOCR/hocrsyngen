@@ -104,6 +104,8 @@ registered page on native pixels. It retains each supported geometry draw,
 including clipping and curl. Sampling selects a physical page before a
 capture. A profile requires three distinct source pages for both geometry
 and optics, with three distinct supporting pages per fitted parameter.
+Sample paper RGB and both illumination gradients together from one observed
+capture. This preserves camera colour and lighting combinations from the fit.
 Unsupported endpoints and rejected observations are recorded in
 `fit-evidence.json`. A TRAIN optical profile (`train_fit`) must accompany a
 TRAIN geometry bank. Existing DEV-fitted pairs remain usable.
