@@ -3,8 +3,9 @@ import json
 
 import numpy as np
 import pytest
+from experiments.scanifier_v2 import fit_phone_training
 from experiments.scanifier_v2.dev_profiles import RANGE_BOUNDS
-from experiments.scanifier_v2.fit_phone_training import read_pairs, register
+from experiments.scanifier_v2.fit_phone_training import observe, read_pairs, register
 from experiments.scanifier_v2.phone_training import (
     phone_line_crop,
     phone_warp,
@@ -146,6 +147,93 @@ def test_register_retains_a_bow_supported_by_disjoint_landmarks():
     _, _, _, _, fit = register(source, view.image)
     assert fit["curl"] == pytest.approx(0.009, abs=0.002)
     assert fit["fitted_error_px"] < 0.75 * fit["planar_error_px"]
+
+
+def test_observed_frame_replay_preserves_clipping_and_joint_illumination():
+    source = page()
+    draw = ImageDraw.Draw(source)
+    rng = np.random.default_rng(109)
+    for x, y, length in rng.integers((70, 105, 4), (470, 625, 18), size=(245, 3)):
+        draw.line((x, y, x + length, y + length), fill="black", width=3)
+    quad = [[0.05, -0.12], [0.97, -0.10], [0.98, 0.91], [0.06, 0.88]]
+    light = {
+        "paper_r": 217,
+        "paper_g": 209,
+        "paper_b": 199,
+        "gradient_x": 0.11,
+        "gradient_y": -0.17,
+    }
+    clipped = {"box": [80, 1, 460, 24]}
+    options = {"seed": 22, "size": SIZE, "quad": quad, "native_long_edge": 700}
+    with pytest.raises(ValueError, match="phone geometry"):
+        render_phone_view(source, [LINE], profile(), **options)
+    invented = render_phone_view(
+        source,
+        [LINE, clipped],
+        profile(),
+        **options,
+        preserve_frame=True,
+        frame_light=light,
+    )
+    assert phone_line_crop(invented, 0)[1] is None
+    assert phone_line_crop(invented, 1) == (None, "clipped")
+
+    measured = observe(source, invented.image, preserve_frame=True)
+    legacy = observe(source, invented.image)
+    assert np.asarray(measured["quad"]) == pytest.approx(np.asarray(quad), abs=0.009)
+    assert min(point[1] for point in legacy["quad"]) >= 0.05 - 1e-9
+    for key in ("paper_r", "paper_g", "paper_b"):
+        assert measured["frame_light"][key] == pytest.approx(light[key], abs=5)
+    for key in ("gradient_x", "gradient_y"):
+        assert measured["frame_light"][key] == pytest.approx(light[key], abs=0.035)
+
+    bank = {
+        "schema": "scanifier_phone_bank.v1",
+        "framing": "observed",
+        "profiles": {"phone_oblique": [measured | {"capture_sha256": "a" * 64}]},
+    }
+    replay = render_fitted_phone_view(
+        source, [LINE, clipped], profile(), bank, seed=22, long_edge=700
+    )
+    assert phone_line_crop(replay, 0)[1] is None
+    assert phone_line_crop(replay, 1) == (None, "clipped")
+    assert (
+        replay.parameters["optics_and_tone"]["gradient_y"]
+        == measured["frame_light"]["gradient_y"]
+    )
+
+
+def test_observed_frame_rejects_pages_mostly_outside_capture():
+    outside = [[0.98, 0.2], [1.8, 0.2], [1.8, 0.8], [0.98, 0.8]]
+    with pytest.raises(ValueError, match="page visible"):
+        phone_warp(SIZE, size=SIZE, quad=outside, preserve_frame=True)
+
+
+def test_observed_bank_requires_distinct_pages_per_supported_mode(monkeypatch):
+    rows = [
+        {
+            "split": "fit",
+            "profile": "phone_flat",
+            "page_id": str(n),
+            "source_sha256": str(n) * 64,
+            "capture_sha256": str(n + 3) * 64,
+            "source_path": "source",
+            "capture_path": "capture",
+        }
+        for n in range(3)
+    ]
+    monkeypatch.setattr(fit_phone_training, "read_pairs", lambda _: rows)
+    monkeypatch.setattr(fit_phone_training, "load_rgb", lambda path: path)
+    monkeypatch.setattr(
+        fit_phone_training, "observe", lambda *args, **kwargs: {"quad": QUAD}
+    )
+    bank = fit_phone_training.fit_bank("pairs.json", preserve_frame=True)
+    assert bank["framing"] == "observed"
+    assert len(bank["profiles"]["phone_flat"]) == 3
+    assert bank["profiles"]["phone_oblique"] == []
+    rows[2]["source_sha256"] = rows[1]["source_sha256"]
+    with pytest.raises(ValueError, match="at least three"):
+        fit_phone_training.fit_bank("pairs.json", preserve_frame=True)
 
 
 def test_private_calibration_rejects_cross_split_pages_and_wrong_hash(tmp_path):

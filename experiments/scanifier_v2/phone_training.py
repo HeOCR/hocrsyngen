@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from .dev_profiles import _render, sample_profile
+from .dev_profiles import RANGE_BOUNDS, _render, sample_profile
 from .geometry import Warp, corners, transform_annotation
 from .pipeline import _rng, _scene, linear_to_srgb
 
@@ -25,7 +25,7 @@ def _finite(value, low, high):
     return type(value) in (int, float) and math.isfinite(value) and low <= value <= high
 
 
-def phone_warp(source_size, *, size, quad, curl=0, fold=None):
+def phone_warp(source_size, *, size, quad, curl=0, fold=None, preserve_frame=False):
     """Build a normalized camera projection with vertical page displacement.
 
     The signed curl is a fraction of source height. A fold adds a local
@@ -33,10 +33,11 @@ def phone_warp(source_size, *, size, quad, curl=0, fold=None):
     """
     width, height = source_size
     target = np.asarray(quad, dtype=np.float32)
+    low, high = (-1.0, 2.0) if preserve_frame else (0.01, 0.99)
     if (
         target.shape != (4, 2)
         or not np.isfinite(target).all()
-        or not np.all((0.01 <= target) & (target <= 0.99))
+        or not np.all((low <= target) & (target <= high))
         or not cv2.isContourConvex(target)
         or cv2.contourArea(target, oriented=True) < 0.15
         or not _finite(curl, -0.04, 0.04)
@@ -44,6 +45,12 @@ def phone_warp(source_size, *, size, quad, curl=0, fold=None):
         or not all(type(value) is int and 128 <= value <= 6000 for value in size)
     ):
         raise ValueError("Invalid normalized phone geometry")
+    if preserve_frame:
+        visible, _ = cv2.intersectConvexConvex(target, np.float32(corners((1, 1))))
+        if visible < 0.15:
+            raise ValueError(
+                "Observed phone geometry leaves too little of the page visible"
+            )
     t = np.linspace(0, 1, 33)
     if fold is not None:
         center, span, amplitude = fold
@@ -139,6 +146,8 @@ def render_phone_view(
     fold=None,
     shadow=None,
     sharpen=0,
+    preserve_frame=False,
+    frame_light=None,
 ):
     """Use the same geometry for pixels, polygons, and baselines.
 
@@ -155,7 +164,14 @@ def render_phone_view(
         or not _finite(sharpen, 0, 0.5)
     ):
         raise ValueError("Invalid phone endpoint, optical scale or sharpening")
-    warp = phone_warp(image.size, size=size, quad=quad, curl=curl, fold=fold)
+    warp = phone_warp(
+        image.size,
+        size=size,
+        quad=quad,
+        curl=curl,
+        fold=fold,
+        preserve_frame=preserve_frame,
+    )
     source = _shade(image.convert("RGB"), shadow, fold)
     surface = {
         "rgb": (255, 255, 255) if profile["name"] == "adobe_scan" else (107, 105, 102),
@@ -166,6 +182,15 @@ def render_phone_view(
     )
     raster = Image.fromarray(np.uint8(np.clip(linear_to_srgb(rgb) * 255 + 0.5, 0, 255)))
     parameters = sample_profile(profile, seed)
+    if frame_light is not None:
+        keys = {"paper_r", "paper_g", "paper_b", "gradient_x", "gradient_y"}
+        if (
+            not isinstance(frame_light, dict)
+            or set(frame_light) != keys
+            or any(not _finite(frame_light[key], *RANGE_BOUNDS[key]) for key in keys)
+        ):
+            raise ValueError("Invalid observed frame illumination")
+        parameters.update(frame_light)
     scale = max(size) / native_long_edge
     for key in ("blur_sigma", "defocus_add", "motion_px"):
         parameters[key] *= scale
@@ -201,6 +226,9 @@ def render_fitted_phone_view(image, lines, profile, bank, *, seed, long_edge=225
             "A non-test geometry bank and fitted optical profile are required"
         )
     geometries = bank["profiles"][profile["name"]]
+    framing = bank.get("framing", "reframed")
+    if framing not in ("reframed", "observed"):
+        raise ValueError("Unknown fitted phone framing")
     if not geometries or type(seed) is not int or seed < 0:
         raise ValueError("Expected nonempty fitted geometry and a nonnegative seed")
     row = geometries[
@@ -228,6 +256,8 @@ def render_fitted_phone_view(image, lines, profile, bank, *, seed, long_edge=225
         native_long_edge=row["native_long_edge"],
         curl=row["curl"],
         shadow=row["shadow"],
+        preserve_frame=framing == "observed",
+        frame_light=row.get("frame_light") if framing == "observed" else None,
     )
     return PhoneView(
         view.image,
