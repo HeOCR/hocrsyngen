@@ -146,14 +146,31 @@ def _edge_samples(gray, mask, box, rng):
     return np.asarray(samples).reshape(-1, 4)
 
 
-def _measure(image, seed):
+def _measure(image, seed, *, page_quad=None):
     # Decode source JPEG metadata before orientation conversion, and compare
     # edges/noise on native, unrectified pixels.
     tables = getattr(image, "quantization", None)
     mode = JpegImagePlugin.get_sampling(image) if tables else -1
     rgb = np.asarray(ImageOps.exif_transpose(image).convert("RGB"))
     gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
-    mask, box = _page_mask(gray)
+    if page_quad is None:
+        mask, box = _page_mask(gray)
+    else:
+        h, w = gray.shape
+        quad = np.asarray(page_quad, dtype=float)
+        if quad.shape != (4, 2) or not np.isfinite(quad).all() or abs(quad).max() > 5:
+            raise ValueError("Invalid registered page quad")
+        # Inset from the projected boundary so contours and the background
+        # cannot enter native-pixel ink, paper, or noise measurements.
+        center = quad.mean(axis=0)
+        inset = np.rint((center + 0.94 * (quad - center)) * (w, h)).astype(np.int32)
+        mask = np.zeros((h, w), dtype=np.uint8)
+        cv2.fillConvexPoly(mask, inset, 1)
+        if np.count_nonzero(mask) < 0.1 * h * w:
+            raise ValueError("Insufficient in-frame page support")
+        scale = min(1, 320 / max(w, h))
+        box = tuple(value * scale for value in cv2.boundingRect(mask))
+        mask = cv2.erode(mask, np.ones((33, 33), np.uint8)).astype(bool)
     result = _paper_and_noise(rgb, gray, mask, box)
     edges = _edge_samples(gray, mask, box, np.random.default_rng(seed))
     result["edge_count"] = len(edges)

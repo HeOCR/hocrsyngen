@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from .dev_profiles import RANGE_BOUNDS, _render, sample_profile
+from .dev_profiles import FITTED_STATUSES, RANGE_BOUNDS, _render, sample_profile
 from .geometry import Warp, corners, transform_annotation
 from .pipeline import _rng, _scene, linear_to_srgb
 
@@ -220,7 +220,8 @@ def render_fitted_phone_view(image, lines, profile, bank, *, seed, long_edge=225
     """Draw a complete geometry recipe for the requested fitted endpoint."""
     if (
         bank.get("schema") != "scanifier_phone_bank.v1"
-        or profile.get("status") != "dev_fit"
+        or profile.get("status") not in FITTED_STATUSES
+        or (profile["status"] == "train_fit") != (bank.get("fit_split") == "train")
     ):
         raise ValueError(
             "A non-test geometry bank and fitted optical profile are required"
@@ -231,9 +232,14 @@ def render_fitted_phone_view(image, lines, profile, bank, *, seed, long_edge=225
         raise ValueError("Unknown fitted phone framing")
     if not geometries or type(seed) is not int or seed < 0:
         raise ValueError("Expected nonempty fitted geometry and a nonnegative seed")
-    row = geometries[
-        int(_rng(seed, "phone_training/geometry").integers(len(geometries)))
-    ]
+    rng = _rng(seed, "phone_training/geometry")
+    if bank.get("fit_split") == "train":
+        by_page = {}
+        for geometry in geometries:
+            by_page.setdefault(geometry["page_id"], []).append(geometry)
+        page = sorted(by_page)[int(rng.integers(len(by_page)))]
+        geometries = by_page[page]
+    row = geometries[int(rng.integers(len(geometries)))]
     aspect = row["frame_ratio"]
     if (
         not _finite(aspect, 0.4, 2.5)

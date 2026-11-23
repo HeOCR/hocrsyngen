@@ -83,3 +83,31 @@ Sharpening changes the effective edge response after blur and noise.
 Enable either in a training recipe when authorized non-test captures support
 that setting. The fitted renderer uses supported smooth bow and leaves both
 the crease and independent sharpening off.
+
+## TRAIN capture fit (S10d)
+
+Run the fit after the calling workflow has verified the TRAIN allowlist and
+source ancestry. The allowlist uses purpose `approved_train_phone_calibration`,
+the same relative paths and exact SHA-256s as the geometry manifest, and only
+`fit` rows for `phone_flat` or `phone_oblique`. Every row has a boolean
+`optics_eligible` so known foreground occlusions can supply registration
+evidence without affecting measurements of paper or ink. Repeated views of
+one physical page are accepted, with one shared source raster and unique
+capture hashes.
+
+```text
+python -m experiments.scanifier_v2.fit_train_phone pairs.json fit-output
+```
+
+The fitter records observed frame geometry and measures optics in the inset
+registered page on native pixels. It retains each supported geometry draw,
+including clipping and curl. Sampling selects a physical page before a
+capture. A profile requires three distinct source pages for both geometry
+and optics, with three distinct supporting pages per fitted parameter.
+Unsupported endpoints and rejected observations are recorded in
+`fit-evidence.json`. A TRAIN optical profile (`train_fit`) must accompany a
+TRAIN geometry bank. Existing DEV-fitted pairs remain usable.
+
+Keep the resulting fit frozen before opening reserved DEV captures. Compare
+those captures with matched synthetic views only for image diagnostics and
+crop viability. The fit command has no DEV comparison inputs.

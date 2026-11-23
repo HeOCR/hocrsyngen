@@ -15,6 +15,7 @@ from PIL import Image
 from .pipeline import _gaussian, _optics, _rng
 
 
+FITTED_STATUSES = ("dev_fit", "train_fit")
 PROFILES = ("phone_flat", "phone_oblique", "adobe_scan", "flatbed_old")
 RANGE_BOUNDS = {
     "paper_r": (0, 255), "paper_g": (0, 255), "paper_b": (0, 255),
@@ -37,7 +38,7 @@ def read_profile(path):
 def validate_profile(profile):
     if (not isinstance(profile, dict) or profile.get("version") != 1
             or profile.get("name") not in PROFILES
-            or profile.get("status") not in ("dev_fit", "prior_only")
+            or profile.get("status") not in (*FITTED_STATUSES, "prior_only")
             or type(profile.get("seed")) is not int or profile["seed"] < 0):
         raise ValueError("Invalid scanifier development profile header")
     ranges = profile.get("ranges")
