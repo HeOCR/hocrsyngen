@@ -393,7 +393,7 @@ def test_train_fit_reports_support_by_distinct_page_and_never_mixes_endpoints(
         lambda path, train_only: rows if train_only else [],
     )
     monkeypatch.setattr(
-        fit_train_phone, "observe", lambda *args, **kwargs: {"quad": QUAD}
+        fit_train_phone, "observe", lambda *args, **kwargs: {"quad": QUAD, "curl": 0}
     )
     monkeypatch.setattr(
         fit_train_phone,

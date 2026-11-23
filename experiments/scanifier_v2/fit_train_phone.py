@@ -10,6 +10,7 @@ from PIL import Image
 
 from .fit_dev_profiles import _band_to_mix, _fit_profile, _measure
 from .fit_phone_training import load_rgb, observe, read_pairs
+from .phone_training import phone_warp
 
 ENDPOINTS = ("phone_flat", "phone_oblique")
 SEED = 47261
@@ -28,9 +29,15 @@ def fit_train(manifest):
         counts[mode] += 1
         cv2.setRNGSeed(SEED + i)
         capture = load_rgb(row["capture_path"])
+        source = load_rgb(row["source_path"])
         try:
-            variation = observe(
-                load_rgb(row["source_path"]), capture, preserve_frame=True
+            variation = observe(source, capture, preserve_frame=True)
+            phone_warp(
+                source.size,
+                size=capture.size,
+                quad=variation["quad"],
+                curl=variation["curl"],
+                preserve_frame=True,
             )
         except ValueError as error:
             rejected.append(
