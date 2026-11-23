@@ -28,6 +28,23 @@ retains its projective shape, including for fits from real crops that lost
 page corners. The bank contains measurement and source identities only.
 Keep the bank, source allowlist and comparisons in private project storage.
 
+### Preserve the observed frame
+
+Pass `--preserve-frame` when the fit should retain the camera's distance and
+composition, including partial page corners. An observed-frame bank stores
+the measured normalized page quadrilateral without centering or shrinking
+it. The renderer still rejects any missing or clipped line crop. A nearly
+out-of-frame page cannot supply a usable camera recipe.
+
+For each observed frame the fitter estimates center paper color and a
+lighting gradient from matching blank paper tiles. The gradient must
+improve residuals on separate tiles. When the capture lacks sufficient
+blank-paper support, rendering falls back to the supplied optical profile.
+This mode accepts banks with only the capture modes represented in the
+fit, with at least three fit pages for each supported mode. Keep comparison
+pages outside the fitting manifest's fit split. Existing banks continue to
+use the full-page framing recipe.
+
 ## Render and crop
 
 ```python

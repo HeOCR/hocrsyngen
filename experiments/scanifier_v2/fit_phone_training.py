@@ -180,13 +180,15 @@ def register(source, capture):
     )
 
 
-def _shadow(source, capture, fit):
-    """Estimate a coherent local dimming component on matched blank paper."""
+def _blank_tiles(source, capture, fit):
+    """Sample matching blank paper in page and observed frame coordinates."""
     matrix, (w, h), size, _, diagnostics = fit
     # Work in source coordinates. Exclude ink, borders, and areas outside
     # the photographed frame before sampling paper.
     clean = np.asarray(source.resize((w, h)).convert("L"))
-    observed = np.asarray(capture.resize(size).convert("L"))
+    resized = capture.resize(size)
+    observed = np.asarray(resized.convert("L"))
+    color = np.asarray(resized.convert("RGB"))
     xs, ys = np.meshgrid(np.linspace(0.08, 0.92, 14), np.linspace(0.08, 0.92, 19))
     uv = np.column_stack((xs.ravel(), ys.ravel()))
     points = _bow(uv * (w, h), h, w, diagnostics["curl"])
@@ -199,10 +201,26 @@ def _shadow(source, capture, fit):
         before = clean[b - 4 : b + 5, a - 4 : a + 5]
         after = observed[y - 4 : y + 5, x - 4 : x + 5]
         if np.min(before) > 244 and np.ptp(after) < 18:
-            tiles.append((u, v, np.log(max(1, np.median(after))), i))
+            medians = np.median(color[y - 4 : y + 5, x - 4 : x + 5], axis=(0, 1))
+            tiles.append(
+                (
+                    u,
+                    v,
+                    np.log(max(1, np.median(after))),
+                    i,
+                    (x + 0.5) / size[0] - 0.5,
+                    (y + 0.5) / size[1] - 0.5,
+                    *medians,
+                )
+            )
+    return np.asarray(tiles, dtype=float).reshape(-1, 9)
+
+
+def _shadow(tiles):
+    """Estimate a coherent local dimming component on matched blank paper."""
     if len(tiles) < 45:
         return None
-    u, v, levels, indices = np.asarray(tiles).T
+    u, v, levels, indices = tiles[:, :4].T
     train = (indices.astype(int) + indices.astype(int) // 14) % 2 == 0
     plane = np.column_stack((np.ones(len(u)), u, v))
     base, *_ = np.linalg.lstsq(plane[train], levels[train], rcond=None)
@@ -231,35 +249,72 @@ def _shadow(source, capture, fit):
     return [float(value) for value in (cx, cy, sx, sy, depth)]
 
 
-def observe(source, capture):
+def _frame_light(tiles):
+    if len(tiles) < 45:
+        return None
+    _, _, levels, indices, x, y, *_ = tiles.T
+    fit = (indices.astype(int) + indices.astype(int) // 14) % 2 == 0
+    if min(fit.sum(), (~fit).sum()) < 12 or min(np.ptp(x[fit]), np.ptp(y[fit])) < 0.35:
+        return None
+    plane = np.column_stack((np.ones(len(x)), x, y))
+    weights, _, rank, _ = np.linalg.lstsq(plane[fit], levels[fit], rcond=None)
+    _, sx, sy = weights
+    if rank != 3 or max(abs(sx), abs(sy)) > 2:
+        return None
+    residual = np.mean(np.abs(levels[~fit] - (plane @ weights)[~fit]))
+    constant = np.mean(np.abs(levels[~fit] - np.median(levels[fit])))
+    if residual >= constant:
+        sx = sy = 0.0
+    gain = (x * sx + y * sy)[:, None]
+    center = np.median(np.log(np.maximum(1, tiles[:, 6:]))[fit] - gain[fit], axis=0)
+    r, g, b = np.clip(np.exp(center), 0, 255)
+    return {
+        "paper_r": float(r),
+        "paper_g": float(g),
+        "paper_b": float(b),
+        "gradient_x": float(sx),
+        "gradient_y": float(sy),
+    }
+
+
+def observe(source, capture, *, preserve_frame=False):
     fit = register(source, capture)
     _, _, size, quad, diagnostics = fit
-    low, high = quad.min(axis=0), quad.max(axis=0)
-    # Preserve the projective shape. Reframe the whole page to retain label ink
-    # where the real phone view clipped page corners.
-    scale = min(np.asarray(size) * 0.90 / (high - low))
-    quad = ((quad - (low + high) / 2) * scale + np.asarray(size) / 2) / size
+    if not preserve_frame:
+        low, high = quad.min(axis=0), quad.max(axis=0)
+        # Legacy whole-page simulation retains line ink by reframing.
+        scale = min(np.asarray(size) * 0.90 / (high - low))
+        quad = (quad - (low + high) / 2) * scale + np.asarray(size) / 2
+    quad = quad / size
     lengths = np.linalg.norm(np.roll(quad, -1, axis=0) - quad, axis=1)
     angle_score = abs(np.log(lengths[0] / lengths[2])) + abs(
         np.log(lengths[1] / lengths[3])
     )
-    return diagnostics | {
+    tiles = _blank_tiles(source, capture, fit)
+    row = diagnostics | {
         "quad": quad.tolist(),
         "angle_score": float(angle_score),
         "frame_ratio": capture.width / capture.height,
         "native_long_edge": max(capture.size),
-        "shadow": _shadow(source, capture, fit),
+        "shadow": _shadow(tiles),
     }
+    if preserve_frame:
+        row["frame_light"] = _frame_light(tiles)
+    return row
 
 
-def fit_bank(manifest):
+def fit_bank(manifest, *, preserve_frame=False):
     cv2.setNumThreads(1)
     cv2.setRNGSeed(47261)
     bank = {name: [] for name in ENDPOINTS}
     for row in read_pairs(manifest):
         if row["split"] != "fit":
             continue
-        measured = observe(load_rgb(row["source_path"]), load_rgb(row["capture_path"]))
+        measured = observe(
+            load_rgb(row["source_path"]),
+            load_rgb(row["capture_path"]),
+            preserve_frame=preserve_frame,
+        )
         bank[row["profile"]].append(
             measured
             | {
@@ -268,17 +323,29 @@ def fit_bank(manifest):
                 "source_sha256": row["source_sha256"],
             }
         )
-    if any(len(rows) < 3 for rows in bank.values()):
+    supported = [rows for rows in bank.values() if rows or not preserve_frame]
+    if not supported or any(
+        min(
+            len({row["page_id"] for row in rows}),
+            len({row["source_sha256"] for row in rows}),
+        )
+        < 3
+        for rows in supported
+    ):
         raise ValueError("Each endpoint needs at least three non-test fit pages")
-    return {"schema": "scanifier_phone_bank.v1", "profiles": bank}
+    result = {"schema": "scanifier_phone_bank.v1", "profiles": bank}
+    if preserve_frame:
+        result["framing"] = "observed"
+    return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--preserve-frame", action="store_true")
     args = parser.parse_args()
-    result = fit_bank(args.manifest)
+    result = fit_bank(args.manifest, preserve_frame=args.preserve_frame)
     with args.output.open("x", encoding="utf-8") as stream:
         json.dump(result, stream, indent=2, allow_nan=False)
         stream.write("\n")
