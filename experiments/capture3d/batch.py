@@ -103,11 +103,11 @@ def phone_jpeg(rgb, settings, seed, output):
         output, quality=settings["jpeg_quality"], subsampling=2, optimize=True)
 
 
-def fiducials(size, path):
+def fiducials(size, path, radius_fraction=.015):
     width, height = size
     img = Image.new("RGB", size, "black")
     draw = ImageDraw.Draw(img)
-    radius = min(width, height) * .015
+    radius = min(width, height) * radius_fraction
     for u, v in MARKERS:
         x, y = width * u - .5, height * v - .5
         draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=(255, 0, 255))
@@ -166,12 +166,46 @@ def rejected_pairs(captures):
     return invalid
 
 
-def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction, realism_seed=None, pair_id=None):
+def make_duplex(source, destination):
+    """A soft reflected absorption map for the faint reverse-side impression."""
+    gray = cv2.cvtColor(open_rgb(source), cv2.COLOR_RGB2GRAY)
+    height, width = gray.shape
+    mirrored = np.uint8(np.clip((gray[:, ::-1].astype(np.float32) - 18) * (255 / 225), 0, 255))
+    shifted = cv2.warpAffine(mirrored, np.float32([[1, 0, 0], [0, 1, height * .018]]), (width, height),
+                            borderMode=cv2.BORDER_CONSTANT, borderValue=255)
+    Image.fromarray(cv2.GaussianBlur(shifted, (0, 0), 2.5)).save(destination)
+
+
+def frozen_cases(cases, path, inputs, assets, realism_seed, size, samples, required_pairs):
+    """Recover exact v2 profiles, including individual optical settings of accepted retakes."""
+    prior = json.loads(path.read_bytes())
+    if (prior["schema"] != "heocr.capture3d.paired.v2" or prior["source_manifest_sha256"] != sha(inputs)
+            or prior["realism_seed"] != realism_seed or prior["image_size"] != list(size)
+            or prior["cycles_samples"] != samples or prior["scene_assets"] != assets):
+        raise ValueError("Frozen v2 optics must match the source, scene assets and render settings")
+    reference = {row["id"]: row for pair in prior["selected_pairs"] for row in pair}
+    if required_pairs and set(required_pairs) - {row["pair_id"] for row in reference.values()}:
+        raise ValueError("Requested pairs are outside the frozen v2 roster")
+    for case in cases:
+        original = reference.get(case["id"])
+        if original is None:
+            continue
+        if case["sha256"] != original["source_sha256"] or any(
+            case[key] != original[key] for key in ("seed", "font_sha256", "scene", "arm", "pair_id")
+        ):
+            raise ValueError(f"Frozen v2 source identity changed for {case['id']}")
+        yield {**case, "realism": original["realism"], "frozen_phone": original["phone"]}
+
+
+def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction, realism_seed=None, pair_id=None,
+        developable_paper=False, frozen_optics=None):
     input_manifest = json.loads(inputs.read_bytes())
     cases = list(source_rows(inputs))
     if not cases:
         raise ValueError("The source manifest contains no pages")
     paired = realism_seed is not None
+    if developable_paper and not paired:
+        raise ValueError("Developable paper uses the pinned paired capture recipes")
     if paired:
         cases = list(plan_realism(cases, realism_seed))
     if pair_id:
@@ -180,12 +214,17 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         selected = set(pair_id)
         cases = [row for row in cases if row["pair_id"] in selected]
     asset_manifest = json.loads(assets.read_bytes())
+    asset_pins = {key: {k: v for k, v in entry.items() if k != "path"} for key, entry in asset_manifest.items()}
     requested_assets = {}
     for role in ("desk", "floor", "environment"):
         entry = asset_manifest[role]
         if entry["licence"] != "CC0-1.0":
             raise ValueError(f"Expected a CC0 scene asset for {role}")
         requested_assets[role] = str(checked_file(assets.parent, entry["path"], entry["sha256"]))
+    if frozen_optics:
+        cases = list(frozen_cases(cases, frozen_optics, inputs, asset_pins, realism_seed, size, samples, pair_id))
+        if not cases:
+            raise ValueError("The frozen v2 roster has no matching input cases")
     output.mkdir()
     (output / "assets").mkdir()
     scenetypes = set()
@@ -194,15 +233,21 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         for case in cases:
             ident = case["id"]
             case["undistorted"] = str(temp / f"{ident}.png")
+            if developable_paper:
+                reverse = temp / f"{case['pair_id']}-reverse.png"
+                if case["arm"] == "clean":
+                    make_duplex(case["image"], reverse)
+                case["showthrough"] = str(reverse)
             if (paired and case["arm"] == "clean") or (not paired and case["scene"] not in scenetypes):
                 scenetypes.add(case["scene"])
                 case["marker_uv"] = MARKERS
                 case["marker_image"] = str(temp / f"{ident}-uv.png")
                 case["marker_output"] = str(temp / f"{ident}-markers.png")
-                fiducials(case["source_size"], case["marker_image"])
+                fiducials(case["source_size"], case["marker_image"], .0065 if developable_paper else .015)
         job, result_path = temp / "job.json", temp / "result.json"
         json_write(job, {"cases": cases, "result": str(result_path), "assets": requested_assets,
-                         "device": device, "size": size, "samples": samples, "max_bad_fraction": max_bad_fraction})
+                         "device": device, "size": size, "samples": samples, "max_bad_fraction": max_bad_fraction,
+                         "developable_paper": developable_paper})
         worker = Path(__file__).with_name("render.py")
         with (temp / "blender.log").open("wb") as log:
             result = subprocess.run([blender, "-b", "--factory-startup", "--python-exit-code", "1",
@@ -212,13 +257,31 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         run_result = json.loads(result_path.read_bytes())
         captures = run_result.pop("rows")
         invalid = rejected_pairs(captures) if paired else set()
+        if developable_paper:
+            for case, capture in zip(cases, captures, strict=True):
+                positions = capture.pop("marker_positions")
+                if positions and capture["pair_id"] not in invalid:
+                    try:
+                        errors = marker_errors(open_rgb(case["marker_output"]), positions, capture["phone"]["k1"])
+                    except ValueError as exc:
+                        capture["marker_failure"] = str(exc)
+                        invalid.add(capture["pair_id"])
+                        continue
+                    capture["marker_check"] = {"count": len(errors), "mean_px": float(np.mean(errors)), "max_px": max(errors)}
+                    if max(errors) >= 1:
+                        capture["marker_failure"] = "Maximum raster fiducial error is at least one pixel"
+                        invalid.add(capture["pair_id"])
         kept, rejected = [], []
         for case, capture in zip(cases, captures, strict=True):
             ident = capture["id"]
             if ident != case["id"]:
                 raise ValueError("Blender changed the ordered capture identity")
+            if "frozen_phone" in case and capture["phone"] != case["frozen_phone"]:
+                raise ValueError(f"Blender changed the frozen v2 settings for {ident}")
             if capture["rejected_regions"] or capture.get("pair_id") in invalid:
-                rejected.append({"id": ident, "scene": capture["scene"], "regions": capture["rejected_regions"]})
+                rejected.append({"id": ident, "scene": capture["scene"], "regions": capture["rejected_regions"],
+                                 **({"marker_failure": capture["marker_failure"], "marker_check": capture.get("marker_check")}
+                                    if "marker_failure" in capture else {})})
                 continue
             photo = f"assets/{ident}-photo.jpg"
             raw = f"assets/{ident}-raw.png"
@@ -227,7 +290,7 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
             capture["annotations"] = list(contextual_word_labels(capture["annotations"]))
             capture.update(seed=case["seed"], font_sha256=case["font_sha256"], image=photo,
                            image_sha256=sha(output / photo), source_image=raw, source_sha256=case["sha256"])
-            positions = capture.pop("marker_positions")
+            positions = capture.pop("marker_positions", [])
             if positions:
                 errors = marker_errors(open_rgb(case["marker_output"]), positions, capture["phone"]["k1"])
                 capture["marker_check"] = {"count": len(errors), "mean_px": float(np.mean(errors)), "max_px": max(errors)}
@@ -239,11 +302,11 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
     run_result["camera_renders_per_minute"] = 60 * len(kept) / sum(row["render_seconds"] for row in kept)
     run_result["pilot_renders_per_minute"] = 60 * len(kept) / run_result["elapsed_seconds"]
     json_write(output / "generation_manifest.json", {
-        "schema": "heocr.capture3d.paired.v2" if paired else "heocr.capture3d.v1",
+        "schema": "heocr.capture3d.paired.v3" if developable_paper else "heocr.capture3d.paired.v2" if paired else "heocr.capture3d.v1",
         **({"realism_seed": realism_seed} if paired else {}), "split": "train-calibration", "licence": "CC0-1.0",
         "text_gate_sha256": input_manifest["text_gate_sha256"], "fonts_guard_sha256": input_manifest["fonts_guard_sha256"],
-        "source_manifest_sha256": sha(inputs), "scene_assets": {key: {k: v for k, v in entry.items() if k != "path"}
-                                                               for key, entry in asset_manifest.items()},
+        "source_manifest_sha256": sha(inputs), "scene_assets": asset_pins,
+        **({"frozen_v2_optics_sha256": sha(frozen_optics)} if frozen_optics else {}),
         "camera": run_result, "image_size": size, "cycles_samples": samples, "device": device,
         "coordinate_space": "pixel edges from top left; mesh projection at shutter centre after lens distortion",
         "max_bad_sample_fraction": max_bad_fraction, "renders": kept, "rejected": rejected})
@@ -259,6 +322,8 @@ def main():
     parser.add_argument("--size", nargs=2, type=int, default=(720, 960), metavar=("WIDTH", "HEIGHT"))
     parser.add_argument("--samples", type=int, default=16)
     parser.add_argument("--realism-seed", type=int, help="Generate same-scene clean and treated twins")
+    parser.add_argument("--developable-paper", action="store_true", help="Use matte, developable v3 paper with the same v2 optics")
+    parser.add_argument("--frozen-optics", type=Path, help="Hold each optical setting to an exact v2 gallery manifest")
     parser.add_argument("--pair-id", action="append", help="Retake a pair without changing its original scene recipe")
     parser.add_argument("--max-bad-fraction", type=float, default=0)
     args = parser.parse_args()

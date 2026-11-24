@@ -20,7 +20,8 @@ import numpy as np
 from PIL import Image
 
 from .batch import checked_file, json_write, open_rgb, rejected_pairs, sha
-from .geometry import Paper, distort
+from .geometry import distort
+from .developable import DevelopablePaper, paper_model
 
 
 BIDI = dict.fromkeys((0x061C, 0x200E, 0x200F, *range(0x202A, 0x202F), *range(0x2066, 0x206A)))
@@ -30,11 +31,9 @@ def normalise(text):
     return " ".join(unicodedata.normalize("NFC", text).translate(BIDI).split())
 
 
-def projection_map(paper, matrix, source_size, image_size, k1):
-    """Map rectified pixel centres through the same triangular mesh and shutter-centre lens."""
+def _grid_points(paper, source_size):
     nx, ny = paper.divisions
     sw, sh = source_size
-    width, height = image_size
     u = (np.arange(sw) + .5) * nx / sw
     v = (np.arange(sh) + .5) * ny / sh
     cx, ry = np.floor(u).astype(int), np.floor(v).astype(int)
@@ -43,8 +42,28 @@ def projection_map(paper, matrix, source_size, image_size, k1):
     vertices = np.asarray(paper.mesh()[0]).reshape(ny + 1, nx + 1, 3)
     lower, upper = np.minimum(xx, yy), np.maximum(xx, yy)
     middle = np.where((xx >= yy)[..., None], vertices[y, x + 1], vertices[y + 1, x])
-    points = ((1 - upper)[..., None] * vertices[y, x] + (upper - lower)[..., None] * middle
-              + lower[..., None] * vertices[y + 1, x + 1])
+    return ((1 - upper)[..., None] * vertices[y, x] + (upper - lower)[..., None] * middle
+            + lower[..., None] * vertices[y + 1, x + 1])
+
+
+def _developable_points(paper, source_size):
+    sw, sh = source_size
+    x, y = np.meshgrid(((np.arange(sw) + .5) / sw - .5) * paper.width,
+                       (.5 - (np.arange(sh) + .5) / sh) * paper.height)
+    nx, ny = paper.axis
+    distance = nx * x + ny * y
+    along = -ny * x + nx * y
+    section = np.asarray(paper.section)
+    u = np.interp(distance, section[:, 0], section[:, 1])
+    z = np.interp(distance, section[:, 0], section[:, 2])
+    return np.stack((nx * u - ny * along, ny * u + nx * along, z), axis=-1)
+
+
+def projection_map(paper, matrix, source_size, image_size, k1):
+    """Map rectified pixel centres through the same triangular mesh and shutter-centre lens."""
+    width, height = image_size
+    points = (_developable_points(paper, source_size) if isinstance(paper, DevelopablePaper)
+              else _grid_points(paper, source_size))
     matrix = np.asarray(matrix)
     clip = points @ matrix[[0, 1, 3], :3].T + matrix[[0, 1, 3], 3]
     px = (clip[..., 0] / clip[..., 2] + 1) * width / 2
@@ -118,7 +137,7 @@ def check_labels(captures, root, sources, tessdata, kraken, weights, scratch):
             first = pair[0]
             lines = [line for line in first["annotations"] if line["kind"] == "line"]
             source_size = sources[first["pair_id"]]
-            geometry = Paper(**first["paper"]), first["clip_from_sheet"], source_size
+            geometry = paper_model(first["paper"]), first["clip_from_sheet"], source_size
             for row in pair:
                 img = open_rgb(checked_file(root, row["image"], row["image_sha256"]))
                 if row is first:
@@ -169,10 +188,14 @@ def choose_pairs(eligible, count):
 def parameters(row):
     recipe, paper, phone = row["realism"], row["paper"], row["phone"]
     light = recipe["lighting"]
-    folds = [f"{paper[key] * 1000:.0f} mm {name}" for name, key in (("fold valley", "valley_depth"),
-             ("crease ridge", "crease_height"), ("crumple", "crumple")) if paper[key] > .005]
-    if paper["dogear_size"]:
-        folds.append(f"{paper['dogear_size'] * 1000:.0f} mm dog-ear at {paper['dogear_angle_deg']:.0f}°")
+    if paper.get("model") == "developable":
+        folds = [f"{angle:+.0f}° {'crease' if crease else 'spine arc'}, R {radius * 1000:.2f} mm"
+                 for _, angle, radius, crease in paper["bends"]]
+    else:
+        folds = [f"{paper[key] * 1000:.0f} mm {name}" for name, key in (("fold valley", "valley_depth"),
+                 ("crease ridge", "crease_height"), ("crumple", "crumple")) if paper[key] > .005]
+        if paper["dogear_size"]:
+            folds.append(f"{paper['dogear_size'] * 1000:.0f} mm dog-ear at {paper['dogear_angle_deg']:.0f}°")
     effects = []
     if phone["noise_strength"]:
         effects.append(f"Sensor noise at ISO {phone['iso']} (×{phone['noise_strength']:.2f})")
@@ -191,6 +214,7 @@ def parameters(row):
 
 
 def gallery_html(pairs):
+    version = "v3" if pairs[0][0]["paper"].get("model") == "developable" else "v2"
     cards = []
     for clean, treated in pairs:
         title = f"{clean['scene'].title()} · {clean['pair_id'].split('-')[-1]}"
@@ -203,7 +227,7 @@ def gallery_html(pairs):
         settings = "".join(f"<dt>{escape(key)}</dt><dd>{escape(value)}</dd>" for key, value in parameters(treated).items())
         cards.append(f'<article><h2>{escape(title)}</h2><div class="grid">{"".join(figures)}'
                      f'<aside><h3>Parameters</h3><dl>{settings}</dl></aside></div></article>')
-    return '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    html = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HeOCR · 3D Capture v2</title><style>
 *{box-sizing:border-box}body{max-width:94rem;padding:0 1.5rem;margin:2.5rem auto;background:#eeebe4;color:#22231f;
 font:16px/1.5 system-ui,sans-serif}h1{font-size:2.4rem;margin-bottom:.25rem}p{margin-top:0;color:#484a40}
@@ -214,12 +238,13 @@ aside{background:#f7f5ef;border-radius:4px;padding:1rem}dl{margin:.5rem 0 0}dt{f
 @media(max-width:780px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}aside{grid-column:1/-1}}
 </style><body><h1>HeOCR · 3D capture v2</h1><p>Each pair shares the same scene, light, folds, paper and shutter-centre viewpoint.</p>
 ''' + "\n".join(cards) + "</body></html>\n"
+    return html.replace("Capture v2", f"Capture {version}").replace("capture v2", f"capture {version}")
 
 
 def review(batch, output, tessdata, kraken, weights, count, diagnostics=None):
     manifest_path = batch / "generation_manifest.json"
     manifest = json.loads(manifest_path.read_bytes())
-    if manifest["schema"] != "heocr.capture3d.paired.v2" or output.exists():
+    if manifest["schema"] not in {"heocr.capture3d.paired.v2", "heocr.capture3d.paired.v3"} or output.exists():
         raise ValueError("Expected a paired run and a fresh local output directory")
     captures = manifest.pop("renders")
     if rejected_pairs(captures):
