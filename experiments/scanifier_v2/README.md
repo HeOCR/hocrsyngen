@@ -171,3 +171,6 @@ Isolating show-through requires registered, permitted recto–verso observations
 See [Tonazzini et al.](https://doi.org/10.1186/1687-6180-2013-58).
 The fitter leaves this effect disabled for empirically fitted profiles
 and emits the old flatbed recipe with `prior_only` status.
+
+[Realism v2 preview](realism_v2_preview/README.md) shows twenty paired Hebrew
+pages across duplex, photocopy, bound-book and phone treatments.
