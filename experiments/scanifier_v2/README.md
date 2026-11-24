@@ -104,6 +104,7 @@ photo = capture(page, seed=106, config=read_config())
 | `rotated_save` | choose uniformly among baked 0°, 90°, 180° and 270° counter-clockwise turns; specify `turns` to restrict choices. |
 | `show_through(image, reverse, seed, ...)` | opacity 0.025–0.12, Gaussian blur 0.3–1.2 pixels, independent x/y offset −0.025–0.025 of width/height. `reverse` is resized and mirrored from its normal reading view; its darkness is the ink mask. |
 | `paper_tint` | strength 0.03–0.16 multiplying RGB toward the supplied default warm tint `(238, 225, 198)`. |
+| `scanner_edge_bars` | Four edge sides with configurable fractional width, taper and darkness. Independent vertical and horizontal bars with fractional width, span and darkness, plus optional pixel feathering. Defaults are engineering priors. |
 | `scanner_artifacts` | one left or right edge 0.005–0.04 of width, 0–3 vertical bars each 0.002–0.015 of width, darkness 0.75–1.0. |
 | `soft_scanner_edge` | supersampled gutter or platen shadow on an explicitly chosen side, with a feathered edge and a protected text box. |
 | `spatial_noise` | standard deviation 2–12 sRGB levels, variation 0.3–1.0 across an 8×8 interpolated random field. |
@@ -112,6 +113,8 @@ photo = capture(page, seed=106, config=read_config())
 `rotated_save` changes orientation and requires corresponding annotation rotation. All effects except `recompress` and `rotated_save` preserve raster dimensions and coordinates. Consumers verify crop eligibility and retain the original labels. `recompress` changes dimensions, so rescale annotations by the actual output width and height ratios. Apply page effects before `capture` to use its existing geometry mapping. The existing capture API supplies seedable motion blur, spatial defocus, rotation, dark/wood surround, signal-dependent noise and JPEG. Shutter speed and ISO are capture metadata. Fit effect ranges only from authorized non-test captures or aggregate metadata, and retain calibration provenance separately.
 
 See [source-matched realism probes](DEV_REALISM.md) for independent verso composition, fitted archive tone and spatial noise, and role-aware RTL typography.
+
+See [paired renders](PAIRED_RENDERS.md) for clean-to-degraded page pairs and annotation handling.
 
 ## Development capture profiles
 
@@ -207,3 +210,5 @@ Pass original page annotations in pixel-edge coordinates. The capture result
 carries the transformed lines, including their original labels, and the
 source-to-capture map. Phone capture continues to use its own fitted optics
 and geometry.
+
+Use [fixed-geometry training views](TRAINING_CAPTURES.md) to apply a complete fitted capture recipe per view, with source-matched duplex ink or a measured scanner edge. The guide includes the development QA sheet command.
