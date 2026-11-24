@@ -17,6 +17,34 @@ The first gallery covers modern print. The old-print track shares its source and
 4. Gate both views on two Tesseract checkpoints and an independent Kraken reader. Normalize NFC and layout whitespace only. Compare to the original logical UTF-8 labels and keep each exact match. Show each real reference crop at its original byte hash. Report rejected cases, and use generated views only for TRAIN or calibration.
 5. Grow the old-print track to the planned 5,000 C2 crops once the same source, font and text checks clear. Apply #158 scan realism with v3 flatbed/bound, the approved LookScanned photocopy profile and the old scanner at 5% each, and the round stains. Keep the current pointed font reservations enforced for any font-rendered controls.
 
+## Per-instance variation
+
+Use `hocrsyngen.printed_ink.extract_ink` from the `metrics` extra on
+native-scale, gray-first glyphs. Estimate local paper brightness, normalise
+it to white and keep the owned stroke with one soft antialias band. Multiply
+the ink mask onto the page paper with `multiply_ink`. The optional old-print
+paper grain is shared across the page and independent of each crop.
+
+`hocrsyngen.printed_glyph_variance.vary_glyph` exposes **current**, **medium**
+and **strong**. Current uses ±2.2% scale, ±1.4° rotation, up to 0.42 px elastic
+displacement per axis and ±1 px stroke weight. Medium and strong apply 2×
+and 2.75× to those four ranges and add small baseline and advance jitter.
+Ink-intensity jitter stays within 5%. Apply the ink-only edge after warping
+as well as at harvest. Use returned padding to retain the original
+typographic origin before applying the recorded placement offsets. Seed the
+transform independently of source selection. Repeated occurrences of the
+same glyph share a set of quantized raster digests so duplicates can be
+rejected.
+
+Modern print uses the raw composite by default. Old print keeps background
+normalisation around glyph patches. Compare each track's varied raster with
+its same-source, same-spacing control. Require all three readers to agree
+with the exact label and keep the median stroke-to-body-height gap within 10%
+of the matched and full real TRAIN scan sets before accepting a preview.
+Compare the 3–6 px ring with open paper using `hocrsyngen.halo_metrics`,
+with an absolute target of two grey levels. Measure the real TRAIN reference
+with the same tool and identify its exact source scope.
+
 ## Quote only
 
 One matched old-print screen with three 5,000-visit continuations from the same checked parent and seed. Compare raw scan-glyph composites, classical seam smoothing and a seam-only SDXL subset. Match the exact train labels, physical-source groups, exposure and capture recipe across all arms. Use the same frozen real DEV controls and evaluate by edition. The same-day CPU3c ×32 planning rate of $0.9680/h gives a $1.21 cap for 75 minutes, including setup and readback. This cap is a time budget rather than an observed runtime for S16. Requote exact account capacity after freezing the jobs. No launch.
