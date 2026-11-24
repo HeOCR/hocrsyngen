@@ -1,0 +1,89 @@
+{
+  "calibration_width_px": 640,
+  "profiles": {
+    "flatbed": [
+      {
+        "pair": "17",
+        "paper_rgb": [
+          245.0,
+          245.0,
+          245.0
+        ],
+        "ink": 4.0,
+        "knee": 0.16,
+        "blur": 0.9337832045577942,
+        "band_sd": 4.2,
+        "edge_side": "left",
+        "edge_drop": 94.19999694824219,
+        "edge_width": 25,
+        "specks_per_mpx": 560,
+        "speck_radius": 0.9772050238058398,
+        "margin_punches": [],
+        "skew": -0.4845429293630191,
+        "gutter_bend_deg": 0
+      },
+      {
+        "pair": "18",
+        "paper_rgb": [
+          238.0,
+          238.0,
+          238.0
+        ],
+        "ink": 4.0,
+        "knee": 0.16,
+        "blur": 0.6012796984002737,
+        "band_sd": 4.2,
+        "edge_side": "right",
+        "edge_drop": 44.600006103515625,
+        "edge_width": 33,
+        "specks_per_mpx": 1350,
+        "speck_radius": 0.7978845608028654,
+        "margin_punches": [],
+        "skew": 2.2,
+        "gutter_bend_deg": 0
+      }
+    ],
+    "bound": [
+      {
+        "pair": "19",
+        "paper_rgb": [
+          240.0,
+          236.0,
+          224.0
+        ],
+        "ink": 76.05,
+        "knee": 0.16,
+        "blur": 1.35,
+        "band_sd": 0.40018821954727174,
+        "edge_side": "left",
+        "edge_drop": 5.0,
+        "edge_width": 1,
+        "specks_per_mpx": 0,
+        "speck_radius": 0.9772050238058398,
+        "margin_punches": [],
+        "skew": 0.7718338710139265,
+        "gutter_bend_deg": -0.7718338710139265
+      },
+      {
+        "pair": "20",
+        "paper_rgb": [
+          249.0,
+          246.0,
+          237.0
+        ],
+        "ink": 116.0,
+        "knee": 0.16,
+        "blur": 0.2,
+        "band_sd": 1.5077034354209902,
+        "edge_side": "right",
+        "edge_drop": 11.0,
+        "edge_width": 37,
+        "specks_per_mpx": 871,
+        "speck_radius": 0.7978845608028654,
+        "margin_punches": [],
+        "skew": 0.0,
+        "gutter_bend_deg": -0.588473194116952
+      }
+    ]
+  }
+}
