@@ -45,8 +45,9 @@ the assignment by that same seed and track. A 20-page roster per track has
 13 medium, three strong and four current pages. Keep the level on every page
 and line record. Keep its assignment when retrying a rejected render.
 
-Modern print uses the raw composite by default. Old print keeps background
-normalisation around glyph patches. Compare each track's varied raster with
+Modern print uses the raw composite by default. In old print, estimate the
+patch background and composite only ink against the page paper. Classical
+background smoothing is an ablation. Compare each track's varied raster with
 its same-source, same-spacing control. Require all three readers to agree
 with the exact label and keep the median stroke-to-body-height gap within 10%
 of the matched and full real TRAIN scan sets before accepting a preview.
