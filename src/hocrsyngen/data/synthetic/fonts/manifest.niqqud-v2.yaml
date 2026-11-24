@@ -1,0 +1,19 @@
+# Opt-in license and face registry for pointed training. The fixed v1 recipe
+# and the general-purpose registry are maintained separately.
+fonts:
+  - id: cardo-regular
+    file: Cardo-Regular.ttf
+    style: book_serif
+    notes: Cardo upright book serif from google/fonts commit 869789e84da92782c144d83d69b64cec54905b5f, ofl/cardo/Cardo-Regular.ttf (git blob verified). See docs/niqqud_fonts.md for probe scope.
+    license: OFL-1.1
+    license_file: LICENSE-Cardo-OFL.txt
+    sha256: bcb81f376f1c3892c7026dabf2beafbd1a7ee8ae95d132ee7d4ff7d7c3988261
+    line_render: true
+  - id: ezra-sil-regular
+    file: SILEOT.ttf
+    style: book_serif_alt
+    notes: Ezra SIL 2.51, EzraSIL2.51/SILEOT.ttf from SIL's official EzraSIL-2.51.zip. SIL's license notice also records the MIT/X11 licence for the Hebrew layout logic.
+    license: OFL-1.1
+    license_file: LICENSE-EzraSIL-OFL.txt
+    sha256: 53c98ab95d2b5bd615527cdd05da42d7dd77f2690b79c043e9f90753d4930dce
+    line_render: true

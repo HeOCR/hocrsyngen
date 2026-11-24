@@ -557,6 +557,7 @@ See `docs/testing_and_quality.md` for the canonical Python support policy.
   `src/hocrsyngen/data/synthetic/fonts/`. All are SIL OFL-1.1: Alef, David Libre, Frank Ruhl Libre, Gveret Levin, Playpen Sans Hebrew,
   Noto Rashi Hebrew, and (from google/fonts, commits recorded in `fonts/manifest.yaml`) Noto Sans Hebrew, Noto Serif
   Hebrew, Assistant, Heebo, Rubik, Miriam Libre, Arimo, Tinos, Cousine and Open Sans.
+  Cardo and Ezra SIL are available through the opt-in [niqqud v2 manifest](docs/niqqud_fonts.md#v2-recommendations).
 - **Project-authored training and evaluation text (S10b, S13a, S13b and the
   seed-101 reference `hebrew_lines.txt`):**
   dedicated to the public domain under CC0 1.0. See
