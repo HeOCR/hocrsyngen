@@ -33,6 +33,8 @@ SIZE = 40
 NEW_FACES = ("noto-sans-hebrew", "noto-serif-hebrew", "assistant", "heebo", "rubik", "miriam-libre")
 # Office faces from google/fonts 7af0d90 (OFL-1.1): metric-compatible stand-ins for Arial, Times and Courier, plus Open Sans.
 OFFICE_FACES = ("arimo", "tinos-regular", "tinos-bold", "cousine-regular", "cousine-bold", "open-sans")
+EXPANSION_FACES = ("bona-nova", "cardo", "fredoka", "ibm-plex-sans-hebrew", "karantina", "lunasima", "m-plus-1p",
+                   "secular-one", "suez-one", "varela-round")
 # Signs a face lacks, by the coverage check recorded in the manifest notes.
 KNOWN_GAPS = {"open-sans": {"\u05f3", "\u05f4"}}
 OFFICE_SIGNS = "₪%" + "0123456789"
@@ -238,7 +240,7 @@ def test_cli_render_lines_and_list_fonts(tmp_path, capsys):
     assert s["rendered"] == 4 and s["by_font"] == {"alef-regular": 4} and s["size_range"] == [30, 30] and s["size_mode"] == "size"
     assert main(["render-lines", "--list-fonts"]) == 0
     faces = json.loads(capsys.readouterr().out)
-    assert set(faces) == {"alef-regular", "david-libre-regular", "frank-ruhl-libre"} | set(NEW_FACES) | set(OFFICE_FACES)
+    assert set(faces) == {"alef-regular", "david-libre-regular", "frank-ruhl-libre"} | set(NEW_FACES) | set(OFFICE_FACES) | set(EXPANSION_FACES)
     with pytest.raises(SystemExit):
         main(["render-lines", "--input", str(inp), "--output", str(tmp_path / "o2"), "--seed", "2", "--font", "gveret-levin-regular"])
 
@@ -301,6 +303,7 @@ def test_refuses_combining_marks_the_face_lacks_and_keeps_niqqud_it_has(tmp_path
     # label keeps it) and rendered on a face that has them (the two Noto faces); a pointed line renders everywhere.
     rows = [{"id": "taam", "text": "בְּרֵאשִׁ֖ית בָּרָא"}, {"id": "niqqud", "text": "שָׁלוֹם עוֹלָם"}]
     with_teamim = {"noto-sans-hebrew", "noto-serif-hebrew", "arimo", "tinos-regular", "tinos-bold", "cousine-regular", "cousine-bold"}
+    with_teamim.update(("cardo", "lunasima", "m-plus-1p"))
     for f in governed_faces():
         s = render_lines(rows, tmp_path / f, seed=1, fonts=[f])
         ref = {r["id"]: r for r in s["refused"]}

@@ -7,7 +7,8 @@ import unicodedata
 
 from PIL import Image, ImageDraw
 
-from .line_render import _font, _require_raqm, face_weight, governed_faces, missing_chars
+from .line_render import _font, _require_raqm, face_weight, governed_faces
+from .text_shaping import check_shaping, isolated_words_safe
 
 
 @dataclass(frozen=True)
@@ -55,9 +56,7 @@ def _wrap(draw, text, font, width):
 def _line_runs(draw, text, font, left, right, justify):
     """Stretch spaces only when isolated words retain their visual bidi order."""
     words = text.split(" ")
-    pure_rtl = all(unicodedata.bidirectional(c) in ("R", "AL", "NSM", "WS")
-                   or c in ".,:;?!" for c in text)
-    if justify and pure_rtl and len(words) > 1:
+    if justify and isolated_words_safe(text) and len(words) > 1:
         widths = [draw.textlength(word, font=font, direction="rtl") for word in words]
         gap = (right - left - sum(widths)) / (len(words) - 1)
         natural = draw.textlength(" ", font=font, direction="rtl")
@@ -109,8 +108,7 @@ def render_print_page(paragraphs, *, seed, source_type, size=(950, 1260),
                 or not unicodedata.is_normalized("NFC", text)):
             raise ValueError("expected NFC text with single spaces and no surrounding whitespace")
         face, font, weight = styles[paragraph.role]
-        if missing_chars(face, text):
-            raise ValueError(f"font {face.id} cannot represent the paragraph")
+        check_shaping(face.path, text)
         body = paragraph.role in ("body", "note")
         rows = list(_wrap(draw, text, font, right - side)) if body else [text]
         ascent, descent = font.getmetrics()

@@ -45,6 +45,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 from .assets import default_font_manifest_path
 from .line_render import GovernedFace, _font, _require_raqm, _sha256, face_weight, governed_faces, missing_chars
+from .text_shaping import ShapingError, check_shaping, isolated_words_safe
 
 OFFICE_PAGES_SCHEMA = "hocrsyngen_office_pages.v1"
 DPI = 300
@@ -62,7 +63,6 @@ BOLD_PAIRS = {"cousine-regular": "cousine-bold", "tinos-regular": "tinos-bold"}
 
 LABEL_FOLD = str.maketrans({"״": '"', "׳": "'", "־": "-", "“": '"', "”": '"',
                             "„": '"', "–": "-", "—": "-"})
-LATIN = re.compile(r"[A-Za-z]")
 
 
 def fold_label(text: str) -> str:
@@ -207,8 +207,14 @@ def join_line(toks: Sequence[Tok]) -> tuple[str, list[tuple[int, int, str]], lis
     for i, t in enumerate(toks):
         if i:
             text.append(" "); off += 1
-        spans += [(off + a, off + b, s) for a, b, s in t.spans]
-        text.append(t.text); off += len(t.text)
+        normalized = unicodedata.normalize("NFC", t.text)
+        if normalized == t.text:
+            spans += [(off + a, off + b, tag) for a, b, tag in t.spans]
+        else:
+            spans += [(off + len(unicodedata.normalize("NFC", t.text[:a])),
+                       off + len(unicodedata.normalize("NFC", t.text[:b])), tag)
+                      for a, b, tag in t.spans]
+        text.append(normalized); off += len(normalized)
         if t.src and t.src not in srcs:
             srcs.append(t.src)
     return "".join(text), spans, srcs
@@ -295,7 +301,11 @@ class Ctx:
         return font.getlength(text, direction="rtl") if text else 0.0
 
     def ok(self, face: GovernedFace, text: str) -> bool:
-        return not missing_chars(face, text)
+        try:
+            check_shaping(face.path, text)
+        except ShapingError:
+            return False
+        return True
 
     def line_gap(self, pt=None) -> float:
         return self.px(pt or self.pt) * self.lead
@@ -305,22 +315,21 @@ class Ctx:
             justify_to: float | None = None, cell: dict | None = None, gap_after_first: float | None = None) -> PLine | None:
         """Place one line at baseline y; its first token starts at x_right (anchor rs) or at x_right as a left edge
         (anchor ls). `gap_after_first` draws the first token on its own with that gap (a label and a tab gap).
-        `justify_to` spreads the words to a left edge (only without Latin letters)."""
+        `justify_to` spreads words only if independent shaping keeps their bidi order."""
         face, font, w = self.font(bold, pt)
         text, spans, srcs = join_line(toks)
-        text = unicodedata.normalize("NFC", text)
         if not text.strip():
             return None
         if not self.ok(face, text):
             self.refused += 1
             return None
         runs: list[Run] = []
-        if gap_after_first is not None and len(toks) > 1:
-            first, rest = toks[0].text, " ".join(t.text for t in toks[1:])
+        if gap_after_first is not None and len(toks) > 1 and isolated_words_safe(toks[0].text):
+            first, rest = text.split(" ", 1)
             runs.append(Run(first, x_right, y))
             runs.append(Run(rest, x_right - self.width(first, font) - gap_after_first, y))
-        elif justify_to is not None and len(toks) > 2 and not LATIN.search(text):
-            words = [t.text for t in toks]
+        elif justify_to is not None and len(toks) > 2 and isolated_words_safe(text):
+            words = text.split(" ")
             widths = [self.width(t, font) for t in words]
             slack = (x_right - justify_to) - sum(widths)
             sp = slack / (len(words) - 1)
@@ -334,7 +343,8 @@ class Ctx:
             runs.append(Run(text, x_right, y, anchor))
         ln = PLine(kind, text, face.id, font.size, w, runs, spans, srcs, cell)
         ln.box = run_box(ln.runs, font)
-        if ln.box[0] < 20 or ln.box[2] > self.page.size[0] - 20:
+        if (ln.box[0] < 20 or ln.box[2] > self.page.size[0] - 20
+                or ln.box[1] < 0 or ln.box[3] > self.page.size[1]):
             self.refused += 1
             return None
         self.page.lines.append(ln)

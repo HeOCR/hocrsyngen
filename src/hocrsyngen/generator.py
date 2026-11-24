@@ -14,6 +14,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageEnhance, ImageFilter, ImageFo
 from hocrsyngen.assets import default_font_manifest_path, default_text_corpus_path
 from hocrsyngen.io import load_simple_font_manifest, sha256_file
 from hocrsyngen.font_exclusion import check_font
+from hocrsyngen.text_shaping import check_shaping, isolated_words_safe, missing_characters
 from hocrsyngen.manifest import (
     GeneratedSample,
     GenerationManifest,
@@ -602,6 +603,7 @@ def _draw_rtl_text(
     region_key: str | None = None,
 ) -> None:
     _require_raqm()
+    check_shaping(font.path, text)
     if recorder is not None and region is not None:
         recorder.record(
             draw,
@@ -1976,17 +1978,26 @@ def _flow_paragraphs(
 
 def _draw_book_lines(draw: ImageDraw.ImageDraw, lines: list[_BookLine], recorder: _LineRecorder | None) -> None:
     for line in lines:
-        widths = _word_widths(draw, line.words, line.font)
-        x = line.right
-        left, top, right, bottom = math.inf, math.inf, -math.inf, -math.inf
-        for word, width in zip(line.words, widths, strict=True):
-            box = draw.textbbox((x, line.y), word, font=line.font, anchor="ra", direction="rtl")
-            left, top, right, bottom = min(left, box[0]), min(top, box[1]), max(right, box[2]), max(bottom, box[3])
+        text = " ".join(line.words)
+        check_shaping(line.font.path, text)
+        if isolated_words_safe(text):
+            widths = _word_widths(draw, line.words, line.font)
+            x = line.right
+            runs = []
+            for word, width in zip(line.words, widths, strict=True):
+                runs.append((x, word))
+                x -= width + line.gap
+        else:
+            runs = [(line.right, text)]
+        boxes = []
+        for x, word in runs:
+            boxes.append(draw.textbbox((x, line.y), word, font=line.font, anchor="ra", direction="rtl"))
             draw.text((x, line.y), word, font=line.font, fill=line.fill, anchor="ra", direction="rtl")
-            x -= width + line.gap
+        left, top = min(box[0] for box in boxes), min(box[1] for box in boxes)
+        right, bottom = max(box[2] for box in boxes), max(box[3] for box in boxes)
         if recorder is not None:
             recorder.record_box(
-                (left, top, right, bottom), line.y + line.font.getmetrics()[0], " ".join(line.words),
+                (left, top, right, bottom), line.y + line.font.getmetrics()[0], text,
                 region=line.region, logical_line_index=line.unit,
                 logical_join=LOGICAL_JOIN_SPACE if line.joins_previous else None, region_key=line.region_key,
             )
@@ -2152,8 +2163,11 @@ def _draw_book_page(
             commentary = paragraphs[2:] or paragraphs[:1]
             for position, block in enumerate(blocks):
                 block_paragraphs = commentary[position * 3:position * 3 + 3] or commentary[-1:]
+                block_font = rashi_font
+                if missing_characters(rashi_font.path, " ".join(block_paragraphs)):
+                    block_font = _load_font(font_path, rashi_font.size)
                 block_lines, block_drawn = _flow_paragraphs(
-                    draw, randomizer, block_paragraphs, [block], rashi_font, rashi_leading, "margin", len(units),
+                    draw, randomizer, block_paragraphs, [block], block_font, rashi_leading, "margin", len(units),
                     fill, indent=0)
                 lines.extend(block_lines)
                 units.extend(block_drawn)

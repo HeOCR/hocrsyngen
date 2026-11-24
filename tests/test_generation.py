@@ -1096,7 +1096,7 @@ def test_draw_rtl_text_passes_logical_text_to_pillow_with_rtl_direction() -> Non
             self.calls.append({"xy": xy, "text": text, **kwargs})
 
     draw = RecordingDraw()
-    font = object()
+    font = _load_font(default_font_manifest_path().parent / "Alef-Regular.ttf", 40)
 
     _draw_rtl_text(draw, (500, 40), HEBREW_CONTRACT_LINE, font=font, fill=(1, 2, 3), anchor="ra")
 

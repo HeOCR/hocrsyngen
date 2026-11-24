@@ -145,3 +145,84 @@ fonts:
     license_file: LICENSE-OpenSans-OFL.txt
     sha256: 36643644f318a812aab2d2ed3bb98f8cf0872527f835fe9398d95fe6b9adb878
     line_render: true
+
+  - id: bona-nova
+    file: BonaNova-Regular.ttf
+    style: modern_serif
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/bonanova/BonaNova-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-BonaNova-OFL.txt
+    sha256: d72f7715b6b66096e0cc2971e4954f8be33bdced1f143f9c5739a03cdb60bede
+    line_render: true
+  - id: cardo
+    file: Cardo-Regular.ttf
+    style: modern_serif
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/cardo/Cardo-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-Cardo-OFL.txt
+    sha256: bcb81f376f1c3892c7026dabf2beafbd1a7ee8ae95d132ee7d4ff7d7c3988261
+    line_render: true
+  - id: fredoka
+    file: Fredoka-wdth-wght.ttf
+    style: modern_display
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/fredoka/Fredoka[wdth,wght].ttf.
+    license: OFL-1.1
+    license_file: LICENSE-Fredoka-OFL.txt
+    sha256: 2ba02e68b152868aef9ba28e24b3648c7d457fe6f25c761f2c2c53fb61a73fc8
+    line_render: true
+  - id: ibm-plex-sans-hebrew
+    file: IBMPlexSansHebrew-Regular.ttf
+    style: modern_sans
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/ibmplexsanshebrew/IBMPlexSansHebrew-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-IBMPlexSansHebrew-OFL.txt
+    sha256: c11df42adf5e2c6e77e623dbedbe8cc23ba72196ac9ad8beb02754eebd9c400a
+    line_render: true
+  - id: lunasima
+    file: Lunasima-Regular.ttf
+    style: modern_sans
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/lunasima/Lunasima-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-Lunasima-OFL.txt
+    sha256: 833ded9502e6553eece11f587f27640cab1ef44900785abe8c3b09ba11690b62
+    line_render: true
+  - id: secular-one
+    file: SecularOne-Regular.ttf
+    style: modern_sans
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/secularone/SecularOne-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-SecularOne-OFL.txt
+    sha256: 2f45092a521db5042887941edfef73178ed7c5ba7fdfc5b6f581d44aab7b0234
+    line_render: true
+  - id: suez-one
+    file: SuezOne-Regular.ttf
+    style: modern_display
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/suezone/SuezOne-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-SuezOne-OFL.txt
+    sha256: 3ef86844aad0cf9db7dcbda326f3d2f54cc4ccfe56db949e9e0c60a17031bd41
+    line_render: true
+  - id: varela-round
+    file: VarelaRound-Regular.ttf
+    style: modern_sans
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/varelaround/VarelaRound-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-VarelaRound-OFL.txt
+    sha256: e1e47eb66dbc2ddc106661338e712d9176c9e83c669a82fde155324823d03aa2
+    line_render: true
+  - id: karantina
+    file: Karantina-Regular.ttf
+    style: modern_display
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/karantina/Karantina-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-Karantina-OFL.txt
+    sha256: a1ef8ee51724f0182f07d060b63047540a0bca96db10d33fa6a0b539f99019bf
+    line_render: true
+  - id: m-plus-1p
+    file: MPLUS1p-Regular.ttf
+    style: modern_sans
+    notes: Unmodified OFL face from google/fonts 06bfe0d62a98375cb09c942fa18e68bd32cff057, ofl/mplus1p/MPLUS1p-Regular.ttf.
+    license: OFL-1.1
+    license_file: LICENSE-MPLUS1p-OFL.txt
+    sha256: 2f294ad496432b1608f070d310e3aa2adcf1de4af429f4901df97ec4bd361ed1
+    line_render: true
