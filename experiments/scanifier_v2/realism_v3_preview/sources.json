@@ -1,0 +1,65 @@
+[
+  {
+    "id": "land",
+    "file": "land.pdf",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Phase_I_DRD_Unit_resource_analysis_-_user_requirement_specifications_-_land_and_survey_records_%28IA_phaseidrdunitres1624unit%29.pdf",
+    "asset_url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Phase_I_DRD_Unit_resource_analysis_-_user_requirement_specifications_-_land_and_survey_records_%28IA_phaseidrdunitres1624unit%29.pdf",
+    "sha256": "5a5257ee1f5e9038b34ea860c50a3124d3753f8500404f507f3e93737ede650b",
+    "physical_source": "photocopy of typescript",
+    "rights": "PD-USGov (Commons)"
+  },
+  {
+    "id": "fire",
+    "file": "fire.pdf",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Phase_I_DRD_Unit_resource_analysis_-_user_requirement_specifications_-_fire_%28IA_phaseidrdunitres1621unit%29.pdf",
+    "asset_url": "https://upload.wikimedia.org/wikipedia/commons/8/80/Phase_I_DRD_Unit_resource_analysis_-_user_requirement_specifications_-_fire_%28IA_phaseidrdunitres1621unit%29.pdf",
+    "sha256": "66c00dc1fa9d0c2144182e32ed44273d94e49207898c9013000c96ba12f5fbfa",
+    "physical_source": "photocopy of typescript",
+    "rights": "PD-USGov (Commons)"
+  },
+  {
+    "id": "wolf",
+    "file": "wolf.pdf",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Lower_Wolf_Creek_watershed_management_plan_%28IA_lowerwolfcreek0940unit%29.pdf",
+    "asset_url": "https://upload.wikimedia.org/wikipedia/commons/8/84/Lower_Wolf_Creek_watershed_management_plan_%28IA_lowerwolfcreek0940unit%29.pdf",
+    "sha256": "4cce30a479efac5a30c0c08647458bb0b4a2ab93a85e211802966358445d5b0d",
+    "physical_source": "photocopy of typescript",
+    "rights": "PD-USGov (Commons)"
+  },
+  {
+    "id": "fay",
+    "file": "fay.pdf",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Fay_Hill_revisited_-_an_addendum_to%2C_Archaeological_test_excavation_at_the_Fay_Hill_Site%2C_CA-SHA-1481%2C_Shasta_County%2C_California%2C_1984_%28IA_fayhillrevisited00farb%29.pdf",
+    "asset_url": "https://upload.wikimedia.org/wikipedia/commons/6/64/Fay_Hill_revisited_-_an_addendum_to%2C_Archaeological_test_excavation_at_the_Fay_Hill_Site%2C_CA-SHA-1481%2C_Shasta_County%2C_California%2C_1984_%28IA_fayhillrevisited00farb%29.pdf",
+    "sha256": "9843f0a9ffe925ee801fffc7329bcab75e8666286538edbb0aa2952cfd35752f",
+    "physical_source": "photocopy of typescript",
+    "rights": "PD-USGov (Commons)"
+  },
+  {
+    "id": "plate",
+    "file": "plate.jpg",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Paris_Eiffel_Tower_Caissons_for_foundations.jpg",
+    "asset_url": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Paris_Eiffel_Tower_Caissons_for_foundations.jpg",
+    "sha256": "fcfe3c6dc0104b3433e75351e8b44575925972cd0f0c6361587cc71672c357df",
+    "physical_source": "documented Microtek 9800XL flatbed",
+    "rights": "PD-USGov (Commons)"
+  },
+  {
+    "id": "book",
+    "file": "book.jpg",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Letterpress_copybook%2C_1870-1874_%28NYPL_b11652246-3966645%29.tiff",
+    "asset_url": "https://images.nypl.org/index.php?id=3966645&t=w",
+    "sha256": "48317e0b4bbfe6e4ab58764d803d1812021d81a6d8f68b3c78425bbce967f3b4",
+    "physical_source": "bound-volume scan; hardware unreported",
+    "rights": "Public Domain Mark 1.0 / PD-scan"
+  },
+  {
+    "id": "book2",
+    "file": "book2.jpg",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Letterpress_copybook%2C_1870-1874_%28NYPL_b11652246-3966590%29.tiff",
+    "asset_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/Letterpress_copybook%2C_1870-1874_%28NYPL_b11652246-3966590%29.tiff/lossy-page1-1280px-Letterpress_copybook%2C_1870-1874_%28NYPL_b11652246-3966590%29.tiff.jpg",
+    "sha256": "2d3fef9f24eafd7a95ebbd6cc4e25775a82d2ec06ce777564aea6765592bd5eb",
+    "physical_source": "bound-volume scan; hardware unreported",
+    "rights": "Public Domain Mark 1.0 / PD-scan"
+  }
+]
