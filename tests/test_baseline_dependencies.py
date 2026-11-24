@@ -21,6 +21,8 @@ EXPECTED_RUNTIME_IMPORT_MODULES = {
 EXPECTED_OPTIONAL_EXTRA_IMPORTS = {
     "src/hocrsyngen/stroke_metrics.py": ("metrics", {"numpy", "scipy"}),
     "src/hocrsyngen/halo_metrics.py": ("metrics", {"numpy", "scipy"}),
+    "src/hocrsyngen/printed_glyph_variance.py": ("metrics", {"numpy", "scipy"}),
+    "src/hocrsyngen/printed_ink.py": ("metrics", {"numpy", "scipy"}),
 }
 EXPECTED_REPOSITORY_SCOPE_POLICY = (
     "The baseline dependencies are `jsonschema` and `Pillow`; test dependencies "
