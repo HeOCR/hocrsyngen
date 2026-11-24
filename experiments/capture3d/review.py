@@ -79,7 +79,7 @@ def equalise_paper(gray):
     return np.rint(255 - np.minimum(255, 382.5 * delta / np.maximum(paper, 44))).astype(np.uint8)
 
 
-def tesseract_votes(rectified, equalised, lines, model, path, pool):
+def tesseract_votes(rectified, equalised, sharpened, lines, model, path, pool):
     gold = tuple(normalise(line["text"]) for line in lines)
     if tesseract(rectified, model, path, 6) == gold:
         return [True] * len(lines)
@@ -88,7 +88,7 @@ def tesseract_votes(rectified, equalised, lines, model, path, pool):
 
     def exact(line, expected):
         return any(tesseract(line_crop(view, line["bbox"]), model, path, 7) == expected
-                   for view in (rectified, equalised))
+                   for view in (rectified, equalised, sharpened))
 
     return list(pool.map(exact, lines, gold))
 
@@ -126,8 +126,9 @@ def check_labels(captures, root, sources, tessdata, kraken, weights, scratch):
                 gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
                 rect = cv2.remap(gray, *coords, interpolation=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
                 equalised = equalise_paper(rect)
-                heb = tesseract_votes(rect, equalised, lines, "heb", None, pool)
-                modern = tesseract_votes(rect, equalised, lines, "heocr_modern_v1", tessdata, pool)
+                sharpened = cv2.addWeighted(equalised, 1.55, cv2.GaussianBlur(equalised, (0, 0), .9), -.55, 0)
+                heb = tesseract_votes(rect, equalised, sharpened, lines, "heb", None, pool)
+                modern = tesseract_votes(rect, equalised, sharpened, lines, "heocr_modern_v1", tessdata, pool)
                 decisions = {}
                 for i, line in enumerate(lines):
                     decisions[line["id"]] = {"tesseract_heb": heb[i], "heocr_modern_v1": modern[i]}
@@ -215,7 +216,7 @@ aside{background:#f7f5ef;border-radius:4px;padding:1rem}dl{margin:.5rem 0 0}dt{f
 ''' + "\n".join(cards) + "</body></html>\n"
 
 
-def review(batch, output, tessdata, kraken, weights, count):
+def review(batch, output, tessdata, kraken, weights, count, diagnostics=None):
     manifest_path = batch / "generation_manifest.json"
     manifest = json.loads(manifest_path.read_bytes())
     if manifest["schema"] != "heocr.capture3d.paired.v2" or output.exists():
@@ -229,6 +230,9 @@ def review(batch, output, tessdata, kraken, weights, count):
             sources[row["pair_id"]] = source.size
     with TemporaryDirectory(prefix=".capture-ocr-", dir=batch.parent.resolve()) as scratch:
         votes = check_labels(captures, batch, sources, tessdata, kraken, weights, Path(scratch))
+    if diagnostics:
+        with diagnostics.open("x", encoding="utf-8") as handle:
+            json.dump({"batch_manifest_sha256": sha(manifest_path), "line_reader_votes": votes}, handle, indent=2)
     eligible, rejected = [], []
     for i in range(0, len(captures), 2):
         clean, treated = captures[i:i + 2]
@@ -270,6 +274,7 @@ def main():
     parser.add_argument("--kraken")
     parser.add_argument("--weights", type=Path)
     parser.add_argument("--count", type=int, default=15)
+    parser.add_argument("--diagnostics", type=Path, help="Write exact reader decisions, including rejected pairs")
     args = parser.parse_args()
     if bool(args.kraken) != bool(args.weights) or args.count < 1:
         parser.error("Supply both Kraken paths and a positive pair count")

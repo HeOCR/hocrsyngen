@@ -166,7 +166,7 @@ def rejected_pairs(captures):
     return invalid
 
 
-def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction, realism_seed=None):
+def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction, realism_seed=None, pair_id=None):
     input_manifest = json.loads(inputs.read_bytes())
     cases = list(source_rows(inputs))
     if not cases:
@@ -174,6 +174,11 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
     paired = realism_seed is not None
     if paired:
         cases = list(plan_realism(cases, realism_seed))
+    if pair_id:
+        if not paired or set(pair_id) - {row["pair_id"] for row in cases}:
+            raise ValueError("Requested pairs must exist in the original paired roster")
+        selected = set(pair_id)
+        cases = [row for row in cases if row["pair_id"] in selected]
     asset_manifest = json.loads(assets.read_bytes())
     requested_assets = {}
     for role in ("desk", "floor", "environment"):
@@ -254,6 +259,7 @@ def main():
     parser.add_argument("--size", nargs=2, type=int, default=(720, 960), metavar=("WIDTH", "HEIGHT"))
     parser.add_argument("--samples", type=int, default=16)
     parser.add_argument("--realism-seed", type=int, help="Generate same-scene clean and treated twins")
+    parser.add_argument("--pair-id", action="append", help="Retake a pair without changing its original scene recipe")
     parser.add_argument("--max-bad-fraction", type=float, default=0)
     args = parser.parse_args()
     if min(args.size) < 160 or max(args.size) > 4096 or args.samples < 4 or not 0 <= args.max_bad_fraction <= .10:
