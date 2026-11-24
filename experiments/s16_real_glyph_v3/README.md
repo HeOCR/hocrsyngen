@@ -1,5 +1,7 @@
 # S16 v3 real-glyph pilot · modern print
 
+[Regenerated modern and old-print galleries at source scale](source-scale/README.md)
+
 Twenty Hebrew line comparisons composed from isolated glyphs from Gazette Archive A. The left and centre images share exact placements and newly authored Hebrew text. The right column matches line length and ink shape to 20 distinct cleared Gazette TRAIN crops, each from a separate page. The comparison spans five issues, and all crops load from the pinned Gazette release.
 
 | Raw composite | Classical smoothing | Nearest real crop |
