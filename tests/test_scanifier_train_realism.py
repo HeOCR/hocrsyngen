@@ -56,3 +56,21 @@ def test_photocopy_routes_to_approved_one_bit_renderer():
     assert rejection is None and crop is not None
     color = render_train_scanner(image, lines, profile="old-color", band="mild", source_ppi=200, seed=1)
     assert color.image.mode == "RGB" and color.lines[0]["text"] == lines[0]["text"]
+
+
+@pytest.mark.parametrize("seed", [1, 2])
+def test_c2_bound_adjustment_deepens_ink_and_preserves_paper_and_geometry(seed):
+    image, lines = page()
+    original = render_train_scan(image, lines, profile="bound", seed=seed)
+    adjusted = render_train_scan(image, lines, profile="bound", seed=seed, c2_bound_reduced_fade=True)
+    original_pixels = np.asarray(original.image, dtype=int)
+    adjusted_pixels = np.asarray(adjusted.image, dtype=int)
+    assert np.array_equal(original_pixels[80:210], adjusted_pixels[80:210])
+    assert np.all(original_pixels[322, 270:310] - adjusted_pixels[322, 270:310] == 8)
+    assert adjusted.lines == original.lines
+    assert adjusted.parameters == {**original.parameters, "capture_recipe": "c2-v1.1", "bound_ink_delta": -8}
+
+    flatbed = render_train_scan(image, lines, profile="flatbed", seed=seed)
+    flatbed_opt_in = render_train_scan(image, lines, profile="flatbed", seed=seed, c2_bound_reduced_fade=True)
+    assert flatbed_opt_in.image.tobytes() == flatbed.image.tobytes()
+    assert flatbed_opt_in.parameters == flatbed.parameters
