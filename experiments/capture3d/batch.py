@@ -130,6 +130,19 @@ def open_rgb(path):
         return np.asarray(image.convert("RGB"))
 
 
+def contextual_word_labels(annotations):
+    """Bind word polygons to exact text through the parent line and logical index."""
+    indices = {}
+    for annotation in annotations:
+        if annotation["kind"] == "word":
+            parent = annotation["line_id"]
+            index = indices.get(parent, 0)
+            indices[parent] = index + 1
+            yield {**{key: value for key, value in annotation.items() if key != "text"}, "word_index": index}
+        else:
+            yield annotation
+
+
 def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction):
     input_manifest = json.loads(inputs.read_bytes())
     cases = list(source_rows(inputs))
@@ -178,6 +191,7 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
             raw = f"assets/{ident}-raw.png"
             shutil.copyfile(case["image"], output / raw)
             phone_jpeg(open_rgb(case["undistorted"]), capture["phone"], case["seed"], output / photo)
+            capture["annotations"] = list(contextual_word_labels(capture["annotations"]))
             capture.update(seed=case["seed"], font_sha256=case["font_sha256"], image=photo,
                            image_sha256=sha(output / photo), source_image=raw, source_sha256=case["sha256"])
             positions = capture.pop("marker_positions")

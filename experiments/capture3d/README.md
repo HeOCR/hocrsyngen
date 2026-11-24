@@ -16,6 +16,8 @@ The wrapper invokes Blender in background mode with `-P render.py`. It expects c
 
 The caller supplies `split: train-calibration`, SHA-256 pins for the pre-render text gate and font guard, and an ordered `pages` array. Each page has `id`, `image`, `sha256`, `font_sha256`, `seed`, `scene` (`desk`, `floor`, `book`, or `letter`), and `annotations`. A region has `id`, `kind`, `text`, and `bbox` in top-left pixel-edge coordinates. A word also has `line_id`. Use logical UTF-8 reading order and NFC. The input manifest binds checksummed artifacts from the caller's approved source pipeline.
 
+Output line records retain the literal text. Word records bind each polygon to a `line_id` and zero-based logical `word_index`. Recover the word with `line["text"].split(" ")[word["word_index"]]`.
+
 ## Geometry and validation
 
 - UV boxes follow the actual triangulated mesh, including triangle crossings. The renderer projects those boundaries at the centre of the shutter and applies the same radial transform used for the JPEG.
