@@ -38,12 +38,18 @@ def _asset(root, path, sha):
     return file
 
 
-def read_pairs(manifest):
+def read_pairs(manifest, *, train_only=False):
     path = Path(manifest).resolve(strict=True)
     data = json.loads(path.read_bytes())
-    if data.get("purpose") != "non_test_phone_calibration":
-        raise ValueError("A non-test phone calibration allowlist is required")
+    purpose = (
+        "approved_train_phone_calibration"
+        if train_only
+        else "non_test_phone_calibration"
+    )
+    if data.get("purpose") != purpose:
+        raise ValueError("A scope-matched phone calibration allowlist is required")
     groups, sources, targets, views = {}, {}, set(), set()
+    source_for_page, page_for_source = {}, {}
     for row in data["pairs"]:
         page, split, mode = (row[key] for key in ("page_id", "split", "profile"))
         source_sha, capture_sha = row["source_sha256"], row["capture_sha256"]
@@ -54,7 +60,17 @@ def read_pairs(manifest):
             or split not in ("fit", "check")
             or groups.setdefault(page, split) != split
             or sources.setdefault(source_sha, split) != split
-            or (page, mode) in views
+            or (not train_only and (page, mode) in views)
+            or (
+                train_only
+                and (
+                    split != "fit"
+                    or mode == "adobe_scan"
+                    or type(row.get("optics_eligible")) is not bool
+                    or source_for_page.setdefault(page, source_sha) != source_sha
+                    or page_for_source.setdefault(source_sha, page) != page
+                )
+            )
             or capture_sha in targets
         ):
             raise ValueError(

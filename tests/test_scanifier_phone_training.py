@@ -4,7 +4,11 @@ import json
 import numpy as np
 import pytest
 from experiments.scanifier_v2 import fit_phone_training
-from experiments.scanifier_v2.dev_profiles import RANGE_BOUNDS
+from experiments.scanifier_v2.dev_profiles import (
+    LIGHTING_KEYS,
+    RANGE_BOUNDS,
+    sample_profile,
+)
 from experiments.scanifier_v2.fit_phone_training import observe, read_pairs, register
 from experiments.scanifier_v2.phone_training import (
     phone_line_crop,
@@ -279,3 +283,157 @@ def test_private_calibration_rejects_cross_split_pages_and_wrong_hash(tmp_path):
     write(row | {"capture_sha256": "c" * 64})
     with pytest.raises(ValueError, match="hash mismatch"):
         list(read_pairs(manifest))
+
+
+def test_train_allowlist_allows_repeat_captures_but_rejects_check_rows(tmp_path):
+    files = [tmp_path / name for name in ("print.png", "first.png", "second.png")]
+    for value, file in enumerate(files, 200):
+        Image.new("L", (128, 128), value).save(file)
+    pins = [hashlib.sha256(file.read_bytes()).hexdigest() for file in files]
+    record = {
+        "page_id": "first",
+        "split": "fit",
+        "profile": "phone_flat",
+        "source": files[0].name,
+        "source_sha256": pins[0],
+        "capture": files[1].name,
+        "capture_sha256": pins[1],
+        "optics_eligible": True,
+    }
+    second = record | {"capture": files[2].name, "capture_sha256": pins[2]}
+    manifest = tmp_path / "pairs.json"
+
+    def write(rows):
+        manifest.write_text(
+            json.dumps({"purpose": "approved_train_phone_calibration", "pairs": rows})
+        )
+
+    write([record, second])
+    assert len(list(read_pairs(manifest, train_only=True))) == 2
+    for update in (
+        {"split": "check"},
+        {"page_id": "second"},
+        {"capture_sha256": pins[1]},
+    ):
+        write([record, second | update])
+        with pytest.raises(ValueError):
+            list(read_pairs(manifest, train_only=True))
+
+
+def test_train_profile_requires_train_bank_and_keeps_render_provenance():
+    row = {
+        "page_id": "a",
+        "frame_ratio": SIZE[0] / SIZE[1],
+        "quad": QUAD,
+        "native_long_edge": 700,
+        "curl": 0,
+        "shadow": None,
+        "capture_sha256": "1" * 64,
+    }
+    bank = {
+        "schema": "scanifier_phone_bank.v1",
+        "fit_split": "train",
+        "framing": "observed",
+        "profiles": {"phone_oblique": [row]},
+    }
+    train = profile() | {"status": "train_fit"}
+    view = render_fitted_phone_view(page(), [LINE], train, bank, seed=5, long_edge=700)
+    assert view.parameters["profile_status"] == "train_fit"
+    assert view.parameters["fit_capture_sha256"] == row["capture_sha256"]
+    assert view.lines[0]["text"] == LINE["text"]
+    with pytest.raises(ValueError, match="non-test geometry bank"):
+        render_fitted_phone_view(page(), [LINE], profile(), bank, seed=5, long_edge=700)
+
+
+def test_native_optics_ignore_background_outside_the_projected_page():
+    from experiments.scanifier_v2.fit_dev_profiles import _measure
+
+    quad = [[0.22, 0.22], [0.78, 0.22], [0.78, 0.78], [0.22, 0.78]]
+    originals = []
+    for color in ((160, 40, 60), (26, 190, 241)):
+        im = Image.new("RGB", (480, 480), color)
+        ImageDraw.Draw(im).rectangle((104, 104, 376, 376), fill=(228, 228, 228))
+        originals.append(_measure(im, seed=1, page_quad=quad))
+    assert originals[0] == originals[1]
+    assert originals[0]["paper_r"] == pytest.approx(228.0)
+
+
+def test_train_fit_reports_support_by_distinct_page_and_never_mixes_endpoints(
+    tmp_path, monkeypatch
+):
+    from experiments.scanifier_v2 import fit_train_phone
+
+    manifest = tmp_path / "pairs.json"
+    manifest.write_text("{}")
+    jpeg = tmp_path / "approved.jpg"
+    page().save(jpeg)
+    rows = []
+    for i, (mode, physical_page, optical) in enumerate(
+        (
+            ("phone_flat", "a", True),
+            ("phone_flat", "a", True),
+            ("phone_flat", "b", True),
+            ("phone_flat", "c", True),
+            ("phone_oblique", "a", True),
+            ("phone_oblique", "a", True),
+            ("phone_oblique", "b", True),
+            ("phone_oblique", "c", False),
+        )
+    ):
+        rows.append(
+            {
+                "page_id": physical_page,
+                "profile": mode,
+                "capture_path": jpeg,
+                "source_path": jpeg,
+                "optics_eligible": optical,
+                "capture_sha256": f"{i:064x}",
+                "source_sha256": physical_page * 64,
+            }
+        )
+    monkeypatch.setattr(
+        fit_train_phone,
+        "read_pairs",
+        lambda path, train_only: rows if train_only else [],
+    )
+    monkeypatch.setattr(
+        fit_train_phone, "observe", lambda *args, **kwargs: {"quad": QUAD, "curl": 0}
+    )
+    monkeypatch.setattr(
+        fit_train_phone,
+        "_measure",
+        lambda *args, **kwargs: {
+            "paper_r": 240,
+            "paper_g": 238,
+            "paper_b": 236,
+            "noise_sd": 1.0,
+            "gradient_x": 0.02,
+            "gradient_y": -0.1,
+            "edge_sigma": 0.6,
+        },
+    )
+    bank, fitted, evidence = fit_train_phone.fit_train(manifest)
+    assert bank["fit_split"] == "train"
+    assert len(bank["profiles"]["phone_flat"]) == 4
+    assert set(fitted) == {"phone_flat"}
+    assert fitted["phone_flat"]["status"] == "train_fit"
+    assert len(fitted["phone_flat"]["lighting_samples"]) == 4
+    assert evidence["coverage"]["phone_oblique"]["optical_pages"] == 2
+    assert "phone_oblique" in evidence["unsupported_endpoints"]
+
+
+def test_train_profile_keeps_camera_colour_channels_and_gradient_together():
+    lighting = [
+        dict(zip(LIGHTING_KEYS, row, strict=True))
+        for row in [(173, 185, 199, 0.12, -0.17), (212, 206, 201, -0.23, 0.32)]
+    ]
+    train = profile() | {"status": "train_fit", "lighting_samples": lighting}
+    drawn = []
+    for seed in range(16):
+        sample = sample_profile(train, seed)
+        assert sample == sample_profile(train, seed)
+        drawn.append({key: sample[key] for key in LIGHTING_KEYS})
+    assert all(row in lighting for row in drawn)
+    assert all(row in drawn for row in lighting)
+    with pytest.raises(ValueError, match="joint TRAIN lighting"):
+        sample_profile(train | {"status": "dev_fit"})
