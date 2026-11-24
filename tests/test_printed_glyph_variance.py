@@ -1,6 +1,6 @@
 import pytest
 
-from hocrsyngen.printed_glyph_variance import _smooth_edges, vary_glyph
+from hocrsyngen.printed_glyph_variance import _smooth_edges, placement_jitter, vary_glyph
 
 np = pytest.importorskip("numpy")
 ndimage = pytest.importorskip("scipy.ndimage")
@@ -48,3 +48,19 @@ def test_quantized_duplicate_is_retried():
     assert first.attempt == 0
     assert second.attempt > 0
     assert first.raster_sha256 != second.raster_sha256
+
+
+def test_levels_scale_matching_draws_and_strong_edges_stay_ink_only():
+    alpha = np.zeros((33, 25), dtype=np.float32)
+    alpha[4:29, 4:20] = .88
+    base, middle, stronger = [vary_glyph(alpha, seed=209, index=2, seen=set(), level=level, ink_only=True)
+                              for level in ("current", "medium", "strong")]
+    assert base.attempt == middle.attempt == stronger.attempt == 0
+    for other, factor in ((middle, 2.0), (stronger, 2.75)):
+        assert other.scale - 1 == pytest.approx((base.scale - 1) * factor)
+        for field in ("rotation_degrees", "warp_x_px", "warp_y_px", "stroke_delta_px"):
+            assert getattr(other, field) == pytest.approx(getattr(base, field) * factor)
+    distance = ndimage.distance_transform_edt(stronger.opacity < .47)
+    assert not stronger.opacity[distance >= 2].any()
+    assert placement_jitter(209, 2, "current") == (0., 0.)
+    assert placement_jitter(209, 2, "strong") != (0., 0.)

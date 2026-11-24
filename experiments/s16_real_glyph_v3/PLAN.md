@@ -19,21 +19,31 @@ The first gallery covers modern print. The old-print track shares its source and
 
 ## Per-instance variation
 
-Use `hocrsyngen.printed_glyph_variance.vary_glyph` from the `metrics` extra on
-native-scale, gray-first glyph opacity. Each placement samples scale within
-2.2%, rotation within 1.4°, an elastic displacement up to 0.42 px per axis,
-a fractional stroke adjustment up to 1 px total, and ink intensity within 5%.
-Only boundary pixels receive the smoothing pass. Use the returned padding to
-keep the original typographic origin. Seed the transform independently of
-source selection and retain the returned raster digest in each placement's
-lineage. Supply a shared set for occurrences of each source glyph to reject
-duplicate quantized appearances within the rendered job.
+Use `hocrsyngen.printed_ink.extract_ink` from the `metrics` extra on
+native-scale, gray-first glyphs. Estimate local paper brightness, normalise
+it to white and keep the owned stroke with one soft antialias band. Multiply
+the ink mask onto the page paper with `multiply_ink`. The optional old-print
+paper grain is shared across the page and independent of each crop.
+
+`hocrsyngen.printed_glyph_variance.vary_glyph` exposes **current**, **medium**
+and **strong**. Current uses ±2.2% scale, ±1.4° rotation, up to 0.42 px elastic
+displacement per axis and ±1 px stroke weight. Medium and strong apply 2×
+and 2.75× to those four ranges and add small baseline and advance jitter.
+Ink-intensity jitter stays within 5%. Apply the ink-only edge after warping
+as well as at harvest. Use returned padding to retain the original
+typographic origin before applying the recorded placement offsets. Seed the
+transform independently of source selection. Repeated occurrences of the
+same glyph share a set of quantized raster digests so duplicates can be
+rejected.
 
 Modern print uses the raw composite by default. Old print keeps background
 normalisation around glyph patches. Compare each track's varied raster with
 its same-source, same-spacing control. Require all three readers to agree
 with the exact label and keep the median stroke-to-body-height gap within 10%
 of the matched and full real TRAIN scan sets before accepting a preview.
+Compare the 3–6 px ring with open paper using `hocrsyngen.halo_metrics`,
+with an absolute target of two grey levels. Measure the real TRAIN reference
+with the same tool and identify its exact source scope.
 
 ## Quote only
 

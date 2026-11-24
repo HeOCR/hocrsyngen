@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 
 RECIPE = "s16-printed-glyph-variance-v1"
+LEVELS = {"current": 1.0, "medium": 2.0, "strong": 2.75}
+PLACEMENT = {"current": (0.0, 0.0), "medium": (0.85, 0.75), "strong": (1.45, 1.3)}
 
 
 @dataclass(frozen=True)
@@ -36,6 +38,28 @@ def _smooth_edges(opacity, ndimage):
     return opacity + 0.22 * blend * (soft - opacity)
 
 
+def placement_jitter(seed: int, index: int, level: str) -> tuple[float, float]:
+    """Return vertical offset and extra advance in pixels, independent of source selection."""
+    import numpy as np
+
+    baseline, spacing = PLACEMENT[level]
+    generator = np.random.default_rng(np.random.SeedSequence([seed, index, 0x534C4E]))
+    return float(generator.uniform(-baseline, baseline)), float(generator.uniform(-spacing, spacing))
+
+
+def _stroke_weight(opacity, delta, ndimage, np):
+    cross = ndimage.generate_binary_structure(2, 1)
+    operation = ndimage.maximum_filter if delta > 0 else ndimage.minimum_filter
+    radius = abs(delta) / 2
+    adjusted = opacity
+    for _ in range(int(radius)):
+        adjusted = operation(adjusted, footprint=cross)
+    shell = radius % 1
+    ink = adjusted >= 0.5
+    edge = ndimage.maximum_filter(ink, size=3) & ~ndimage.minimum_filter(ink, size=3)
+    return adjusted + shell * edge * (operation(adjusted, footprint=cross) - adjusted)
+
+
 def vary_glyph(
     opacity: np.ndarray,
     *,
@@ -43,6 +67,8 @@ def vary_glyph(
     index: int,
     seen: set[str],
     ink_range: float = 255.0,
+    level: str = "current",
+    ink_only: bool = False,
 ) -> GlyphVariant:
     """Vary one gray-first glyph without moving its typographic origin.
 
@@ -55,6 +81,7 @@ def vary_glyph(
 
     import numpy as np
     from scipy import ndimage
+    from .printed_ink import soft_ink_edge
 
     alpha = np.asarray(opacity, dtype=np.float32)
     if alpha.ndim != 2 or not np.isfinite(alpha).all() or not ((0 <= alpha) & (alpha <= 1)).all():
@@ -63,7 +90,8 @@ def vary_glyph(
     if not ink_y.size or not 0 < ink_range <= 255:
         raise ValueError("Expected visible source ink and positive output contrast")
 
-    pad = ceil(0.025 * hypot(*alpha.shape)) + 3
+    amount = LEVELS[level]
+    pad = ceil(0.025 * amount * hypot(*alpha.shape)) + ceil(amount) + 2
     canvas = np.pad(alpha, pad)
     center_y = (ink_y.min() + ink_y.max()) / 2 + pad
     center_x = (ink_x.min() + ink_x.max()) / 2 + pad
@@ -73,26 +101,22 @@ def vary_glyph(
     wave_x = np.pi * dx / max(8, 1 + np.ptp(ink_x))
     rng = np.random.default_rng(np.random.SeedSequence([seed, index, 0x533136]))
     original = sha256(np.rint(canvas * ink_range).astype(np.uint8).tobytes()).hexdigest()
-    cross = ndimage.generate_binary_structure(2, 1)
-
     for attempt in range(8):
-        scale = float(rng.uniform(0.978, 1.022))
-        angle = float(rng.uniform(-1.4, 1.4))
-        warp_x, warp_y = map(float, rng.uniform(-0.42, 0.42, size=2))
+        scale = 1 + (float(rng.uniform(0.978, 1.022)) - 1) * amount
+        angle = float(rng.uniform(-1.4, 1.4)) * amount
+        warp_x, warp_y = (float(value) * amount for value in rng.uniform(-0.42, 0.42, size=2))
         phase_x, phase_y = rng.uniform(0, 2 * np.pi, size=2)
-        stroke = float(rng.uniform(-1.0, 1.0))
+        stroke = float(rng.uniform(-1.0, 1.0)) * amount
         ink_scale = float(rng.uniform(0.95, 1.05))
         sine, cosine = np.sin(radians(angle)) / scale, np.cos(radians(angle)) / scale
         sample_y = center_y + cosine * dy - sine * dx + warp_y * np.sin(wave_x + phase_y)
         sample_x = center_x + sine * dy + cosine * dx + warp_x * np.sin(wave_y + phase_x)
         warped = np.clip(ndimage.map_coordinates(canvas, [sample_y, sample_x], order=3), 0, 1)
 
-        # One pixel is the total thickness budget: split it between both sides.
-        ink = warped >= 0.5
-        edge = ndimage.maximum_filter(ink, size=3) & ~ndimage.minimum_filter(ink, size=3)
-        shape = ndimage.maximum_filter if stroke > 0 else ndimage.minimum_filter
-        weighted = warped + (abs(stroke) / 2) * edge * (shape(warped, footprint=cross) - warped)
+        weighted = _stroke_weight(warped, stroke, ndimage, np)
         varied = np.clip(_smooth_edges(weighted, ndimage) * ink_scale, 0, 1)
+        if ink_only:
+            varied = soft_ink_edge(varied)
         raster = np.rint(varied * ink_range).astype(np.uint8)
         fingerprint = sha256(raster.tobytes()).hexdigest()
         if np.any(varied >= 0.5) and fingerprint != original and fingerprint not in seen:
