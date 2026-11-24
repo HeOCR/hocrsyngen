@@ -36,6 +36,15 @@ transform independently of source selection. Repeated occurrences of the
 same glyph share a set of quantized raster digests so duplicates can be
 rejected.
 
+Both printed tracks default to a seeded choice per page or document. The mix
+is 65% medium (2×), 15% strong (2.75×) and 20% current (1×). Use the same
+document seed, track and ID for all its lines. `document_variance` assigns
+independent documents by their stable SHA-256 rank. For a fixed batch roster,
+`balanced_document_variance` applies the nearest integer quotas and shuffles
+the assignment by that same seed and track. A 20-page roster per track has
+13 medium, three strong and four current pages. Keep the level on every page
+and line record. Keep its assignment when retrying a rejected render.
+
 Modern print uses the raw composite by default. Old print keeps background
 normalisation around glyph patches. Compare each track's varied raster with
 its same-source, same-spacing control. Require all three readers to agree
