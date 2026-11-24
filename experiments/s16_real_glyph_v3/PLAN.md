@@ -17,6 +17,24 @@ The first gallery covers modern print. The old-print track shares its source and
 4. Gate both views on two Tesseract checkpoints and an independent Kraken reader. Normalize NFC and layout whitespace only. Compare to the original logical UTF-8 labels and keep each exact match. Show each real reference crop at its original byte hash. Report rejected cases, and use generated views only for TRAIN or calibration.
 5. Grow the old-print track to the planned 5,000 C2 crops once the same source, font and text checks clear. Apply #158 scan realism with v3 flatbed/bound, the approved LookScanned photocopy profile and the old scanner at 5% each, and the round stains. Keep the current pointed font reservations enforced for any font-rendered controls.
 
+## Per-instance variation
+
+Use `hocrsyngen.printed_glyph_variance.vary_glyph` from the `metrics` extra on
+native-scale, gray-first glyph opacity. Each placement samples scale within
+2.2%, rotation within 1.4°, an elastic displacement up to 0.42 px per axis,
+a fractional stroke adjustment up to 1 px total, and ink intensity within 5%.
+Only boundary pixels receive the smoothing pass. Use the returned padding to
+keep the original typographic origin. Seed the transform independently of
+source selection and retain the returned raster digest in each placement's
+lineage. Supply a shared set for occurrences of each source glyph to reject
+duplicate quantized appearances within the rendered job.
+
+Modern print uses the raw composite by default. Old print keeps background
+normalisation around glyph patches. Compare each track's varied raster with
+its same-source, same-spacing control. Require all three readers to agree
+with the exact label and keep the median stroke-to-body-height gap within 10%
+of the matched and full real TRAIN scan sets before accepting a preview.
+
 ## Quote only
 
 One matched old-print screen with three 5,000-visit continuations from the same checked parent and seed. Compare raw scan-glyph composites, classical seam smoothing and a seam-only SDXL subset. Match the exact train labels, physical-source groups, exposure and capture recipe across all arms. Use the same frozen real DEV controls and evaluate by edition. The same-day CPU3c ×32 planning rate of $0.9680/h gives a $1.21 cap for 75 minutes, including setup and readback. This cap is a time budget rather than an observed runtime for S16. Requote exact account capacity after freezing the jobs. No launch.
