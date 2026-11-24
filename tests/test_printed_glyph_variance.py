@@ -1,6 +1,13 @@
 import pytest
+from collections import Counter
 
-from hocrsyngen.printed_glyph_variance import _smooth_edges, placement_jitter, vary_glyph
+from hocrsyngen.printed_glyph_variance import (
+    _smooth_edges,
+    balanced_document_variance,
+    document_variance,
+    placement_jitter,
+    vary_glyph,
+)
 
 np = pytest.importorskip("numpy")
 ndimage = pytest.importorskip("scipy.ndimage")
@@ -64,3 +71,28 @@ def test_levels_scale_matching_draws_and_strong_edges_stay_ink_only():
     assert not stronger.opacity[distance >= 2].any()
     assert placement_jitter(209, 2, "current") == (0., 0.)
     assert placement_jitter(209, 2, "strong") != (0., 0.)
+
+
+def test_twenty_document_rosters_realise_the_seeded_default_per_track():
+    ids = [f"page-{i}" for i in range(20)]
+    allocations = []
+    for track in ("modern", "old-print"):
+        plan = balanced_document_variance(783620, track, ids)
+        assert set(plan) == set(ids)
+        assert Counter(plan.values()) == {"medium": 13, "strong": 3, "current": 4}
+        assert plan == balanced_document_variance(783620, track, reversed(ids))
+        assert plan != balanced_document_variance(783621, track, ids)
+        allocations.append(plan)
+    assert allocations[0] != allocations[1]
+    with pytest.raises(ValueError, match="unique"):
+        balanced_document_variance(783620, "modern", ["page-1", "page-1"])
+
+
+def test_standalone_documents_cover_each_level_at_its_default_frequency():
+    expected = {"medium": .65, "strong": .15, "current": .20}
+    ids = [f"document-{i}" for i in range(2000)]
+    for track in ("modern", "old-print"):
+        levels = [document_variance(783620, track, ident) for ident in ids]
+        assert levels == [document_variance(783620, track, ident) for ident in ids]
+        assert all(Counter(levels)[level] / len(ids) == pytest.approx(weight, abs=.04)
+                   for level, weight in expected.items())

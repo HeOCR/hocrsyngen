@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
+from hashlib import sha256
+import json
 from math import ceil, hypot, radians
 from typing import TYPE_CHECKING
 
@@ -13,6 +16,39 @@ if TYPE_CHECKING:
 RECIPE = "s16-printed-glyph-variance-v1"
 LEVELS = {"current": 1.0, "medium": 2.0, "strong": 2.75}
 PLACEMENT = {"current": (0.0, 0.0), "medium": (0.85, 0.75), "strong": (1.45, 1.3)}
+DOCUMENT_MIX = (("medium", 65), ("strong", 15), ("current", 20))
+DOCUMENT_MIX_RECIPE = "s16-printed-document-mix-v1"
+
+
+def _document_rank(seed: int, track: str, document_id: str) -> bytes:
+    key = json.dumps((DOCUMENT_MIX_RECIPE, seed, track, document_id), ensure_ascii=False, separators=(",", ":"))
+    return sha256(key.encode("utf-8")).digest()
+
+
+def document_variance(seed: int, track: str, document_id: str) -> str:
+    """Select the default level once per document, independent of glyph or line order."""
+    bucket = int.from_bytes(_document_rank(seed, track, document_id), "big") % 100
+    limit = 0
+    for level, weight in DOCUMENT_MIX:
+        limit += weight
+        if bucket < limit:
+            return level
+    raise AssertionError("Printed variance weights must total 100")
+
+
+def balanced_document_variance(seed: int, track: str, document_ids: Iterable[str]) -> dict[str, str]:
+    """Allocate the nearest integer quotas to a fixed roster, with seeded assignment."""
+    ids = list(document_ids)
+    if len(ids) != len(set(ids)):
+        raise ValueError("Document IDs must be unique within a printed track")
+    ids.sort(key=lambda ident: (_document_rank(seed, track, ident), ident))
+    weights = [weight * len(ids) for _, weight in DOCUMENT_MIX]
+    counts = [n // 100 for n in weights]
+    remainder_order = sorted(range(len(weights)), key=lambda i: -(weights[i] % 100))
+    for i in remainder_order[:len(ids) - sum(counts)]:
+        counts[i] += 1
+    levels = [level for (level, _), count in zip(DOCUMENT_MIX, counts, strict=True) for _ in range(count)]
+    return dict(zip(ids, levels, strict=True))
 
 
 @dataclass(frozen=True)
@@ -77,8 +113,6 @@ def vary_glyph(
     at the ink contrast of the output to reject visibly identical instances.
     The caller must still run its stroke and exact-transcription gates.
     """
-    from hashlib import sha256
-
     import numpy as np
     from scipy import ndimage
     from .printed_ink import soft_ink_edge
