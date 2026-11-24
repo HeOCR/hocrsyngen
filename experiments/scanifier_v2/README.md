@@ -174,3 +174,6 @@ and emits the old flatbed recipe with `prior_only` status.
 
 [Realism v2 preview](realism_v2_preview/README.md) shows twenty paired Hebrew
 pages across duplex, photocopy, bound-book and phone treatments.
+
+[Realism v3](realism_v3_preview/README.md) compares twenty new synthetic
+treatments with real photocopy, flatbed and bound-volume crops.

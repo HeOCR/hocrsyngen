@@ -1,0 +1,2788 @@
+{
+  "schema": "heocr.scanifier_realism_v3_preview.v1",
+  "licence": "CC0-1.0 (authored work)",
+  "reference_licence": "public domain per sources.json",
+  "calibration_width_px": 640,
+  "generator_sha256": "8647c604db361a22abdbf596ba70356f885786172e5e00007854b8eff5c4ccf4",
+  "source_ledger_sha256": "206a9e833a94b2829b674a812ff70dcc2ac6c049787fa84523fa6d8f7e6779e5",
+  "copy_sha256": "f00c945e21d92f357b7e98bfe00fe809a139a75b46d95afdb6d548752ef1007f",
+  "pairs": [
+    {
+      "id": "01",
+      "role": "copy",
+      "source_id": "land",
+      "original_page": 10,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.15,
+        0.94,
+        0.73
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 79.0,
+        "ink_crush_fraction": 0.003525551521921251,
+        "edge_midtone_fraction": 0.5903855460558155,
+        "blur_proxy_px": 0.6441636821160749,
+        "inner_paper_band_sd": 0.42017996311187744,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 2,
+        "specks_per_mpx": 2753,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.048877840909090906,
+            0.6083568240544985,
+            10.0,
+            10.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 1.7183580016554572
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 76.45,
+        "knee": 0.181160888381663,
+        "blur": 0.39934333439778286,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 2,
+        "specks_per_mpx": 1350,
+        "speck_radius": 1.1283791670955126,
+        "margin_punches": [
+          [
+            0.048877840909090906,
+            0.6083568240544985,
+            10.0,
+            10.5
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011243,
+      "labels_sha256": [
+        "d16304b414f60eca27fc473b1361734795be2a968725b16d2c2ff427a3c45d44",
+        "0e3b66734eda0ff87fc7b16097b80fb0f77907e18175b9f3ea4d4eb42278296e",
+        "1bb52def609799440fdf392d8cdd7e96431120a9a06b381a110a8ebe82e1c280",
+        "9d21ddb2104ae23d6bb4d0ed4be7cf0e160ef7d4fe0b9d996dc71675a1e4fc39",
+        "1fde73f1a8935ef5d4a8936b885253b5b69efe5162925ed8e7656814a334c3c3",
+        "496072a34c6b46894cbb9a9116b439404b719590e48753bde74e781a4a3ecc0d",
+        "d43c38a629832836e86a4de038a69da3970f8710f2ab1dd656b8b7b1c468c066",
+        "4148d08629cc3767e461e3451badc685de592a4248bf836d24f2b63ca85c70ae",
+        "c98bb9cecfcc192ddd8d6366c04065a9ac78f788e81a066299b965141b0b1b97"
+      ],
+      "control": {
+        "path": "images/01-control.jpg",
+        "sha256": "aad7d8bd4bd1e807970f2001fb7f945aa520ebe11d097ad417d58d66863a14b2",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/01-preview.jpg",
+        "sha256": "e2910fa85872022156f3aebf5b7da195b6c8264c60e8e8c0ec44cd05c7a1c27e",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/01-reference.jpg",
+        "sha256": "bd8e39137d2dd94e634520ed17c6ed03dae8825c29eb67963abf10fd790c949b",
+        "size": [
+          640,
+          516
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 78.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.43649165157915915,
+        "blur_proxy_px": 0.69913647159459,
+        "inner_paper_band_sd": 1.1246318817138672,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 1703,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.048347701149425285,
+            0.6076511362639291,
+            10.5,
+            10.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "02",
+      "role": "copy",
+      "source_id": "land",
+      "original_page": 20,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.09,
+        0.94,
+        0.73
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 64.0,
+        "ink_crush_fraction": 0.0009464095587365432,
+        "edge_midtone_fraction": 0.23950524737631185,
+        "blur_proxy_px": 0.6803390674703005,
+        "inner_paper_band_sd": 0.0,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 2,
+        "specks_per_mpx": 91,
+        "speck_median_area": 6.0,
+        "near_margin_punch_candidates": [
+          [
+            0.0512888418079096,
+            0.03648900447393856,
+            10.5,
+            11.0
+          ],
+          [
+            0.04904683147632312,
+            0.6402951565439959,
+            11.0,
+            10.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": -1.2321197509498227
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 7.049999999999999,
+        "knee": 0.3032226260611942,
+        "blur": 0.5507728885603269,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 2,
+        "specks_per_mpx": 0,
+        "speck_radius": 1.15,
+        "margin_punches": [
+          [
+            0.0512888418079096,
+            0.03648900447393856,
+            10.5,
+            11.0
+          ],
+          [
+            0.04904683147632312,
+            0.6402951565439959,
+            11.0,
+            10.5
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011274,
+      "labels_sha256": [
+        "9833534634a2a53a30c670637387b862b53f8b8f86e95a3e81e5c6ca05c30ba0",
+        "50152a9a046c1946efcdb843c01c1dfc253c2d6d6eaab8b435b739da55c8c2d9",
+        "f948a2f8d497308d6862b85a287356127a18d6a2a346f1337ef8a2d5ccfd7359",
+        "bd4ae85e8403d0aad71eaf7fc51fef725f209c9ef20bcf8821a0d3baed517126",
+        "93359e597669c33863833ab1c91a27527893203f7cde866842a45ca289ab437b",
+        "669551f82c01bee9ecf811afea384cb75f29700f750697a8e85444dd3210ba66",
+        "6abc489d8254d796e00b3956ed3317af6876b0b50bacc32dd6afa74ad02a3811",
+        "52025aa602fdd753f653ed7c6500acfe3e653e225c15b7f4bb29a426515fb635",
+        "50c915175d2f483f7d6fc7e3001fabbfafb6ec95e332c1d36feabea8ed1eda81"
+      ],
+      "control": {
+        "path": "images/02-control.jpg",
+        "sha256": "5853f48c44fa0d900d5caf19700258608c1b2a2edf197429f5f403032c648db2",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/02-preview.jpg",
+        "sha256": "6d35af6963597605ce83eeb04dad645dc853dab1cf79b16138ca408666fc684b",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/02-reference.jpg",
+        "sha256": "1a19f9346f6bd1439fdcfce18965eaef47376ed174bb12d2b36068d9f89f1de7",
+        "size": [
+          640,
+          567
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 67.0,
+        "ink_crush_fraction": 0.08145249362941391,
+        "edge_midtone_fraction": 0.30608015640273706,
+        "blur_proxy_px": 0.7142966544330415,
+        "inner_paper_band_sd": 1.3944088220596313,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 327,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [
+          [
+            0.05153488005050505,
+            0.036614233942478216,
+            10.5,
+            11.5
+          ],
+          [
+            0.04837452770780856,
+            0.6396946564885496,
+            11.5,
+            10.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "03",
+      "role": "copy",
+      "source_id": "land",
+      "original_page": 42,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.23,
+        0.94,
+        0.79
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 91.0,
+        "ink_crush_fraction": 0.0012109202994275649,
+        "edge_midtone_fraction": 0.2679168483791249,
+        "blur_proxy_px": 0.6231098474841426,
+        "inner_paper_band_sd": 0.0,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 794,
+        "speck_median_area": 5.0,
+        "near_margin_punch_candidates": [
+          [
+            0.04798713235294118,
+            0.48270139381053623,
+            10.0,
+            11.0
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": -0.5405101871306666
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 91.0,
+        "knee": 0.4058671421809019,
+        "blur": 0.4720516279593683,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 1,
+        "specks_per_mpx": 146,
+        "speck_radius": 1.15,
+        "margin_punches": [
+          [
+            0.04798713235294118,
+            0.48270139381053623,
+            10.0,
+            11.0
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011305,
+      "labels_sha256": [
+        "19411cc2bfa97882462a638381b9ff63f64a08bf7b5882c176137411bfdb7ab7",
+        "6517926511e893eb6d1c6d4f8881f5959ece330f12fc782e9fe1f0e24cb0dddb",
+        "729a955854b9a81391a3781df04e282ed588d402dde0c2f77b9b1c3b924f1df4",
+        "c5213796664953285f49d003501a9950be1669371ccace89b194d4f0b7bcbf2a",
+        "d55ff728cebbc95f7930b41f6c9c5eb6b931803ecfc337cf71a437a10005e412",
+        "928427dd96c3f781f2ea1245b38f1ebd10ee27873ef14ef93753de66d5a4faa3",
+        "a75e77e850439ae05431e1d1f917695e9193c3a183c384f26dd2e012cc0bfe7a",
+        "efa417211b4cc36482fdf17371ade41e28254a2c4d35908a0b508571e650fdb6",
+        "6dd27b9251eec8fc96b20df4c7e15ff226b54164afc82cdc03bfb4b2f96e7fab"
+      ],
+      "control": {
+        "path": "images/03-control.jpg",
+        "sha256": "055a3760309e5a351101b23c6716d6fd3a0d0cc789c533909e1bcd491dc8db9d",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/03-preview.jpg",
+        "sha256": "fee439ba6b7ddbf7f4d3a9c2de9cb6e5f887dbb2e7ad13c761194d92a1879174",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/03-reference.jpg",
+        "sha256": "be9f1f6ac6704590d8ae153de0d3f5c05f1a67cab6a8cfe3d93c9ba0dc768ea9",
+        "size": [
+          640,
+          498
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 89.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.5080323922083607,
+        "blur_proxy_px": 0.58605680129768,
+        "inner_paper_band_sd": 0.9974005818367004,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 1159,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.0484375,
+            0.4823854450197491,
+            10.5,
+            11.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "04",
+      "role": "copy",
+      "source_id": "land",
+      "original_page": 74,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.11,
+        0.95,
+        0.76
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 62.0,
+        "ink_crush_fraction": 0.0036559888579387185,
+        "edge_midtone_fraction": 0.5814452214452215,
+        "blur_proxy_px": 0.6259826025811098,
+        "inner_paper_band_sd": 0.0007289669592864811,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 694,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.04627637987012987,
+            0.6030250237567311,
+            10.0,
+            10.0
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 38.2,
+        "knee": 0.1972880676694337,
+        "blur": 0.528237110406796,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 1,
+        "specks_per_mpx": 174,
+        "speck_radius": 1.1283791670955126,
+        "margin_punches": [
+          [
+            0.04627637987012987,
+            0.6030250237567311,
+            10.0,
+            10.0
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011336,
+      "labels_sha256": [
+        "91beff154c7cd23f56653381d8a5f209c6b9472a23d9a318185f82fa22a0c903",
+        "464ac11796be87d9c0e44b972d61549f2eb842a7ce2b63bca6652aa2c459266a",
+        "9b17e6359b76271df34e0b425dc542525d462d38a5608785d3141a9416aafbf3",
+        "398eadf86d6ac12f39a3a7521683e84977f777bf293b3f70814bd822db3269de",
+        "d69bb2378191626880c6ae6d6b88519e5aff6c165dedcab57a9d0d13b7c4437e",
+        "19352d566e36b4c72afddbba3b36f57c88fbccbff58c77adc05d14fc44133f84",
+        "41d8dc470c26d0a6b7a3e195f150d9f5523d80d632ecbbbf4c94c5304dc1f937",
+        "e1e6b310f1a0d694d825987d64d21f47c1e6d25390ac45d4f7e4c43bae434f9f",
+        "dadded9d5d94daeacac7f197db9de2c7206420f1f1a1c7ab3aa0a6946cc77d03"
+      ],
+      "control": {
+        "path": "images/04-control.jpg",
+        "sha256": "0da29748475c7118821d544efd5f038098b9e3a3818d3995d304bc104efdc9b2",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/04-preview.jpg",
+        "sha256": "389b79d17a4f25f2cee1506b621862a145fd8739efb0df4c84d5d1256d3b6327",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/04-reference.jpg",
+        "sha256": "1c0022c8cdfc8e17a740aa691ff7ec468d8b8f76dc3380438b643f126c9b926c",
+        "size": [
+          640,
+          574
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 54.0,
+        "ink_crush_fraction": 5.3233963268565346e-05,
+        "edge_midtone_fraction": 0.5869961851053243,
+        "blur_proxy_px": 0.742475910747111,
+        "inner_paper_band_sd": 1.2264207601547241,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 971,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.0468299711815562,
+            0.6030534351145038,
+            10.5,
+            10.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "05",
+      "role": "copy",
+      "source_id": "fire",
+      "original_page": 12,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.12,
+        0.94,
+        0.73
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 78.0,
+        "ink_crush_fraction": 0.00260149243513384,
+        "edge_midtone_fraction": 0.5759269489487537,
+        "blur_proxy_px": 0.6304712824201214,
+        "inner_paper_band_sd": 0.7408380508422852,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 2660,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.047494009584664536,
+            0.6313604115767713,
+            10.0,
+            10.0
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 74.60000000000001,
+        "knee": 0.18323425499908638,
+        "blur": 0.3957740137912449,
+        "band_sd": 0.32946281433105473,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 1,
+        "specks_per_mpx": 1350,
+        "speck_radius": 1.1283791670955126,
+        "margin_punches": [
+          [
+            0.047494009584664536,
+            0.6313604115767713,
+            10.0,
+            10.0
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011367,
+      "labels_sha256": [
+        "607a8ad684cfae0cc32d64bf0ca98ae8f326251b3789165b9b66576ca2327318",
+        "0e3b66734eda0ff87fc7b16097b80fb0f77907e18175b9f3ea4d4eb42278296e",
+        "1bb52def609799440fdf392d8cdd7e96431120a9a06b381a110a8ebe82e1c280",
+        "9d21ddb2104ae23d6bb4d0ed4be7cf0e160ef7d4fe0b9d996dc71675a1e4fc39",
+        "1fde73f1a8935ef5d4a8936b885253b5b69efe5162925ed8e7656814a334c3c3",
+        "496072a34c6b46894cbb9a9116b439404b719590e48753bde74e781a4a3ecc0d",
+        "d43c38a629832836e86a4de038a69da3970f8710f2ab1dd656b8b7b1c468c066",
+        "4148d08629cc3767e461e3451badc685de592a4248bf836d24f2b63ca85c70ae",
+        "c98bb9cecfcc192ddd8d6366c04065a9ac78f788e81a066299b965141b0b1b97"
+      ],
+      "control": {
+        "path": "images/05-control.jpg",
+        "sha256": "c38f44a4dbd8939e733242cfa5822967dbd06abaa503c240faf3f050d8860c01",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/05-preview.jpg",
+        "sha256": "d452d299f934f14e9c20ea5455a8f8eeac4bd88e0f49ba8c134db2c193beadbd",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/05-reference.jpg",
+        "sha256": "7762da9bf5ef823b56a12e862361763f9446f5d94547857a15c5ccbce821eab5",
+        "size": [
+          640,
+          544
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 75.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.5088295118343196,
+        "blur_proxy_px": 0.6971806841966786,
+        "inner_paper_band_sd": 1.101482629776001,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 1670,
+        "speck_median_area": 5.0,
+        "near_margin_punch_candidates": [
+          [
+            0.04685724431818182,
+            0.6320654059680778,
+            10.5,
+            10.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "06",
+      "role": "copy",
+      "source_id": "fire",
+      "original_page": 17,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.35,
+        0.93,
+        0.89
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 85.0,
+        "ink_crush_fraction": 0.0011318619128466328,
+        "edge_midtone_fraction": 0.3219626168224299,
+        "blur_proxy_px": 0.6459065492213673,
+        "inner_paper_band_sd": 0.0,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 3,
+        "specks_per_mpx": 653,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.04905166184971098,
+            0.2817324389257594,
+            10.0,
+            10.5
+          ]
+        ],
+        "skew_deg": -0.4243111380022492,
+        "gutter_minus_center_deg": 0.4243111380022492
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 82.45,
+        "knee": 0.3307364547995909,
+        "blur": 0.4485729627697005,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 3,
+        "specks_per_mpx": 0,
+        "speck_radius": 1.1283791670955126,
+        "margin_punches": [
+          [
+            0.04905166184971098,
+            0.2817324389257594,
+            10.0,
+            10.5
+          ]
+        ],
+        "skew": -0.4243111380022492,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011398,
+      "labels_sha256": [
+        "4c728ba63cfd4ab7cf11f6d58b71f6953f864ae26be63aed677132e2cbb1db8c",
+        "50152a9a046c1946efcdb843c01c1dfc253c2d6d6eaab8b435b739da55c8c2d9",
+        "f948a2f8d497308d6862b85a287356127a18d6a2a346f1337ef8a2d5ccfd7359",
+        "bd4ae85e8403d0aad71eaf7fc51fef725f209c9ef20bcf8821a0d3baed517126",
+        "93359e597669c33863833ab1c91a27527893203f7cde866842a45ca289ab437b",
+        "669551f82c01bee9ecf811afea384cb75f29700f750697a8e85444dd3210ba66",
+        "6abc489d8254d796e00b3956ed3317af6876b0b50bacc32dd6afa74ad02a3811",
+        "52025aa602fdd753f653ed7c6500acfe3e653e225c15b7f4bb29a426515fb635",
+        "50c915175d2f483f7d6fc7e3001fabbfafb6ec95e332c1d36feabea8ed1eda81"
+      ],
+      "control": {
+        "path": "images/06-control.jpg",
+        "sha256": "9579e04b1245672500782f221b01becde7edef166869e337dc04ea30ee1364e1",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/06-preview.jpg",
+        "sha256": "37d280ae5d93c21cec548259d87238b283072d4fcdd573c2b22e9981072764bd",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/06-reference.jpg",
+        "sha256": "7427273feed9918aab4a02c3dff865ba3e7dc78c26b3cda68fda9aadef04e804",
+        "size": [
+          640,
+          486
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 83.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.4734337827121332,
+        "blur_proxy_px": 0.6535054498004422,
+        "inner_paper_band_sd": 0.005590915679931641,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 1057,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.04839247118155619,
+            0.2824427480916031,
+            10.5,
+            10.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "07",
+      "role": "copy",
+      "source_id": "fire",
+      "original_page": 27,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.11,
+        0.94,
+        0.73
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 89.0,
+        "ink_crush_fraction": 0.0015547009246379183,
+        "edge_midtone_fraction": 0.3075104154937507,
+        "blur_proxy_px": 0.6075634729049343,
+        "inner_paper_band_sd": 0.0,
+        "dark_edge_side": "left",
+        "edge_drop": 2.0,
+        "edge_width_px": 6,
+        "specks_per_mpx": 691,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": -0.41517954114486444,
+        "gutter_minus_center_deg": 0.41517954114486444
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 23.592333984375006,
+        "knee": 0.23161343036798776,
+        "blur": 0.4826526999653565,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 2.0,
+        "edge_width": 6,
+        "specks_per_mpx": 780,
+        "speck_radius": 1.1283791670955126,
+        "margin_punches": [],
+        "skew": -0.41517954114486444,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011429,
+      "labels_sha256": [
+        "4f9f11ba404caf04cabc423f627610e86d3a84065346ee8d03a0d585b178a604",
+        "6517926511e893eb6d1c6d4f8881f5959ece330f12fc782e9fe1f0e24cb0dddb",
+        "729a955854b9a81391a3781df04e282ed588d402dde0c2f77b9b1c3b924f1df4",
+        "c5213796664953285f49d003501a9950be1669371ccace89b194d4f0b7bcbf2a",
+        "d55ff728cebbc95f7930b41f6c9c5eb6b931803ecfc337cf71a437a10005e412",
+        "928427dd96c3f781f2ea1245b38f1ebd10ee27873ef14ef93753de66d5a4faa3",
+        "a75e77e850439ae05431e1d1f917695e9193c3a183c384f26dd2e012cc0bfe7a",
+        "efa417211b4cc36482fdf17371ade41e28254a2c4d35908a0b508571e650fdb6",
+        "6dd27b9251eec8fc96b20df4c7e15ff226b54164afc82cdc03bfb4b2f96e7fab"
+      ],
+      "control": {
+        "path": "images/07-control.jpg",
+        "sha256": "8e2f3d356cdd63bbfd544cfd0b1c474b4d8d27fd94a6a9d290d38afe354eebcf",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/07-preview.jpg",
+        "sha256": "308938c126174e2e44f4f0874f7dfcda92e9676eafabe51d3e2c97a9bf01ab24",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/07-reference.jpg",
+        "sha256": "76c27114fb65ea65f8a742024a0a59a6a1d878b35d5c1b10a59406c80e168466",
+        "size": [
+          640,
+          552
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 95.0,
+        "ink_crush_fraction": 0.03656702387666855,
+        "edge_midtone_fraction": 0.3303734756097561,
+        "blur_proxy_px": 0.693812661567709,
+        "inner_paper_band_sd": 0.08609171956777573,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 804,
+        "speck_median_area": 5.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "08",
+      "role": "copy",
+      "source_id": "fire",
+      "original_page": 36,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.4,
+        0.93,
+        0.91
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 70.0,
+        "ink_crush_fraction": 0.002142524452724732,
+        "edge_midtone_fraction": 0.2466985108176454,
+        "blur_proxy_px": 0.6474063322303952,
+        "inner_paper_band_sd": 0.0,
+        "dark_edge_side": "left",
+        "edge_drop": 2.0,
+        "edge_width_px": 4,
+        "specks_per_mpx": 730,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.049790776353276354,
+            0.2002824120728051,
+            10.5,
+            10.5
+          ],
+          [
+            0.050488001432664756,
+            0.9539983233443026,
+            10.5,
+            10.5
+          ]
+        ],
+        "skew_deg": -0.36911072101550885,
+        "gutter_minus_center_deg": 0.36911072101550885
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 69.15,
+        "knee": 0.42042961588609,
+        "blur": 0.4971593051470877,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 2.0,
+        "edge_width": 4,
+        "specks_per_mpx": 0,
+        "speck_radius": 1.1283791670955126,
+        "margin_punches": [
+          [
+            0.049790776353276354,
+            0.2002824120728051,
+            10.5,
+            10.5
+          ],
+          [
+            0.050488001432664756,
+            0.9539983233443026,
+            10.5,
+            10.5
+          ]
+        ],
+        "skew": -0.36911072101550885,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011460,
+      "labels_sha256": [
+        "b0864f6161a393afa2720e3813aad0ad12312ada67548d5ea2b832c11924162e",
+        "464ac11796be87d9c0e44b972d61549f2eb842a7ce2b63bca6652aa2c459266a",
+        "9b17e6359b76271df34e0b425dc542525d462d38a5608785d3141a9416aafbf3",
+        "398eadf86d6ac12f39a3a7521683e84977f777bf293b3f70814bd822db3269de",
+        "d69bb2378191626880c6ae6d6b88519e5aff6c165dedcab57a9d0d13b7c4437e",
+        "19352d566e36b4c72afddbba3b36f57c88fbccbff58c77adc05d14fc44133f84",
+        "41d8dc470c26d0a6b7a3e195f150d9f5523d80d632ecbbbf4c94c5304dc1f937",
+        "e1e6b310f1a0d694d825987d64d21f47c1e6d25390ac45d4f7e4c43bae434f9f",
+        "dadded9d5d94daeacac7f197db9de2c7206420f1f1a1c7ab3aa0a6946cc77d03"
+      ],
+      "control": {
+        "path": "images/08-control.jpg",
+        "sha256": "8c02d523c55adb74110487d5928236ae6aa95c7335a1fe7e2135e05d9a2f399a",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/08-preview.jpg",
+        "sha256": "734fd03d277304af6094418cdf630a8cfeaa306dacd1e49fddf279e55c94cd1d",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/08-reference.jpg",
+        "sha256": "fc1828e354b05a51377f6b0645c9a633398a19816947060d5f9ff0fd67c4b97c",
+        "size": [
+          640,
+          458
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 67.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.5307706272124898,
+        "blur_proxy_px": 0.6048479735118496,
+        "inner_paper_band_sd": 0.030102724209427834,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 1102,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.049954971181556194,
+            0.2,
+            10.5,
+            10.5
+          ],
+          [
+            0.049954971181556194,
+            0.9541984732824428,
+            10.5,
+            10.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "09",
+      "role": "copy",
+      "source_id": "fay",
+      "original_page": 8,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.14,
+        0.95,
+        0.72
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 60.0,
+        "ink_crush_fraction": 0.017369206989599435,
+        "edge_midtone_fraction": 0.6093113352481464,
+        "blur_proxy_px": 0.6824012691077139,
+        "inner_paper_band_sd": 0.4382789134979248,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 2902,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.013754111842105263,
+            0.14785250798228447,
+            5.0,
+            5.0
+          ],
+          [
+            0.013322368421052633,
+            0.3048717684622515,
+            5.0,
+            5.0
+          ],
+          [
+            0.013354166666666667,
+            0.46150032615786035,
+            5.0,
+            5.0
+          ],
+          [
+            0.013583333333333333,
+            0.6187084148727985,
+            5.0,
+            5.0
+          ],
+          [
+            0.013354166666666667,
+            0.7746118721461187,
+            5.0,
+            5.0
+          ],
+          [
+            0.013474025974025975,
+            0.9320151472793352,
+            5.0,
+            5.0
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 28.55,
+        "knee": 0.17982903376928772,
+        "blur": 0.6044594689272613,
+        "band_sd": 0.06433803439140318,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 1,
+        "specks_per_mpx": 1350,
+        "speck_radius": 1.1283791670955126,
+        "margin_punches": [
+          [
+            0.013754111842105263,
+            0.14785250798228447,
+            5.0,
+            5.0
+          ],
+          [
+            0.013322368421052633,
+            0.3048717684622515,
+            5.0,
+            5.0
+          ],
+          [
+            0.013354166666666667,
+            0.46150032615786035,
+            5.0,
+            5.0
+          ],
+          [
+            0.013583333333333333,
+            0.6187084148727985,
+            5.0,
+            5.0
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011491,
+      "labels_sha256": [
+        "989223b7af47005faea05bc75da501a3485c6e997d72a64849a06b4cba066e65",
+        "0e3b66734eda0ff87fc7b16097b80fb0f77907e18175b9f3ea4d4eb42278296e",
+        "1bb52def609799440fdf392d8cdd7e96431120a9a06b381a110a8ebe82e1c280",
+        "9d21ddb2104ae23d6bb4d0ed4be7cf0e160ef7d4fe0b9d996dc71675a1e4fc39",
+        "1fde73f1a8935ef5d4a8936b885253b5b69efe5162925ed8e7656814a334c3c3",
+        "496072a34c6b46894cbb9a9116b439404b719590e48753bde74e781a4a3ecc0d",
+        "d43c38a629832836e86a4de038a69da3970f8710f2ab1dd656b8b7b1c468c066",
+        "4148d08629cc3767e461e3451badc685de592a4248bf836d24f2b63ca85c70ae",
+        "c98bb9cecfcc192ddd8d6366c04065a9ac78f788e81a066299b965141b0b1b97"
+      ],
+      "control": {
+        "path": "images/09-control.jpg",
+        "sha256": "bd29cecaa65438b71404a673a0e124132cc2e54870d0c6dc4ae9ddff8204551a",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/09-preview.jpg",
+        "sha256": "744c4507c2b5cbb30aaa57edc410ddd4e5fa3035596e6a3bc8bf4ef32a6cb8df",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/09-reference.jpg",
+        "sha256": "67fc9e2dbb5361b88b8354737998c9e15ac22408dc0e3425bcbce4b019bb1210",
+        "size": [
+          640,
+          511
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 63.0,
+        "ink_crush_fraction": 0.004432249894470241,
+        "edge_midtone_fraction": 0.5963483146067415,
+        "blur_proxy_px": 0.7737062407785361,
+        "inner_paper_band_sd": 1.2160136699676514,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 1508,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.01412828947368421,
+            0.14828445158698272,
+            5.5,
+            5.5
+          ],
+          [
+            0.013995295698924732,
+            0.3055076746285808,
+            5.5,
+            5.5
+          ],
+          [
+            0.014213709677419356,
+            0.46128211442173517,
+            5.5,
+            5.5
+          ],
+          [
+            0.014114583333333333,
+            0.6185750636132316,
+            5.5,
+            5.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "10",
+      "role": "copy",
+      "source_id": "fay",
+      "original_page": 11,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.21,
+        0.95,
+        0.76
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 62.0,
+        "ink_crush_fraction": 0.014750921932620788,
+        "edge_midtone_fraction": 0.6298543485912542,
+        "blur_proxy_px": 0.6754022817322501,
+        "inner_paper_band_sd": 0.43047788739204407,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 3792,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [
+          [
+            0.01372195512820513,
+            0.02656621728786677,
+            5.0,
+            5.5
+          ],
+          [
+            0.013368055555555555,
+            0.1911925671375843,
+            5.0,
+            5.0
+          ],
+          [
+            0.013375000000000001,
+            0.35664604810996564,
+            5.0,
+            4.5
+          ],
+          [
+            0.013352272727272727,
+            0.5207122774133083,
+            5.0,
+            5.0
+          ],
+          [
+            0.013681891025641027,
+            0.6859106529209622,
+            5.0,
+            5.0
+          ],
+          [
+            0.013260690789473683,
+            0.85244167118828,
+            5.0,
+            5.0
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": null
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 40.75,
+        "knee": 0.1909052170989898,
+        "blur": 0.5614103127317166,
+        "band_sd": 0.027909423410892475,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 1,
+        "specks_per_mpx": 1350,
+        "speck_radius": 0.9772050238058398,
+        "margin_punches": [
+          [
+            0.01372195512820513,
+            0.02656621728786677,
+            5.0,
+            5.5
+          ],
+          [
+            0.013368055555555555,
+            0.1911925671375843,
+            5.0,
+            5.0
+          ],
+          [
+            0.013375000000000001,
+            0.35664604810996564,
+            5.0,
+            4.5
+          ],
+          [
+            0.013352272727272727,
+            0.5207122774133083,
+            5.0,
+            5.0
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011522,
+      "labels_sha256": [
+        "fdcda84400c1e5a35d035f3204537fe6ca12da0f59e7b8d7955f2bc78405c1a5",
+        "50152a9a046c1946efcdb843c01c1dfc253c2d6d6eaab8b435b739da55c8c2d9",
+        "f948a2f8d497308d6862b85a287356127a18d6a2a346f1337ef8a2d5ccfd7359",
+        "bd4ae85e8403d0aad71eaf7fc51fef725f209c9ef20bcf8821a0d3baed517126",
+        "93359e597669c33863833ab1c91a27527893203f7cde866842a45ca289ab437b",
+        "669551f82c01bee9ecf811afea384cb75f29700f750697a8e85444dd3210ba66",
+        "6abc489d8254d796e00b3956ed3317af6876b0b50bacc32dd6afa74ad02a3811",
+        "52025aa602fdd753f653ed7c6500acfe3e653e225c15b7f4bb29a426515fb635",
+        "50c915175d2f483f7d6fc7e3001fabbfafb6ec95e332c1d36feabea8ed1eda81"
+      ],
+      "control": {
+        "path": "images/10-control.jpg",
+        "sha256": "a9707311450123cbd2cd90b36b43f4bf5ccc46f870ac918c67d9b2d5e6bf0730",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/10-preview.jpg",
+        "sha256": "2aea732c24d4e6550ef3859df8ea94227c4e36ae10ee11fcd2666d58d6be5142",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/10-reference.jpg",
+        "sha256": "01255d16a1b2e8811117b3594fdf79cb4f11a8945cc0c15cee23f3ac3701e057",
+        "size": [
+          640,
+          485
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 53.0,
+        "ink_crush_fraction": 4.810467577448528e-05,
+        "edge_midtone_fraction": 0.6489411764705882,
+        "blur_proxy_px": 0.8140034408190849,
+        "inner_paper_band_sd": 1.229693055152893,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 1870,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.014106721698113209,
+            0.026026213452398098,
+            5.5,
+            6.5
+          ],
+          [
+            0.014185393258426968,
+            0.19102839008491293,
+            5.5,
+            5.5
+          ],
+          [
+            0.0143125,
+            0.35725190839694654,
+            5.5,
+            4.5
+          ],
+          [
+            0.014185393258426968,
+            0.5207993824513252,
+            5.5,
+            5.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "11",
+      "role": "copy",
+      "source_id": "fay",
+      "original_page": 17,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.17,
+        0.95,
+        0.67
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 59.0,
+        "ink_crush_fraction": 0.01977618421379122,
+        "edge_midtone_fraction": 0.6185385794583547,
+        "blur_proxy_px": 0.6799364083363549,
+        "inner_paper_band_sd": 0.4224681854248047,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 3262,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [
+          [
+            0.01359577922077922,
+            0.09516198087626658,
+            5.0,
+            5.0
+          ],
+          [
+            0.0137890625,
+            0.27005494505494504,
+            5.0,
+            5.5
+          ],
+          [
+            0.013384789156626506,
+            0.4475837415596452,
+            5.0,
+            5.5
+          ],
+          [
+            0.01341796875,
+            0.6233241758241759,
+            5.0,
+            5.0
+          ],
+          [
+            0.01305379746835443,
+            0.7993323132563639,
+            5.0,
+            5.0
+          ],
+          [
+            0.012931743421052633,
+            0.9749566223250434,
+            5.0,
+            5.0
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 50.50000000000001,
+        "knee": 0.19881571973282444,
+        "blur": 0.45611609067860226,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 1,
+        "specks_per_mpx": 1350,
+        "speck_radius": 0.9772050238058398,
+        "margin_punches": [
+          [
+            0.01359577922077922,
+            0.09516198087626658,
+            5.0,
+            5.0
+          ],
+          [
+            0.0137890625,
+            0.27005494505494504,
+            5.0,
+            5.5
+          ],
+          [
+            0.013384789156626506,
+            0.4475837415596452,
+            5.0,
+            5.5
+          ],
+          [
+            0.01341796875,
+            0.6233241758241759,
+            5.0,
+            5.0
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011553,
+      "labels_sha256": [
+        "85c4c8f9bebadc2cdc40c6eaed3a399590edc09959e19f598248a1e781645a38",
+        "6517926511e893eb6d1c6d4f8881f5959ece330f12fc782e9fe1f0e24cb0dddb",
+        "729a955854b9a81391a3781df04e282ed588d402dde0c2f77b9b1c3b924f1df4",
+        "c5213796664953285f49d003501a9950be1669371ccace89b194d4f0b7bcbf2a",
+        "d55ff728cebbc95f7930b41f6c9c5eb6b931803ecfc337cf71a437a10005e412",
+        "928427dd96c3f781f2ea1245b38f1ebd10ee27873ef14ef93753de66d5a4faa3",
+        "a75e77e850439ae05431e1d1f917695e9193c3a183c384f26dd2e012cc0bfe7a",
+        "efa417211b4cc36482fdf17371ade41e28254a2c4d35908a0b508571e650fdb6",
+        "6dd27b9251eec8fc96b20df4c7e15ff226b54164afc82cdc03bfb4b2f96e7fab"
+      ],
+      "control": {
+        "path": "images/11-control.jpg",
+        "sha256": "61196293fb2e769f69abe4959a753da397df09dae40360b63aa4c1ba83b36219",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/11-preview.jpg",
+        "sha256": "311c57b57b5a60cf1afebcd31df39de22e599bd9440f52db0f930ce9b5f85b05",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/11-reference.jpg",
+        "sha256": "6970ac00cc6de5667a511f388605d729071f98e70fb0678166f4316d975fe50f",
+        "size": [
+          640,
+          455
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 52.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.5649997638947916,
+        "blur_proxy_px": 0.7429842469861545,
+        "inner_paper_band_sd": 1.2735306024551392,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 1844,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.014185393258426968,
+            0.09484518397804272,
+            5.5,
+            5.5
+          ],
+          [
+            0.014106721698113209,
+            0.27030102261270345,
+            5.5,
+            6.5
+          ],
+          [
+            0.014090401785714284,
+            0.44705561613958555,
+            5.5,
+            6.5
+          ],
+          [
+            0.014185393258426968,
+            0.623089458787203,
+            5.5,
+            5.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "12",
+      "role": "copy",
+      "source_id": "fay",
+      "original_page": 23,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.3,
+        0.95,
+        0.86
+      ],
+      "reference_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 66.0,
+        "ink_crush_fraction": 0.01111812728338821,
+        "edge_midtone_fraction": 0.613074588031223,
+        "blur_proxy_px": 0.679280099061899,
+        "inner_paper_band_sd": 0.4158550500869751,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 3754,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.0133203125,
+            0.028820850202429152,
+            5.0,
+            5.0
+          ],
+          [
+            0.013390031645569619,
+            0.19125711064418593,
+            5.0,
+            5.0
+          ],
+          [
+            0.013260690789473683,
+            0.3533720434689964,
+            5.0,
+            5.0
+          ],
+          [
+            0.013381410256410256,
+            0.5160126647980899,
+            5.0,
+            5.0
+          ],
+          [
+            0.01348458904109589,
+            0.6780267317397815,
+            5.0,
+            5.5
+          ],
+          [
+            0.0140625,
+            0.8403175771596825,
+            5.5,
+            4.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.8425242607404145
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink": 4.0,
+        "knee": 0.16,
+        "blur": 0.5669724560169985,
+        "band_sd": 0.0,
+        "edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width": 1,
+        "specks_per_mpx": 1350,
+        "speck_radius": 1.1283791670955126,
+        "margin_punches": [
+          [
+            0.0133203125,
+            0.028820850202429152,
+            5.0,
+            5.0
+          ],
+          [
+            0.013390031645569619,
+            0.19125711064418593,
+            5.0,
+            5.0
+          ],
+          [
+            0.013260690789473683,
+            0.3533720434689964,
+            5.0,
+            5.0
+          ],
+          [
+            0.013381410256410256,
+            0.5160126647980899,
+            5.0,
+            5.0
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011584,
+      "labels_sha256": [
+        "ef3202309fb9e5932a396ee002061222b81156a5fdcee2e86c4c78356233664b",
+        "464ac11796be87d9c0e44b972d61549f2eb842a7ce2b63bca6652aa2c459266a",
+        "9b17e6359b76271df34e0b425dc542525d462d38a5608785d3141a9416aafbf3",
+        "398eadf86d6ac12f39a3a7521683e84977f777bf293b3f70814bd822db3269de",
+        "d69bb2378191626880c6ae6d6b88519e5aff6c165dedcab57a9d0d13b7c4437e",
+        "19352d566e36b4c72afddbba3b36f57c88fbccbff58c77adc05d14fc44133f84",
+        "41d8dc470c26d0a6b7a3e195f150d9f5523d80d632ecbbbf4c94c5304dc1f937",
+        "e1e6b310f1a0d694d825987d64d21f47c1e6d25390ac45d4f7e4c43bae434f9f",
+        "dadded9d5d94daeacac7f197db9de2c7206420f1f1a1c7ab3aa0a6946cc77d03"
+      ],
+      "control": {
+        "path": "images/12-control.jpg",
+        "sha256": "6e48409ad52cc85c0205e47ad8cdbd28d51f394480fe09e75e57d4489c7fac47",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/12-preview.jpg",
+        "sha256": "41578345b9e3ff6333b800d6fea8107d0c997a631e76a976b88cae029f6a8a64",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/12-reference.jpg",
+        "sha256": "750e4db33c343b80dc705eed3a75958835443502de75abcbd05ba411b4a648a7",
+        "size": [
+          640,
+          494
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 255.0,
+        "paper_rgb": [
+          255.0,
+          255.0,
+          255.0
+        ],
+        "ink_floor": 101.0,
+        "ink_crush_fraction": 0.037614101353478126,
+        "edge_midtone_fraction": 0.5258035310095066,
+        "blur_proxy_px": 0.7584828540965511,
+        "inner_paper_band_sd": 1.430140495300293,
+        "dark_edge_side": "left",
+        "edge_drop": 0.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 995,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [
+          [
+            0.014123774509803922,
+            0.029157311779673702,
+            5.5,
+            5.5
+          ],
+          [
+            0.014123774509803922,
+            0.190989372848376,
+            5.5,
+            5.5
+          ],
+          [
+            0.012703125000000001,
+            0.352793893129771,
+            5.5,
+            5.5
+          ],
+          [
+            0.014047029702970299,
+            0.5161363464590734,
+            5.5,
+            5.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "13",
+      "role": "copy",
+      "source_id": "wolf",
+      "original_page": 12,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.16,
+        0.95,
+        0.71
+      ],
+      "reference_stats": {
+        "paper_gray": 193.0,
+        "paper_rgb": [
+          198.0,
+          194.0,
+          174.0
+        ],
+        "ink_floor": 21.0,
+        "ink_crush_fraction": 0.20398353472314434,
+        "edge_midtone_fraction": 0.43433466553102273,
+        "blur_proxy_px": 0.508282016511455,
+        "inner_paper_band_sd": 1.0836299657821655,
+        "dark_edge_side": "right",
+        "edge_drop": 9.0,
+        "edge_width_px": 30,
+        "specks_per_mpx": 76,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": -1.1184895317188506
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          198.0,
+          194.0,
+          174.0
+        ],
+        "ink": 21.0,
+        "knee": 0.3401646825034863,
+        "blur": 0.3316808486172089,
+        "band_sd": 0.6669298887252807,
+        "edge_side": "right",
+        "edge_drop": 9.0,
+        "edge_width": 30,
+        "specks_per_mpx": 105,
+        "speck_radius": 0.9772050238058398,
+        "margin_punches": [],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011615,
+      "labels_sha256": [
+        "3863e9176080d74e530a9875efc8c89ae59cb4fc6d457d163d1ced7264e19b5b",
+        "0e3b66734eda0ff87fc7b16097b80fb0f77907e18175b9f3ea4d4eb42278296e",
+        "1bb52def609799440fdf392d8cdd7e96431120a9a06b381a110a8ebe82e1c280",
+        "9d21ddb2104ae23d6bb4d0ed4be7cf0e160ef7d4fe0b9d996dc71675a1e4fc39",
+        "1fde73f1a8935ef5d4a8936b885253b5b69efe5162925ed8e7656814a334c3c3",
+        "496072a34c6b46894cbb9a9116b439404b719590e48753bde74e781a4a3ecc0d",
+        "d43c38a629832836e86a4de038a69da3970f8710f2ab1dd656b8b7b1c468c066",
+        "4148d08629cc3767e461e3451badc685de592a4248bf836d24f2b63ca85c70ae",
+        "c98bb9cecfcc192ddd8d6366c04065a9ac78f788e81a066299b965141b0b1b97"
+      ],
+      "control": {
+        "path": "images/13-control.jpg",
+        "sha256": "5390ec65bf2648543ba16189b8b602e4b08785ab0f6c33f891bd1b4805322ff2",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/13-preview.jpg",
+        "sha256": "704a64470fad8163149a765ac564ef5c157a0a2f686df4609d23e8f6271abb15",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/13-reference.jpg",
+        "sha256": "161959252fadbe01af2ea32afc35b56255185f19ade59322ccdaa8b369e72f65",
+        "size": [
+          640,
+          537
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 194.0,
+        "paper_rgb": [
+          200.0,
+          195.0,
+          175.0
+        ],
+        "ink_floor": 19.0,
+        "ink_crush_fraction": 0.4523094254600075,
+        "edge_midtone_fraction": 0.4826193118756937,
+        "blur_proxy_px": 0.5630233795987961,
+        "inner_paper_band_sd": 1.397478461265564,
+        "dark_edge_side": "right",
+        "edge_drop": 6.0,
+        "edge_width_px": 6,
+        "specks_per_mpx": 83,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "14",
+      "role": "copy",
+      "source_id": "wolf",
+      "original_page": 23,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.36,
+        0.94,
+        0.91
+      ],
+      "reference_stats": {
+        "paper_gray": 193.0,
+        "paper_rgb": [
+          198.0,
+          194.0,
+          172.0
+        ],
+        "ink_floor": 27.0,
+        "ink_crush_fraction": 0.13898345937151638,
+        "edge_midtone_fraction": 0.40362763403574287,
+        "blur_proxy_px": 0.4905512484936136,
+        "inner_paper_band_sd": 1.063905954360962,
+        "dark_edge_side": "left",
+        "edge_drop": 18.199996948242188,
+        "edge_width_px": 32,
+        "specks_per_mpx": 147,
+        "speck_median_area": 2.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": -2.931437266863636
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          198.0,
+          194.0,
+          172.0
+        ],
+        "ink": 27.0,
+        "knee": 0.2636476452919266,
+        "blur": 0.27957660092132186,
+        "band_sd": 0.8220043063163758,
+        "edge_side": "left",
+        "edge_drop": 18.199996948242188,
+        "edge_width": 32,
+        "specks_per_mpx": 196,
+        "speck_radius": 0.7978845608028654,
+        "margin_punches": [],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011646,
+      "labels_sha256": [
+        "13583320bf42a2b60cf1ff0c70287c25525852a1158bb219195414e3261b910c",
+        "50152a9a046c1946efcdb843c01c1dfc253c2d6d6eaab8b435b739da55c8c2d9",
+        "f948a2f8d497308d6862b85a287356127a18d6a2a346f1337ef8a2d5ccfd7359",
+        "bd4ae85e8403d0aad71eaf7fc51fef725f209c9ef20bcf8821a0d3baed517126",
+        "93359e597669c33863833ab1c91a27527893203f7cde866842a45ca289ab437b",
+        "669551f82c01bee9ecf811afea384cb75f29700f750697a8e85444dd3210ba66",
+        "6abc489d8254d796e00b3956ed3317af6876b0b50bacc32dd6afa74ad02a3811",
+        "52025aa602fdd753f653ed7c6500acfe3e653e225c15b7f4bb29a426515fb635",
+        "50c915175d2f483f7d6fc7e3001fabbfafb6ec95e332c1d36feabea8ed1eda81"
+      ],
+      "control": {
+        "path": "images/14-control.jpg",
+        "sha256": "5d00c4667f35d618adc670e1b3ddd2570999545a2fb7eb582b51538d99093288",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/14-preview.jpg",
+        "sha256": "d8206256c71bf65be4814643b4efda551e0d730eca19226a8b5e0de3255eba04",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/14-reference.jpg",
+        "sha256": "1441409464b34e104020bf94d89fd5c725bdc233348885cf3bbd8e815e92cc98",
+        "size": [
+          640,
+          510
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 194.0,
+        "paper_rgb": [
+          200.0,
+          195.0,
+          173.0
+        ],
+        "ink_floor": 27.0,
+        "ink_crush_fraction": 0.0966998821386478,
+        "edge_midtone_fraction": 0.34469107246118946,
+        "blur_proxy_px": 0.5948514359557078,
+        "inner_paper_band_sd": 1.2914332151412964,
+        "dark_edge_side": "left",
+        "edge_drop": 11.199996948242188,
+        "edge_width_px": 25,
+        "specks_per_mpx": 134,
+        "speck_median_area": 5.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "15",
+      "role": "copy",
+      "source_id": "wolf",
+      "original_page": 28,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.3,
+        0.94,
+        0.86
+      ],
+      "reference_stats": {
+        "paper_gray": 193.0,
+        "paper_rgb": [
+          198.0,
+          194.0,
+          174.0
+        ],
+        "ink_floor": 28.0,
+        "ink_crush_fraction": 0.13237100737100738,
+        "edge_midtone_fraction": 0.39030655213070575,
+        "blur_proxy_px": 0.4912348975092269,
+        "inner_paper_band_sd": 0.7084280252456665,
+        "dark_edge_side": "right",
+        "edge_drop": 7.75,
+        "edge_width_px": 10,
+        "specks_per_mpx": 99,
+        "speck_median_area": 2.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          198.0,
+          194.0,
+          174.0
+        ],
+        "ink": 28.0,
+        "knee": 0.28204449965059136,
+        "blur": 0.2729263373796549,
+        "band_sd": 0.14076732397079467,
+        "edge_side": "right",
+        "edge_drop": 7.75,
+        "edge_width": 10,
+        "specks_per_mpx": 84,
+        "speck_radius": 0.7978845608028654,
+        "margin_punches": [],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011677,
+      "labels_sha256": [
+        "d34602dfe6995c7ed02883141fc51fe0ee87201f0003a4e16b5f7772da453ffe",
+        "6517926511e893eb6d1c6d4f8881f5959ece330f12fc782e9fe1f0e24cb0dddb",
+        "729a955854b9a81391a3781df04e282ed588d402dde0c2f77b9b1c3b924f1df4",
+        "c5213796664953285f49d003501a9950be1669371ccace89b194d4f0b7bcbf2a",
+        "d55ff728cebbc95f7930b41f6c9c5eb6b931803ecfc337cf71a437a10005e412",
+        "928427dd96c3f781f2ea1245b38f1ebd10ee27873ef14ef93753de66d5a4faa3",
+        "a75e77e850439ae05431e1d1f917695e9193c3a183c384f26dd2e012cc0bfe7a",
+        "efa417211b4cc36482fdf17371ade41e28254a2c4d35908a0b508571e650fdb6",
+        "6dd27b9251eec8fc96b20df4c7e15ff226b54164afc82cdc03bfb4b2f96e7fab"
+      ],
+      "control": {
+        "path": "images/15-control.jpg",
+        "sha256": "0bb8d25619f51025f68baf1405936efb29d94cb1d6d7ec33d43b358fd9ea29bd",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/15-preview.jpg",
+        "sha256": "251088e2e946026f239ebdee994d8d215a5c3878a2182eabd0b209a88bdf5b0d",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/15-reference.jpg",
+        "sha256": "d45c91698e4737b24f91ddca810ee552147c244e372443e0fbee36c0b5731a0d",
+        "size": [
+          640,
+          506
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 194.0,
+        "paper_rgb": [
+          199.0,
+          194.0,
+          174.0
+        ],
+        "ink_floor": 27.0,
+        "ink_crush_fraction": 0.08957871396895788,
+        "edge_midtone_fraction": 0.4166666666666667,
+        "blur_proxy_px": 0.5948514359557078,
+        "inner_paper_band_sd": 1.225355625152588,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 103,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": -0.18305298584346993,
+        "gutter_minus_center_deg": 0.18305298584346993
+      }
+    },
+    {
+      "id": "16",
+      "role": "copy",
+      "source_id": "wolf",
+      "original_page": 38,
+      "original_crop_xyxy_fraction": [
+        0,
+        0.22,
+        0.94,
+        0.77
+      ],
+      "reference_stats": {
+        "paper_gray": 193.0,
+        "paper_rgb": [
+          198.0,
+          194.0,
+          174.0
+        ],
+        "ink_floor": 24.0,
+        "ink_crush_fraction": 0.161804745235317,
+        "edge_midtone_fraction": 0.3994789316046445,
+        "blur_proxy_px": 0.49574445138119216,
+        "inner_paper_band_sd": 2.03271746635437,
+        "dark_edge_side": "right",
+        "edge_drop": 9.0,
+        "edge_width_px": 23,
+        "specks_per_mpx": 94,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [
+          [
+            0.05583881578947368,
+            0.47508207137562214,
+            6.0,
+            11.0
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 2.2241703638304386
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          198.0,
+          194.0,
+          174.0
+        ],
+        "ink": 24.0,
+        "knee": 0.3005953827438736,
+        "blur": 0.275060871485681,
+        "band_sd": 2.138652503490448,
+        "edge_side": "right",
+        "edge_drop": 9.0,
+        "edge_width": 23,
+        "specks_per_mpx": 101,
+        "speck_radius": 0.9772050238058398,
+        "margin_punches": [
+          [
+            0.05583881578947368,
+            0.47508207137562214,
+            6.0,
+            11.0
+          ]
+        ],
+        "skew": 0.0,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011708,
+      "labels_sha256": [
+        "84583c74e1723e7e983a0fdaeae2d101bdad3a1abc0ab2ddf02ae66517047a9b",
+        "464ac11796be87d9c0e44b972d61549f2eb842a7ce2b63bca6652aa2c459266a",
+        "9b17e6359b76271df34e0b425dc542525d462d38a5608785d3141a9416aafbf3",
+        "398eadf86d6ac12f39a3a7521683e84977f777bf293b3f70814bd822db3269de",
+        "d69bb2378191626880c6ae6d6b88519e5aff6c165dedcab57a9d0d13b7c4437e",
+        "19352d566e36b4c72afddbba3b36f57c88fbccbff58c77adc05d14fc44133f84",
+        "41d8dc470c26d0a6b7a3e195f150d9f5523d80d632ecbbbf4c94c5304dc1f937",
+        "e1e6b310f1a0d694d825987d64d21f47c1e6d25390ac45d4f7e4c43bae434f9f",
+        "dadded9d5d94daeacac7f197db9de2c7206420f1f1a1c7ab3aa0a6946cc77d03"
+      ],
+      "control": {
+        "path": "images/16-control.jpg",
+        "sha256": "8735c4d35ac711e7f19143f0a926c615591d55ed095a9ad3cd82491172245604",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/16-preview.jpg",
+        "sha256": "4f0087dd196b9ca0eedaf8243be047bdc0ea914f48fe26da4b04274d61ef960b",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/16-reference.jpg",
+        "sha256": "4ec4083e4d18fc0cbb61e7feb9912ad6c27b8f4af9b493223055c5a2ae258e3b",
+        "size": [
+          640,
+          497
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 195.0,
+        "paper_rgb": [
+          201.0,
+          196.0,
+          176.0
+        ],
+        "ink_floor": 23.0,
+        "ink_crush_fraction": 0.22949357124114406,
+        "edge_midtone_fraction": 0.43568967123032504,
+        "blur_proxy_px": 0.5966788889482298,
+        "inner_paper_band_sd": 1.9956647157669067,
+        "dark_edge_side": "right",
+        "edge_drop": 6.0,
+        "edge_width_px": 5,
+        "specks_per_mpx": 91,
+        "speck_median_area": 4.5,
+        "near_margin_punch_candidates": [
+          [
+            0.05625,
+            0.474717426203191,
+            6.5,
+            11.5
+          ]
+        ],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "17",
+      "role": "flatbed",
+      "source_id": "plate",
+      "original_page": null,
+      "original_crop_xyxy_fraction": [
+        0.0,
+        0.75,
+        1,
+        1
+      ],
+      "reference_stats": {
+        "paper_gray": 242.0,
+        "paper_rgb": [
+          245.0,
+          245.0,
+          245.0
+        ],
+        "ink_floor": 26.0,
+        "ink_crush_fraction": 0.1476645925603891,
+        "edge_midtone_fraction": 0.687731288843246,
+        "blur_proxy_px": 0.7121614261711526,
+        "inner_paper_band_sd": 8.166611671447754,
+        "dark_edge_side": "left",
+        "edge_drop": 94.19999694824219,
+        "edge_width_px": 25,
+        "specks_per_mpx": 739,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [
+          [
+            0.03879310344827586,
+            0.9291744169409072,
+            4.5,
+            4.0
+          ]
+        ],
+        "skew_deg": -0.4845429293630191,
+        "gutter_minus_center_deg": 2.4947141792476213
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          245.0,
+          245.0,
+          245.0
+        ],
+        "ink": 4.0,
+        "knee": 0.16,
+        "blur": 0.9337832045577942,
+        "band_sd": 4.2,
+        "edge_side": "left",
+        "edge_drop": 94.19999694824219,
+        "edge_width": 25,
+        "specks_per_mpx": 560,
+        "speck_radius": 0.9772050238058398,
+        "margin_punches": [],
+        "skew": -0.4845429293630191,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011739,
+      "labels_sha256": [
+        "697b3c72c8caf56b9a0ab71d0187d7e7c12036571158b41a28a591c81b1a7fd4",
+        "0e3b66734eda0ff87fc7b16097b80fb0f77907e18175b9f3ea4d4eb42278296e",
+        "1bb52def609799440fdf392d8cdd7e96431120a9a06b381a110a8ebe82e1c280",
+        "9d21ddb2104ae23d6bb4d0ed4be7cf0e160ef7d4fe0b9d996dc71675a1e4fc39",
+        "1fde73f1a8935ef5d4a8936b885253b5b69efe5162925ed8e7656814a334c3c3",
+        "496072a34c6b46894cbb9a9116b439404b719590e48753bde74e781a4a3ecc0d",
+        "d43c38a629832836e86a4de038a69da3970f8710f2ab1dd656b8b7b1c468c066",
+        "4148d08629cc3767e461e3451badc685de592a4248bf836d24f2b63ca85c70ae",
+        "c98bb9cecfcc192ddd8d6366c04065a9ac78f788e81a066299b965141b0b1b97"
+      ],
+      "control": {
+        "path": "images/17-control.jpg",
+        "sha256": "116681c30434f6ce66d2c74e79ef28c8f545994b8a5c443756d0eaea33f34433",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/17-preview.jpg",
+        "sha256": "0cfff1993db2a73115a8748663da9f7ac3777e7ed6dda8b9c19a7fe0b0a36141",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/17-reference.jpg",
+        "sha256": "499dfbd274be425fe673bf77554df3f2d72792184351c54be154ef1fc8226708",
+        "size": [
+          640,
+          241
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 248.0,
+        "paper_rgb": [
+          248.0,
+          248.0,
+          248.0
+        ],
+        "ink_floor": 154.0,
+        "ink_crush_fraction": 0.00023150157710449403,
+        "edge_midtone_fraction": 0.5113453720336579,
+        "blur_proxy_px": 0.6048479735118496,
+        "inner_paper_band_sd": 2.639695405960083,
+        "dark_edge_side": "left",
+        "edge_drop": 53.399993896484375,
+        "edge_width_px": 34,
+        "specks_per_mpx": 785,
+        "speck_median_area": 5.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    },
+    {
+      "id": "18",
+      "role": "flatbed",
+      "source_id": "plate",
+      "original_page": null,
+      "original_crop_xyxy_fraction": [
+        0.03,
+        0.03,
+        0.95,
+        0.39
+      ],
+      "reference_stats": {
+        "paper_gray": 233.0,
+        "paper_rgb": [
+          238.0,
+          238.0,
+          238.0
+        ],
+        "ink_floor": 15.0,
+        "ink_crush_fraction": 0.24760897025772266,
+        "edge_midtone_fraction": 0.8101438801655607,
+        "blur_proxy_px": 0.6847985600591522,
+        "inner_paper_band_sd": 8.191118240356445,
+        "dark_edge_side": "right",
+        "edge_drop": 44.600006103515625,
+        "edge_width_px": 33,
+        "specks_per_mpx": 1965,
+        "speck_median_area": 2.0,
+        "near_margin_punch_candidates": [
+          [
+            0.005610795454545454,
+            0.5593199903544731,
+            3.5,
+            3.5
+          ],
+          [
+            0.07663690476190477,
+            0.830491347732727,
+            3.0,
+            3.5
+          ],
+          [
+            0.0454375,
+            0.9315649867374005,
+            3.0,
+            5.5
+          ],
+          [
+            0.01298828125,
+            0.9414787798408488,
+            4.0,
+            5.5
+          ]
+        ],
+        "skew_deg": 3.764034864905718,
+        "gutter_minus_center_deg": -5.825844871495933
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          238.0,
+          238.0,
+          238.0
+        ],
+        "ink": 4.0,
+        "knee": 0.16,
+        "blur": 0.6012796984002737,
+        "band_sd": 4.2,
+        "edge_side": "right",
+        "edge_drop": 44.600006103515625,
+        "edge_width": 33,
+        "specks_per_mpx": 1350,
+        "speck_radius": 0.7978845608028654,
+        "margin_punches": [],
+        "skew": 2.2,
+        "gutter_bend_deg": 0
+      },
+      "seed": 26011770,
+      "labels_sha256": [
+        "f66cd7bc09b8da1efdc0f241cf4ba45413e6c7eb3920066a3a6f1d5c2c920a8d",
+        "50152a9a046c1946efcdb843c01c1dfc253c2d6d6eaab8b435b739da55c8c2d9",
+        "f948a2f8d497308d6862b85a287356127a18d6a2a346f1337ef8a2d5ccfd7359",
+        "bd4ae85e8403d0aad71eaf7fc51fef725f209c9ef20bcf8821a0d3baed517126",
+        "93359e597669c33863833ab1c91a27527893203f7cde866842a45ca289ab437b",
+        "669551f82c01bee9ecf811afea384cb75f29700f750697a8e85444dd3210ba66",
+        "6abc489d8254d796e00b3956ed3317af6876b0b50bacc32dd6afa74ad02a3811",
+        "52025aa602fdd753f653ed7c6500acfe3e653e225c15b7f4bb29a426515fb635",
+        "50c915175d2f483f7d6fc7e3001fabbfafb6ec95e332c1d36feabea8ed1eda81"
+      ],
+      "control": {
+        "path": "images/18-control.jpg",
+        "sha256": "9ba31e6f87f1f6f1eac27f8ec13907a2f80fbc2fdd3c5fcf3854335a91c91b78",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/18-preview.jpg",
+        "sha256": "63c1b3183307c3d15a1039b9283b454551b64e8851632b2af04ec4b1f774ef94",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/18-reference.jpg",
+        "sha256": "f0648e9927860cc0d2eb58404f9f987f1a4185c9aa934fa2d70f3f9fef9083ea",
+        "size": [
+          640,
+          377
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 241.0,
+        "paper_rgb": [
+          241.0,
+          241.0,
+          241.0
+        ],
+        "ink_floor": 29.0,
+        "ink_crush_fraction": 0.13051322223804776,
+        "edge_midtone_fraction": 0.6408847245371413,
+        "blur_proxy_px": 0.7354414212617717,
+        "inner_paper_band_sd": 2.359579563140869,
+        "dark_edge_side": "right",
+        "edge_drop": 28.0,
+        "edge_width_px": 46,
+        "specks_per_mpx": 1155,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": -2.18272213522048,
+        "gutter_minus_center_deg": 0.42931727514894047
+      }
+    },
+    {
+      "id": "19",
+      "role": "spine",
+      "source_id": "book",
+      "original_page": null,
+      "original_crop_xyxy_fraction": [
+        0.36,
+        0.0,
+        0.68,
+        0.27
+      ],
+      "reference_stats": {
+        "paper_gray": 236.0,
+        "paper_rgb": [
+          240.0,
+          236.0,
+          224.0
+        ],
+        "ink_floor": 145.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.9576155318567131,
+        "blur_proxy_px": 1.0677572798979524,
+        "inner_paper_band_sd": 0.40359845757484436,
+        "dark_edge_side": "left",
+        "edge_drop": 5.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 80,
+        "speck_median_area": 3.0,
+        "near_margin_punch_candidates": [
+          [
+            0.024427083333333332,
+            0.31829836829836833,
+            4.0,
+            4.5
+          ],
+          [
+            0.043647959183673465,
+            0.7903144474573046,
+            11.5,
+            11.5
+          ]
+        ],
+        "skew_deg": 0.7718338710139265,
+        "gutter_minus_center_deg": -0.7718338710139265
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          240.0,
+          236.0,
+          224.0
+        ],
+        "ink": 76.05,
+        "knee": 0.16,
+        "blur": 1.35,
+        "band_sd": 0.40018821954727174,
+        "edge_side": "left",
+        "edge_drop": 5.0,
+        "edge_width": 1,
+        "specks_per_mpx": 0,
+        "speck_radius": 0.9772050238058398,
+        "margin_punches": [],
+        "skew": 0.7718338710139265,
+        "gutter_bend_deg": -0.7718338710139265
+      },
+      "seed": 26011801,
+      "labels_sha256": [
+        "8e925bfea5ebd831e25c3b2accee050a2dc1f81aa08cd1f2d416c517be5e5d7a",
+        "6517926511e893eb6d1c6d4f8881f5959ece330f12fc782e9fe1f0e24cb0dddb",
+        "729a955854b9a81391a3781df04e282ed588d402dde0c2f77b9b1c3b924f1df4",
+        "c5213796664953285f49d003501a9950be1669371ccace89b194d4f0b7bcbf2a",
+        "d55ff728cebbc95f7930b41f6c9c5eb6b931803ecfc337cf71a437a10005e412",
+        "928427dd96c3f781f2ea1245b38f1ebd10ee27873ef14ef93753de66d5a4faa3",
+        "a75e77e850439ae05431e1d1f917695e9193c3a183c384f26dd2e012cc0bfe7a",
+        "efa417211b4cc36482fdf17371ade41e28254a2c4d35908a0b508571e650fdb6",
+        "6dd27b9251eec8fc96b20df4c7e15ff226b54164afc82cdc03bfb4b2f96e7fab"
+      ],
+      "control": {
+        "path": "images/19-control.jpg",
+        "sha256": "b4fda09707f9c05a81f6eac630baf76c5df70d48ac7eddcf6640e0e81263a6a6",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/19-preview.jpg",
+        "sha256": "b432d0938ce57f46cb3cb137a682ec535aea7bec9d477f43fb3be301c3371106",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/19-reference.jpg",
+        "sha256": "c9c8d757c914f3cf1a2c37f4de48124adc931fdfbee361c0c9439c26d0a8aaab",
+        "size": [
+          640,
+          429
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 237.0,
+        "paper_rgb": [
+          240.0,
+          236.0,
+          224.0
+        ],
+        "ink_floor": 164.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.6778830963665087,
+        "blur_proxy_px": 0.8825086808880178,
+        "inner_paper_band_sd": 0.3691768944263458,
+        "dark_edge_side": "left",
+        "edge_drop": 1.0,
+        "edge_width_px": 0,
+        "specks_per_mpx": 747,
+        "speck_median_area": 4.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": -0.4092486080349388,
+        "gutter_minus_center_deg": -3.2050299696169047
+      }
+    },
+    {
+      "id": "20",
+      "role": "spine",
+      "source_id": "book2",
+      "original_page": null,
+      "original_crop_xyxy_fraction": [
+        0.092,
+        0.032,
+        0.81,
+        0.17
+      ],
+      "reference_stats": {
+        "paper_gray": 246.0,
+        "paper_rgb": [
+          249.0,
+          246.0,
+          237.0
+        ],
+        "ink_floor": 170.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.6998359759431383,
+        "blur_proxy_px": 0.3445410603466919,
+        "inner_paper_band_sd": 1.282562017440796,
+        "dark_edge_side": "right",
+        "edge_drop": 11.0,
+        "edge_width_px": 37,
+        "specks_per_mpx": 679,
+        "speck_median_area": 2.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": -0.588473194116952
+      },
+      "fitted_settings": {
+        "paper_rgb": [
+          249.0,
+          246.0,
+          237.0
+        ],
+        "ink": 116.0,
+        "knee": 0.16,
+        "blur": 0.2,
+        "band_sd": 1.5077034354209902,
+        "edge_side": "right",
+        "edge_drop": 11.0,
+        "edge_width": 37,
+        "specks_per_mpx": 871,
+        "speck_radius": 0.7978845608028654,
+        "margin_punches": [],
+        "skew": 0.0,
+        "gutter_bend_deg": -0.588473194116952
+      },
+      "seed": 26011832,
+      "labels_sha256": [
+        "40402a77b8e7a96b28a3bf7e133ad524d1fc851ce63e685b757e24c8fdd8515b",
+        "464ac11796be87d9c0e44b972d61549f2eb842a7ce2b63bca6652aa2c459266a",
+        "9b17e6359b76271df34e0b425dc542525d462d38a5608785d3141a9416aafbf3",
+        "398eadf86d6ac12f39a3a7521683e84977f777bf293b3f70814bd822db3269de",
+        "d69bb2378191626880c6ae6d6b88519e5aff6c165dedcab57a9d0d13b7c4437e",
+        "19352d566e36b4c72afddbba3b36f57c88fbccbff58c77adc05d14fc44133f84",
+        "41d8dc470c26d0a6b7a3e195f150d9f5523d80d632ecbbbf4c94c5304dc1f937",
+        "e1e6b310f1a0d694d825987d64d21f47c1e6d25390ac45d4f7e4c43bae434f9f",
+        "dadded9d5d94daeacac7f197db9de2c7206420f1f1a1c7ab3aa0a6946cc77d03"
+      ],
+      "control": {
+        "path": "images/20-control.jpg",
+        "sha256": "cc56d7d708ab8512c732cb503219c6b9c8a406939027a73ead822a7af9bf041b",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "preview": {
+        "path": "images/20-preview.jpg",
+        "sha256": "00ada301c349643acc099cba130562bcdc1febaf206f522b1ed14be52ebc07ec",
+        "size": [
+          640,
+          655
+        ]
+      },
+      "reference": {
+        "path": "images/20-reference.jpg",
+        "sha256": "d82ac4b5706abdce5694ca10f30e9885ba86202a2a8c756c782d458f904b9e44",
+        "size": [
+          640,
+          92
+        ]
+      },
+      "preview_stats": {
+        "paper_gray": 247.0,
+        "paper_rgb": [
+          250.0,
+          247.0,
+          238.0
+        ],
+        "ink_floor": 116.0,
+        "ink_crush_fraction": 0.0,
+        "edge_midtone_fraction": 0.18805526036131776,
+        "blur_proxy_px": 0.49303244087346876,
+        "inner_paper_band_sd": 1.3875818252563477,
+        "dark_edge_side": "right",
+        "edge_drop": 7.0,
+        "edge_width_px": 9,
+        "specks_per_mpx": 670,
+        "speck_median_area": 5.0,
+        "near_margin_punch_candidates": [],
+        "skew_deg": 0.0,
+        "gutter_minus_center_deg": 0.0
+      }
+    }
+  ]
+}
