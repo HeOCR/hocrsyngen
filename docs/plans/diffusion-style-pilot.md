@@ -49,7 +49,7 @@ Select transform settings and checkpoints on **real dev data only**, through eva
 
 ## Stage 1 job specification
 
-The first job produces paper textures and paired inputs. A second job trains the two OCR arms once the feasibility output and real-dev protocol are accepted. Both use the same stage 1 budget. The job entry points below are implementation interfaces. Before launch, the staged scripts need a local fixture smoke, source clearance, final input hashes and lead approval to spend.
+The first job produces paper textures and a verified list of accepted line pairs. A second job trains the two OCR arms once the feasibility output and real-dev protocol are accepted. Both use the same stage 1 budget. The [standalone job bundle](../../experiments/diffusion_style_pilot/README.md) provides the entry points. Before launch, finalize source clearance, input hashes, dependency staging and lead approval to spend.
 
 ### GPU job and outputs
 
@@ -61,7 +61,7 @@ Use one secure-cloud RTX 4090, 24 GB, 60 GB ephemeral container disk and no pers
 | Synthesize paper | Draw 128 deterministic 64×64 tiles with DDIM at 50 steps. Use reflection and 16-pixel overlap with linear blending. Limit background-only intensity changes to ±12 gray levels relative to a fixed background of 243. Apply the same rule on every line. |
 | Lock the glyphs | Render with preset `none`. Derive alpha as `255 - render_gray`. Composite neutral paper for controls and generated paper for treatment only where alpha equals zero. Keep every pixel with alpha greater than zero identical across arms, with unchanged dimensions. Verify pixel equality on protected support and exact geometry by hash. Treat the unchanged preset render as the source of the ink pixels and neutralize its fully transparent background identically in both arms before applying the treatment. |
 | Filter pairs | Require exact label agreement from Tesseract 5.5.3 with stock `tessdata_best/heb`, using `--oem 1 --psm 13`, and an [independently trained Hebrew ONNX line recognizer](https://huggingface.co/Rivok/paddleocr-hebrew/tree/c6bfad5d207024ef66927dd5d061308cb407a496), using `server-svtrv2` in line mode at the linked weight revision and [pinned decoder code](https://github.com/RivoksLab/paddleocr-hebrew/tree/3baae91ad6479ef0473f901b4ed96366ae6c1670). Freeze the stock model hash and both decoders before running. Verify logical order, character coverage and negative controls on authored fixtures. Both readers must match on both images. Apply NFC and whitespace collapse only. This first pilot uses unpointed input because the two readers have limited niqqud coverage. Stop if the reader contract or coverage fails. |
-| Return and audit | Return weights, tile bytes with hashes in JSONL, the input and output manifests, separate paired `.lstmf` files, accepted IDs and rejection counts, job log and version metadata. Keep logs free of source text or personal information. Use the tile export and original images to reproduce a locally reviewed montage for the blinded label audit. Preserve the results only after verified pull and teardown. |
+| Return and audit | Return weights, tile bytes with hashes in JSONL, accepted pair IDs and pixel hashes, rejection counts, job log and version metadata. Keep logs free of source text or personal information. Reconstruct the images locally for the blinded audit and encode the verified pairs locally for the CPU job. The generic runner filters `.lstmf` from its result pull. Preserve the results only after verified pull and teardown. |
 
 Expected duration exceeds 30 minutes. Tell the lead before queueing. After the source and text clearance and lead's spend OK, use the following invocation. `STAGE` must point to the staged, policy-approved input root's parent. Before running, verify the live quote and use the checkout whose behavior was checked.
 
@@ -104,7 +104,7 @@ Use one GPU launch and at most one CPU launch. The runner quotes compute plus di
 
 | Job | Limit and accepted tariff | Worst case with drift, disk and billing rounding | Allocation |
 | --- | --- | --- | --- |
-| GPU texture and paired-list feasibility | 6 h wall time, 15 min allowance, at most $1.00/h compute, 60 GB disk at $0.012/h, `--run-cap 6.33` | $6.66 | $8 |
+| GPU texture and label-filter feasibility | 6 h wall time, 15 min allowance, at most $1.00/h compute, 60 GB disk at $0.012/h, `--run-cap 6.33` | $6.66 | $8 |
 | CPU matched OCR arms | 4 h wall time, 15 min allowance, at most $1.10/h compute, 40 GB disk at $0.008/h, `--run-cap 4.71` | $4.97 | $6 |
 | Stage contingency for teardown or billing variation | Keep unallocated and count all spend against the cap. | $6 available | $6 |
 | Stage 1 ceiling | Confirm remaining budget and the lead's OK for each launch. | $11.63 planned maximum across both jobs | **$20** |
