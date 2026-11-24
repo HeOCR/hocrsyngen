@@ -179,3 +179,25 @@ pages across duplex, photocopy, bound-book and phone treatments.
 
 [Realism v3](realism_v3_preview/README.md) compares twenty new synthetic
 treatments with real photocopy, flatbed and bound-volume crops.
+
+## Synthetic TRAIN capture defaults
+
+Use `train_realism.render_train_scan` with `flatbed` for loose sheets or
+`bound` for books and prose laid out as bound pages. The presets lock the
+fitted parameters of [Realism v3 pairs 17–20](realism_v3_preview/README.md).
+The v3 round stains and spots are applied to both scan types. The renderer
+records the preset hash and maps the labels through the same skew and gutter
+bend as the pixels.
+
+Use `train_realism.render_train_scanner` for `photocopy` and `old-color`.
+Reserve 5% of synthetic TRAIN visits for each. Use `scanner_quotas` for
+integer 55/35/10 light/medium/harsh allocations or omit the band for a seeded
+draw from the same mix. The photocopy result is one-bit. Its pixels come from
+the [approved LookScanned-based profile](BW_PHOTOCOPY.md). The v3 photocopy
+preview is historical. The [confirmation gallery](photocopy_confirmation/README.md)
+uses the production route.
+
+Pass original page annotations in pixel-edge coordinates. The capture result
+carries the transformed lines, including their original labels, and the
+source-to-capture map. Phone capture continues to use its own fitted optics
+and geometry.

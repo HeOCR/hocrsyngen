@@ -8,6 +8,10 @@ scan crops for edge and spine cues.
 [Photocopies](#photocopies) · [Flatbed and bound scans](#flatbed-and-bound-scans)
 · [Measurements](#what-changed-from-v2)
 
+The sixteen photocopy examples are historical. TRAIN uses the approved
+[LookScanned photocopy profile](../BW_PHOTOCOPY.md). Pairs 17–20 supply
+the locked flatbed and bound presets.
+
 ## What changed from v2
 
 V2 made platen scans too gray and used heavy black bands and screening on

@@ -1,0 +1,969 @@
+{
+  "schema": "heocr.photocopy_confirmation.v1",
+  "licence": "CC0-1.0",
+  "copy_sha256": "f00c945e21d92f357b7e98bfe00fe809a139a75b46d95afdb6d548752ef1007f",
+  "screened_manifest_sha256": "c023c780e3a3fdd6429a762e3292379c4cad6563520a9e2e57a459e2b7216569",
+  "source_ppi": 200,
+  "pairs": [
+    {
+      "id": 1,
+      "band": "mild",
+      "seed": 26012400,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 0.8435,
+      "parameters": {
+        "severity": 0.1347666125853477,
+        "rotate_deg": 0.3684582657316846,
+        "ppi": 183.15417342683153,
+        "blur_px": 0.283799149090238,
+        "brightness": 0.9582616693707325,
+        "contrast": 0.20272418965122724,
+        "noise": 0.20390664503413908,
+        "threshold": 126.37060818460971,
+        "toner_speckle": 2.0107495943901078e-05,
+        "profile": "photocopy",
+        "band": "mild",
+        "seed": 26012400,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9999793224133195,
+              -0.0064343055694654734,
+              3.9991946946752206
+            ],
+            [
+              0.006427227515362223,
+              0.9999793224133197,
+              -3.0722491036320405
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "d16304b414f60eca27fc473b1361734795be2a968725b16d2c2ff427a3c45d44",
+        "0e3b66734eda0ff87fc7b16097b80fb0f77907e18175b9f3ea4d4eb42278296e",
+        "1bb52def609799440fdf392d8cdd7e96431120a9a06b381a110a8ebe82e1c280",
+        "9d21ddb2104ae23d6bb4d0ed4be7cf0e160ef7d4fe0b9d996dc71675a1e4fc39",
+        "1fde73f1a8935ef5d4a8936b885253b5b69efe5162925ed8e7656814a334c3c3",
+        "496072a34c6b46894cbb9a9116b439404b719590e48753bde74e781a4a3ecc0d",
+        "d43c38a629832836e86a4de038a69da3970f8710f2ab1dd656b8b7b1c468c066",
+        "4148d08629cc3767e461e3451badc685de592a4248bf836d24f2b63ca85c70ae",
+        "c98bb9cecfcc192ddd8d6366c04065a9ac78f788e81a066299b965141b0b1b97"
+      ],
+      "control": {
+        "path": "images/01-control.png",
+        "sha256": "e7748972bf5e1af122bcc0db5d4092d17a40e3dfb224093d51a00c98884203d3"
+      },
+      "photocopy": {
+        "path": "images/01-photocopy.png",
+        "sha256": "e3fb0fecc15a9de609b808de8a71bacf719e0ad235664c8694ccb630b0f24ec7"
+      }
+    },
+    {
+      "id": 2,
+      "band": "mild",
+      "seed": 26012500,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 0.9847,
+      "parameters": {
+        "severity": 0.24112996798963035,
+        "rotate_deg": 0.5014124599870379,
+        "ppi": 169.8587540012962,
+        "blur_px": 0.3183672395966299,
+        "brightness": 0.9529435016005184,
+        "contrast": 0.15751976360440711,
+        "noise": 0.24645198719585212,
+        "threshold": 126.66310741197148,
+        "toner_speckle": 2.808474759922228e-05,
+        "profile": "photocopy",
+        "band": "mild",
+        "seed": 26012500,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9999617076330924,
+              -0.008753611265537942,
+              5.445619320749075
+            ],
+            [
+              0.00874876267479327,
+              0.9999617076330926,
+              -4.1756648164181955
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "9833534634a2a53a30c670637387b862b53f8b8f86e95a3e81e5c6ca05c30ba0",
+        "50152a9a046c1946efcdb843c01c1dfc253c2d6d6eaab8b435b739da55c8c2d9",
+        "f948a2f8d497308d6862b85a287356127a18d6a2a346f1337ef8a2d5ccfd7359",
+        "bd4ae85e8403d0aad71eaf7fc51fef725f209c9ef20bcf8821a0d3baed517126",
+        "93359e597669c33863833ab1c91a27527893203f7cde866842a45ca289ab437b",
+        "669551f82c01bee9ecf811afea384cb75f29700f750697a8e85444dd3210ba66",
+        "6abc489d8254d796e00b3956ed3317af6876b0b50bacc32dd6afa74ad02a3811",
+        "52025aa602fdd753f653ed7c6500acfe3e653e225c15b7f4bb29a426515fb635",
+        "50c915175d2f483f7d6fc7e3001fabbfafb6ec95e332c1d36feabea8ed1eda81"
+      ],
+      "control": {
+        "path": "images/02-control.png",
+        "sha256": "3ccc5463fff1c7fc9b1abc4a3d0ed43b1136f42ca766b0317730891ca1055822"
+      },
+      "photocopy": {
+        "path": "images/02-photocopy.png",
+        "sha256": "4f31772b683522806c67f9b7d1ddcb359d39d8b590936377c0b79e3edbc9fa63"
+      }
+    },
+    {
+      "id": 3,
+      "band": "mild",
+      "seed": 26012600,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 0.9553,
+      "parameters": {
+        "severity": 0.31701779346272185,
+        "rotate_deg": 0.5962722418284022,
+        "ppi": 160.37277581715978,
+        "blur_px": 0.3430307828753846,
+        "brightness": 0.9491491103268639,
+        "contrast": 0.12526743777834323,
+        "noise": 0.27680711738508873,
+        "threshold": 126.87179893202249,
+        "toner_speckle": 3.377633450970414e-05,
+        "profile": "photocopy",
+        "band": "mild",
+        "seed": 26012600,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9999458485607112,
+              -0.010400622356069904,
+              6.474378551621902
+            ],
+            [
+              0.010412833241259902,
+              0.9999458485607112,
+              -4.964586063445728
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "19411cc2bfa97882462a638381b9ff63f64a08bf7b5882c176137411bfdb7ab7",
+        "6517926511e893eb6d1c6d4f8881f5959ece330f12fc782e9fe1f0e24cb0dddb",
+        "729a955854b9a81391a3781df04e282ed588d402dde0c2f77b9b1c3b924f1df4",
+        "c5213796664953285f49d003501a9950be1669371ccace89b194d4f0b7bcbf2a",
+        "d55ff728cebbc95f7930b41f6c9c5eb6b931803ecfc337cf71a437a10005e412",
+        "928427dd96c3f781f2ea1245b38f1ebd10ee27873ef14ef93753de66d5a4faa3",
+        "a75e77e850439ae05431e1d1f917695e9193c3a183c384f26dd2e012cc0bfe7a",
+        "efa417211b4cc36482fdf17371ade41e28254a2c4d35908a0b508571e650fdb6",
+        "6dd27b9251eec8fc96b20df4c7e15ff226b54164afc82cdc03bfb4b2f96e7fab"
+      ],
+      "control": {
+        "path": "images/03-control.png",
+        "sha256": "9deb53442d3d79a8a471f31890991b83fee26b24180f272c1ab8e00d3e84b869"
+      },
+      "photocopy": {
+        "path": "images/03-photocopy.png",
+        "sha256": "bc781a2bcd2dc1d4b7ba089d22c6a09f7df31b64e7ed751ed0cfb11aed2f3ee9"
+      }
+    },
+    {
+      "id": 4,
+      "band": "mild",
+      "seed": 26012700,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 0.8646,
+      "parameters": {
+        "severity": 0.32514495897668916,
+        "rotate_deg": 0.6064311987208614,
+        "ppi": 159.35688012791385,
+        "blur_px": 0.34567211166742395,
+        "brightness": 0.9487427520511655,
+        "contrast": 0.12181339243490712,
+        "noise": 0.28005798359067563,
+        "threshold": 126.89414863718589,
+        "toner_speckle": 3.438587192325169e-05,
+        "profile": "photocopy",
+        "band": "mild",
+        "seed": 26012700,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9999439876547104,
+              -0.01058268458567271,
+              6.588150368856041
+            ],
+            [
+              0.010585362559872325,
+              0.9999439876547106,
+              -5.046246374659212
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "91beff154c7cd23f56653381d8a5f209c6b9472a23d9a318185f82fa22a0c903",
+        "464ac11796be87d9c0e44b972d61549f2eb842a7ce2b63bca6652aa2c459266a",
+        "9b17e6359b76271df34e0b425dc542525d462d38a5608785d3141a9416aafbf3",
+        "398eadf86d6ac12f39a3a7521683e84977f777bf293b3f70814bd822db3269de",
+        "d69bb2378191626880c6ae6d6b88519e5aff6c165dedcab57a9d0d13b7c4437e",
+        "19352d566e36b4c72afddbba3b36f57c88fbccbff58c77adc05d14fc44133f84",
+        "41d8dc470c26d0a6b7a3e195f150d9f5523d80d632ecbbbf4c94c5304dc1f937",
+        "e1e6b310f1a0d694d825987d64d21f47c1e6d25390ac45d4f7e4c43bae434f9f",
+        "dadded9d5d94daeacac7f197db9de2c7206420f1f1a1c7ab3aa0a6946cc77d03"
+      ],
+      "control": {
+        "path": "images/04-control.png",
+        "sha256": "e76a91490e4cdfde9698d80ea064766b00b53fb145c2853054686a9d77c943c7"
+      },
+      "photocopy": {
+        "path": "images/04-photocopy.png",
+        "sha256": "fc11ef09d164b0405f5ace8d7f5722765e1e33197496e5d0b39fe18facd7383c"
+      }
+    },
+    {
+      "id": 5,
+      "band": "mild",
+      "seed": 26012800,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 0.9754,
+      "parameters": {
+        "severity": 0.02765476853304847,
+        "rotate_deg": 0.2345684606663106,
+        "ppi": 196.54315393336893,
+        "blur_px": 0.24898779977324073,
+        "brightness": 0.9636172615733476,
+        "contrast": 0.2482467233734544,
+        "noise": 0.16106190741321938,
+        "threshold": 126.07605061346588,
+        "toner_speckle": 1.2074107639978636e-05,
+        "profile": "photocopy",
+        "band": "mild",
+        "seed": 26012800,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9999916196266209,
+              -0.00409720159399733,
+              2.5442875675002976
+            ],
+            [
+              0.004090761985414344,
+              0.999991619626621,
+              -1.9583699215039196
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "607a8ad684cfae0cc32d64bf0ca98ae8f326251b3789165b9b66576ca2327318",
+        "0e3b66734eda0ff87fc7b16097b80fb0f77907e18175b9f3ea4d4eb42278296e",
+        "1bb52def609799440fdf392d8cdd7e96431120a9a06b381a110a8ebe82e1c280",
+        "9d21ddb2104ae23d6bb4d0ed4be7cf0e160ef7d4fe0b9d996dc71675a1e4fc39",
+        "1fde73f1a8935ef5d4a8936b885253b5b69efe5162925ed8e7656814a334c3c3",
+        "496072a34c6b46894cbb9a9116b439404b719590e48753bde74e781a4a3ecc0d",
+        "d43c38a629832836e86a4de038a69da3970f8710f2ab1dd656b8b7b1c468c066",
+        "4148d08629cc3767e461e3451badc685de592a4248bf836d24f2b63ca85c70ae",
+        "c98bb9cecfcc192ddd8d6366c04065a9ac78f788e81a066299b965141b0b1b97"
+      ],
+      "control": {
+        "path": "images/05-control.png",
+        "sha256": "abe1d6145b76b70c2dba48edd2e19aaf33b76537af8ae3d93ac2529811070710"
+      },
+      "photocopy": {
+        "path": "images/05-photocopy.png",
+        "sha256": "f01125dc23edf1f148f3cfd0cfd3a44a6498a1a67124ff4c3b3bc114e41eb73a"
+      }
+    },
+    {
+      "id": 6,
+      "band": "mild",
+      "seed": 26012900,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 0.9211,
+      "parameters": {
+        "severity": 0.36589867793407715,
+        "rotate_deg": 0.6573733474175963,
+        "ppi": 154.26266525824036,
+        "blur_px": 0.35891707032857506,
+        "brightness": 0.9467050661032961,
+        "contrast": 0.10449306187801723,
+        "noise": 0.2963594711736308,
+        "threshold": 127.0062213643187,
+        "toner_speckle": 3.744240084505579e-05,
+        "profile": "photocopy",
+        "band": "mild",
+        "seed": 26012900,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9999341820790862,
+              -0.01147507814593133,
+              7.146141052515967
+            ],
+            [
+              0.01147107742142728,
+              0.9999341820790862,
+              -5.465310051318525
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "4c728ba63cfd4ab7cf11f6d58b71f6953f864ae26be63aed677132e2cbb1db8c",
+        "50152a9a046c1946efcdb843c01c1dfc253c2d6d6eaab8b435b739da55c8c2d9",
+        "f948a2f8d497308d6862b85a287356127a18d6a2a346f1337ef8a2d5ccfd7359",
+        "bd4ae85e8403d0aad71eaf7fc51fef725f209c9ef20bcf8821a0d3baed517126",
+        "93359e597669c33863833ab1c91a27527893203f7cde866842a45ca289ab437b",
+        "669551f82c01bee9ecf811afea384cb75f29700f750697a8e85444dd3210ba66",
+        "6abc489d8254d796e00b3956ed3317af6876b0b50bacc32dd6afa74ad02a3811",
+        "52025aa602fdd753f653ed7c6500acfe3e653e225c15b7f4bb29a426515fb635",
+        "50c915175d2f483f7d6fc7e3001fabbfafb6ec95e332c1d36feabea8ed1eda81"
+      ],
+      "control": {
+        "path": "images/06-control.png",
+        "sha256": "0ad9d718a2784b3ad378dbd16c88dadc40f09b6e20b8ce065667f40b5019b753"
+      },
+      "photocopy": {
+        "path": "images/06-photocopy.png",
+        "sha256": "f3d3e57d008c489dfaee88e3a413ca73d4be2201d69ac8640f7d863833eec709"
+      }
+    },
+    {
+      "id": 7,
+      "band": "medium",
+      "seed": 26013000,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 1.0464,
+      "parameters": {
+        "severity": 0.596086775819736,
+        "rotate_deg": 0.9801239654567656,
+        "ppi": 133.19256207259406,
+        "blur_px": 0.42042231378221784,
+        "brightness": 0.9253913224180264,
+        "contrast": 0.06478884310889108,
+        "noise": 0.44445950341924756,
+        "threshold": 127.49217355163947,
+        "toner_speckle": 9.602479309135314e-05,
+        "profile": "photocopy",
+        "band": "medium",
+        "seed": 26013000,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9998536892738249,
+              -0.017118508850857927,
+              10.683704636095927
+            ],
+            [
+              0.017092612918022842,
+              0.9998536892738249,
+              -8.113741550422446
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "4f9f11ba404caf04cabc423f627610e86d3a84065346ee8d03a0d585b178a604",
+        "6517926511e893eb6d1c6d4f8881f5959ece330f12fc782e9fe1f0e24cb0dddb",
+        "729a955854b9a81391a3781df04e282ed588d402dde0c2f77b9b1c3b924f1df4",
+        "c5213796664953285f49d003501a9950be1669371ccace89b194d4f0b7bcbf2a",
+        "d55ff728cebbc95f7930b41f6c9c5eb6b931803ecfc337cf71a437a10005e412",
+        "928427dd96c3f781f2ea1245b38f1ebd10ee27873ef14ef93753de66d5a4faa3",
+        "a75e77e850439ae05431e1d1f917695e9193c3a183c384f26dd2e012cc0bfe7a",
+        "efa417211b4cc36482fdf17371ade41e28254a2c4d35908a0b508571e650fdb6",
+        "6dd27b9251eec8fc96b20df4c7e15ff226b54164afc82cdc03bfb4b2f96e7fab"
+      ],
+      "control": {
+        "path": "images/07-control.png",
+        "sha256": "acd01c972c27683ae3b1c7dc4742129ffd38dcf114e9393b02ef6d4dc98d4c37"
+      },
+      "photocopy": {
+        "path": "images/07-photocopy.png",
+        "sha256": "2bc30a86b51fcf1f6930ce61ccc02dd417c4a1368c552ed3c3d406e8e164c6d0"
+      }
+    },
+    {
+      "id": 8,
+      "band": "medium",
+      "seed": 26013100,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 1.0347,
+      "parameters": {
+        "severity": 0.4345435635080518,
+        "rotate_deg": 0.7493479478686453,
+        "ppi": 147.03912312788128,
+        "blur_px": 0.3788826306163562,
+        "brightness": 0.9415456436491948,
+        "contrast": 0.08555868469182192,
+        "noise": 0.3336870149769498,
+        "threshold": 127.1690871270161,
+        "toner_speckle": 4.986958957372908e-05,
+        "profile": "photocopy",
+        "band": "medium",
+        "seed": 26013100,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9999144764748292,
+              -0.013079411210539967,
+              8.150286242616701
+            ],
+            [
+              0.013077021076466555,
+              0.9999144764748293,
+              -6.223945531098161
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "b0864f6161a393afa2720e3813aad0ad12312ada67548d5ea2b832c11924162e",
+        "464ac11796be87d9c0e44b972d61549f2eb842a7ce2b63bca6652aa2c459266a",
+        "9b17e6359b76271df34e0b425dc542525d462d38a5608785d3141a9416aafbf3",
+        "398eadf86d6ac12f39a3a7521683e84977f777bf293b3f70814bd822db3269de",
+        "d69bb2378191626880c6ae6d6b88519e5aff6c165dedcab57a9d0d13b7c4437e",
+        "19352d566e36b4c72afddbba3b36f57c88fbccbff58c77adc05d14fc44133f84",
+        "41d8dc470c26d0a6b7a3e195f150d9f5523d80d632ecbbbf4c94c5304dc1f937",
+        "e1e6b310f1a0d694d825987d64d21f47c1e6d25390ac45d4f7e4c43bae434f9f",
+        "dadded9d5d94daeacac7f197db9de2c7206420f1f1a1c7ab3aa0a6946cc77d03"
+      ],
+      "control": {
+        "path": "images/08-control.png",
+        "sha256": "048daca97a30951190bc2965d0a8f926bcde632db3e26b79f4c257d6d7e0421c"
+      },
+      "photocopy": {
+        "path": "images/08-photocopy.png",
+        "sha256": "5cbe46a6fb6e30376ff720234463e15e04e8f272e25fe8e2f84b93c4f9082312"
+      }
+    },
+    {
+      "id": 9,
+      "band": "medium",
+      "seed": 26013200,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 0.9721,
+      "parameters": {
+        "severity": 0.5416359259240171,
+        "rotate_deg": 0.9023370370343101,
+        "ppi": 137.8597777779414,
+        "blur_px": 0.4064206666661758,
+        "brightness": 0.9308364074075983,
+        "contrast": 0.07178966666691208,
+        "noise": 0.4071217777764689,
+        "threshold": 127.38327185184804,
+        "toner_speckle": 8.046740740686202e-05,
+        "profile": "photocopy",
+        "band": "medium",
+        "seed": 26013200,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9998759909642682,
+              -0.015746566504625442,
+              9.822395570019053
+            ],
+            [
+              0.015749636160352763,
+              0.9998759909642683,
+              -7.482939754815638
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "989223b7af47005faea05bc75da501a3485c6e997d72a64849a06b4cba066e65",
+        "0e3b66734eda0ff87fc7b16097b80fb0f77907e18175b9f3ea4d4eb42278296e",
+        "1bb52def609799440fdf392d8cdd7e96431120a9a06b381a110a8ebe82e1c280",
+        "9d21ddb2104ae23d6bb4d0ed4be7cf0e160ef7d4fe0b9d996dc71675a1e4fc39",
+        "1fde73f1a8935ef5d4a8936b885253b5b69efe5162925ed8e7656814a334c3c3",
+        "496072a34c6b46894cbb9a9116b439404b719590e48753bde74e781a4a3ecc0d",
+        "d43c38a629832836e86a4de038a69da3970f8710f2ab1dd656b8b7b1c468c066",
+        "4148d08629cc3767e461e3451badc685de592a4248bf836d24f2b63ca85c70ae",
+        "c98bb9cecfcc192ddd8d6366c04065a9ac78f788e81a066299b965141b0b1b97"
+      ],
+      "control": {
+        "path": "images/09-control.png",
+        "sha256": "747fb71efe851a913de1a3a1aef053b7eed47177a48162b1b6136b6e8968b0f2"
+      },
+      "photocopy": {
+        "path": "images/09-photocopy.png",
+        "sha256": "f43c91b5ed369918ce179d930c0bbbf52733aeaa40cd8122c66c38e750f7d86e"
+      }
+    },
+    {
+      "id": 10,
+      "band": "hard",
+      "seed": 26013300,
+      "rejected_draws": 0,
+      "min_line_ink_ratio": 0.9165,
+      "parameters": {
+        "severity": 0.8505029610372812,
+        "rotate_deg": 1.36080473765965,
+        "ppi": 111.9597631170175,
+        "blur_px": 0.5926639085692111,
+        "brightness": 0.8979396446755262,
+        "contrast": 0.03494970389627188,
+        "noise": 0.6223621319468424,
+        "threshold": 127.88040236882982,
+        "toner_speckle": 8.371834181912253e-05,
+        "profile": "photocopy",
+        "band": "hard",
+        "seed": 26013300,
+        "warp": {
+          "exif_matrix": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "horizontal_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "vertical_shear": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "camera_matrix": [
+            [
+              0.9997179695829332,
+              -0.02376112954399076,
+              14.867274917466283
+            ],
+            [
+              0.023735458027495302,
+              0.9997179695829332,
+              -11.21816099461636
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      },
+      "label_sha256": [
+        "fdcda84400c1e5a35d035f3204537fe6ca12da0f59e7b8d7955f2bc78405c1a5",
+        "50152a9a046c1946efcdb843c01c1dfc253c2d6d6eaab8b435b739da55c8c2d9",
+        "f948a2f8d497308d6862b85a287356127a18d6a2a346f1337ef8a2d5ccfd7359",
+        "bd4ae85e8403d0aad71eaf7fc51fef725f209c9ef20bcf8821a0d3baed517126",
+        "93359e597669c33863833ab1c91a27527893203f7cde866842a45ca289ab437b",
+        "669551f82c01bee9ecf811afea384cb75f29700f750697a8e85444dd3210ba66",
+        "6abc489d8254d796e00b3956ed3317af6876b0b50bacc32dd6afa74ad02a3811",
+        "52025aa602fdd753f653ed7c6500acfe3e653e225c15b7f4bb29a426515fb635",
+        "50c915175d2f483f7d6fc7e3001fabbfafb6ec95e332c1d36feabea8ed1eda81"
+      ],
+      "control": {
+        "path": "images/10-control.png",
+        "sha256": "d5716f789273ad61447bea6b408110443c8ce0229c0316d6465a012bd750a860"
+      },
+      "photocopy": {
+        "path": "images/10-photocopy.png",
+        "sha256": "c190ec987f7d8f07541bc90fee77a0151c06c15a79d81ecf1e11094d64f7ea74"
+      }
+    }
+  ]
+}

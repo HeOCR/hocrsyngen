@@ -308,8 +308,9 @@ def phone_line_crop(view, index, *, padding=2, minimum_height=11):
         if area > 1:
             return None, "neighbor_overlap"
     rotation[:, 2] += rotation[:, :2] @ np.array([0.5, 0.5]) - (left + 0.5, top + 0.5)
+    raster = view.image.convert("L") if view.image.mode == "1" else view.image
     crop = cv2.warpAffine(
-        np.asarray(view.image),
+        np.asarray(raster),
         rotation,
         (right - left, bottom - top),
         flags=cv2.INTER_CUBIC,
