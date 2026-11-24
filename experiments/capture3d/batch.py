@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from .geometry import undistort
+from .realism import plan_realism
 
 
 SCENES = {"desk", "floor", "book", "letter"}
@@ -90,11 +91,14 @@ def radial_remap(image, k1):
 
 def phone_jpeg(rgb, settings, seed, output):
     rgb = radial_remap(rgb, settings["k1"]).astype(np.float32) / 255
-    linear = np.where(rgb <= .04045, rgb / 12.92, ((rgb + .055) / 1.055) ** 2.4)
-    iso = settings["iso"] / 100
-    sigma = np.sqrt(.000018 * iso * linear + .0000008 * iso ** 2)
-    linear = np.clip(linear + np.random.default_rng(seed ^ 54173).normal(0, sigma), 0, 1)
-    rgb = np.where(linear <= .0031308, 12.92 * linear, 1.055 * linear ** (1 / 2.4) - .055)
+    noise = settings.get("noise_strength", 1)
+    if noise:
+        linear = np.where(rgb <= .04045, rgb / 12.92, ((rgb + .055) / 1.055) ** 2.4)
+        iso = settings["iso"] / 100
+        shot, read = (.00022, .000003) if "noise_strength" in settings else (.000018, .0000008)
+        sigma = noise * np.sqrt(shot * iso * linear + read * iso ** 2)
+        linear = np.clip(linear + np.random.default_rng(seed ^ 54173).normal(0, sigma), 0, 1)
+        rgb = np.where(linear <= .0031308, 12.92 * linear, 1.055 * linear ** (1 / 2.4) - .055)
     Image.fromarray(np.rint(np.clip(rgb, 0, 1) * 255).astype(np.uint8)).save(
         output, quality=settings["jpeg_quality"], subsampling=2, optimize=True)
 
@@ -143,11 +147,33 @@ def contextual_word_labels(annotations):
             yield annotation
 
 
-def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction):
+def rejected_pairs(captures):
+    """Keep an intact pair only after checking the same centred camera geometry."""
+    if len(captures) % 2:
+        raise ValueError("Paired captures must contain both arms")
+    invalid = set()
+    for i in range(0, len(captures), 2):
+        clean, treated = captures[i:i + 2]
+        if clean["pair_id"] != treated["pair_id"] or (clean["arm"], treated["arm"]) != ("clean", "treated"):
+            raise ValueError("Misordered clean and treated twins")
+        for field in ("scene", "paper", "clip_from_sheet", "annotations"):
+            if clean[field] != treated[field]:
+                raise ValueError(f"Twin geometry changed for {clean['pair_id']}: {field}")
+        if clean["phone"]["k1"] != treated["phone"]["k1"]:
+            raise ValueError(f"Twin radial coordinates changed for {clean['pair_id']}")
+        if clean["rejected_regions"] or treated["rejected_regions"]:
+            invalid.add(clean["pair_id"])
+    return invalid
+
+
+def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction, realism_seed=None):
     input_manifest = json.loads(inputs.read_bytes())
     cases = list(source_rows(inputs))
     if not cases:
         raise ValueError("The source manifest contains no pages")
+    paired = realism_seed is not None
+    if paired:
+        cases = list(plan_realism(cases, realism_seed))
     asset_manifest = json.loads(assets.read_bytes())
     requested_assets = {}
     for role in ("desk", "floor", "environment"):
@@ -163,7 +189,7 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         for case in cases:
             ident = case["id"]
             case["undistorted"] = str(temp / f"{ident}.png")
-            if case["scene"] not in scenetypes:
+            if (paired and case["arm"] == "clean") or (not paired and case["scene"] not in scenetypes):
                 scenetypes.add(case["scene"])
                 case["marker_uv"] = MARKERS
                 case["marker_image"] = str(temp / f"{ident}-uv.png")
@@ -179,12 +205,14 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         if result.returncode:
             raise RuntimeError((temp / "blender.log").read_text(errors="replace")[-7000:])
         run_result = json.loads(result_path.read_bytes())
+        captures = run_result.pop("rows")
+        invalid = rejected_pairs(captures) if paired else set()
         kept, rejected = [], []
-        for case, capture in zip(cases, run_result.pop("rows"), strict=True):
+        for case, capture in zip(cases, captures, strict=True):
             ident = capture["id"]
             if ident != case["id"]:
                 raise ValueError("Blender changed the ordered capture identity")
-            if capture["rejected_regions"]:
+            if capture["rejected_regions"] or capture.get("pair_id") in invalid:
                 rejected.append({"id": ident, "scene": capture["scene"], "regions": capture["rejected_regions"]})
                 continue
             photo = f"assets/{ident}-photo.jpg"
@@ -206,7 +234,8 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
     run_result["camera_renders_per_minute"] = 60 * len(kept) / sum(row["render_seconds"] for row in kept)
     run_result["pilot_renders_per_minute"] = 60 * len(kept) / run_result["elapsed_seconds"]
     json_write(output / "generation_manifest.json", {
-        "schema": "heocr.capture3d.v1", "split": "train-calibration", "licence": "CC0-1.0",
+        "schema": "heocr.capture3d.paired.v2" if paired else "heocr.capture3d.v1",
+        **({"realism_seed": realism_seed} if paired else {}), "split": "train-calibration", "licence": "CC0-1.0",
         "text_gate_sha256": input_manifest["text_gate_sha256"], "fonts_guard_sha256": input_manifest["fonts_guard_sha256"],
         "source_manifest_sha256": sha(inputs), "scene_assets": {key: {k: v for k, v in entry.items() if k != "path"}
                                                                for key, entry in asset_manifest.items()},
@@ -224,6 +253,7 @@ def main():
     parser.add_argument("--device", choices=("METAL", "CPU"), default="METAL")
     parser.add_argument("--size", nargs=2, type=int, default=(720, 960), metavar=("WIDTH", "HEIGHT"))
     parser.add_argument("--samples", type=int, default=16)
+    parser.add_argument("--realism-seed", type=int, help="Generate same-scene clean and treated twins")
     parser.add_argument("--max-bad-fraction", type=float, default=0)
     args = parser.parse_args()
     if min(args.size) < 160 or max(args.size) > 4096 or args.samples < 4 or not 0 <= args.max_bad_fraction <= .10:

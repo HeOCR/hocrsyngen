@@ -746,6 +746,9 @@ Planned PR breakdown:
   through a deformed paper mesh and phone camera, verify raster reprojection,
   and compare the generated captures with real TRAIN examples. See the
   [Blender capture experiment](../experiments/capture3d/README.md).
+- `S10f` — Paired 3D capture realism. Vary paper, folds and lighting, compare
+  selective camera artefacts with a clean twin at the same shutter-centre
+  geometry, and screen both arms for exact readable text.
 
 Exit criteria:
 
