@@ -26,6 +26,10 @@ dependencies = [
 test = [
   "pytest>=8",
 ]
+metrics = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+]
 
 [project.scripts]
 hocrsyngen = "hocrsyngen.cli:main"
