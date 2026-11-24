@@ -2,7 +2,7 @@
  "schema": "heocr_font_exclusion.v1",
  "created": "2026-11-19",
  "by": "synth-gen",
- "reason": "held out for the niqqud print test (niqqud_print_pack_v1): never use in any training render, pointed or not",
+ "reason": "Held out for the niqqud and PH1 print tests. Exclude these families and exact files from training renders.",
  "families": [
   {
    "family": "Drugulin CLM",
@@ -31,6 +31,103 @@
     {
      "file": "SimpleCLM-BoldOblique.ttf",
      "sha256": "77fe9883f58b79471da9520bba9e4a58214f0d9e892facd99fa9c8c1d06516a3"
+    }
+   ]
+  },
+  {
+   "family": "Aharoni CLM",
+   "files": [
+    {
+     "file": "AharoniCLM-Bold.otf",
+     "sha256": "74727351d7763da648ac1104897d7dd8afa167a5cbb84a232bd6389dbb8d1d39"
+    },
+    {
+     "file": "AharoniCLM-BoldOblique.otf",
+     "sha256": "508ccdac4ab01536e107b7fd05fef8ba6560436a9558fbabcda9dd00c54183d1"
+    },
+    {
+     "file": "AharoniCLM-Book.otf",
+     "sha256": "3a54754753e6937aa82004674f7875aabac937046fa75a743c7d1b0226a8e729"
+    },
+    {
+     "file": "AharoniCLM-BookOblique.otf",
+     "sha256": "556f0aec3c967d19d74c1cac6c67db0c3617243aac128c968aab5649555ac47a"
+    }
+   ]
+  },
+  {
+   "family": "Ellinia CLM",
+   "files": [
+    {
+     "file": "ElliniaCLM-Bold.otf",
+     "sha256": "152a07e0240d14f17caf095a310b93164898342e4561da0ed288736d4ea8ad27"
+    },
+    {
+     "file": "ElliniaCLM-BoldItalic.otf",
+     "sha256": "f9ccdd8b359707a60e5e6e3cbab2867a2c601d721e1870fce773d099619d4f7a"
+    },
+    {
+     "file": "ElliniaCLM-Light.otf",
+     "sha256": "2a32ee44d31346e705141cfaf90390d9c2135bba5ee230d7caa42365d9e86e9a"
+    },
+    {
+     "file": "ElliniaCLM-LightItalic.otf",
+     "sha256": "9f923732ceff569c77e33a47be28df34df74e0ec072d5e7faf3685c50f4d1211"
+    }
+   ]
+  },
+  {
+   "family": "Keter YG",
+   "files": [
+    {
+     "file": "KeterYG-Bold.ttf",
+     "sha256": "c722d3b6ed0bf47fa4326c77e56ad0e8d7cffd2780bd358307dfc0a3cfa7de1e"
+    },
+    {
+     "file": "KeterYG-BoldOblique.ttf",
+     "sha256": "8d85bde469af7e6f653749c92ed49f3b92a5cb5eada755882e50c3c39959c88b"
+    },
+    {
+     "file": "KeterYG-Medium.ttf",
+     "sha256": "8932f09803d78a0bd8de9eff9b39972c7d73d94dd27091d6ddb27ad6d1648034"
+    },
+    {
+     "file": "KeterYG-MediumOblique.ttf",
+     "sha256": "6b7d0f110375b9ee3d97914a9f8122a5cf1cb9a66059e2bb59ceb7913e349e78"
+    }
+   ]
+  },
+  {
+   "family": "Shofar",
+   "files": [
+    {
+     "file": "ShofarDemi-Bold.ttf",
+     "sha256": "22faea394beff1713e8a340177da230bfb694411e1fad58e147a02bc1ba03e9f"
+    },
+    {
+     "file": "ShofarDemi-BoldOblique.ttf",
+     "sha256": "de578932e7b8912a3303543003efb158bc1106dadccc06e21f195fdbee1c8c2c"
+    },
+    {
+     "file": "ShofarRegular.ttf",
+     "sha256": "7913fdd35fa1446d836f1cb9bc119a922ff075ec2fee7fa0eb39f43a89fc17c5"
+    },
+    {
+     "file": "ShofarRegularOblique.ttf",
+     "sha256": "31c659300509b0ed992ee4486d91779f0368f7b08276b51905da07ffb32f88d4"
+    }
+   ]
+  },
+  {
+   "family": "Yehuda CLM",
+   "files": [
+    {
+     "file": "YehudaCLM-Bold.otf",
+     "sha256": "4352d2ea2c03fab4c77d2b45975739dfa1894a300d7a0a602e8f2febda7f6b83"
+    },
+    {
+     "file": "YehudaCLM-Light.otf",
+     "sha256": "a992ef79048e005988636366ac28fc1e1d0a8ce0d061c5e238fce49e49777ffd"
     }
    ]
   }

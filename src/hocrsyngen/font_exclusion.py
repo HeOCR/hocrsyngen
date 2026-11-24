@@ -1,8 +1,7 @@
 """Fonts held out for HeOCR evaluation: never used in a training render.
 
-The list is ``data/fonts_excluded.json`` (schema ``heocr_font_exclusion.v1``). Drugulin CLM and Simple CLM are held
-out for the niqqud print test (2026-11-19); a model that has seen them in training would leak that test. Every font
-hocrsyngen loads passes ``check_font``: an excluded family name, file name or sha256 raises ``HeldOutFontError``.
+The list is ``data/fonts_excluded.json`` (schema ``heocr_font_exclusion.v1``) and covers the niqqud and PH1
+print tests. Every font hocrsyngen loads passes ``check_font``, which rejects excluded families, file names and hashes.
 
 Eval's own gate-set generation may still use these faces; it sets ``HOCRSYNGEN_EVAL_RENDER=1`` for that run only.
 """

@@ -10,7 +10,11 @@ from hocrsyngen.generator import _font_path, _load_font
 def test_exclusion_list_names_the_held_out_faces():
     data = json.loads(fx.EXCLUSION_PATH.read_text(encoding="utf-8"))
     assert data["schema"] == "heocr_font_exclusion.v1"
-    assert {f["family"] for f in data["families"]} == {"Drugulin CLM", "Simple CLM"}
+    assert {f["family"] for f in data["families"]} == {
+        "Drugulin CLM", "Simple CLM", "Aharoni CLM", "Ellinia CLM", "Keter YG", "Shofar", "Yehuda CLM",
+    }
+    assert len({row["sha256"] for face in data["families"] for row in face["files"]}) == 23
+    assert all(fx.is_excluded(face) for face in ("Aharoni CLM", "Keter YG", "Shofar", "Ellinia CLM", "Yehuda CLM"))
     assert all(len(x["sha256"]) == 64 for f in data["families"] for x in f["files"])
 
 
