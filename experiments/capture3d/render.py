@@ -11,7 +11,7 @@ import time
 
 import bpy
 from bpy_extras.object_utils import world_to_camera_view
-from mathutils import Quaternion, Vector
+from mathutils import Matrix, Quaternion, Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from geometry import Paper, distort
@@ -138,8 +138,11 @@ def set_camera(scene, rng, mode, photo):
     motion = Vector((photo["shutter_drift_m"], -.45 * photo["shutter_drift_m"], 0))
     for frame, displacement in ((0, -motion), (1, Vector((0, 0, 0))), (2, motion)):
         camera.location = base + displacement
-        aim(camera, target)
-        camera.rotation_quaternion @= roll
+        forward = (Vector(target) - camera.location).normalized()
+        right = forward.cross(Vector((0, 1, 0))).normalized()
+        up = right.cross(forward)
+        camera.rotation_mode = "QUATERNION"
+        camera.rotation_quaternion = Matrix((right, up, -forward)).transposed().to_quaternion() @ roll
         camera.keyframe_insert(data_path="location", frame=frame)
         camera.keyframe_insert(data_path="rotation_quaternion", frame=frame)
     scene.frame_set(1)
@@ -190,7 +193,8 @@ def scene_for(job, case, rng):
         if key in parameters:
             parameters[key] *= rng.uniform(.78, 1.30)
     paper = Paper(**parameters)
-    paper_style = material("Printed paper", image=case["image"], roughness=rng.uniform(.40, .61))
+    paper_style = material("Printed paper", image=case["image"], roughness=rng.uniform(.55, .73))
+    paper_style.node_tree.nodes.get("Principled BSDF").inputs["Specular IOR Level"].default_value = .20
     offset = .108 if mode == "book" else 0
     sheet = add_sheet("Printed sheet", paper, paper_style, x_offset=offset)
     if mode == "book":
@@ -210,7 +214,7 @@ def scene_for(job, case, rng):
 
     photo = {
         "lens_mm_equivalent": rng.uniform(23, 31), "roll_deg": rng.uniform(-10, 10),
-        "fstop_equivalent": rng.uniform(5.6, 8.5), "k1": rng.uniform(-.060, .029),
+        "fstop_equivalent": rng.uniform(6.8, 9.5), "k1": rng.uniform(.005, .032),
         "iso": rng.choice((80, 125, 200, 320, 500)), "jpeg_quality": rng.randint(72, 93),
         "shutter_drift_m": rng.choice((0, .00032, .0006, .00085)),
         "exposure_ev": scene.view_settings.exposure,
