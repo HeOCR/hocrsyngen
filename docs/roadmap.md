@@ -742,6 +742,10 @@ Planned PR breakdown:
   procedural print pages. Publish a hash-bound sidecar with transformed line
   and region geometry, uncalibrated priors, and a fit tool for the registered
   print pack. See [scanifier v2](../experiments/scanifier_v2/README.md).
+- `S10e` — Physically based 3D capture pilot. Project annotated page textures
+  through a deformed paper mesh and phone camera, verify raster reprojection,
+  and compare the generated captures with real TRAIN examples. See the
+  [Blender capture experiment](../experiments/capture3d/README.md).
 
 Exit criteria:
 
