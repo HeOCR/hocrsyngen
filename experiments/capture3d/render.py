@@ -15,6 +15,8 @@ from mathutils import Matrix, Quaternion, Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from geometry import Paper, distort
+from developable import DevelopablePaper, from_capture
+from paper_material import office_paper
 
 
 SCENES = {
@@ -101,6 +103,8 @@ def add_sheet(name, paper, style, *, x_offset=0, turn=False):
         uv_map.data[loop.index].uv = uvs[loop.vertex_index]
     for face in mesh.polygons:
         face.use_smooth = True
+    if isinstance(paper, DevelopablePaper):
+        mesh.normals_split_custom_set_from_vertices([paper.normal(u, 1 - v) for u, v in uvs])
     sheet = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(sheet)
     sheet.location.x = x_offset
@@ -234,21 +238,32 @@ def scene_for(job, case, rng):
             parameters[key] *= rng.uniform(.78, 1.30)
     if realism:
         parameters.update(realism["fold"]["settings"])
-    paper = Paper(**parameters)
+    reference_paper = Paper(**parameters)
+    matte_paper = job.get("developable_paper", False)
+    paper = from_capture(reference_paper, mode, realism, case["seed"]) if matte_paper else reference_paper
     roughness = rng.uniform(.55, .73)
     stock = realism["paper"] if realism else {}
-    paper_style = material("Printed paper", image=case["image"], color=stock.get("reflectance_rgb"),
-                           roughness=stock.get("roughness", roughness))
-    if realism:
-        printed_specular(paper_style)
+    if matte_paper:
+        paper_style = office_paper("Matte office paper", paper, stock["reflectance_rgb"],
+                                   ink=case["image"], showthrough=case["showthrough"])
     else:
+        paper_style = material("Printed paper", image=case["image"], color=stock.get("reflectance_rgb"),
+                               roughness=stock.get("roughness", roughness))
+    if realism and not matte_paper:
+        printed_specular(paper_style)
+    elif not matte_paper:
         paper_style.node_tree.nodes.get("Principled BSDF").inputs["Specular IOR Level"].default_value = .20
     offset = .108 if mode == "book" else 0
     sheet = add_sheet("Printed sheet", paper, paper_style, x_offset=offset)
     if mode == "book":
         card = material("Facing paper", color=stock.get("reflectance_rgb", (.83, .77, .64)), roughness=.75)
         facing = Paper(width=paper.width, height=paper.height, curl=.006, spine=.031) if realism else paper
-        add_sheet("Facing leaf", facing, card, x_offset=-offset, turn=True)
+        if matte_paper:
+            facing = from_capture(reference_paper, mode, realism, case["seed"], facing=True)
+            face_style = office_paper("Matte facing leaf", facing, stock["reflectance_rgb"])
+        else:
+            face_style = card
+        add_sheet("Facing leaf", facing, face_style, x_offset=-offset, turn=True)
         binding = material("Cloth book cover", color=(.09, .034, .017))
         box("Binding", (0, 0, -.002), (.438, .307, .005), binding)
         box("Leaf block", (0, 0, .00025), (.428, .297, .001), card, bevel=.001)
@@ -286,7 +301,8 @@ def scene_for(job, case, rng):
             light(**source)
         if effect["flash_w"]:
             location = camera.location + Vector((effect["flash_x_m"], .016, -.015))
-            aim_point = sheet.matrix_world @ Vector(paper.at(*effect["flash_uv"]))
+            # Freeze v2 flash aim, including the old paper position used as the target.
+            aim_point = sheet.matrix_world @ Vector(reference_paper.at(*effect["flash_uv"]))
             cone = effect["flash_cone_deg"]
             light("Phone flash", "SPOT", location, aim_point, effect["flash_w"], .008, (1, .95, .88), cone)
             photo["flash"] = {"power_w": effect["flash_w"], "position_m": list(location),

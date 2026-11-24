@@ -749,6 +749,9 @@ Planned PR breakdown:
 - `S10f` — Paired 3D capture realism. Vary paper, folds and lighting, compare
   selective camera artefacts with a clean twin at the same shutter-centre
   geometry, and screen both arms for exact readable text.
+- `S10g` — Developable office paper. Keep the S10f optics and replace the
+  sheet with straight cylindrical creases, matte fibres and thin-sheet
+  transmission. Check both visibility and subpixel reprojection.
 
 Exit criteria:
 

@@ -50,6 +50,31 @@ Use `--diagnostics` to save per-line votes on rejected pairs, or repeat
 `--pair-id ID` in the batch command to retake selected scenes with their
 original recipes.
 
+## Developable office paper
+
+Add `--developable-paper` and keep the same `--realism-seed`, ordered input
+manifest, assets, and render settings. Both capture twins preserve the v2
+lights, including the coordinates used to aim the flash, and all shutter and
+sensor effects. Only the sheet model and paper shader change.
+Pass `--frozen-optics GALLERY_MANIFEST` to replay the exact saved v2 profiles,
+including any individual retakes, and fail the batch if the resulting optics
+drift. The frozen manifest binds the source pages, assets, size and samples.
+
+The sheet is planar between straight creases, with circular turn radii of
+0.23–0.47 mm at creases and a broader circular band at a bound spine. Parallel
+bands can make multiple folds or a diagonal turned corner without stretching
+the UV. Mesh normals follow the analytic circle through each bend. At each
+crease, slightly brighter fibres form a very narrow line in the sheet’s rest
+coordinates. The unbevelled sheet is 0.10 mm thick.
+
+The material uses roughness 0.91 and low specular reflectance. Anisotropic
+fibre albedo and fine normal relief sit under subtle paper-tone variation. A
+translucent lobe and a faint, blurred reverse-side impression model thin-sheet
+transmission. The front label texture stays on the same UVs as its polygons.
+The paired review command rectifies through the same piecewise-planar bands.
+A separate UV-marker render must clear strictly less than one pixel for every
+developable pair. The gallery can be kept entirely local for review.
+
 ## Geometry and validation
 
 - UV boxes follow the actual triangulated mesh, including triangle crossings. The renderer projects those boundaries at the centre of the shutter and applies the same radial transform used for the JPEG.
