@@ -20,6 +20,7 @@ PRESET_SHA256 = sha256(_PRESET).hexdigest()
 SCANNER_SHARE_PERCENT = 5
 SCANNER_PROFILES = {"photocopy": bw_photocopy, "old-color": old_scanner_color}
 BANDS = ("mild", "medium", "hard")
+C2_BOUND_INK_DROP = 8
 
 
 def scanner_quotas(total):
@@ -33,11 +34,14 @@ def scanner_quotas(total):
     return tuple(zip(BANDS, quotas, strict=True))
 
 
-def render_train_scan(image, lines, *, profile, seed):
-    """Apply the locked v3 flatbed or bound preset and map the line geometry."""
+def render_train_scan(image, lines, *, profile, seed, c2_bound_reduced_fade=False):
+    """Apply the locked v3 scan preset, with the C2 v1.1 bound ink adjustment on request."""
     presets = _SETTINGS["profiles"][profile]
     rng = _rng(seed, "train_realism/flatbed_bound")
     settings = presets[int(rng.integers(len(presets)))]
+    reduced_fade = profile == "bound" and c2_bound_reduced_fade
+    if reduced_fade:
+        settings = {**settings, "ink": settings["ink"] - C2_BOUND_INK_DROP}
     width, height = image.size
     x = np.linspace(-.5, width - .5, 65)
     side_dist = width - 1 - x if settings["edge_side"] == "right" else x
@@ -49,6 +53,8 @@ def render_train_scan(image, lines, *, profile, seed):
                     scale=width / _SETTINGS["calibration_width_px"], warp=warp)
     parameters = {"profile": profile, "model": "realism_v3", "v3_pair": settings["pair"],
                   "preset_sha256": PRESET_SHA256, "round_stains": True, "seed": seed, "warp": warp.record()}
+    if reduced_fade:
+        parameters.update(capture_recipe="c2-v1.1", bound_ink_delta=-C2_BOUND_INK_DROP)
     return PhoneView(result, phone_annotations(lines, warp, image.size), warp, parameters)
 
 

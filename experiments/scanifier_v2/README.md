@@ -189,6 +189,12 @@ The v3 round stains and spots are applied to both scan types. The renderer
 records the preset hash and maps the labels through the same skew and gutter
 bend as the pixels.
 
+For C2 old-print v1.1, pass `c2_bound_reduced_fade=True`. The bound scan ink
+floor drops by 8 levels on the 8-bit scale. Paper tone, gutter, blur and scan
+marks use the same fitted settings. The result records `capture_recipe` and
+`bound_ink_delta` for bound pages. Flatbed output is byte-identical with the
+option enabled.
+
 Use `train_realism.render_train_scanner` for `photocopy` and `old-color`.
 Reserve 5% of synthetic TRAIN visits for each. Use `scanner_quotas` for
 integer 55/35/10 light/medium/harsh allocations or omit the band for a seeded
