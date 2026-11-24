@@ -16,6 +16,11 @@ EXPECTED_RUNTIME_IMPORT_MODULES = {
     "jsonschema",
     "PIL",
 }
+# Optional extras: modules a source file may import only when they are declared in that extra and the file imports
+# them lazily (inside functions). Baseline installs never load these files' heavy dependencies.
+EXPECTED_OPTIONAL_EXTRA_IMPORTS = {
+    "src/hocrsyngen/stroke_metrics.py": ("metrics", {"numpy", "scipy"}),
+}
 EXPECTED_REPOSITORY_SCOPE_POLICY = (
     "The baseline dependencies are `jsonschema` and `Pillow`; test dependencies "
     "add `pytest`."
@@ -72,13 +77,30 @@ def test_baseline_source_imports_do_not_cross_repository_or_dependency_boundarie
     allowed_imports = (
         sys.stdlib_module_names | {"hocrsyngen"} | EXPECTED_RUNTIME_IMPORT_MODULES
     )
+    optional = {rel: mods for rel, (_, mods) in EXPECTED_OPTIONAL_EXTRA_IMPORTS.items()}
     undeclared_imports = {
-        path.relative_to(PROJECT_ROOT).as_posix(): sorted(imports - allowed_imports)
+        rel: sorted(imports - allowed_imports - optional.get(rel, set()))
         for path, imports in _source_top_level_imports().items()
-        if imports - allowed_imports
+        for rel in [path.relative_to(PROJECT_ROOT).as_posix()]
+        if imports - allowed_imports - optional.get(rel, set())
     }
 
     assert undeclared_imports == {}
+
+
+def test_optional_extra_imports_are_declared_and_lazy() -> None:
+    extras = _load_pyproject()["project"]["optional-dependencies"]
+    for rel, (extra, modules) in EXPECTED_OPTIONAL_EXTRA_IMPORTS.items():
+        declared = {req.split(">")[0].split("=")[0].split("[")[0].strip().lower() for req in extras[extra]}
+        assert modules <= declared, (rel, extra, declared)
+        tree = ast.parse((PROJECT_ROOT / rel).read_text(encoding="utf-8"))
+        top_level = set()
+        for node in tree.body:
+            if isinstance(node, ast.Import):
+                top_level.update(_top_level_module(a.name) for a in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+                top_level.add(_top_level_module(node.module))
+        assert not (top_level & modules), f"{rel} must import {sorted(modules)} lazily"
 
 
 def test_dependency_policy_docs_track_pyproject_baseline_dependencies() -> None:

@@ -22,11 +22,23 @@ import json
 import sys
 from pathlib import Path
 
-import numpy as np
 from PIL import Image
 
+_EXTRA_HINT = "hocrsyngen.stroke_metrics needs the optional extra: pip install 'hocrsyngen[metrics]' (numpy, scipy)"
 
-def _ink(gray: np.ndarray) -> np.ndarray:
+
+def _deps():
+    """numpy and scipy.ndimage, imported lazily so the baseline install (jsonschema, Pillow) never needs them."""
+    try:
+        import numpy
+        from scipy import ndimage
+    except ImportError as e:  # pragma: no cover - exercised only without the extra
+        raise ImportError(_EXTRA_HINT) from e
+    return numpy, ndimage
+
+
+def _ink(gray):
+    np, _ = _deps()
     if len(np.unique(gray)) <= 2:
         return gray < 128
     hist, _ = np.histogram(gray, 256, (0, 256))
@@ -39,8 +51,7 @@ def _ink(gray: np.ndarray) -> np.ndarray:
 
 def measure(image) -> dict | None:
     """Stroke, body, stroke/body and ink cover of one image (path or PIL image); None if it has almost no ink."""
-    from scipy import ndimage
-
+    np, ndimage = _deps()
     img = image if isinstance(image, Image.Image) else Image.open(image)
     gray = np.asarray(img.convert("L"), dtype=np.float32)
     ink = _ink(gray)
@@ -57,6 +68,7 @@ def measure(image) -> dict | None:
 
 
 def summarise(paths) -> dict:
+    np, _ = _deps()
     ms = [m for m in (measure(p) for p in paths) if m]
     if not ms:
         return {"n": 0}
