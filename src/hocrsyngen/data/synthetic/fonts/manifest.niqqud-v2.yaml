@@ -1,5 +1,5 @@
-# Opt-in additions for future pointed training. The fixed v1 and default
-# manifests do not include these faces.
+# Opt-in license and face registry for pointed training. The fixed v1 recipe
+# and the general-purpose registry are maintained separately.
 fonts:
   - id: cardo-regular
     file: Cardo-Regular.ttf
