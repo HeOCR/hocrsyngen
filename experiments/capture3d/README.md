@@ -75,6 +75,33 @@ The paired review command rectifies through the same piecewise-planar bands.
 A separate UV-marker render must clear strictly less than one pixel for every
 developable pair. The gallery can be kept entirely local for review.
 
+### Strong folds with frozen optics
+
+Repeat `--strong-fold PAIR=PROFILE` on selected pairs. Each selected pair
+shares its new geometry across both capture arms. Unselected pairs replay v3.
+Use `--developable-paper` and `--frozen-optics` together.
+
+```sh
+python -m experiments.capture3d.batch screened/pages.json materials/assets.json local-v4 \
+  --device METAL --size 1200 1600 --samples 16 --realism-seed 553916 \
+  --developable-paper --frozen-optics v2/gallery_manifest.json \
+  --pair-id desk-01 --strong-fold desk-01=crossed \
+  --pair-id letter-01 --strong-fold letter-01=trifold
+```
+
+`trifold` and `dog-ear` use the v3 narrow-radius cylindrical hinge. The
+dog-ear has a second crease near the tip. `quarter`, `crossed` and
+`crumple` join rigid planar facets at sharp contacts. The row and column
+steps preserve edge lengths and angles within each facet, including at
+intersections. The crumple varies the positions of the short creases by seed.
+Crossing contacts use the ideal sharp-hinge geometry. V3's 0.10 mm caliper,
+matte stock, fibres and show-through apply to all profiles. The lifted facets
+cast shadows in Cycles under the frozen lights.
+
+The v4 manifest records each selected profile and the rest-sheet geometry
+used for polygons and OCR rectification. Run the paired review command on the
+batch to require the same per-line reader agreement as v3.
+
 ## Geometry and validation
 
 - UV boxes follow the actual triangulated mesh, including triangle crossings. The renderer projects those boundaries at the centre of the shutter and applies the same radial transform used for the JPEG.
