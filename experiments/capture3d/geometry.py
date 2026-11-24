@@ -19,6 +19,12 @@ class Paper:
     phase: float = .0
     thickness: float = .00014
     divisions: tuple = (48, 64)
+    valley_depth: float = .0
+    valley_v: float = .64
+    valley_angle: float = .0
+    dogear_size: float = .0
+    dogear_angle_deg: float = .0
+    dogear_corner: tuple = (1, 1)
 
     def shape(self, u, v):
         x, y = (u - .5) * self.width, (.5 - v) * self.height
@@ -27,6 +33,18 @@ class Paper:
         crease = (u - self.crease_u + (v - .5) * self.crease_angle) / self.crease_width
         z += self.crease_height * math.exp(-abs(crease))
         z += self.crumple * (1 + math.sin(19 * u + 8 * v + self.phase) * math.sin(14 * v - 6 * u)) / 2
+        if self.valley_depth:
+            fold = abs(v - self.valley_v + (u - .5) * self.valley_angle) / .052
+            z += self.valley_depth * (-math.expm1(-fold / .62)) * math.exp(-(fold / 2.0) ** 2)
+        if self.dogear_size:
+            sx, sy = self.dogear_corner
+            distance = (self.dogear_size - (self.width / 2 - sx * x) - (self.height / 2 - sy * y)) / math.sqrt(2)
+            if distance > 0:
+                angle = math.radians(self.dogear_angle_deg)
+                inset = distance * (1 - math.cos(angle)) / math.sqrt(2)
+                x -= sx * inset
+                y -= sy * inset
+                z += distance * math.sin(angle)
         return x, y, z
 
     def mesh(self):

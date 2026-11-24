@@ -41,6 +41,15 @@ def use_cycles(device):
     return ", ".join(names)
 
 
+def color_multiply(tree, source, rgb):
+    tint = tree.nodes.new("ShaderNodeMixRGB")
+    tint.blend_type = "MULTIPLY"
+    tint.inputs[0].default_value = 1
+    tint.inputs[2].default_value = (*rgb, 1)
+    tree.links.new(source, tint.inputs[1])
+    return tint.outputs[0]
+
+
 def material(name, *, image=None, color=None, roughness=.55, emission=False):
     result = bpy.data.materials.new(name)
     result.use_nodes = True
@@ -59,10 +68,27 @@ def material(name, *, image=None, color=None, roughness=.55, emission=False):
         node.image = bpy.data.images.load(str(image), check_existing=True)
         if emission:
             node.interpolation = "Closest"
-        tree.links.new(node.outputs["Color"], color_input)
+        source = node.outputs["Color"]
+        if color is not None:
+            source = color_multiply(tree, source, color)
+        tree.links.new(source, color_input)
     else:
         color_input.default_value = (*color, 1)
     return result
+
+
+def printed_specular(style):
+    """Give absorbent ink a weaker reflection than the exposed paper stock."""
+    tree = style.node_tree
+    texture = next(node for node in tree.nodes if node.type == "TEX_IMAGE")
+    response = tree.nodes.new("ShaderNodeRGBToBW")
+    tree.links.new(texture.outputs["Color"], response.inputs[0])
+    level = tree.nodes.new("ShaderNodeMath")
+    level.operation = "MULTIPLY_ADD"
+    level.inputs[1].default_value = .36
+    level.inputs[2].default_value = .065
+    tree.links.new(response.outputs[0], level.inputs[0])
+    tree.links.new(level.outputs[0], tree.nodes.get("Principled BSDF").inputs["Specular IOR Level"])
 
 
 def add_sheet(name, paper, style, *, x_offset=0, turn=False):
@@ -104,13 +130,17 @@ def aim(obj, target):
     obj.rotation_quaternion = (Vector(target) - obj.location).to_track_quat("-Z", "Y")
 
 
-def light(name, kind, location, target, power, size):
+def light(name, kind, location, target, power, size, color=(1, 1, 1), spot_degrees=0):
     data = bpy.data.lights.new(name, kind)
     data.energy = power
+    data.color = color
     if kind == "AREA":
         data.shape, data.size, data.size_y = "RECTANGLE", size, size * .58
     else:
         data.shadow_soft_size = size
+    if kind == "SPOT":
+        data.spot_size = math.radians(spot_degrees)
+        data.spot_blend = .48
     obj = bpy.data.objects.new(name, data)
     bpy.context.collection.objects.link(obj)
     obj.location = location
@@ -131,14 +161,16 @@ def set_camera(scene, rng, mode, photo):
     data.sensor_width = 36
     data.lens = photo["lens_mm_equivalent"]
     data.clip_start = .015
-    data.dof.use_dof = True
-    data.dof.focus_distance = (Vector(target) - base).length
+    data.dof.use_dof = photo.get("defocus_enabled", True)
+    data.dof.focus_distance = (Vector(target) - base).length + photo.get("focus_offset_m", 0)
     data.dof.aperture_fstop = photo["fstop_equivalent"]
     roll = Quaternion((0, 0, 1), math.radians(photo["roll_deg"]))
-    motion = Vector((photo["shutter_drift_m"], -.45 * photo["shutter_drift_m"], 0))
+    directional_shake = "motion_angle_deg" in photo
+    angle = math.radians(photo.get("motion_angle_deg", 0))
+    motion = Vector((math.cos(angle), math.sin(angle) if directional_shake else -.45, 0)) * photo["shutter_drift_m"]
     for frame, displacement in ((0, -motion), (1, Vector((0, 0, 0))), (2, motion)):
         camera.location = base + displacement
-        forward = (Vector(target) - camera.location).normalized()
+        forward = (Vector(target) - (base if directional_shake else camera.location)).normalized()
         right = forward.cross(Vector((0, 1, 0))).normalized()
         up = right.cross(forward)
         camera.rotation_mode = "QUATERNION"
@@ -148,6 +180,7 @@ def set_camera(scene, rng, mode, photo):
     scene.frame_set(1)
     scene.render.use_motion_blur = photo["shutter_drift_m"] > 0
     scene.render.motion_blur_shutter = .42
+    scene.render.motion_blur_position = "CENTER"
     return camera
 
 
@@ -170,6 +203,7 @@ def scene_for(job, case, rng):
     scene.view_settings.exposure = rng.uniform(-.32, .30)
 
     mode = case["scene"]
+    realism = case.get("realism")
     world = bpy.data.worlds.new("Interior environment")
     scene.world = world
     world.use_nodes = True
@@ -177,8 +211,14 @@ def scene_for(job, case, rng):
     environment = tree.nodes.new("ShaderNodeTexEnvironment")
     environment.image = bpy.data.images.load(job["assets"]["environment"], check_existing=True)
     background = tree.nodes.get("Background")
-    background.inputs["Strength"].default_value = .32 if mode == "floor" else .48
-    tree.links.new(environment.outputs["Color"], background.inputs["Color"])
+    environmental_color = environment.outputs["Color"]
+    ambient_strength = .32 if mode == "floor" else .48
+    if realism:
+        scene_lighting = realism["lighting"]
+        ambient_strength = scene_lighting["ambient_strength"]
+        environmental_color = color_multiply(tree, environmental_color, scene_lighting["ambient_rgb"])
+    background.inputs["Strength"].default_value = ambient_strength
+    tree.links.new(environmental_color, background.inputs["Color"])
     bpy.ops.mesh.primitive_plane_add(size=1.22)
     support = bpy.context.object
     support.name = "Concrete floor" if mode == "floor" else "Oak tabletop"
@@ -192,14 +232,23 @@ def scene_for(job, case, rng):
     for key in ("curl", "crease_height", "crumple"):
         if key in parameters:
             parameters[key] *= rng.uniform(.78, 1.30)
+    if realism:
+        parameters.update(realism["fold"]["settings"])
     paper = Paper(**parameters)
-    paper_style = material("Printed paper", image=case["image"], roughness=rng.uniform(.55, .73))
-    paper_style.node_tree.nodes.get("Principled BSDF").inputs["Specular IOR Level"].default_value = .20
+    roughness = rng.uniform(.55, .73)
+    stock = realism["paper"] if realism else {}
+    paper_style = material("Printed paper", image=case["image"], color=stock.get("reflectance_rgb"),
+                           roughness=stock.get("roughness", roughness))
+    if realism:
+        printed_specular(paper_style)
+    else:
+        paper_style.node_tree.nodes.get("Principled BSDF").inputs["Specular IOR Level"].default_value = .20
     offset = .108 if mode == "book" else 0
     sheet = add_sheet("Printed sheet", paper, paper_style, x_offset=offset)
     if mode == "book":
-        card = material("Cream paper", color=(.83, .77, .64), roughness=.75)
-        add_sheet("Facing leaf", paper, card, x_offset=-offset, turn=True)
+        card = material("Facing paper", color=stock.get("reflectance_rgb", (.83, .77, .64)), roughness=.75)
+        facing = Paper(width=paper.width, height=paper.height, curl=.006, spine=.031) if realism else paper
+        add_sheet("Facing leaf", facing, card, x_offset=-offset, turn=True)
         binding = material("Cloth book cover", color=(.09, .034, .017))
         box("Binding", (0, 0, -.002), (.438, .307, .005), binding)
         box("Leaf block", (0, 0, .00025), (.428, .297, .001), card, bevel=.001)
@@ -219,19 +268,39 @@ def scene_for(job, case, rng):
         "shutter_drift_m": rng.choice((0, .00032, .0006, .00085)),
         "exposure_ev": scene.view_settings.exposure,
     }
+    if realism:
+        effect = realism["camera"]
+        photo.update(fstop_equivalent=effect["fstop"] or photo["fstop_equivalent"],
+                     defocus_enabled=effect["fstop"] is not None, focus_offset_m=effect["focus_offset_m"],
+                     noise_strength=effect["noise_strength"], iso=effect["iso"],
+                     shutter_drift_m=effect["motion_m"], motion_angle_deg=effect["motion_angle_deg"],
+                     jpeg_quality=94, lighting=scene_lighting["profile"])
     camera = set_camera(scene, rng, mode, photo)
     photo["position_m"] = list(camera.location)
     photo["rotation_wxyz"] = list(camera.rotation_quaternion)
     photo["sensor_width_mm"] = camera.data.sensor_width
-    light("Window", "AREA", (-.31, .22, .46), (0, 0, 0), 9.5, .48)
-    if case["seed"] % 5 == 2:
+    if realism:
+        photo["focus_distance_m"] = camera.data.dof.focus_distance
+        photo["motion_shutter_frames"] = scene.render.motion_blur_shutter
+        for source in scene_lighting["sources"]:
+            light(**source)
+        if effect["flash_w"]:
+            location = camera.location + Vector((effect["flash_x_m"], .016, -.015))
+            aim_point = sheet.matrix_world @ Vector(paper.at(*effect["flash_uv"]))
+            cone = effect["flash_cone_deg"]
+            light("Phone flash", "SPOT", location, aim_point, effect["flash_w"], .008, (1, .95, .88), cone)
+            photo["flash"] = {"power_w": effect["flash_w"], "position_m": list(location),
+                              "target_m": list(aim_point), "cone_degrees": cone}
+    else:
+        light("Window", "AREA", (-.31, .22, .46), (0, 0, 0), 9.5, .48)
+    if not realism and case["seed"] % 5 == 2:
         light("Phone flash", "POINT", camera.location + Vector((.022, -.02, 0)), (0, 0, 0), 1.9, .006)
         photo["lighting"] = "window+flash"
-    elif case["seed"] % 5 == 3:
+    elif not realism and case["seed"] % 5 == 3:
         dark = material("Shadow occluder", color=(.012, .018, .020))
         box("Off-axis phone shadow", (-.16, .08, .15), (.071, .117, .008), dark, angle=.23)
         photo["lighting"] = "window+phone-shadow"
-    else:
+    elif not realism:
         photo["lighting"] = "window"
     bpy.context.view_layer.update()
     return scene, camera, sheet, paper, photo
@@ -287,6 +356,12 @@ def capture(job, case):
     result = {"id": case["id"], "scene": case["scene"], "paper": asdict(paper), "phone": photo,
               "annotations": regions, "rejected_regions": rejected, "marker_positions": markers,
               "inverse_camera_ray_checks": len(errors), "inverse_camera_ray_max_px": max(errors, default=None)}
+    if "realism" in case:
+        width, height = job["size"]
+        camera_matrix = camera.calc_matrix_camera(bpy.context.evaluated_depsgraph_get(), x=width, y=height)
+        clip_from_sheet = camera_matrix @ camera.matrix_world.inverted() @ sheet.matrix_world
+        result.update(realism=case["realism"], pair_id=case["pair_id"], arm=case["arm"],
+                      clip_from_sheet=[list(row) for row in clip_from_sheet])
     if rejected:
         return result
     start = time.perf_counter()

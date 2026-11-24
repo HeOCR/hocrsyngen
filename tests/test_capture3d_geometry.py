@@ -25,3 +25,16 @@ def test_radial_ground_truth_uses_the_same_inverse_as_photo_resampling(k1):
         distorted = distort(*point, 720, 960, k1)
         recovered = undistort(*distorted, 720, 960, k1)
         assert math.dist(recovered, point) < 1e-8
+
+
+def test_fold_valley_and_dogear_are_part_of_the_projected_mesh():
+    paper = Paper(valley_depth=.036, valley_v=.64, dogear_size=.048,
+                  dogear_angle_deg=58, dogear_corner=(1, 1), divisions=(64, 88))
+    valley = paper.shape(.5, .64)
+    assert paper.shape(.5, .60)[2] - valley[2] > .019
+    assert paper.shape(.5, .68)[2] - valley[2] > .019
+    tip = paper.shape(1, 0)
+    assert tip[0] < paper.width / 2
+    assert tip[1] < paper.height / 2
+    assert tip[2] - .0015 == pytest.approx(.048 / math.sqrt(2) * math.sin(math.radians(58)))
+    assert paper.at(1, 0) == pytest.approx(tip)

@@ -18,6 +18,38 @@ The caller supplies `split: train-calibration`, SHA-256 pins for the pre-render 
 
 Output line records retain the literal text. Word records bind each polygon to a `line_id` and zero-based logical `word_index`. Recover the word with `line["text"].split(" ")[word["word_index"]]`.
 
+## Paired realism gallery
+
+Pass `--realism-seed` to make a clean capture and a treated twin for each input.
+Both arms share the paper stock, deformations, lighting, and shutter-centre
+camera. The seed draws independently shuffled paper, fold, lighting and camera
+recipes. The camera recipes include clean controls, individual effects and
+combinations of sensor noise, near-lens flash, motion and optical defocus.
+The scene adds deep crease valleys, intersecting folds, crumple and hinged
+dog-ears. Six paper stocks and six lighting setups span warm and cool focused
+lights, low side light, coloured ambient, and mixed key and fill.
+
+```sh
+python -m experiments.capture3d.batch screened/pages.json materials/assets.json paired \
+  --device METAL --size 1200 1600 --samples 16 --realism-seed 553916
+python -m experiments.capture3d.review paired local-gallery tessdata \
+  --kraken /path/to/kraken --weights /path/to/model.safetensors --count 15
+```
+
+The review command rectifies the camera JPEG through its shutter-centre mesh.
+It can read the captured pixels directly, with paper illumination equalised, or
+with mild sharpening of the equalised image.
+It then requires exact text for every line in both arms using Tesseract Hebrew
+and the `heocr_modern_v1` checkpoint in `tessdata`. Optional Kraken adjudicates
+disagreements. Any line still lacking two exact reads rejects the pair. Each
+eligible geometry has its own six-marker raster check, and the batch requires
+identical line and word projections across the pair. The local HTML shows each
+pair side by side alongside its settings. The manifest preserves reader votes,
+input and output hashes, physical parameters and geometry.
+Use `--diagnostics` to save per-line votes on rejected pairs, or repeat
+`--pair-id ID` in the batch command to retake selected scenes with their
+original recipes.
+
 ## Geometry and validation
 
 - UV boxes follow the actual triangulated mesh, including triangle crossings. The renderer projects those boundaries at the centre of the shutter and applies the same radial transform used for the JPEG.
