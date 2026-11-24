@@ -132,6 +132,12 @@ def paper_model(record):
     """Load a serialized render paper without changing the v1/v2 contract."""
     if record.get("model") == "developable":
         return DevelopablePaper(**record)
+    if record.get("model") == "cross_creased":
+        try:
+            from .strong_folds import CrossCreasedPaper
+        except ImportError:  # Blender invokes render.py directly.
+            from strong_folds import CrossCreasedPaper
+        return CrossCreasedPaper(**record)
     try:
         from .geometry import Paper
     except ImportError:  # Blender invokes render.py directly.
