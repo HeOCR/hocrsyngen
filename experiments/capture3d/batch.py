@@ -72,13 +72,19 @@ def source_rows(manifest):
         lines, words = {}, {}
         for annotation in row["annotations"]:
             x1, y1, x2, y2 = annotation["bbox"]
-            text = annotation["text"]
-            if (not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height) or not text
-                    or unicodedata.normalize("NFC", text) != text or annotation["id"] in object_ids
-                    or annotation["kind"] not in {"line", "word"}):
+            kind = annotation["kind"]
+            if (not (0 <= x1 < x2 <= width and 0 <= y1 < y2 <= height) or annotation["id"] in object_ids
+                    or kind not in {"line", "word", "region"}):
                 raise ValueError(f"Invalid annotation in {ident}")
             object_ids.add(annotation["id"])
-            if annotation["kind"] == "line":
+            if kind == "region":
+                if "text" in annotation or "line_id" in annotation:
+                    raise ValueError(f"Geometry-only region contains a text label in {ident}")
+                continue
+            text = annotation.get("text")
+            if not isinstance(text, str) or not text or unicodedata.normalize("NFC", text) != text:
+                raise ValueError(f"Invalid annotation text in {ident}")
+            if kind == "line":
                 lines[annotation["id"]] = text
             else:
                 words.setdefault(annotation["line_id"], []).append(text)
