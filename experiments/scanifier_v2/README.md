@@ -212,3 +212,15 @@ source-to-capture map. Phone capture continues to use its own fitted optics
 and geometry.
 
 Use [fixed-geometry training views](TRAINING_CAPTURES.md) to apply a complete fitted capture recipe per view, with source-matched duplex ink or a measured scanner edge. The guide includes the development QA sheet command.
+
+### Registered monochrome office scanners
+
+For a modern 300 PPI office print-and-scan endpoint, use
+`office_scanner.render_office_scan(image, lines, profile_path=..., seed=..., source_ppi=300)`
+with a registered `heocr.scanifier.office-scanner-dev.v2` private DEV profile.
+Render the source PDF at the fit resolution before applying the profile.
+The scanner samples skew from the registered cohorts, applies the tonal and
+noise curves and replays the encoder tables. It pins the exact profile digest
+and returns a forward warp and transformed line polygons with unchanged text.
+The archival flatbed, bound, photocopy and old-colour profiles remain available
+for their respective modes.
