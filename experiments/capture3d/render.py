@@ -14,6 +14,7 @@ from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Matrix, Quaternion, Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from camera_pose import CameraPose
 from geometry import Paper, distort
 from developable import DevelopablePaper, from_capture
 from paper_material import office_paper
@@ -153,7 +154,7 @@ def light(name, kind, location, target, power, size, color=(1, 1, 1), spot_degre
     aim(obj, target)
 
 
-def set_camera(scene, rng, mode, photo):
+def set_camera(scene, rng, mode, photo, pose=None):
     data = bpy.data.cameras.new("Phone optics")
     camera = bpy.data.objects.new("Phone camera", data)
     bpy.context.collection.objects.link(camera)
@@ -163,6 +164,8 @@ def set_camera(scene, rng, mode, photo):
     if mode == "book":
         base.x += .05
         base.z += .055
+    if pose is not None:
+        base = Vector(target) + Vector(pose.offset_m)
     data.sensor_fit = "HORIZONTAL"
     data.sensor_width = 36
     data.lens = photo["lens_mm_equivalent"]
@@ -296,7 +299,10 @@ def scene_for(job, case, rng):
                      noise_strength=effect["noise_strength"], iso=effect["iso"],
                      shutter_drift_m=effect["motion_m"], motion_angle_deg=effect["motion_angle_deg"],
                      jpeg_quality=94, lighting=scene_lighting["profile"])
-    camera = set_camera(scene, rng, mode, photo)
+    pose = CameraPose.from_record(case["camera_pose"]) if "camera_pose" in case else None
+    if pose is not None:
+        photo.update(roll_deg=pose.roll_deg, lens_mm_equivalent=pose.lens_mm_equivalent)
+    camera = set_camera(scene, rng, mode, photo, pose)
     photo["position_m"] = list(camera.location)
     photo["rotation_wxyz"] = list(camera.rotation_quaternion)
     photo["sensor_width_mm"] = camera.data.sensor_width

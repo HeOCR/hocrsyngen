@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from .geometry import undistort
+from .camera_pose import CameraPose
 from .photometry import PhonePhotometry
 from .realism import plan_realism
 from .strong_folds import PROFILES
@@ -60,6 +61,8 @@ def source_rows(manifest):
         if not SHA256.fullmatch(row.get("font_sha256", "")):
             raise ValueError(f"Missing font pin for {ident}")
         used_ids.add(ident)
+        if "camera_pose" in row:
+            CameraPose.from_record(row["camera_pose"])
         path = checked_file(manifest.parent, row["image"], row["sha256"])
         with Image.open(path) as page:
             width, height = page.size
@@ -257,6 +260,8 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
             raise ValueError(f"Expected a CC0 scene asset for {role}")
         requested_assets[role] = str(checked_file(assets.parent, entry["path"], entry["sha256"]))
     if frozen_optics:
+        if any("camera_pose" in case for case in cases):
+            raise ValueError("An explicit camera pose cannot modify frozen optics")
         cases = list(frozen_cases(cases, frozen_optics, inputs, asset_pins, realism_seed, size, samples, pair_id))
         if not cases:
             raise ValueError("The frozen v2 roster has no matching input cases")
@@ -326,6 +331,8 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
             shutil.copyfile(case["image"], output / raw)
             phone_jpeg(open_rgb(case["undistorted"]), capture["phone"], case["seed"], output / photo, photometry)
             capture["annotations"] = list(contextual_word_labels(capture["annotations"]))
+            if "camera_pose" in case:
+                capture["camera_pose"] = case["camera_pose"]
             capture.update(seed=case["seed"], font_sha256=case["font_sha256"], image=photo,
                            image_sha256=sha(output / photo), source_image=raw, source_sha256=case["sha256"])
             positions = capture.pop("marker_positions", [])
