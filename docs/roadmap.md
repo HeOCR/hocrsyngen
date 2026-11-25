@@ -752,6 +752,12 @@ Planned PR breakdown:
 - `S10g` — Developable office paper. Keep the S10f optics and replace the
   sheet with straight cylindrical creases, matte fibres and thin-sheet
   transmission. Check both visibility and subpixel reprojection.
+- `S10h` — Strong developable folds. Compare v3 controls with cylindrical
+  hinges and crossing rigid facets under the same paper stock and frozen
+  optics. Check raster reprojection and exact reader agreement.
+- `S10i` — Rounded straight paper creases. Use one to three straight crease
+  lines with relaxed panels and the established dog-ear. Hold the v3 stock
+  and frozen v2 optics fixed for four-scene comparison and validation.
 
 Exit criteria:
 

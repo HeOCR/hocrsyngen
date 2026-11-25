@@ -17,6 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from geometry import Paper, distort
 from developable import DevelopablePaper, from_capture
 from paper_material import office_paper
+from strong_folds import CrossCreasedPaper, design
+from rounded_folds import RoundedCrossPaper, design as rounded_design
 
 
 SCENES = {
@@ -102,8 +104,8 @@ def add_sheet(name, paper, style, *, x_offset=0, turn=False):
     for loop in mesh.loops:
         uv_map.data[loop.index].uv = uvs[loop.vertex_index]
     for face in mesh.polygons:
-        face.use_smooth = True
-    if isinstance(paper, DevelopablePaper):
+        face.use_smooth = not isinstance(paper, CrossCreasedPaper)
+    if isinstance(paper, (DevelopablePaper, RoundedCrossPaper)):
         mesh.normals_split_custom_set_from_vertices([paper.normal(u, 1 - v) for u, v in uvs])
     sheet = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(sheet)
@@ -241,6 +243,10 @@ def scene_for(job, case, rng):
     reference_paper = Paper(**parameters)
     matte_paper = job.get("developable_paper", False)
     paper = from_capture(reference_paper, mode, realism, case["seed"]) if matte_paper else reference_paper
+    if strong_fold := case.get("strong_fold"):
+        paper = design(paper, strong_fold, case["seed"])
+    elif rounded_fold := case.get("rounded_fold"):
+        paper = rounded_design(paper, rounded_fold, case["seed"])
     roughness = rng.uniform(.55, .73)
     stock = realism["paper"] if realism else {}
     if matte_paper:
@@ -376,6 +382,10 @@ def capture(job, case):
         width, height = job["size"]
         camera_matrix = camera.calc_matrix_camera(bpy.context.evaluated_depsgraph_get(), x=width, y=height)
         clip_from_sheet = camera_matrix @ camera.matrix_world.inverted() @ sheet.matrix_world
+        if "strong_fold" in case:
+            result["strong_fold"] = case["strong_fold"]
+        if "rounded_fold" in case:
+            result["rounded_fold"] = case["rounded_fold"]
         result.update(realism=case["realism"], pair_id=case["pair_id"], arm=case["arm"],
                       clip_from_sheet=[list(row) for row in clip_from_sheet])
     if rejected:

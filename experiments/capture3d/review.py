@@ -22,6 +22,8 @@ from PIL import Image
 from .batch import checked_file, json_write, open_rgb, rejected_pairs, sha
 from .geometry import distort
 from .developable import DevelopablePaper, paper_model
+from .strong_folds import CrossCreasedPaper
+from .rounded_folds import RoundedCrossPaper
 
 
 BIDI = dict.fromkeys((0x061C, 0x200E, 0x200F, *range(0x202A, 0x202F), *range(0x2066, 0x206A)))
@@ -59,11 +61,39 @@ def _developable_points(paper, source_size):
     return np.stack((nx * u - ny * along, ny * u + nx * along, z), axis=-1)
 
 
+def _cross_creased_points(paper, source_size):
+    sw, sh = source_size
+    x = ((np.arange(sw) + .5) / sw - .5) * paper.width
+    y = (.5 - (np.arange(sh) + .5) / sh) * paper.height
+    across, along, offset, depth = paper.placement
+    cross = x[None, :] - np.interp(y, paper.rows, paper.shear)[:, None]
+    target_x = np.interp(cross, paper.columns, across) + np.interp(y, paper.rows, offset)[:, None]
+    target_y = np.broadcast_to(np.interp(y, paper.rows, along)[:, None], cross.shape)
+    target_z = np.interp(cross, paper.columns, depth) + paper.elevation
+    return np.stack((target_x, target_y, target_z), axis=-1)
+
+
+def _rounded_cross_points(paper, source_size):
+    sw, sh = source_size
+    x = ((np.arange(sw) + .5) / sw - .5) * paper.width
+    y = (.5 - (np.arange(sh) + .5) / sh) * paper.height
+    a, b = (np.asarray(axis.section) for axis in paper.sections)
+    sx, sy = np.meshgrid(np.interp(x, a[:, 0], a[:, 1]), np.interp(y, b[:, 0], b[:, 1]))
+    z = np.interp(x, a[:, 0], a[:, 2])[None, :] + np.interp(y, b[:, 0], b[:, 2])[:, None] - .001
+    return np.stack((sx, sy, z), axis=-1)
+
+
 def projection_map(paper, matrix, source_size, image_size, k1):
     """Map rectified pixel centres through the same triangular mesh and shutter-centre lens."""
     width, height = image_size
-    points = (_developable_points(paper, source_size) if isinstance(paper, DevelopablePaper)
-              else _grid_points(paper, source_size))
+    if isinstance(paper, RoundedCrossPaper):
+        points = _rounded_cross_points(paper, source_size)
+    elif isinstance(paper, CrossCreasedPaper):
+        points = _cross_creased_points(paper, source_size)
+    elif isinstance(paper, DevelopablePaper):
+        points = _developable_points(paper, source_size)
+    else:
+        points = _grid_points(paper, source_size)
     matrix = np.asarray(matrix)
     clip = points @ matrix[[0, 1, 3], :3].T + matrix[[0, 1, 3], 3]
     px = (clip[..., 0] / clip[..., 2] + 1) * width / 2
@@ -189,8 +219,15 @@ def parameters(row):
     recipe, paper, phone = row["realism"], row["paper"], row["phone"]
     light = recipe["lighting"]
     if paper.get("model") == "developable":
-        folds = [f"{angle:+.0f}° {'crease' if crease else 'spine arc'}, R {radius * 1000:.2f} mm"
+        panel = "panel curl" if row.get("rounded_fold") else "spine arc"
+        folds = [f"{angle:+.0f}° {'crease' if crease else panel}, R {radius * 1000:.2f} mm"
                  for _, angle, radius, crease in paper["bends"]]
+    elif paper.get("model") == "rounded_cross":
+        folds = [f"{axis.upper()} section {angle:+.0f}° crease, R {radius * 1000:.2f} mm"
+                 for axis in ("x", "y") for _, angle, radius, crease in paper[f"{axis}_bends"] if crease]
+    elif paper.get("model") == "cross_creased":
+        folds = [f"{len(paper['columns']) - 1} × {len(paper['rows']) - 1} facets",
+                 f"{paper['inclination_deg']:.0f}° panel inclination"]
     else:
         folds = [f"{paper[key] * 1000:.0f} mm {name}" for name, key in (("fold valley", "valley_depth"),
                  ("crease ridge", "crease_height"), ("crumple", "crumple")) if paper[key] > .005]
@@ -206,7 +243,7 @@ def parameters(row):
     if phone["defocus_enabled"]:
         effects.append(f"Defocus f/{phone['fstop_equivalent']:.1f}, {phone['focus_offset_m'] * 100:+.1f} cm")
     return {"Paper": recipe["paper"]["stock"],
-            "Folds": ", ".join([recipe["fold"]["profile"], *folds]),
+            "Folds": ", ".join([row.get("rounded_fold") or row.get("strong_fold") or recipe["fold"]["profile"], *folds]),
             "Light": ", ".join([light["profile"], *(f"{s['name']} {s['power']:g} W" for s in light["sources"])]),
             "Shared camera": f"{phone['lens_mm_equivalent']:.1f} mm, roll {phone['roll_deg']:+.1f}°, exposure {phone['exposure_ev']:+.2f} EV",
             "Clean": "No added camera artefacts",
@@ -214,7 +251,13 @@ def parameters(row):
 
 
 def gallery_html(pairs):
-    version = "v3" if pairs[0][0]["paper"].get("model") == "developable" else "v2"
+    version = "v2"
+    if any(row.get("rounded_fold") for pair in pairs for row in pair):
+        version = "v5"
+    elif any(row.get("strong_fold") for pair in pairs for row in pair):
+        version = "v4"
+    elif pairs[0][0]["paper"].get("model") == "developable":
+        version = "v3"
     cards = []
     for clean, treated in pairs:
         title = f"{clean['scene'].title()} · {clean['pair_id'].split('-')[-1]}"
@@ -244,7 +287,8 @@ aside{background:#f7f5ef;border-radius:4px;padding:1rem}dl{margin:.5rem 0 0}dt{f
 def review(batch, output, tessdata, kraken, weights, count, diagnostics=None):
     manifest_path = batch / "generation_manifest.json"
     manifest = json.loads(manifest_path.read_bytes())
-    if manifest["schema"] not in {"heocr.capture3d.paired.v2", "heocr.capture3d.paired.v3"} or output.exists():
+    if manifest["schema"] not in {"heocr.capture3d.paired.v2", "heocr.capture3d.paired.v3", "heocr.capture3d.paired.v4",
+                                  "heocr.capture3d.paired.v5"} or output.exists():
         raise ValueError("Expected a paired run and a fresh local output directory")
     captures = manifest.pop("renders")
     if rejected_pairs(captures):
