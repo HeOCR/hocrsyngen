@@ -7,6 +7,18 @@ R7 checkpoint selection used 7,092 development rows from two sources now reserve
 
 **Request (heocr-lead, 2026-11-12):** every R8 model reads Brainin's IA scan worse than R7, 0.743 vs 0.635 CER under line_fold_v1. The errors are small-gap letters: ה/ח, ר/ד, כ/ב. The lead wants a degradation for a seeded share of real train lines, a small A/B, and share and strength as parameters.
 
+## Development reference audit
+
+The audit checked 32 seeded development reference lines per book for word errors. [Audit record](../phist_v1/REGISTRATION.md#53-guard-modern-print-must-not-be-lost)
+
+| Development set | Sampled lines with a word error |
+|---|---:|
+| *Kevar* | 0/32 |
+| Brainin's collected works, Internet Archive scan | 1/32 |
+| *Yedi'ot ha-Teva* | 3/32 |
+
+For *Yedi'ot ha-Teva*, 3/32 sampled lines carry a one-letter error from the edition text. This raises every reader's CER on this book by roughly 0.2 points. The R7−R8b difference is largely unaffected.
+
 ## What sets the IA scan apart
 
 Line medians from my `scripts/measure.py`, 400 seeded lines per set (`intermediates/measure_v0.json`), alongside eval's `scan_texture.json`:
