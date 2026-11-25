@@ -1,3 +1,6 @@
+import hashlib
+import json
+
 import pytest
 
 from experiments.capture3d.camera_pose import CameraPose
@@ -43,3 +46,35 @@ def test_fiducial_uv_centres_are_the_drawn_pixel_centroids(tmp_path):
     assert count == len(measured) + 1
     expected = (centroids[1:] + 0.5) / shape
     assert sorted(map(tuple, expected)) == sorted(measured)
+
+
+def test_capture_accepts_geometry_only_regions_without_weakening_text_labels(tmp_path):
+    pytest.importorskip("cv2")
+    from PIL import Image
+
+    from experiments.capture3d.batch import contextual_word_labels, source_rows
+
+    image = tmp_path / "page.png"
+    Image.new("RGB", (120, 180), "white").save(image)
+    pin = hashlib.sha256(image.read_bytes()).hexdigest()
+    region = {"id": "cell-0", "kind": "region", "bbox": [11, 22, 60, 70]}
+    line = {"id": "line-0", "kind": "line", "bbox": [12, 26, 59, 31], "text": "סך"}
+    manifest = {
+        "split": "train-calibration", "text_gate_sha256": pin, "fonts_guard_sha256": pin,
+        "pages": [{"id": "page-0", "image": image.name, "scene": "desk", "sha256": pin,
+                   "font_sha256": pin, "annotations": [region, line]}],
+    }
+    path = tmp_path / "input.json"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    row, = source_rows(path)
+    assert list(contextual_word_labels(row["annotations"])) == [region, line]
+
+    region["text"] = "מוסתר"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="Geometry-only region"):
+        list(source_rows(path))
+    del region["text"]
+    del line["text"]
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="Invalid annotation text"):
+        list(source_rows(path))
