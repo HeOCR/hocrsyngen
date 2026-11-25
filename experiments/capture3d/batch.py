@@ -286,7 +286,12 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
                 case["marker_uv"] = MARKERS
                 case["marker_image"] = str(temp / f"{ident}-uv.png")
                 case["marker_output"] = str(temp / f"{ident}-markers.png")
-                fiducials(case["source_size"], case["marker_image"], .0065 if developable_paper else .015)
+                # A smaller UV disc keeps the raster centroid close to the
+                # projected point under strong perspective at native phone size.
+                radius = .0065 if developable_paper else .015
+                if developable_paper and "camera_pose" in case:
+                    radius *= min(1, 2400 / max(size))
+                fiducials(case["source_size"], case["marker_image"], radius)
         job, result_path = temp / "job.json", temp / "result.json"
         json_write(job, {"cases": cases, "result": str(result_path), "assets": requested_assets,
                          "device": device, "size": size, "samples": samples, "max_bad_fraction": max_bad_fraction,
