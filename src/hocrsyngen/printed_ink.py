@@ -51,3 +51,16 @@ def multiply_ink(paper, alpha, *, ink_transmission):
     import numpy as np
 
     return np.rint(np.clip(paper * (1 - (1 - ink_transmission) * alpha), 0, 255)).astype(np.uint8)
+
+
+def trim_ink_edge(opacity, fraction):
+    """Move a fraction of one pixel's ink coverage inward, retaining dark cores."""
+    import numpy as np
+    from scipy import ndimage
+
+    if not 0 <= fraction <= .35:
+        raise ValueError("Ink-edge trim must be in [0, 0.35]")
+    opacity = np.asarray(opacity, dtype=np.float32)
+    cross = ndimage.generate_binary_structure(2, 1)
+    inner = ndimage.minimum_filter(opacity, footprint=cross, mode="nearest")
+    return opacity + fraction * (inner - opacity)

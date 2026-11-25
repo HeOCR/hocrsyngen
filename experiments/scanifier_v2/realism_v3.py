@@ -1,8 +1,37 @@
 """Shared Realism v3 scan renderer, including round marks and gutter falloff."""
 
+from dataclasses import dataclass
+
 import cv2
 import numpy as np
 from PIL import Image
+
+from hocrsyngen.printed_ink import trim_ink_edge
+
+
+@dataclass(frozen=True)
+class ScanInkOptics:
+    """Independent ink-edge perturbations for paired old-print calibration."""
+
+    stroke_trim: float = 0.0
+    halo_gain: float = 0.0
+    blur_scale: float = 1.0
+
+    def __post_init__(self):
+        if not 0 <= self.stroke_trim <= .35:
+            raise ValueError("Stroke trim must be in [0, 0.35]")
+        if not -.65 <= self.halo_gain <= .25:
+            raise ValueError("Halo gain must be in [-0.65, 0.25]")
+        if not .30 <= self.blur_scale <= 1:
+            raise ValueError("Blur scale must be in [0.30, 1]")
+
+
+def _adjust_halo(opacity, gain, scale):
+    if gain < 0:
+        # Suppress diffuse ink while leaving a fully dark core unchanged.
+        return opacity * (1 + gain * (1 - opacity)**2)
+    spread = cv2.GaussianBlur(opacity, (0, 0), 1.65 * scale)
+    return opacity + gain * np.maximum(spread - opacity, 0) * (1 - opacity)
 
 
 def smooth_vector(v, sigma):
@@ -35,7 +64,7 @@ def spots(rgb, rng, i, scale):
     return rgb
 
 
-def render(clean, p, seed, i, role, *, scale=1, warp=None):
+def render(clean, p, seed, i, role, *, scale=1, warp=None, ink_optics=None):
     rng = np.random.default_rng(seed)
     g = np.asarray(clean.convert("L"), dtype=np.float32) / 255
     h, w = g.shape
@@ -58,12 +87,22 @@ def render(clean, p, seed, i, role, *, scale=1, warp=None):
         # Toner spread keeps the thinnest authored font strokes from washing out.
         weight = .24 + .13 * p["knee"]
         g = (1-weight)*g + weight*cv2.erode(g, cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)))
-    g = cv2.GaussianBlur(g, (0, 0), p["blur"] * scale)
+    blur = p["blur"] * scale
+    if ink_optics is not None:
+        if ink_optics.stroke_trim:
+            g = 1 - trim_ink_edge(1 - g, ink_optics.stroke_trim)
+        blur *= ink_optics.blur_scale
+    g = cv2.GaussianBlur(g, (0, 0), blur)
     low = p["knee"]*.63
     high = 1-p["knee"]*.33
     t = np.clip((g-low)/(high-low), 0, 1)
     paper = np.array(p["paper_rgb"])
     rgb = p["ink"] + t[..., None]*(paper-p["ink"])
+    if ink_optics is not None and ink_optics.halo_gain:
+        # Add the ink-only delta. Preserve the base optical field used by
+        # stains, speckles and the rest of the acquisition simulation.
+        opacity = 1 - t
+        rgb -= (_adjust_halo(opacity, ink_optics.halo_gain, scale) - opacity)[..., None] * (paper-p["ink"])
     thin = smooth_vector(rng.normal(size=h), 1.7 * scale)
     broad = smooth_vector(rng.normal(size=h), 8. * scale)
     stripes = .68*thin/max(.03, float(thin.std())) + .32*broad/max(.03, float(broad.std()))
