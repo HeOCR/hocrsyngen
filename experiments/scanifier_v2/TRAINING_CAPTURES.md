@@ -41,3 +41,5 @@ python -m experiments.scanifier_v2.dev_training_qa PRIVATE_FITS NEW_PRIVATE_QA_D
 | Gazette | DEV fit of the processed raster and a full-frame dark fringe. | The edge appears only at the margin. The protected boxes keep the same pixels across the edge stage. |
 
 Compare the amplified noise strip across flat patches. The Green and Stuart fits show spatially variable residual amplitude; the selected Gazette JPEG probe can quantize the flat-patch residual to zero. QA verifies stage behavior. OCR impact has not been measured on a held-out set yet.
+
+For modern oblique views, see the [capture recipe and TRAIN-only render plan](OBLIQUE_TRAIN.md).
