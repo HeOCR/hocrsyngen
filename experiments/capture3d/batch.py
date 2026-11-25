@@ -179,8 +179,10 @@ def make_duplex(source, destination):
 
 
 def assign_strong_folds(cases, assignments, developable_paper, frozen_optics, *, rounded=False):
-    if not (developable_paper and frozen_optics):
-        raise ValueError("Explicit folds require developable paper with frozen optics")
+    if not developable_paper:
+        raise ValueError("Explicit folds require developable paper")
+    if not frozen_optics and (not rounded or any("realism" not in case for case in cases)):
+        raise ValueError("Explicit folds require frozen optics or a seeded rounded-fold pair")
     ids = {row["pair_id"] for row in cases}
     profiles = {}
     options = ROUNDED_PROFILES if rounded else PROFILES

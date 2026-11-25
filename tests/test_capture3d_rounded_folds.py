@@ -50,3 +50,16 @@ def test_crossing_rectification_and_perimeter_use_both_sections():
     boundary = paper.perimeter((.08, .07, .93, .81))
     assert len({u for u, v in boundary if v == .07}) > 4
     assert len({v for u, v in boundary if u == .93}) > 4
+
+
+def test_seeded_rounded_fold_preserves_both_optics_arms():
+    pytest.importorskip("cv2")
+    from experiments.capture3d.batch import assign_strong_folds
+    from experiments.capture3d.realism import plan_realism
+
+    cases = list(plan_realism([{"id": "new-page", "scene": "desk", "seed": 51}], 9))
+    folded = assign_strong_folds(cases, ["new-page=dog-ear"], True, None, rounded=True)
+    assert [case["realism"] for case in folded] == [case["realism"] for case in cases]
+    assert [case["rounded_fold"] for case in folded] == ["dog-ear", "dog-ear"]
+    with pytest.raises(ValueError, match="frozen optics"):
+        assign_strong_folds(cases, ["new-page=dog-ear"], True, None)
