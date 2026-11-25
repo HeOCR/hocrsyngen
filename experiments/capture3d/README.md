@@ -158,3 +158,14 @@ For example, a mild shoulder with a blank reverse can be expressed as
 `{"tone_curve": [[0, 0], [160, 160], [255, 225]], "blank_reverse": true}`.
 This illustrates the JSON format. Fit and validate settings for the intended
 capture profile before using them for a bank.
+
+### Explicit camera pose
+
+A source manifest page may supply an optional `camera_pose` object with
+`offset_m: [x, y, height]` relative to the scene's look-at target,
+`roll_deg` in camera-local degrees, and `lens_mm_equivalent`. Both arms of a
+pair use that pose. The renderer computes the annotation projection and
+marker checks from the actual camera. At large output sizes, v5 fiducial
+discs for an explicit pose shrink to keep their projected raster centroids
+accurate. The acceptance threshold stays below one pixel. Frozen-optics replay rejects an
+explicit pose. Omit the field for the seeded default framing.
