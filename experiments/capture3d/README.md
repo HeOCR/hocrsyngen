@@ -135,3 +135,26 @@ v5 manifests and applies the same visibility, raster and reader checks.
 - The batch records the Cycles version and build, selected device, declared seed, paper and camera settings, input and output hashes, per-render time, JPEGs and annotated polygons. It reports render-only and engine-pilot throughput, including the extra fiducial passes in the latter.
 
 CC0 synthetic images and code. Blender runs as a separate GPL-licensed application. The pilot is for TRAIN/calibration only. Real reference photographs carry their separate source permissions. [Blender license](https://www.blender.org/about/license/)
+
+## Optional phone photometry
+
+Use `--photometry-profile path/to/profile.json` for a calibration batch. The
+manifest pins the JSON by SHA-256. This option applies to seeded or ordinary
+batches. Frozen gallery optics and the profile are mutually exclusive.
+
+The JSON fields are optional.
+
+| Field | Meaning |
+| --- | --- |
+| `tone_curve` | Monotone 8-bit `[input, output]` knots covering input 0 through 255. The luminance change is applied to each RGB channel before sensor noise. |
+| `local_tone_radius` | Estimate broad illumination with a radius given as a fraction of the frame long edge. Apply its tone adjustment uniformly within a local neighborhood to preserve local ink contrast. With radius 0 the curve maps individual pixel luminance. |
+| `sharpen_amount` | Opt-in fixed 0.85 px ISP detail filter strength, from 0 to 0.5. |
+| `sensor_noise_scale` | Multiplier for the selected shot/read noise strength, default 1. |
+| `luma_noise_sd` | Standard deviation in 8-bit levels for seeded, channel-neutral noise before JPEG, default 0. |
+| `jpeg_tables` | Two 64-entry quantization tables in Pillow order, luma followed by chroma. Omitting these uses the existing quality selector. |
+| `blank_reverse` | Render blank paper on the reverse in the developable paper mode. Translucency, fibres, paper mesh and reprojection stay active. Defaults to the mirrored synthetic print proxy. |
+
+For example, a mild shoulder with a blank reverse can be expressed as
+`{"tone_curve": [[0, 0], [160, 160], [255, 225]], "blank_reverse": true}`.
+This illustrates the JSON format. Fit and validate settings for the intended
+capture profile before using them for a bank.

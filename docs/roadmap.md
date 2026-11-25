@@ -758,6 +758,9 @@ Planned PR breakdown:
 - `S10i` — Rounded straight paper creases. Use one to three straight crease
   lines with relaxed panels and the established dog-ear. Hold the v3 stock
   and frozen v2 optics fixed for four-scene comparison and validation.
+- `S10j` — Calibrated phone photometry. Reuse the capture geometry with an
+  opt-in tone, noise, JPEG and reverse-side profile. Validate image distributions
+  on non-test captures and keep the profile digest with the generated batch.
 
 Exit criteria:
 

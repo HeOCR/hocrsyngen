@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from .geometry import undistort
+from .photometry import PhonePhotometry
 from .realism import plan_realism
 from .strong_folds import PROFILES
 from .rounded_folds import PROFILES as ROUNDED_PROFILES
@@ -91,9 +92,12 @@ def radial_remap(image, k1):
                      interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
 
 
-def phone_jpeg(rgb, settings, seed, output):
+def phone_jpeg(rgb, settings, seed, output, photometry=None):
     rgb = radial_remap(rgb, settings["k1"]).astype(np.float32) / 255
     noise = settings.get("noise_strength", 1)
+    if photometry is not None:
+        rgb = photometry.sharpen(photometry.apply_tone(rgb))
+        noise *= photometry.sensor_noise_scale
     if noise:
         linear = np.where(rgb <= .04045, rgb / 12.92, ((rgb + .055) / 1.055) ** 2.4)
         iso = settings["iso"] / 100
@@ -101,8 +105,13 @@ def phone_jpeg(rgb, settings, seed, output):
         sigma = noise * np.sqrt(shot * iso * linear + read * iso ** 2)
         linear = np.clip(linear + np.random.default_rng(seed ^ 54173).normal(0, sigma), 0, 1)
         rgb = np.where(linear <= .0031308, 12.92 * linear, 1.055 * linear ** (1 / 2.4) - .055)
+    encoding = {"quality": settings["jpeg_quality"]}
+    if photometry is not None:
+        rgb = photometry.add_luma_noise(rgb, seed)
+        if photometry.jpeg_tables:
+            encoding = {"qtables": [list(table) for table in photometry.jpeg_tables]}
     Image.fromarray(np.rint(np.clip(rgb, 0, 1) * 255).astype(np.uint8)).save(
-        output, quality=settings["jpeg_quality"], subsampling=2, optimize=True)
+        output, subsampling=2, optimize=True, **encoding)
 
 
 def fiducials(size, path, radius_fraction=.015):
@@ -217,9 +226,14 @@ def frozen_cases(cases, path, inputs, assets, realism_seed, size, samples, requi
 
 
 def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction, realism_seed=None, pair_id=None,
-        developable_paper=False, frozen_optics=None, strong_fold=None, rounded_fold=None):
+        developable_paper=False, frozen_optics=None, strong_fold=None, rounded_fold=None, photometry_profile=None):
     if strong_fold and rounded_fold:
         raise ValueError("Choose one fold generation per batch")
+    photometry = PhonePhotometry.read(photometry_profile) if photometry_profile else None
+    if photometry and frozen_optics:
+        raise ValueError("A new photometry profile cannot modify frozen optics")
+    if photometry and photometry.blank_reverse and not developable_paper:
+        raise ValueError("A blank reverse requires developable paper")
     input_manifest = json.loads(inputs.read_bytes())
     cases = list(source_rows(inputs))
     if not cases:
@@ -257,7 +271,7 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         for case in cases:
             ident = case["id"]
             case["undistorted"] = str(temp / f"{ident}.png")
-            if developable_paper:
+            if developable_paper and not (photometry and photometry.blank_reverse):
                 reverse = temp / f"{case['pair_id']}-reverse.png"
                 if case["arm"] == "clean":
                     make_duplex(case["image"], reverse)
@@ -310,7 +324,7 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
             photo = f"assets/{ident}-photo.jpg"
             raw = f"assets/{ident}-raw.png"
             shutil.copyfile(case["image"], output / raw)
-            phone_jpeg(open_rgb(case["undistorted"]), capture["phone"], case["seed"], output / photo)
+            phone_jpeg(open_rgb(case["undistorted"]), capture["phone"], case["seed"], output / photo, photometry)
             capture["annotations"] = list(contextual_word_labels(capture["annotations"]))
             capture.update(seed=case["seed"], font_sha256=case["font_sha256"], image=photo,
                            image_sha256=sha(output / photo), source_image=raw, source_sha256=case["sha256"])
@@ -336,6 +350,7 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         "text_gate_sha256": input_manifest["text_gate_sha256"], "fonts_guard_sha256": input_manifest["fonts_guard_sha256"],
         "source_manifest_sha256": sha(inputs), "scene_assets": asset_pins,
         **({"frozen_v2_optics_sha256": sha(frozen_optics)} if frozen_optics else {}),
+        **({"photometry_profile_sha256": sha(photometry_profile)} if photometry else {}),
         "camera": run_result, "image_size": size, "cycles_samples": samples, "device": device,
         "coordinate_space": "pixel edges from top left; mesh projection at shutter centre after lens distortion",
         "max_bad_sample_fraction": max_bad_fraction, "renders": kept, "rejected": rejected})
@@ -358,6 +373,7 @@ def main():
                         help=f"Apply a developable fold to both arms. Profiles: {', '.join(PROFILES)}")
     parser.add_argument("--rounded-fold", action="append", metavar="PAIR=PROFILE",
                         help=f"Apply rounded creases to both arms. Profiles: {', '.join(ROUNDED_PROFILES)}")
+    parser.add_argument("--photometry-profile", type=Path, help="Opt-in phone tone, noise, JPEG and reverse-side JSON")
     parser.add_argument("--max-bad-fraction", type=float, default=0)
     args = parser.parse_args()
     if min(args.size) < 160 or max(args.size) > 4096 or args.samples < 4 or not 0 <= args.max_bad_fraction <= .10:
