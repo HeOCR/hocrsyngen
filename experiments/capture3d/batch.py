@@ -18,6 +18,7 @@ from PIL import Image, ImageDraw
 from .geometry import undistort
 from .realism import plan_realism
 from .strong_folds import PROFILES
+from .rounded_folds import PROFILES as ROUNDED_PROFILES
 
 
 SCENES = {"desk", "floor", "book", "letter"}
@@ -177,17 +178,19 @@ def make_duplex(source, destination):
     Image.fromarray(cv2.GaussianBlur(shifted, (0, 0), 2.5)).save(destination)
 
 
-def assign_strong_folds(cases, assignments, developable_paper, frozen_optics):
+def assign_strong_folds(cases, assignments, developable_paper, frozen_optics, *, rounded=False):
     if not (developable_paper and frozen_optics):
-        raise ValueError("Strong folds require developable paper with frozen optics")
+        raise ValueError("Explicit folds require developable paper with frozen optics")
     ids = {row["pair_id"] for row in cases}
     profiles = {}
+    options = ROUNDED_PROFILES if rounded else PROFILES
+    field = "rounded_fold" if rounded else "strong_fold"
     for assignment in assignments:
         pair, sep, profile = assignment.partition("=")
-        if not sep or pair not in ids or profile not in PROFILES or pair in profiles:
+        if not sep or pair not in ids or profile not in options or pair in profiles:
             raise ValueError(f"Expected a unique selected PAIR=PROFILE, got {assignment!r}")
         profiles[pair] = profile
-    return [{**case, "strong_fold": profiles[case["pair_id"]]} if case["pair_id"] in profiles else case for case in cases]
+    return [{**case, field: profiles[case["pair_id"]]} if case["pair_id"] in profiles else case for case in cases]
 
 
 def frozen_cases(cases, path, inputs, assets, realism_seed, size, samples, required_pairs):
@@ -212,7 +215,9 @@ def frozen_cases(cases, path, inputs, assets, realism_seed, size, samples, requi
 
 
 def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction, realism_seed=None, pair_id=None,
-        developable_paper=False, frozen_optics=None, strong_fold=None):
+        developable_paper=False, frozen_optics=None, strong_fold=None, rounded_fold=None):
+    if strong_fold and rounded_fold:
+        raise ValueError("Choose one fold generation per batch")
     input_manifest = json.loads(inputs.read_bytes())
     cases = list(source_rows(inputs))
     if not cases:
@@ -239,8 +244,9 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         cases = list(frozen_cases(cases, frozen_optics, inputs, asset_pins, realism_seed, size, samples, pair_id))
         if not cases:
             raise ValueError("The frozen v2 roster has no matching input cases")
-    if strong_fold:
-        cases = assign_strong_folds(cases, strong_fold, developable_paper, frozen_optics)
+    if strong_fold or rounded_fold:
+        cases = assign_strong_folds(cases, rounded_fold or strong_fold, developable_paper, frozen_optics,
+                                   rounded=bool(rounded_fold))
     output.mkdir()
     (output / "assets").mkdir()
     scenetypes = set()
@@ -320,6 +326,8 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
     version = "paired.v2" if paired else "v1"
     if developable_paper:
         version = "paired.v4" if strong_fold else "paired.v3"
+        if rounded_fold:
+            version = "paired.v5"
     json_write(output / "generation_manifest.json", {
         "schema": f"heocr.capture3d.{version}",
         **({"realism_seed": realism_seed} if paired else {}), "split": "train-calibration", "licence": "CC0-1.0",
@@ -346,6 +354,8 @@ def main():
     parser.add_argument("--pair-id", action="append", help="Retake a pair without changing its original scene recipe")
     parser.add_argument("--strong-fold", action="append", metavar="PAIR=PROFILE",
                         help=f"Apply a developable fold to both arms. Profiles: {', '.join(PROFILES)}")
+    parser.add_argument("--rounded-fold", action="append", metavar="PAIR=PROFILE",
+                        help=f"Apply rounded creases to both arms. Profiles: {', '.join(ROUNDED_PROFILES)}")
     parser.add_argument("--max-bad-fraction", type=float, default=0)
     args = parser.parse_args()
     if min(args.size) < 160 or max(args.size) > 4096 or args.samples < 4 or not 0 <= args.max_bad_fraction <= .10:

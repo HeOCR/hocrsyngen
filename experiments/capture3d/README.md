@@ -102,6 +102,30 @@ The v4 manifest records each selected profile and the rest-sheet geometry
 used for polygons and OCR rectification. Run the paired review command on the
 batch to require the same per-line reader agreement as v3.
 
+### Rounded straight creases with frozen optics
+
+Repeat `--rounded-fold PAIR=PROFILE` to make a v5 batch from the same v3
+paper and frozen v2 camera, lighting and effects. Use `--developable-paper`
+and `--frozen-optics` together. The fold assignment applies to both arms.
+
+```sh
+python -m experiments.capture3d.batch screened/pages.json materials/assets.json local-v5 \
+  --device METAL --size 1200 1600 --samples 16 --realism-seed 553916 \
+  --developable-paper --frozen-optics v2/gallery_manifest.json \
+  --pair-id desk-01 --rounded-fold desk-01=crossed \
+  --pair-id floor-01 --rounded-fold floor-01=diagonal
+```
+
+`diagonal` and `half` place one straight crease. `parallel` and
+`three-parallel` place two and three parallel creases. Narrow circular hinges
+preserve crease memory, and broader unmarked arcs give the outer panels a
+little residual curl. `crossed` uses two straight orthogonal rounded hinges.
+Each section preserves its arc length and the crossings use shallow angles to
+limit diagonal mesh-edge distortion to below 0.4% in the verification scenes.
+`dog-ear` replays the v4 corner geometry. The mesh, material crease marks, UV
+polygons and OCR rectification follow the same geometry. The review accepts
+v5 manifests and applies the same visibility, raster and reader checks.
+
 ## Geometry and validation
 
 - UV boxes follow the actual triangulated mesh, including triangle crossings. The renderer projects those boundaries at the centre of the shutter and applies the same radial transform used for the JPEG.

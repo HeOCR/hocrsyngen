@@ -62,14 +62,15 @@ def office_paper(name, paper, stock, *, ink=None, showthrough=None):
                     _math(tree, "MULTIPLY_ADD", mottle, .040, -.020))
 
     # A narrow reflectance change in the bent fibres, expressed in rest-sheet metres.
-    nx, ny = paper.axis
-    coefficients = (paper.width * nx, paper.height * ny, 0.)
-    cross = _vector(tree, "DOT_PRODUCT", uv, coefficients)
-    for center, _, _, crease in paper.bends:
-        if crease:
-            distance = _math(tree, "ABSOLUTE", _math(tree, "SUBTRACT", cross, center + .5 * sum(coefficients)))
-            whitening = _math(tree, "MAXIMUM", 0., _math(tree, "MULTIPLY_ADD", distance, -1 / .00042, 1.))
-            density = _math(tree, "ADD", density, _math(tree, "MULTIPLY", whitening, .083))
+    crease_axes = getattr(paper, "crease_axes", None) or ((paper.axis, paper.bends),)
+    for (nx, ny), bends in crease_axes:
+        coefficients = (paper.width * nx, paper.height * ny, 0.)
+        cross = _vector(tree, "DOT_PRODUCT", uv, coefficients)
+        for center, _, _, crease in bends:
+            if crease:
+                distance = _math(tree, "ABSOLUTE", _math(tree, "SUBTRACT", cross, center + .5 * sum(coefficients)))
+                whitening = _math(tree, "MAXIMUM", 0., _math(tree, "MULTIPLY_ADD", distance, -1 / .00042, 1.))
+                density = _math(tree, "ADD", density, _math(tree, "MULTIPLY", whitening, .083))
 
     stock_color = _vector(tree, "MULTIPLY", tint, density)
     if showthrough:
