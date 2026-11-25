@@ -167,5 +167,7 @@ A source manifest page may supply an optional `camera_pose` object with
 pair use that pose. The renderer computes the annotation projection and
 marker checks from the actual camera. At large output sizes, v5 fiducial
 discs for an explicit pose shrink to keep their projected raster centroids
-accurate. The acceptance threshold stays below one pixel. Frozen-optics replay rejects an
+accurate. The marker UV projection uses the centres of the drawn source
+pixels so the check also accounts for raster placement rounding. The
+acceptance threshold stays below one pixel. Frozen-optics replay rejects an
 explicit pose. Omit the field for the seeded default framing.

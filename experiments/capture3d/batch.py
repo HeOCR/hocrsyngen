@@ -122,10 +122,14 @@ def fiducials(size, path, radius_fraction=.015):
     img = Image.new("RGB", size, "black")
     draw = ImageDraw.Draw(img)
     radius = min(width, height) * radius_fraction
+    centers = []
     for u, v in MARKERS:
         x, y = width * u - .5, height * v - .5
-        draw.ellipse((x - radius, y - radius, x + radius, y + radius), fill=(255, 0, 255))
+        left, top, right, bottom = map(int, (x - radius, y - radius, x + radius, y + radius))
+        draw.ellipse((left, top, right, bottom), fill=(255, 0, 255))
+        centers.append(((left + right + 1) / (2 * width), (top + bottom + 1) / (2 * height)))
     img.save(path)
+    return centers
 
 
 def marker_errors(image, expected, k1):
@@ -291,7 +295,9 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
                 radius = .0065 if developable_paper else .015
                 if developable_paper and "camera_pose" in case:
                     radius *= min(1, 2400 / max(size))
-                fiducials(case["source_size"], case["marker_image"], radius)
+                centers = fiducials(case["source_size"], case["marker_image"], radius)
+                if "camera_pose" in case:
+                    case["marker_uv"] = centers
         job, result_path = temp / "job.json", temp / "result.json"
         json_write(job, {"cases": cases, "result": str(result_path), "assets": requested_assets,
                          "device": device, "size": size, "samples": samples, "max_bad_fraction": max_bad_fraction,
