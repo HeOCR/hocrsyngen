@@ -106,7 +106,8 @@ batch to require the same per-line reader agreement as v3.
 
 Repeat `--rounded-fold PAIR=PROFILE` to make a v5 batch from the same v3
 paper and frozen v2 camera, lighting and effects. Use `--developable-paper`
-and `--frozen-optics` together. The fold assignment applies to both arms.
+with seeded realism. Add `--frozen-optics` when replaying a saved gallery. A fresh batch uses the
+optics generated from `--realism-seed`. The fold assignment applies to both arms.
 
 ```sh
 python -m experiments.capture3d.batch screened/pages.json materials/assets.json local-v5 \
