@@ -251,7 +251,7 @@ def scene_for(job, case, rng):
     stock = realism["paper"] if realism else {}
     if matte_paper:
         paper_style = office_paper("Matte office paper", paper, stock["reflectance_rgb"],
-                                   ink=case["image"], showthrough=case["showthrough"])
+                                   ink=case["image"], showthrough=case.get("showthrough"))
     else:
         paper_style = material("Printed paper", image=case["image"], color=stock.get("reflectance_rgb"),
                                roughness=stock.get("roughness", roughness))
