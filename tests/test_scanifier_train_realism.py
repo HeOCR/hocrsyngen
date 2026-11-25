@@ -7,7 +7,9 @@ import pytest
 
 from experiments.scanifier_v2.bw_photocopy import bw_photocopy
 from experiments.scanifier_v2.phone_training import phone_line_crop
-from experiments.scanifier_v2.train_realism import render_train_scan, render_train_scanner, scanner_quotas
+from experiments.scanifier_v2.realism_v3 import ScanInkOptics
+from experiments.scanifier_v2.train_realism import C2_SCAN_OPTICS, render_train_scan, render_train_scanner, scanner_quotas
+from hocrsyngen.printed_ink import trim_ink_edge
 
 
 def page():
@@ -74,3 +76,52 @@ def test_c2_bound_adjustment_deepens_ink_and_preserves_paper_and_geometry(seed):
     flatbed_opt_in = render_train_scan(image, lines, profile="flatbed", seed=seed, c2_bound_reduced_fade=True)
     assert flatbed_opt_in.image.tobytes() == flatbed.image.tobytes()
     assert flatbed_opt_in.parameters == flatbed.parameters
+
+
+@pytest.mark.parametrize("profile", ["flatbed", "bound"])
+def test_c2_optics_preserve_seeded_paper_and_exact_label_geometry(profile):
+    image, lines = page()
+    kwargs = dict(profile=profile, seed=1, c2_bound_reduced_fade=True)
+    baseline = render_train_scan(image, lines, **kwargs)
+    neutral = render_train_scan(image, lines, c2_optics=ScanInkOptics(), **kwargs)
+    assert neutral.image.tobytes() == baseline.image.tobytes()
+
+    optics = C2_SCAN_OPTICS[profile]
+    adjusted = render_train_scan(image, lines, c2_optics=optics, **kwargs)
+    replay = render_train_scan(image, lines, c2_optics=optics, **kwargs)
+    assert adjusted.image.tobytes() == replay.image.tobytes()
+    assert adjusted.image.tobytes() != baseline.image.tobytes()
+    assert np.array_equal(np.asarray(adjusted.image)[:200], np.asarray(baseline.image)[:200])
+    assert adjusted.lines == baseline.lines
+    assert adjusted.parameters["warp"] == baseline.parameters["warp"]
+    assert adjusted.parameters["capture_recipe"] == "c2-optics-v1"
+    assert adjusted.parameters["v3_pair"] == baseline.parameters["v3_pair"]
+    assert adjusted.parameters.get("bound_ink_delta") == baseline.parameters.get("bound_ink_delta")
+    assert adjusted.parameters["c2_optics"]["halo_gain"] == optics.halo_gain
+    assert adjusted.parameters["c2_effective_blur_sigma_px"] < neutral.parameters["c2_effective_blur_sigma_px"]
+
+
+def test_ink_edge_trim_leaves_paper_clear_and_a_thin_stroke_visible():
+    opacity = np.zeros((15, 15), dtype=np.float32)
+    opacity[4:11, 4:7] = 1
+    opacity[4:11, 9] = 1
+    adjusted = trim_ink_edge(opacity, .30)
+    assert adjusted[7, 5] == 1
+    assert adjusted[7, 4] == pytest.approx(.70)
+    assert adjusted[7, 9] == pytest.approx(.70)
+    assert np.array_equal(adjusted > 0, opacity > 0)
+    assert np.array_equal(trim_ink_edge(opacity, 0), opacity)
+
+
+@pytest.mark.parametrize("gain", [.20, -.55])
+def test_c2_halo_can_be_adjusted_without_changing_core_tone(gain):
+    image, lines = page()
+    kwargs = dict(profile="bound", seed=2, c2_bound_reduced_fade=True)
+    neutral = np.asarray(render_train_scan(image, lines, **kwargs).image, dtype=int)
+    view = render_train_scan(image, lines, c2_optics=ScanInkOptics(halo_gain=gain), **kwargs)
+    delta = np.asarray(view.image, dtype=int) - neutral
+    assert np.array_equal(delta[323, 275:295], np.zeros((20, 3)))
+    if gain > 0:
+        assert delta.min() < 0 and delta.max() == 0
+    else:
+        assert delta.min() == 0 and delta.max() > 0

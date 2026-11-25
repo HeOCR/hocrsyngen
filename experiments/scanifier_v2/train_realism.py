@@ -1,5 +1,6 @@
 """Default capture profiles for annotated synthetic training pages."""
 
+from dataclasses import asdict
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -11,7 +12,7 @@ from .geometry import Warp
 from .old_scanner_color import old_scanner_color
 from .phone_training import PhoneView, phone_annotations
 from .pipeline import _rng
-from .realism_v3 import render
+from .realism_v3 import ScanInkOptics, render
 from .severity import BAND_BOUNDARIES, BAND_WEIGHTS
 
 _PRESET = (Path(__file__).parent / "presets/train_realism_v3.json").read_bytes()
@@ -21,6 +22,10 @@ SCANNER_SHARE_PERCENT = 5
 SCANNER_PROFILES = {"photocopy": bw_photocopy, "old-color": old_scanner_color}
 BANDS = ("mild", "medium", "hard")
 C2_BOUND_INK_DROP = 8
+C2_SCAN_OPTICS = {
+    "flatbed": ScanInkOptics(stroke_trim=.08, halo_gain=.10, blur_scale=.72),
+    "bound": ScanInkOptics(stroke_trim=.20, halo_gain=-.45, blur_scale=.55),
+}
 
 
 def scanner_quotas(total):
@@ -34,8 +39,8 @@ def scanner_quotas(total):
     return tuple(zip(BANDS, quotas, strict=True))
 
 
-def render_train_scan(image, lines, *, profile, seed, c2_bound_reduced_fade=False):
-    """Apply the locked v3 scan preset, with the C2 v1.1 bound ink adjustment on request."""
+def render_train_scan(image, lines, *, profile, seed, c2_bound_reduced_fade=False, c2_optics=None):
+    """Apply the locked v3 preset, with optional C2 bound tone and ink optics."""
     presets = _SETTINGS["profiles"][profile]
     rng = _rng(seed, "train_realism/flatbed_bound")
     settings = presets[int(rng.integers(len(presets)))]
@@ -49,12 +54,16 @@ def render_train_scan(image, lines, *, profile, seed, c2_bound_reduced_fade=Fals
     gutter = width * .12
     bend = gutter * np.tan(np.deg2rad(settings["gutter_bend_deg"])) * np.exp(-side_dist / gutter)
     warp = Warp(np.eye(3), np.array([0, height]), np.zeros(2), x + .5, -(skew + bend), np.eye(3), image.size)
+    scale = width / _SETTINGS["calibration_width_px"]
     result = render(image, settings, seed, int(rng.integers(20)), "spine" if profile == "bound" else "flatbed",
-                    scale=width / _SETTINGS["calibration_width_px"], warp=warp)
+                    scale=scale, warp=warp, ink_optics=c2_optics)
     parameters = {"profile": profile, "model": "realism_v3", "v3_pair": settings["pair"],
                   "preset_sha256": PRESET_SHA256, "round_stains": True, "seed": seed, "warp": warp.record()}
     if reduced_fade:
         parameters.update(capture_recipe="c2-v1.1", bound_ink_delta=-C2_BOUND_INK_DROP)
+    if c2_optics is not None:
+        parameters.update(capture_recipe="c2-optics-v1", c2_optics=asdict(c2_optics),
+                          c2_effective_blur_sigma_px=settings["blur"] * scale * c2_optics.blur_scale)
     return PhoneView(result, phone_annotations(lines, warp, image.size), warp, parameters)
 
 

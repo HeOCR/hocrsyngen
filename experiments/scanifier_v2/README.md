@@ -198,6 +198,15 @@ marks use the same fitted settings. The result records `capture_recipe` and
 `bound_ink_delta` for bound pages. Flatbed output is byte-identical with the
 option enabled.
 
+For paired C2 old-print calibration, pass `c2_optics=C2_SCAN_OPTICS[profile]`.
+These starting settings apply a fractional ink-edge trim, an ink-only
+halo adjustment and a smaller capture blur. Flatbed adds a faint optical
+wing and bound suppresses its broad wing. Use `ScanInkOptics` to vary each
+factor independently while holding the parent image and seed fixed.
+Keep `c2_bound_reduced_fade=True` for the C2 v1.1 bound tone. The output
+records the three controls, the effective blur in pixels and the preset
+hash. These controls are opt-in pending calibration.
+
 Use `train_realism.render_train_scanner` for `photocopy` and `old-color`.
 Reserve 5% of synthetic TRAIN visits for each. Use `scanner_quotas` for
 integer 55/35/10 light/medium/harsh allocations or omit the band for a seeded
