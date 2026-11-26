@@ -399,7 +399,7 @@ def camera_batch(rows, source, scratch, assets, blender, device, attempt, guard_
     write(roster_path,{"split":"train-calibration","text_gate_sha256":sha(source/"roster.json"),
                        "fonts_guard_sha256":guard_hash,"pages":entries})
     batch.run(roster_path,assets,scratch/"capture",blender,device,CAMERA_SIZE,samples,
-              .65,realism_seed=SEED,developable_paper=True,rounded_fold=folds)
+              .65,realism_seed=SEED,developable_paper=True,rounded_fold=folds,clean_arm_only=True)
     output = read(scratch/"capture/generation_manifest.json")
     if "photometry_profile_sha256" in output or "frozen_v2_optics_sha256" in output:
         raise RuntimeError("Unexpected fitted camera input")
