@@ -14,6 +14,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import time
+import traceback
 import unicodedata
 
 import cv2 as cv
@@ -399,7 +400,7 @@ def camera_batch(rows, source, scratch, assets, blender, device, attempt, guard_
     write(roster_path,{"split":"train-calibration","text_gate_sha256":sha(source/"roster.json"),
                        "fonts_guard_sha256":guard_hash,"pages":entries})
     batch.run(roster_path,assets,scratch/"capture",blender,device,CAMERA_SIZE,samples,
-              .65,realism_seed=SEED,developable_paper=True,rounded_fold=folds)
+              .65,realism_seed=SEED,developable_paper=True,rounded_fold=folds,clean_arm_only=True)
     output = read(scratch/"capture/generation_manifest.json")
     if "photometry_profile_sha256" in output or "frozen_v2_optics_sha256" in output:
         raise RuntimeError("Unexpected fitted camera input")
@@ -475,49 +476,62 @@ def main():
     model, runtime = load_model(read(options.weights), options.offline)
     target = options.requested_lines
     accepted_lines = 0
-    for offset in range(0,len(pages),options.batch_size):
-        current = pages[offset:offset+options.batch_size]
-        for attempt in range(3):
-            if not current or accepted_lines >= target or time.monotonic() > stop:
-                break
-            scratch = folder/"scratch"/f"batch-{offset:04d}-{attempt}"
-            try:
-                camera, scene_assets = camera_batch(current,source,scratch,options.assets,options.blender,
-                                                    options.device,attempt,sha(options.fonts_guard),options.samples)
-            except ValueError as exc:
-                if str(exc)!="Every render failed the frame or visibility threshold":
-                    raise
-                camera = {}
-            retry = []
-            for row in current:
-                if time.monotonic()>stop or accepted_lines>=target:
+    failure = None
+    try:
+        for offset in range(0,len(pages),options.batch_size):
+            current = pages[offset:offset+options.batch_size]
+            for attempt in range(3):
+                if not current or accepted_lines >= target or time.monotonic() > stop:
                     break
-                shot = camera.get(row["page"]["id"])
-                if shot is None:
-                    retry.append(row)
-                    rejects.append([row["ordinal"],attempt,"camera_framing"])
-                    continue
-                with Image.open(check(scratch/"capture"/shot["image"],shot["image_sha256"])) as plate:
-                    native = np.asarray(plate.convert("RGB"))
+                scratch = folder/"scratch"/f"batch-{offset:04d}-{attempt}"
                 try:
-                    final, lines, proof = synthesize(native,shot,row,model,attempt)
-                except Rejected as exc:
-                    retry.append(row)
-                    rejects.append([row["ordinal"],attempt,str(exc)])
-                    continue
-                proof["attempt"] = attempt
-                result = emit(folder,row,final,lines,proof,scene_assets,model_hash,shot)
-                accepted.append(result)
-                accepted_lines += len(lines)
-                print(f"{row['ordinal']} accepted, {accepted_lines}/{target} cumulative lines",flush=True)
-            shutil.rmtree(scratch)
-            current = retry
-        if accepted_lines >= target or time.monotonic() > stop:
-            break
+                    camera, scene_assets = camera_batch(current,source,scratch,options.assets,options.blender,
+                                                        options.device,attempt,sha(options.fonts_guard),options.samples)
+                except ValueError as exc:
+                    if str(exc)!="Every render failed the frame or visibility threshold":
+                        raise
+                    camera = {}
+                retry = []
+                for row in current:
+                    if time.monotonic()>stop or accepted_lines>=target:
+                        break
+                    shot = camera.get(row["page"]["id"])
+                    if shot is None:
+                        retry.append(row)
+                        rejects.append([row["ordinal"],attempt,"camera_framing"])
+                        continue
+                    with Image.open(check(scratch/"capture"/shot["image"],shot["image_sha256"])) as plate:
+                        native = np.asarray(plate.convert("RGB"))
+                    try:
+                        final, lines, proof = synthesize(native,shot,row,model,attempt)
+                    except Rejected as exc:
+                        retry.append(row)
+                        rejects.append([row["ordinal"],attempt,str(exc)])
+                        continue
+                    proof["attempt"] = attempt
+                    result = emit(folder,row,final,lines,proof,scene_assets,model_hash,shot)
+                    accepted.append(result)
+                    accepted_lines += len(lines)
+                    print(f"{row['ordinal']} accepted, {accepted_lines}/{target} cumulative lines",flush=True)
+                shutil.rmtree(scratch)
+                current = retry
+            if accepted_lines >= target or time.monotonic() > stop:
+                break
+    except Exception as exc:
+        if not accepted:
+            raise
+        traceback.print_exc()
+        failure = type(exc).__name__
+        print(f"Sealing {len(accepted)} verified views after {failure}",flush=True)
     accepted.sort(key=lambda row:row["ordinal"])
     for row in accepted:
         check(folder/row["media"],row["media_sha256"])
         check(folder/row["layout"],row["layout_sha256"])
+    admitted_files = {folder/row[key] for row in accepted for key in ("media","layout")}
+    for dirname in ("images","layout"):
+        for path in (folder/dirname).iterdir():
+            if path not in admitted_files:
+                path.unlink()
     with (folder/"inventory.jsonl").open("w") as handle:
         for entry in accepted:
             handle.write(json.dumps(entry,ensure_ascii=False,sort_keys=True,allow_nan=False)+"\n")
@@ -525,6 +539,7 @@ def main():
         "schema":"heocr.synthetic_oblique_sdxl_train.v1","source_roster_sha256":sha(source/"roster.json"),
         "input_fonts_guard_sha256":sha(options.fonts_guard),"cached_sdxl_edits":[],"fitted_photo_profiles":[],
         "request_lines":target,"views":len(accepted),"lines":accepted_lines,"runtime":runtime,
+        "partial_failure":failure,
         "reason_counts":{reason:sum(row[2]==reason for row in rejects) for reason in sorted({r[2] for r in rejects})},
         "rejected_attempts":rejects,"model_weights_sha256":model_hash,"steps":STEPS,"strength":STRENGTH,
         "guidance":GUIDANCE,"negative_prompt":NEGATIVE,"camera_device":options.device,"camera_samples":options.samples,

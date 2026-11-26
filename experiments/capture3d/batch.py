@@ -233,7 +233,8 @@ def frozen_cases(cases, path, inputs, assets, realism_seed, size, samples, requi
 
 
 def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction, realism_seed=None, pair_id=None,
-        developable_paper=False, frozen_optics=None, strong_fold=None, rounded_fold=None, photometry_profile=None):
+        developable_paper=False, frozen_optics=None, strong_fold=None, rounded_fold=None, photometry_profile=None,
+        clean_arm_only=False):
     if strong_fold and rounded_fold:
         raise ValueError("Choose one fold generation per batch")
     photometry = PhonePhotometry.read(photometry_profile) if photometry_profile else None
@@ -246,6 +247,8 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
     if not cases:
         raise ValueError("The source manifest contains no pages")
     paired = realism_seed is not None
+    if clean_arm_only and not paired:
+        raise ValueError("A clean arm requires a seeded capture recipe")
     if developable_paper and not paired:
         raise ValueError("Developable paper uses the pinned paired capture recipes")
     if paired:
@@ -272,6 +275,8 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
     if strong_fold or rounded_fold:
         cases = assign_strong_folds(cases, rounded_fold or strong_fold, developable_paper, frozen_optics,
                                    rounded=bool(rounded_fold))
+    if clean_arm_only:
+        cases = [case for case in cases if case["arm"] == "clean"]
     output.mkdir()
     (output / "assets").mkdir()
     scenetypes = set()
@@ -310,14 +315,19 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
             raise RuntimeError((temp / "blender.log").read_text(errors="replace")[-7000:])
         run_result = json.loads(result_path.read_bytes())
         captures = run_result.pop("rows")
-        invalid = rejected_pairs(captures) if paired else set()
+        if paired and not clean_arm_only:
+            invalid = rejected_pairs(captures)
+        elif clean_arm_only:
+            invalid = {capture["pair_id"] for capture in captures if capture["rejected_regions"]}
+        else:
+            invalid = set()
         if developable_paper:
             for case, capture in zip(cases, captures, strict=True):
                 positions = capture.pop("marker_positions")
                 if positions and capture["pair_id"] not in invalid:
                     try:
                         errors = marker_errors(open_rgb(case["marker_output"]), positions, capture["phone"]["k1"])
-                    except ValueError as exc:
+                    except (ValueError, OSError) as exc:
                         capture["marker_failure"] = str(exc)
                         invalid.add(capture["pair_id"])
                         continue
@@ -369,6 +379,7 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
         "source_manifest_sha256": sha(inputs), "scene_assets": asset_pins,
         **({"frozen_v2_optics_sha256": sha(frozen_optics)} if frozen_optics else {}),
         **({"photometry_profile_sha256": sha(photometry_profile)} if photometry else {}),
+        **({"clean_arm_only": True} if clean_arm_only else {}),
         "camera": run_result, "image_size": size, "cycles_samples": samples, "device": device,
         "coordinate_space": "pixel edges from top left; mesh projection at shutter centre after lens distortion",
         "max_bad_sample_fraction": max_bad_fraction, "renders": kept, "rejected": rejected})
