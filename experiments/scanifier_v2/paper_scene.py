@@ -98,7 +98,11 @@ class Gutter:
         return source_x, (y - (height - 1) / 2) / self._height_scale(distance) + (height - 1) / 2
 
 
-def gutter_scan(front, warp, seed, paper_rgb=(240, 230, 211), reverse=None):
+def gutter_scan(front, warp, seed, paper_rgb=(240, 230, 211), reverse=None, *,
+                duplex_strength=.086, duplex_blur_sigma=2.2):
+    """Light a curved inked leaf with optional, mirrored reverse-side ink."""
+    if not 0 <= duplex_strength <= 1 or not math.isfinite(duplex_blur_sigma) or duplex_blur_sigma <= 0:
+        raise ValueError("Invalid duplex strength or blur")
     rgb = np.asarray(front)
     x, y = _grid(warp.output_size)
     distance = x - warp.facing if warp.side == "left" else warp.section - 1 - x
@@ -112,7 +116,9 @@ def gutter_scan(front, warp, seed, paper_rgb=(240, 230, 211), reverse=None):
     if reverse is not None:
         back = cv.cvtColor(np.asarray(reverse), cv.COLOR_RGB2GRAY)[:, ::-1]
         back = cv.resize(back, (width, height), interpolation=cv.INTER_AREA)
-        transmittance *= 1 - .086 * cv.GaussianBlur(1 - back.astype(np.float32) / 255, (0, 0), 2.2)
+        reverse_ink = 1 - back.astype(np.float32) / 255
+        ghost = cv.GaussianBlur(reverse_ink, (0, 0), duplex_blur_sigma)
+        transmittance *= 1 - duplex_strength * ghost
     warped = _sample(transmittance, u, v)
     warped[(distance < 0) | (v < -.5) | (v > height - .5)] = 1
     blurred = cv.GaussianBlur(warped, (0, 0), 2.0)

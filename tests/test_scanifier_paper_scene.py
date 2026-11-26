@@ -43,6 +43,27 @@ def test_phone_roundtrip_and_textured_support():
     assert np.linalg.norm(pixels[110, 85].astype(float) - pixels[13, 13]) > 90
 
 
+def test_gutter_duplex_preserves_control_and_mirrors_reverse_ink():
+    warp = Gutter((320, 400), "left")
+    paper = Image.new("RGB", warp.size, "white")
+    reverse = np.asarray(paper).copy()
+    reverse[178:222, 42:66] = 0
+    reverse = Image.fromarray(reverse)
+    control = gutter_scan(paper, warp, 91)
+    assert control.tobytes() == gutter_scan(paper, warp, 91, reverse=reverse,
+                                          duplex_strength=0).tobytes()
+    legacy = gutter_scan(paper, warp, 91, reverse=reverse)
+    assert legacy.tobytes() == gutter_scan(paper, warp, 91, reverse=reverse,
+                                         duplex_strength=.086, duplex_blur_sigma=2.2).tobytes()
+    strong = gutter_scan(paper, warp, 91, reverse=reverse, duplex_strength=.24)
+    x, y = warp.forward_xy(320 - 1 - 54, 200)
+    mirror = (round(x), round(y))
+    assert strong.getpixel(mirror)[0] < legacy.getpixel(mirror)[0] < control.getpixel(mirror)[0]
+    x, y = warp.forward_xy(54, 200)
+    direct = (round(x), round(y))
+    assert strong.getpixel(direct) == control.getpixel(direct)
+
+
 def test_shared_light_changes_ink_under_legacy_protection():
     native = np.full((210, 200, 3), 198, np.uint8)
     native[80:84, 35:165] = 92
