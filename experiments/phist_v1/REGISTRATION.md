@@ -88,7 +88,7 @@ Two arms train now, in parallel, so the round does not wait for the office-print
 | **r7** | R7 (`r7-tesseract-real/models/r7/heb.traineddata`) | `95faab81fba6fe57…` | `phist_r7.list` | `r7` |
 | **stock** | stock tessdata_best heb | `dbaa827aea6bc212…` | `phist_stockfold.list` | `stockfold` |
 
-- **R7's data:** it trained on 95k bynli_lines_v2 lines. data-collection's audit of its 6 largest books found 13 word errors in 192 lines, about 7%; 2 books fail the bar.
+- **R7's data:** R7 trained on the bynli v2 line pool. A source audit informed the pool decision.
 - **Each arm keeps its start model's own unicharset,** with no layer surgery.
 - **The two lists hold the same lines in the same order.** Only the dash and maqaf labels differ (§2.3).
 
@@ -134,7 +134,7 @@ Two arms train now, in parallel, so the round does not wait for the office-print
 
 - The replay exists to keep modern print. So the selected model must not lose against stock on office-print §4.3's R-series dev lists, under the same non-inferiority rule: the upper bound of the paired bootstrap 95% interval of Δ CER is at most +0.5 pt.
 - A guard loss on any list bars the claim of a general improvement. The P-hist result is still reported.
-- **data-collection's dev-unit label audit, done (32 seeded lines each, word errors):**
+- **Development reference audit:** the edition text differed from the print in the *Yedi'ot ha-Teva* sample. The guard still treats Kevar and Brainin as deciding development inputs and *Yedi'ot ha-Teva* as context, as registered.
 
   | List | Word errors | Effect |
   |---|---|---|

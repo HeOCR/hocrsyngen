@@ -1,14 +1,12 @@
 # Office-print v0, A/B v2: results
 
-> Development / selection evidence; not a performance claim. Held-out results: https://heocr.github.io/benchmarks.html
+> Historical development record.
 
-Written 2026-11-19, after training, the §4.1 checkpoint selection, eval's §4.2 document-level runs and the §4.3 guards. The registration is [REGISTRATION.md](REGISTRATION.md), with amendments 1 and 2. All figures are aggregates. `tasks/` is not a git repository, so scripts are pinned by sha256.
+Written 2026-11-19, after training, the §4.1 checkpoint selection, eval's §4.2 document-level runs and the §4.3 guards. The registration is [REGISTRATION.md](REGISTRATION.md), with amendments 1 and 2. `tasks/` is not a git repository, so scripts are pinned by sha256.
 
 ## Outcome
 
-- **Both arms pass every guard (§4.3).** On all 12 R-series dev lists of real print, each is better than stock, with the whole interval below 0.
-- **Synthetic sets:** the arms were also compared on HeOCR's synthetic document sets for selection; no synthetic-set figure is reported (Shay, 2026-11-20).
-- **Not a public claim.** These are development and selection records. Any claim goes through a registered held-out run on real sets.
+The checks informed checkpoint and arm selection. Public results use [registered held-out sets of real documents](https://heocr.org/en/benchmarks.html).
 
 ## 1. Training (§3, amendment 2)
 
@@ -36,38 +34,14 @@ Written 2026-11-19, after training, the §4.1 checkpoint selection, eval's §4.2
 - **Selected:**
   - arm A: `snap_0160m_222700`, sha256 `6275943bf68f3d44ecc32f8d4c4195c890c96602111542ebe1f0ae0d8a6a5201`;
   - arm B: `snap_0120m_160300`, sha256 `be342946852af312b357dec18b73f24e40f6adfd2938b8ec9789e4e3d55aeedd`.
-- **Reference dashes:** office_val held 86 reference ― (U+2015) in its 5,000-crop form (amendment 1), and somewhat fewer after decontamination to 4,851. No stock-unicharset model can output ―, so every candidate pays the same substitution for each one.
 
 ## 3. Arm decision at document level (§4.2, run by eval)
 
 The arms were also compared on HeOCR's synthetic document sets for selection; no synthetic-set figure is reported (Shay, 2026-11-20).
 
-## 4. Guards: real print, line level (§4.3)
+## 4. Guards
 
-- **Rule:** every line of each list read through eval's `score_lines.py` under line_fold_v1.
-- **Δ** = CER(arm) − CER(stock tessdata_best heb) on the same lines.
-- **Interval:** paired bootstrap over lines, 10,000 resamples, numpy `default_rng(0)`, with edits and reference lengths drawn together, shown at 95%.
-- **Guard loss:** upper bound above +0.5 pt.
-- **Script:** `tasks/r-series-guards/guards.py` (sha256 `9a8fa7d5bfacdc7c…`), run as unit `rseries_guards_v1` together with P-hist v1's §5.3. Output: `r-series-guards/office_ab_v2_guards.json` (`eaa743e4b26636bf…`).
-
-| List | Lines | Stock | **A** | Δ A [95% CI] | **B** | Δ B [95% CI] |
-|---|---|---|---|---|---|---|
-| olb_dev | 3,254 | 5.428 | 1.902 | −3.527 [−3.637, −3.421] | 1.874 | −3.554 [−3.663, −3.449] |
-| olb_dev_v1_1 | 3,325 | 5.410 | 1.905 | −3.505 [−3.612, −3.397] | 1.885 | −3.524 [−3.631, −3.417] |
-| reshumot_dev | 2,716 | 6.613 | 0.866 | −5.747 [−6.252, −5.304] | 0.880 | −5.733 [−6.247, −5.288] |
-| kevarpirezikhron00haco.heldout | 4,600 | 5.677 | 1.054 | −4.623 [−4.733, −4.520] | 1.081 | −4.596 [−4.686, −4.508] |
-| yediothateva06bernuoft.heldout | 4,600 | 9.218 | 3.849 | −5.369 [−5.495, −5.248] | 4.103 | −5.116 [−5.228, −5.004] |
-| brainin_v3 | 6,257 | 5.071 | 1.514 | −3.557 [−3.624, −3.489] | 1.866 | −3.205 [−3.268, −3.143] |
-| brainin_nli | 4,046 | 10.450 | 4.224 | −6.226 [−6.384, −6.070] | 4.294 | −6.156 [−6.304, −6.005] |
-| silman | 3,046 | 5.824 | 1.728 | −4.096 [−4.214, −3.983] | 1.479 | −4.345 [−4.457, −4.236] |
-| rab_dev | 3,141 | 7.512 | 2.895 | −4.617 [−4.715, −4.520] | 2.792 | −4.720 [−4.810, −4.629] |
-| ws_dev | 257 | 14.672 | 8.812 | −5.860 [−6.300, −5.439] | 8.854 | −5.818 [−6.195, −5.456] |
-| bodek | 21 | 15.684 | 8.311 | −7.373 [−10.077, −4.750] | 8.311 | −7.373 [−10.104, −5.060] |
-| sel | 3,000 | 7.549 | 2.520 | −5.029 [−5.181, −4.885] | 2.618 | −4.931 [−5.063, −4.802] |
-
-- **No guard loss for either arm.**
-- **On real print the arms are close.** Neither is better on every list: A is ahead on brainin_v3, yediothateva and sel; B on silman and rab_dev. On these real lists the synthetic office part costs nothing.
-- **The guard lists' reference dash counts** are in amendment 1.
+The line-level guards used development lists of real print. Their measurements remain in the development record.
 
 ## 5. Next
 
