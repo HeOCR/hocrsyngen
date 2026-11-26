@@ -64,6 +64,46 @@ The fitter writes reusable ranges and a report of registered, rejected and missi
 
 It estimates framing, pose with an assumed horizontal field of view, white-point exposure/cast, uneven lighting, native-pixel edge spread, wedge noise proxies, dark and wood surface colours, and IJG-equivalent JPEG quality where the quantization tables support it. Corner-marker failures, clipped targets and unusable observations reduce coverage. The pack is a designed set of conditions, so the fitter leaves occurrence rates at their priors. It also retains priors for curl/crumple, hard-light shapes, grey flooring, and ISP strengths, which need targeted calibration shots or pre/post-ISP pairs. Wedge measurements are proxies from processed JPEGs and are confounded by printing, resampling and the phone ISP.
 
+## Compose phone and scanner degradations
+
+Use `real_capture.render_real_capture` for annotated upright pages. A phone profile
+(`phone_flat` or `phone_oblique`) requires its matching TRAIN optical profile
+and TRAIN geometry bank. Retain the bank, profile and input hashes alongside
+the returned parameters. Their ranges govern blur and defocus, colour cast,
+illumination gradients and spatially varying noise. The phone fit also records
+the measured acquisition JPEG tables.
+
+```python
+from experiments.scanifier_v2.real_capture import render_real_capture
+
+view = render_real_capture(
+    front, lines, phone_profile, phone_bank=train_bank, seed=89,
+    reverse=registered_back, duplex={"opacity": (0.03, 0.07)},
+    recompression_quality=(72, 86),
+)
+# view.image is a decoded RGB raster. view.lines preserves text and order.
+```
+
+Supply each source line's pixel-edge `box`, its literal `text`, and any
+`polygon` or `baseline` to map. Register the back image to the upright front
+dimensions and supply it in normal reading orientation. The renderer mirrors
+it and projects the duplex ink with the page.
+
+For a scanner, pass an `adobe_scan` profile and omit the bank. Set
+`scanner_rotation_deg`, `scanner_perspective` and, optionally, `scanner_bands`
+using the keyword arguments of `degradations.scanner_edge_bars`. Choose a
+side and a tapered, feathered band for a gutter. The renderer rejects bands
+that intersect source line boxes. Supply `scanner_jpeg_quality` if the
+profile has no acquisition encoder and a codec pass is wanted.
+`recompression_quality` requires an acquisition encode and preserves
+dimensions and line positions.
+
+Duplex, scanner bands and second JPEG are opt-in priors unless the caller
+supplies measurements for those effects. Fit parameters only on eligible
+TRAIN or registered calibration captures. Check projected line visibility
+before admitting a view to a training batch. Keep the same seed, inputs,
+configuration and software versions when replaying a view.
+
 ## Developer previews
 
 Three captures from one synthetic source page, with fixed seeds and declared [overrides](dev/cases.json). These are for visual inspection.

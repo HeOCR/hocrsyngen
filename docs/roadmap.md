@@ -761,6 +761,9 @@ Planned PR breakdown:
 - `S10j` — Calibrated phone photometry. Reuse the capture geometry with an
   opt-in tone, noise, JPEG and reverse-side profile. Validate image distributions
   on non-test captures and keep the profile digest with the generated batch.
+- `S10k` — Seeded phone and scanner degradation views. Compose TRAIN-fitted
+  phone optics with optional duplex ink and recompression. Support scanner
+  rotation, gutter bands and spatial photometry with mapped literal lines.
 
 Exit criteria:
 
