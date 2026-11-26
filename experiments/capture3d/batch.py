@@ -315,14 +315,19 @@ def run(inputs, assets, output, blender, device, size, samples, max_bad_fraction
             raise RuntimeError((temp / "blender.log").read_text(errors="replace")[-7000:])
         run_result = json.loads(result_path.read_bytes())
         captures = run_result.pop("rows")
-        invalid = rejected_pairs(captures) if paired and not clean_arm_only else set()
+        if paired and not clean_arm_only:
+            invalid = rejected_pairs(captures)
+        elif clean_arm_only:
+            invalid = {capture["pair_id"] for capture in captures if capture["rejected_regions"]}
+        else:
+            invalid = set()
         if developable_paper:
             for case, capture in zip(cases, captures, strict=True):
                 positions = capture.pop("marker_positions")
                 if positions and capture["pair_id"] not in invalid:
                     try:
                         errors = marker_errors(open_rgb(case["marker_output"]), positions, capture["phone"]["k1"])
-                    except ValueError as exc:
+                    except (ValueError, OSError) as exc:
                         capture["marker_failure"] = str(exc)
                         invalid.add(capture["pair_id"])
                         continue
