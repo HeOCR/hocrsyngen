@@ -273,3 +273,31 @@ noise curves and replays the encoder tables. It pins the exact profile digest
 and returns a forward warp and transformed line polygons with unchanged text.
 The archival flatbed, bound, photocopy and old-colour profiles remain available
 for their respective modes.
+
+## Curved gutters and shared paper light
+
+`paper_scene.py` is an opt-in review experiment. `Gutter` projects the bound
+part of a leaf along a circular cross-section. Its incidence angle controls
+foreshortening, brightness and blur toward the fold. `gutter_scan` includes a
+facing leaf at the boundary. Edge bands remain available as a separate effect.
+
+`Phone` maps a slightly curled page through a perspective quad and a radial
+lens. `near_phone` takes an RGB diffuse support texture and offers soft
+directional cast shadows, contact shadows, exposure falloff, white balance,
+and depth-dependent defocus. The page and support share camera photometry.
+Both geometry classes expose a forward and inverse map in pixel-centre
+coordinates so callers can project line outlines and check round trips.
+
+`sdxl_shared_relight` takes a native inked render and its registered prior
+SDXL edit. It estimates a smooth lighting transfer from open paper only,
+factors the original inked surface into paper and transmission, and applies
+the same light field to both. It imports no altered glyphs. The caller's
+fit exclusion mask enters the light estimate only. A separate halo check
+compares the output-to-native luminance change 3–6 px from ink to locally
+detrended open paper at least 8 px away. Pass aligned images at the
+actual review resolution.
+
+The renderer accepts caller-owned textures and does not bundle image
+assets. Suitable CC0 diffuse sources include oak planks, concrete and
+rough linen from Poly Haven. Pin texture bytes and source URLs alongside
+each produced batch. [Poly Haven license](https://polyhaven.com/license)

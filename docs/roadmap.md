@@ -764,6 +764,10 @@ Planned PR breakdown:
 - `S10k` — Seeded phone and scanner degradation views. Compose TRAIN-fitted
   phone optics with optional duplex ink and recompression. Support scanner
   rotation, gutter bands and spatial photometry with mapped literal lines.
+- `S10l` — Curved gutters and shared paper lighting. Add cylindrical binding
+  valleys and textured near-phone compositions, and transfer existing SDXL
+  paper illumination across the full inked surface. Measure residual halos
+  around the existing glyphs.
 
 Exit criteria:
 
