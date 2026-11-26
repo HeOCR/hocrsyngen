@@ -89,18 +89,12 @@ Rights notes:
 - The input paths are hard-coded to the HeOCR task workspace. Those inputs are not public yet. They become public through HeOCR releases: the R8b line sets and R7. Whether `last.pt` is published with the add-on is the lead's call.
 - The scripts don't yet fail with a clear message when an input is missing.
 - Training ran on mps (Apple GPU), which is not bit-reproducible. This keeps the method exploratory, per the boundary doc.
-- **Evidence and baseline comparison:** the R8b A/B (S17a add-on vs control, same recipe and list order) improved CER on both clean held-out dev books. That's −0.017 on Kevar and −0.015 on Yedi'ot ha-Teva (page-cluster bootstrap, 95% CIs below zero). Details are in the HeOCR task notes.
+- **Development comparison:** the R8b add-on and control used the same recipe and list order. The comparison informed development.
 
 The R7-derived readers shown here inherit R7 checkpoint-selection exposure to 7,092 development rows from two sources now reserved in line_verify. Comparisons on those sources are selection-exposed.
 
-**Cleanup:** the run's local intermediates (`addon_gen/`, `pairs_full/`, `pairs_v2/`) stay in the workspace until this PR merges. They then go to the Trash. The released add-on and `last.pt` are kept.
+**Cleanup:** the run's local intermediates (`addon_gen/`, `pairs_full/`, `pairs_v2/`) stay in the workspace until this PR merges. They then go to the Trash. The training add-on and `last.pt` are kept.
 
-## Dose arm (s17a_addon_v2, 2026-11-13): no win
+## Dose-arm development
 
-A second set of 18,553 S17a lines, added to R8b's list, was tested against the released r8b-main-fold under a rule written down before training ([dose_v2/PREREGISTRATION.md](dose_v2/PREREGISTRATION.md)). **The arm does not win.**
-- On OLB Reshumot dev "all", Δ is +0.019 with a 95% CI of [−0.037, +0.052], which includes 0.
-- Silman is a guard loss: Δ is −0.046, CI [−0.070, −0.023].
-
-The S17a dose stays at v1.1, with no confirmation run. The full tables, with a stock tessdata_best column, are in [dose_v2/RESULTS.md](dose_v2/RESULTS.md). The pipeline is `make_texts_v2.py`, `restore_styles.py`, `export_addon_v2.py`, `gate_sheets.py`, `build_dose_list.py` and `dose_decide.py`.
-
-— synth-gen[claude/claude-code#shay-macbook-m4]@heocr/opensource
+The private R8b checkpoint served as the control in the [registered dose comparison](dose_v2/PREREGISTRATION.md). The development comparison did not authorize a confirmation run. The earlier add-on remained the training recipe. Public OCR performance is reported on [registered real held-out benchmarks](https://heocr.org/en/benchmarks.html).
