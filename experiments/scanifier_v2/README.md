@@ -301,3 +301,25 @@ The renderer accepts caller-owned textures and does not bundle image
 assets. Suitable CC0 diffuse sources include oak planks, concrete and
 rough linen from Poly Haven. Pin texture bytes and source URLs alongside
 each produced batch. [Poly Haven license](https://polyhaven.com/license)
+
+## Selective paper variations
+
+Use `paper_effects.py` with an existing RGB capture and a page mask in the
+capture's pixel coordinates. The textures, shadow bands and creases are
+optional. Select a fraction of the intended views with a frozen seed and
+record the chosen recipes. Keep some lighter views as controls.
+
+- `paper_texture` seeds mottled tone, fine fibres and irregular stains. Its
+  reflectance multiplier follows the sheet across paper and ink.
+- `cast_shadow` accepts a projected occluder edge or bars and the remaining
+  ambient illumination in linear RGB. It shades the page, printed rows, and
+  support through the same edge and penumbra.
+- `CreaseWarp` adds straight rounded creases and relaxed shoulders within
+  the photographed sheet. The remap preserves the silhouette and provides
+  forward and inverse projection for pixel-centre polygons. Use the 3D
+  renderer for folds that move the silhouette or reveal the underside.
+- Combine geometry, cast shadows and texture before encoding the final RGB.
+  For a halo readback, compensate for the known fold and cast-shadow field
+  in linear RGB, then measure the delivered raster against locally
+  detrended open paper. Independently check that the measured attenuation
+  spans both ink and blank paper in the hard shadow.
