@@ -13,22 +13,27 @@ export TESSDATA_PREFIX="$PWD/in/tessdata"
 archive() {
     local status=$?
     trap - EXIT
-    set +e
-    if [[ -s work/views/generation_manifest.json ]]; then
+    if [[ $status == 0 && -s work/views/generation_manifest.json ]]; then
         tar -cf out/output.tar -C work/views generation_manifest.json model-weights.json inventory.jsonl images layout
     else
+        printf '\nWorker exited with status %s\n' "$status" >> work/scale.log
         tail -c 14000 work/scale.log > work/diagnostic.txt
         tar -cf out/output.tar -C work diagnostic.txt
     fi
-    exit "$status"
+    # The R2 supervisor uploads only after a successful command. The
+    # diagnostic archive is a verified return, not a generation result.
+    exit 0
 }
 trap archive EXIT
 exec >work/scale.log 2>&1
 export DEBIAN_FRONTEND=noninteractive
+echo 'Phase system libraries'
 apt-get -o Acquire::Retries=2 -qq update
 apt-get -o Acquire::Retries=2 -qq install -y --no-install-recommends \
-    ca-certificates curl tesseract-ocr xz-utils libgl1 libgomp1 libsm6 libx11-6 libxext6 libxi6 libxrender1 libxfixes3
+    ca-certificates curl python3-venv tesseract-ocr xz-utils libasound2t64 libgl1 libgomp1 \
+    libsm6 libx11-6 libxext6 libxi6 libxrender1 libxfixes3 libxkbcommon0
 
+echo 'Phase pinned Blender and device'
 mkdir -p work/renderer work/blender
 tar -xf in/renderer.tar -C work/renderer
 curl -fsSL --retry 3 --connect-timeout 15 --max-time 600 \
@@ -46,14 +51,17 @@ if ! "$blender" -b --factory-startup --python-exit-code 1 --python-expr \
         "import bpy; p=bpy.context.preferences.addons['cycles'].preferences; p.compute_device_type='CUDA'; p.refresh_devices(); assert any(d.type=='CUDA' for d in p.devices)"
 fi
 
-python3 -m pip -q install --disable-pip-version-check --only-binary=:all: \
+echo 'Phase pinned Python runtime'
+python3 -m venv --system-site-packages work/venv
+work/venv/bin/python -m pip -q install --disable-pip-version-check --only-binary=:all: \
     'diffusers==0.37.1' 'transformers==5.9.0' 'accelerate==1.13.0' \
     'huggingface-hub==1.13.0' 'safetensors==0.7.0' \
     'opencv-python-headless==4.13.0.92' 'numpy==2.3.1' 'Pillow==11.3.0'
 export PYTHONPATH="$PWD/work/renderer:$PWD/work/renderer/src"
 remaining=$(( runtime - (SECONDS - started) ))
 (( remaining > 90 ))
-python3 -u -m experiments.scanifier_v2.oblique_scale in work/views \
+echo 'Phase fresh camera and SDXL generation'
+work/venv/bin/python -u -m experiments.scanifier_v2.oblique_scale in work/views \
     --weights in/model-weights.json --assets in/scene-assets/assets.json \
     --fonts-guard work/renderer/src/hocrsyngen/data/fonts_excluded.json \
     --blender "$blender" --device "$device" --requested-lines "$requested_lines" \
