@@ -768,6 +768,9 @@ Planned PR breakdown:
   valleys and textured near-phone compositions, and transfer existing SDXL
   paper illumination across the full inked surface. Measure residual halos
   around the existing glyphs.
+- `S10m` — Selective textured stock and hard shadows. Add opt-in dirt and
+  grain for binding valleys, and hard cast shadows and projected rounded
+  creases for a subset of phone views. Keep the approved lighter variants.
 
 Exit criteria:
 
